@@ -3,8 +3,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('',
     # XXX Would be nice to use just the name for redirect, but how to import from
     # urlconf that is not yet defined...
-    url(r'pre-approval/', 'django.views.generic.simple.redirect_to',
-        {'url': '../list/'}, name='pre-approval'),
+    url(r'pre-approval/', 'membership.views.membership_list_new', name='pre-approval'),
 
     url(r'new/', 'membership.views.new_application', name='new_application'),
     url(r'list/', 'membership.views.membership_list', name='membership_list'),

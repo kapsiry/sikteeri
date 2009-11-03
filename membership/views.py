@@ -27,10 +27,16 @@ def new_application(request, template_name='membership/new_application.html'):
 def check_alias_availability(request):
     pass
 
-@login_required
+@login_required # XXX Replace with a generic view in URLconf
 def membership_list(request, template_name='membership/membership_list.html'):
     return render_to_response(template_name, {'members': Membership.objects.all()},
                               context_instance=RequestContext(request))
+
+@login_required # XXX Replace this too
+def membership_list_new(request, template_name='membership/membership_list.html'):
+    return render_to_response(template_name,
+        {'members': Membership.objects.filter(status__exact='N')},
+        context_instance=RequestContext(request))
 
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
@@ -42,7 +48,7 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             model = Membership
 
     if request.method == 'POST':
-        form = Form(request.POST)
+        form = Form(request.POST, instance=membership)
         if form.is_valid():
             form.save()
     else:

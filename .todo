@@ -3,4 +3,7 @@
     <note priority="medium" time="1257275357">
         Honeypot to public forms
     </note>
+    <note priority="medium" time="1257283025">
+        Forms should show which fields are mandatory
+    </note>
 </todo>
