@@ -1,0 +1,55 @@
+[
+    {
+        "pk": 1, 
+        "model": "membership.membership", 
+        "fields": {
+            "status": "P", 
+            "first_names": "James Paul", 
+            "last_name": "McCartney", 
+            "created": "2009-11-03 22:22:46", 
+            "sms": "", 
+            "country": "United Kingdom", 
+            "municipality": "Liverpool", 
+            "last_changed": "2009-11-04 00:03:03", 
+            "homepage": "", 
+            "organization_name": "", 
+            "phone": "0123000123", 
+            "info": "", 
+            "postal_code": "LI-123123", 
+            "given_name": "Paul", 
+            "nationality": "English", 
+            "post_office": "Liverpool", 
+            "accepted": null, 
+            "type": "P", 
+            "email": "paul@kapsi.fi", 
+            "street_address": "Beatle St. 2"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "membership.billingcycle", 
+        "fields": {
+            "end": "2010-11-03 22:22:24", 
+            "created": "2009-11-03 22:22:46", 
+            "is_paid": false, 
+            "bill_sent": true, 
+            "last_changed": "2009-11-03 22:22:46", 
+            "start": "2009-11-03 22:22:24", 
+            "membership": 1
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "membership.bill", 
+        "fields": {
+            "due_date": "2009-11-17 22:22:46", 
+            "reference_number": "00", 
+            "is_paid": false, 
+            "created": "2009-11-03 22:22:46", 
+            "last_changed": "2009-11-03 22:22:46", 
+            "reminder_count": 0, 
+            "sum": "30", 
+            "cycle": 1
+        }
+    }
+]
