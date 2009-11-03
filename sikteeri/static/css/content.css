@@ -1,0 +1,245 @@
+/* Sisällölle tyypilliset määritteet, riippumatta mediatypestä */
+
+/* Tiedotteet */
+
+div.tiedote h2 {
+    margin-bottom: 0px;
+}
+
+div.tiedote .info {
+    font-size: small;
+    margin-left: 3em;
+}
+
+div.tiedote .update {
+    padding-left: 5px;
+    border-left: 5px double #778;
+    border-top: 5px double #778;
+}
+
+.tiedotteet-listdate {
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.tiedotteet-menulink {
+    display: block;
+    margin-left: 15em;
+    margin-top: -1.25em;
+    margin-bottom: 0.3em;
+}
+
+/* Tablet */
+
+table {
+    margin-bottom: 1em;
+}
+
+td, th {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+td {
+    text-align: left;
+    background-color: #E7E7E7;
+}
+
+th {
+    background-color: #C7C9C9;
+}
+
+tr.separator td {
+    background-color: transparent;
+    height: 1em;
+}
+
+tr.hilight td {
+    background-color: #D7D7D7;
+}
+
+table.plain td, table.plain th {
+    background-color: transparent;
+}
+
+table.plainheadleft td, table.plainheadleft th {
+    background-color: transparent;
+    text-align: left;
+}
+
+/* Listat */
+
+ul {
+    list-style: square inside;
+    margin-left: 10px;
+    padding: 0px;
+}
+
+ol.largespace li, ul.largespace li{
+    margin-bottom: 1em;
+}
+
+/* Otsikot ja kappaleet */
+
+p {
+    margin-top: 5px;
+}
+
+
+h1 {
+    font-size: 25px;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 15px;
+}
+
+h1, h2, h3 {
+    font-family: "Arial", "Helvetica", sans-serif;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+h2, h3 {
+    margin-top: 20px;
+}
+
+div.contentmenu h1 {
+    font-size: 30px;
+}
+
+div.content h1 {
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #D8DBDB;
+}
+
+h1.contenttop {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+h1.liite {
+    padding-top: 3em;
+}
+
+/* Asetukset-definitionlist */
+
+dl.settings {
+    border-left: 3px double #777878;
+    padding-left: 10px;
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+dl.settings dt {
+    font-weight: bold;
+}
+
+dl.settings dd {
+    margin-bottom: 1em;
+}
+
+
+/* Pöytäkirjat */
+
+div.poytakirja h2 {
+    font-size: 15px;
+}
+
+div.ylatunniste {
+    float: right;
+    text-align: right;
+}
+
+dl.poytakirja {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+dl.poytakirja dt {
+    width: 6em;
+    float: left;
+    font-weight: bold;
+}
+
+dl.poytakirja dd {
+    margin-bottom: 1em;
+    margin-left: 6em;
+}
+
+div.allekirjoitus {
+    border-top: 1px solid #000;
+    float: left;
+
+    margin: 1em;
+    margin-top: 2em;
+    padding-left: 1em;
+    width: 15em;
+}
+
+div.poytakirja ol.otsikot {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+div.poytakirja ol.otsikot p {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Linkit */
+
+a {
+    color: #114e6d;
+}
+
+a:visited {
+    color: #072331;
+}
+
+a:visited:hover {
+    color: #0d405a;
+}
+
+a:hover {
+    color: #277ca7;
+}
+
+a.external {
+    background-image: url('linkki.png');
+    background-position: right;
+    background-repeat: no-repeat;
+    padding-right: 12px;
+}
+
+a:hover.external {
+    background-image: url('linkki-hover.png');
+}
+
+/* Muita */
+
+hr {
+    border: none;
+    border-bottom: 1px solid #D8DBDB;
+}
+
+pre {
+    background-color: #E7E7E7;
+    border: 1px solid #777878;
+    padding: 5px;
+    overflow: auto;
+}
+
+code {
+    font-family: monospace;
+}
+
+
+
+
+

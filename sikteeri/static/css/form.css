@@ -1,0 +1,57 @@
+label {
+    font-size: 90%;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+textarea, input {
+    color: #000000;
+    background-color: #f0f5e5;
+    border: 1px solid #3F4C18;
+    padding: 0.2em;
+}
+
+p.field {
+    text-align: right;
+    margin-right: 12em;
+}
+
+span.description {
+    text-align: right;
+    display: block;
+    font-size: 80%;
+}
+
+span.required {
+    color: red;
+    font-weight: bold;
+}
+
+p.checkbox label {
+    font-size: 100%;
+    display: inline;
+    font-weight: normal;
+}
+
+p.checkbox input {
+    background-color: #fdfdfd;
+}
+
+p.checkbox {
+    float: none;
+}
+
+input.button {
+    background-color: #fdfdfd;
+}
+
+ul.errorlist {
+    margin-left: 3em;
+}
+
+ul.errorlist li {
+    color: red;
+    font-weight: bold;
+    font-size: 0.9em;
+    list-style-type: none;
+}

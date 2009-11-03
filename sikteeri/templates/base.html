@@ -1,0 +1,44 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Sikteeri :: {{ title }}</title>
+    <style type="text/css">
+        #pageLogin
+        {
+            font-size: 10px;
+            font-family: verdana;
+            text-align: right;
+        }
+    </style>
+    <style media="screen" type="text/css">
+        @import "/static/css/screen.css";
+        @import "/static/css/content.css";
+        @import "/static/css/form.css";
+        @import "/static/css/card.css";
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <img class="logo" src="/static/images/logo.png" alt="Kapsin logo">
+    <h1 class="otsikko">
+    <span class="kapsi">Kapsi</span> <span class="ikry">Internet-käyttäjät ry</span>
+    </h1>
+    <div class="mainarea">
+     <div class="menu">
+       {% block menu %}
+       {% include "menu.html" %}
+       {% endblock %}
+     </div>
+     <div class="right">
+      <div class="content">
+    {% block content %}{% endblock %}
+       <div style="display:block; clear:both"></div>
+      </div>
+     </div>
+     {% block footer %}
+     <div class="footer">Copyright © Kapsi Internet-käyttäjät ry 2006–2009</div>
+     </div>
+     {% endblock %}
+</body>
+</html>

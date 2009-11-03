@@ -1,0 +1,26 @@
+{% load i18n %}
+<ul>
+   <li>
+     {% if user.is_authenticated %}
+     <a href="{% url logout %}">{% trans "Logout" %}</a>
+     {% else %}
+     <a href="{% url login %}">{% trans "Login" %}</a>
+     {% endif %}
+   </li>
+</ul>
+<h3>{% trans "Public" %}</h3>
+<ul>
+   <li><a href="{% url frontpage %}">{% trans "Frontpage" %}</a></li>
+   <li><a href="{% url new_application %}">{% trans "New application" %}</a></li>
+</ul>
+{% if user.is_authenticated %}
+<h3>{% trans "Membership management" %}</h3>
+<ul>
+   <li><a href="{% url pre-approval %}">{% trans "Pre-approval" %}</a></li>
+</ul>
+
+<h3>Django</h3>
+<ul>
+   <li><a href="/admin">Admin</a></li>
+</ul>
+{% endif %}

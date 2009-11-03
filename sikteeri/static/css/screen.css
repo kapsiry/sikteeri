@@ -1,0 +1,219 @@
+/* Yläotsikko */
+h1.otsikko {
+    text-transform: uppercase;
+    font-variant: normal;
+    display: inline;
+    
+    margin: 0px;
+    font-weight: lighter;
+}
+
+span.kapsi {
+    color: #284b5c;
+    font-size: 30pt;
+    margin-right: 0.1em;
+}
+
+span.ikry {
+    color: #35637a;
+    font-size: 20pt;
+}
+
+.logo { /* pngfix korvaa img:n span:lla */
+    vertical-align: baseline;
+    position: relative;
+    top: 110px;
+    margin-top: -110px;
+}
+
+
+/* Muuta */
+
+body {
+    background-color: #E4E4E4;
+    font-size: 14px;
+    font-family: "Bitstream Vera Sans", "Helvetica", "Arial", sans-serif;
+}
+
+
+div.mainarea {
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: 0px;
+    
+    max-width: 1280px;
+    min-width: 450px;
+    
+    border: 1px solid #777878;
+    background-color: #e0e4e9; /* valikon taustaväri */
+}
+
+div.right {
+    margin-left: 150px;
+    min-height: 40em;
+    
+    border-left: 1px solid #cdcdca; /* valikon ja sisallon valissa */
+    background-color: #F7F7F7;
+}
+
+div.content {
+    padding: 15px;
+    padding-top: 20px;
+    border-left: 1px solid #e1e4e4;
+}
+
+div.alternative_formats {
+    float: right;
+    margin-top: 10px;
+}
+
+div.footer {
+    clear: both;
+    padding: 5px;
+    
+    border-top: 1px solid #D8DBDB;
+    background-color: #E6E6E6;
+    color: #999;
+    font-size: 15px;
+}
+
+
+/* Valikko */
+
+div.menu {
+    float: left;
+    
+    padding: 5px;
+    padding-right: 5px;
+    padding-top: 95px;
+    margin: 0px;
+    
+    width: 135px;
+
+    color: #444;
+    overflow: auto;
+}
+
+div.menu ul {
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+}
+
+div.menu li {
+    margin: 0px;
+    padding: 0px;
+    margin-bottom: 5px;
+}
+
+div.menu ul ul {
+    margin-left: 15px;
+}
+
+div.menu ul ul li {
+    margin-bottom: 0px;
+}
+
+div.menu .active {
+    background-image: url('nuolialas.gif');
+    background-position: left;
+    background-repeat: no-repeat;
+    margin-left: 0px;
+    padding-left: 10px;
+}
+
+div.menu .submenu {
+    background-image: url('nuoli.gif');
+    background-position: left;
+    background-repeat: no-repeat;
+    margin-left: 2px;
+    padding-left: 8px;
+}
+
+div.menu a.external {
+    background-image: url('linkki.png');
+    background-position: left;
+    background-repeat: no-repeat;
+    margin-left: 0px;
+    padding-left: 10px;
+}
+
+div.menu a:hover.external {
+    background-image: url('linkki-hover.png');
+}
+
+.currentpageitem {
+    color: #444;
+}
+
+div.menu a, div.menu span {
+    margin-left: 10px;
+}
+
+div.menu a span.currentpageitem {
+    margin-left: 0px;
+}
+
+div.menu h3{
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+div.menu a, div.menu a:visited, div.contentmenu a, div.contentmenu a:visited {
+    color: #35637A;
+}
+
+div.menu a, div.menu a:visited {
+    text-decoration: none;
+}
+
+div.menu a:hover, div.contentmenu a:hover {
+    color: #549dc1;
+}
+
+div.toplistitems {
+    margin-left: 2em;
+    margin-bottom: 0.5em;
+}
+
+li.spacebefore {
+    margin-top: 0.5em;
+}
+
+/* contentmenu */
+
+div.contentmenu {
+    margin: 0px;
+    padding: 5px;
+    padding-left: 15px;
+    
+    background-color: #E6E9ED;
+    border-left: 1px solid #D8DBDB;
+    border-bottom: 1px solid #D8DBDB;
+}
+
+/* application list */
+.application_is_newFalse {
+    color: #00bb00;
+    font-weight: bold;
+}
+.application_is_newTrue {
+    color: #ee0000;
+    font-weight: bold;
+}
+
+/* application details */
+div.applicationdetails, div.memberdetails{
+    background: #E6E9ED;
+    border-left: 1px dashed black;
+    padding: 1ex;
+    float: right;
+    width: 25em;
+    margin: 1ex;
+}
+div.applicationlist, div.memberlist {
+    max-width: 60em;
+}
+
+
