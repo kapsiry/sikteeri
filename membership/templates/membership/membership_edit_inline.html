@@ -1,0 +1,13 @@
+<form method="POST">
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+<ul>{% for billingcycle in membership.billingcycle_set.all %}
+    <li>{{ billingcycle }}
+        <ul>{% for bill in billingcycle.bill_set.all %}
+            <li>{{ bill }}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>

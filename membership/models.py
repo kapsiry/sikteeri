@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.loader import get_template
 from django.template import Context
+from django.core.mail import send_mail
 
 from reference_numbers import *
 
@@ -22,7 +23,7 @@ class Membership(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES)
     status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N')
     created = models.DateTimeField(auto_now_add=True)
-    accepted = models.DateTimeField()
+    accepted = models.DateTimeField(blank=True, null=True)
     last_changed = models.DateTimeField(auto_now=True)
 
     given_name = models.CharField(max_length=128, blank=True)
@@ -39,12 +40,12 @@ class Membership(models.Model):
     country = models.CharField(max_length=128)
 
     phone = models.CharField(max_length=64)
-    sms = models.CharField(max_length=64)
+    sms = models.CharField(max_length=64, blank=True)
     email = models.EmailField(blank=True)
     homepage = models.URLField(blank=True)
     info = models.TextField(blank=True)
 
-    def __str__(self):
+    def __unicode__(self):
         if self.organization_name:
             return self.organization_name
         else:
@@ -76,6 +77,9 @@ class BillingCycle(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now=True)
 
+    def __unicode__(self):
+        return str(self.start) + "--" + str(self.end)
+
     def save(self, force_insert=False, force_update=False):
         self.end = self.start + timedelta(days=365)
         super(BillingCycle, self).save(force_insert, force_update) # Call the "real" save() method.
@@ -93,19 +97,32 @@ class Bill(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now=True)
 
+    def __unicode__(self):
+        return 'Sent on ' + str(self.created)
+
     def save(self, force_insert=False, force_update=False):
-        if not due_date:
+        if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=14)
-        if not reference_number:
-            self.reference_number = add_checknumber(self.id) # XXX: Is id available before first save?
+        if not self.reference_number:
+            # ID is not available before first save, so we look for the previous one
+            # XXX There is a better way in Postgres, but is there a portable way?
+            last = Bill.objects.order_by('id')[:1]
+            if not last:
+                number = 0
+            else:
+                number = last[0].id
+            self.reference_number = add_checknumber(str(number))
+        if not self.sum:
+            self.sum = settings.MEMBERSHIP_FEE
         super(Bill, self).save(force_insert, force_update) # Call the "real" save() method.
 
-    def render_as_text(self):
+    def render_as_text(self): # XXX: Use django.template.loader.render_to_string
         t = get_template('membership/bill.txt')
         return t.render(Context(
             {'cycle': self.cycle, 'due_date': self.due_date, 'account': settings.BANK_ACCOUNT_NUMBER,
              'reference_number': self.reference_number, 'sum': self.sum}))
 
+    # XXX: Should save sending date
     def send_as_email(self):
         send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
             [self.cycle.membership.email], fail_silently=False)

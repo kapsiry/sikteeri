@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<ul>
+{% for member in members %}
+    <li><a href="{% url membership_edit member.id %}">{{ member }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

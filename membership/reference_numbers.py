@@ -6,4 +6,4 @@ def generate_checknumber(number):
     return (10 - check%10)%10
 
 def add_checknumber(number):
-    return number + generate_checknumber(number)
+    return number + str(generate_checknumber(number))
