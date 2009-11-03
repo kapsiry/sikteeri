@@ -1,0 +1,3 @@
+Pay {{ sum }} before {{ due_date }} to account number {{ account }} or else!
+
+Use reference number {{ reference_number }}.
