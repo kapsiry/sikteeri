@@ -1,0 +1,21 @@
+= Laskutuksen vaatimusmäärittely =
+
+ * Laskut lähetetään säännöllisesti
+ 1. Muutoksena nykyiseen: jäsenyys on voimassa kausittain. Maksamalla vuoden jäsenmaksun saa jatkettua jäsenyytensä kautta vuodella, mutta ei koskaan etukäteen.
+ 2. Lasku lähtee esimerkiksi 4 viikkoa ennen jäsenkauden loppua 14 vuorokauden maksuajalla.
+ 3. Muistutus laskusta lähtee esimerkiksi 2 viikkoa ennen jäsenkauden loppua "HETI" maksettavana
+ 4. Jäsenkauden loputtua tunnus lukitaan '''automaattisesti''' ja '''välittömästi'''. Tunnusten lukitsemisesta ilmoitus esim. SMS:llä ja maililla vielä.
+ 5. Kun tunnus on ollut lukittuna esimerkiksi 1 kuukauden, hallitukselle tehdään automaattisesti tiketti erottamisesta.
+
+- Parametrejä täytyy ehkä hieman rukata, jottei muistutusta tarvitse lähettää heti alkuperäisen laskun eräpäivänä
+
+== Kirjanpito ==
+
+Tiliotteet syötetään järjestelmään esimerkiksi uploadaamalla CSV-tiedostoja. Järjestelmä parsii ja yhdistää automaattisesti viitteiden perusteella lähetettyihin laskuihin jos mahdollista. Loput on yhdistettävä käsin.
+
+=== Vaatimuksia ===
+
+ * Maksujen yhdistelyjä on voitava muuttaa
+ * Muuttamisesta on jäätävä loki
+ * Muuttamisen saa tehdä vain ACL:n sallima henkilö (rahastonhoitaja, puheenjohtaja) ja vain tiettyyn rajaan asti.
+
