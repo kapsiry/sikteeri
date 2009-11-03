@@ -3,7 +3,8 @@
 {% block content %}
 <ul>
 {% for member in members %}
-    <li><a href="{% url membership_edit member.id %}">{{ member }}</a></li>
+    <li><span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
+        <span class="status">{{ member.get_status_display }}</span></li>
 {% endfor %}
 </ul>
 {% endblock %}

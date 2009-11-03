@@ -35,11 +35,18 @@ def membership_list(request, template_name='membership/membership_list.html'):
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
+
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
     class Form(ModelForm):
         class Meta:
             model = Membership
-    form =  Form(instance=membership)
+
+    if request.method == 'POST':
+        form = Form(request.POST)
+        if form.is_valid():
+            form.save()
+    else:
+        form =  Form(instance=membership)
     return render_to_response(template_name, {'form': form, 'membership': membership},
                                   context_instance=RequestContext(request))
 
