@@ -1,10 +1,13 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
 <ul>
 {% for member in members %}
     <li><span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
         <span class="status">{{ member.get_status_display }}</span></li>
+{% empty %}
+{% trans "No membership matches this filter, try seeing the full list" %}
 {% endfor %}
 </ul>
 {% endblock %}
