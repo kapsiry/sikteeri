@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load humanize %}
+{% load comments %}
 
 <form method="POST">
 {{ form.as_p }}
@@ -14,3 +15,30 @@
     </li>
     {% endfor %}
 </ul>
+
+
+<h2>{% trans "Comments for management" %}</h2>
+{% get_comment_list for membership as comment_list %}
+{% for comment in comment_list %}
+    <p>{{ comment }}</p>
+{% endfor %}
+
+{% get_comment_form for membership as commentform %}
+<form action="{% comment_form_target %}" method="POST">
+    {% comment %}
+    The comments app is normally used on public websites, so it includes
+    several ways to combat spam. For example we need the following four hidden fields.
+    {% endcomment %}
+
+    {{ commentform.comment }}
+    {{ commentform.content_type }}
+    {{ commentform.object_pk }}
+    {{ commentform.timestamp }}
+
+    {{ commentform.security_hash }}
+    <input type="hidden" name="next" value="{% url membership_edit membership.id %}" />
+    <tr>
+        <td></td>
+        <td><input type="submit" class="submit-post" value="Post"></td>
+    </tr>
+</form>
