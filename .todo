@@ -6,4 +6,7 @@
     <note priority="medium" time="1257283025">
         Forms should show which fields are mandatory
     </note>
+    <note priority="medium" time="1257285622">
+        Why slashes aren't appended?
+    </note>
 </todo>
