@@ -1,0 +1,85 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-11-06 11:20+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: forms.py:13
+msgid "You can't supply both an organization name and a private name"
+msgstr ""
+
+#: forms.py:16
+msgid "You have to give a given name, all first names and surname."
+msgstr ""
+
+#: models.py:15
+msgid "Person"
+msgstr ""
+
+#: models.py:16
+msgid "Organization"
+msgstr ""
+
+#: models.py:17
+msgid "New"
+msgstr ""
+
+#: models.py:18
+msgid "Pre-approved"
+msgstr ""
+
+#: models.py:19
+msgid "Approved"
+msgstr ""
+
+#: models.py:20
+msgid "Disabled"
+msgstr ""
+
+#: models.py:34
+msgid "place of residence"
+msgstr ""
+
+#: models.py:127
+msgid "Your bill for Kapsi membership"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:10
+msgid "Cycle"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:12
+msgid "Bill sent"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:12
+msgid "due on"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:12
+msgid "paid"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:12
+msgid "not paid"
+msgstr ""
+
+#: templates/membership/membership_edit_inline.html:20
+msgid "Comments for management"
+msgstr ""
+
+#: templates/membership/membership_list.html:10
+msgid "No membership matches this filter, try seeing the full list"
+msgstr ""
