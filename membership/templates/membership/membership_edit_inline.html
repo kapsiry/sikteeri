@@ -16,6 +16,10 @@
     {% endfor %}
 </ul>
 
+{% for logentry in membership.logs.all %}
+<p>{{ logentry.action_time }} {{ logentry.user }} {{ logentry.action_flag }}: {{ logentry.change_message }}</p>
+{% endfor %}
+
 
 <h2>{% trans "Comments for management" %}</h2>
 {% get_comment_list for membership as comment_list %}

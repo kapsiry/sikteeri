@@ -1,7 +1,7 @@
 REQUIREMENTS
 ============
 
-* django (tested on 1.1)
+* django (1.1, known not to work on older versions)
 * pysqlite, if using Python < 2.5
 
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+import logging
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -8,6 +9,9 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.template import Context
 from django.core.mail import send_mail
+
+from django.contrib.admin.models import LogEntry
+from django.contrib.contenttypes.generic import GenericRelation
 
 from reference_numbers import *
 
@@ -19,7 +23,14 @@ MEMBER_STATUS = (('N', _('New')),
                  ('A', _('Approved')),
                  ('D', _('Disabled')))
 
+def log_change(sender, instance, created, **kwargs):
+    operation = "created" if created else "modified"
+    logging.info('%s %s: %s' % (sender, operation, repr(instance)))
+
+
 class Membership(models.Model):
+    logs = GenericRelation(LogEntry)
+
     type = models.CharField(max_length=1, choices=MEMBER_TYPES)
     status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N')
     created = models.DateTimeField(auto_now_add=True)
@@ -126,6 +137,7 @@ class Bill(models.Model):
     def send_as_email(self):
         send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
             [self.cycle.membership.email], fail_silently=False)
+        logging.info('A Bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True
         self.cycle.save()
 
@@ -147,3 +159,9 @@ class Payment(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now=True)
+
+models.signals.post_save.connect(log_change, sender=Membership)
+models.signals.post_save.connect(log_change, sender=Alias)
+models.signals.post_save.connect(log_change, sender=BillingCycle)
+models.signals.post_save.connect(log_change, sender=Bill)
+models.signals.post_save.connect(log_change, sender=Payment)
