@@ -36,7 +36,7 @@ class Contact(models.Model):
     first_name = models.CharField(max_length=128, verbose_name=_('first_name')) # Primary first name
     given_names = models.CharField(max_length=128, verbose_name=_('given names'))
     last_name = models.CharField(max_length=128, verbose_name=_('last name'))
-    organization_name = models.CharField(max_length=256, verbose_name=_('organization name'))
+    organization_name = models.CharField(max_length=256, blank=True, verbose_name=_('organization name'))
     street_address = models.CharField(max_length=128, verbose_name=_('street address'))
     postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
     post_office = models.CharField(max_length=128, verbose_name=_('post office'))
@@ -75,6 +75,12 @@ class Membership(models.Model):
 
     def email(self):
         return self.person.email
+
+    def billing_email(self):
+        if self.billing_contact:
+            return self.billing_contact.email
+        else:
+            return self.person.email
 
     def __unicode__(self):
         if self.organization:
@@ -158,7 +164,7 @@ class Bill(models.Model):
     # XXX: Should save sending date
     def send_as_email(self):
         send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
-            [self.cycle.membership.billing_email], fail_silently=False)
+            [self.cycle.membership.billing_email()], fail_silently=False)
         logging.info('A Bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True
         self.cycle.save()

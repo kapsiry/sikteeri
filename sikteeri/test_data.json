@@ -62,7 +62,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 1,
+            "type": 'P',
             "start": "2009-11-17 22:22:46", 
             "sum": "30"
         }
@@ -71,7 +71,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 2,
+            "type": 'O',
             "start": "2009-11-17 22:22:46", 
             "sum": "100"
         }
@@ -80,7 +80,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 3,
+            "type": 'S',
             "start": "2009-11-17 22:22:46", 
             "sum": "100"
         }
