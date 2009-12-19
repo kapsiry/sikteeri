@@ -10,22 +10,44 @@ from django.utils.encoding import force_unicode
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.comments.models import Comment
+from django.db import transaction
 
 from models import *
-from forms import MembershipForm
+from forms import MembershipForm, ContactForm
 from utils import dict_diff
 
+@transaction.commit_manually
 def new_application(request, template_name='membership/new_application.html'):
+    contact_prefixes = ['', 'adm', 'tech', 'billing']
     if request.method == 'POST':
-        form = MembershipForm(request.POST)
-        if form.is_valid():
-            logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(form.cleaned_data)))
-            membership = form.save()
+        membership_form = MembershipForm(request.POST, instance=Membership())
+        contact_forms = []
+        for pfx in contact_prefixes:
+            contact_forms.append(ContactForm(request.POST, prefix=pfx, instance=Contact()))
+        
+        if membership_form.is_valid() and all([cf.is_valid() for cf in contact_forms]):
+            membership = membership_form.save()
+            for c in contact_forms:
+                contact = c.save()
+                if c.prefix == 'adm':
+                    membership.administrational_contact = contact
+                elif c.prefix == 'tech':
+                    membership.technical_contact = contact
+                elif c.prefix == 'billing':
+                    membership.billing_contact = contact
+            membership.save()
+            transaction.commit()
+            logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(form.cleaned_data)))            
+            return HttpResponseRedirect('/new/success/')
     else:
-        form = MembershipForm()
-
-    return render_to_response(template_name, {"form": form},
-                              context_instance=RequestContext(request))
+        membership_form = MembershipForm()
+        contact_forms = []
+        for pfx in contact_prefixes:
+            contact_forms.append(ContactForm(prefix=pfx, instance=Contact()))
+    
+    return render_to_response(template_name, {"form": form,
+                                              "contact_forms": contact_forms},
+                              context_instance=RequestContext(request))    
 
 def check_alias_availability(request):
     pass
