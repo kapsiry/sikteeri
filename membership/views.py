@@ -21,11 +21,6 @@ def new_application(request, template_name='membership/new_application.html'):
         if form.is_valid():
             logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(form.cleaned_data)))
             membership = form.save()
-            billing_cycle = BillingCycle(membership=membership)
-            billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-            bill = Bill(cycle=billing_cycle)
-            bill.save()
-            bill.send_as_email()
     else:
         form = MembershipForm()
 
@@ -84,7 +79,7 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 
 def membership_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
-    membership.status = 'A' # XXX hardcoding
+    membership.status = 'P' # XXX hardcoding
     membership.save()
     comment = Comment()
     comment.content_object = membership
@@ -93,6 +88,11 @@ def membership_preapprove(request, id):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.now()
     comment.save()
+    billing_cycle = BillingCycle(membership=membership)
+    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
+    bill = Bill(cycle=billing_cycle)
+    bill.save()
+    bill.send_as_email()
     return redirect('membership_edit', id)
 
 def membership_preapprove_many(request, id_list):

@@ -122,7 +122,7 @@ class Bill(models.Model):
     due_date = models.DateTimeField(verbose_name=_('due date'))
 
     is_paid = models.BooleanField(default=False, verbose_name=_('is paid'))
-    reference_number = models.CharField(max_length=64, unique=True, verbose_name=_('reference number')) # NOT an integer since it can begin with 0 XXX: format
+    reference_number = models.CharField(max_length=64, verbose_name=_('reference number')) # NOT an integer since it can begin with 0 XXX: format
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
