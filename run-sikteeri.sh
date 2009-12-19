@@ -7,6 +7,10 @@ fail () {
 
 test -r sikteeri/local_settings.py || fail "sikteeri/local_settings.py not found"
 export PYTHONPATH=`pwd`
+
+# Build translations
+./build.sh
+
 cd sikteeri
 
 if [ ! -r sikteeri_test.sqlite ]; then
