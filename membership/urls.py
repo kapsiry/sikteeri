@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     url(r'preapprove/(\d+)/', 'membership.views.membership_preapprove', name='membership_preapprove'),
     url(r'unpaid/', 'membership.views.unpaid_bill_list', name='unpaid_bill_list'),
     url(r'bills/', 'membership.views.bill_list', name='bill_list'),
+    url(r'approve/(\d+)/', 'membership.views.membership_approve', name='membership_approve'),
 )
