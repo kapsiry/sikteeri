@@ -25,11 +25,11 @@ msgstr "Sinun täytyy määritellä "
 
 #: models.py:19
 msgid "Person"
-msgstr "Henkilö"
+msgstr "Yksityishenkilö"
 
 #: models.py:20
 msgid "Organization"
-msgstr "Yhdistys"
+msgstr "Yhteisö"
 
 #: models.py:21
 msgid "New"
@@ -245,7 +245,7 @@ msgstr "ei maksettu"
 
 #: templates/membership/membership_edit_inline.html:24
 msgid "Comments for management"
-msgstr "Lisäpalaute hallinnolle"
+msgstr "Lisätietoja hallitukselle"
 
 #: templates/membership/membership_list.html:10
 msgid "No membership matches this filter, try seeing the full list"
