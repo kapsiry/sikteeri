@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'list/', 'membership.views.membership_list', name='membership_list'),
     url(r'edit_inline/(\d+)/', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'edit/(\d+)/', 'membership.views.membership_edit', name='membership_edit'),
+    url(r'preapprove/(\d+)/', 'membership.views.membership_preapprove', name='membership_preapprove'),
 )

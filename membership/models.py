@@ -75,24 +75,29 @@ class Alias(models.Model):
     expiration_date = models.DateTimeField(blank=True)
 
 
+class Fee(models.Model):
+    type = models.CharField(max_length=1, choices=MEMBER_TYPES)
+    start = models.DateTimeField()
+    sum = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __unicode__(self):
+        return "Fee %s %s" % (str(self.start), str(self.sum))
+
 class BillingCycle(models.Model):
     membership = models.ForeignKey('Membership')
     start =  models.DateTimeField(default=datetime.now())
     end =  models.DateTimeField()
 
-    # XXX-paste: Why are these fields here, when they are also in the Bill class?
-    is_paid = models.BooleanField(default=False)
-    bill_sent = models.BooleanField(default=False)
-
-    # XXX-paste: Do these have any significance?
-    created = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now=True)
+    sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
 
     def save(self, force_insert=False, force_update=False):
-        self.end = self.start + timedelta(days=365)
+        if not self.end:
+            self.end = self.start + timedelta(days=365)
+        if not self.sum:
+            self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
         super(BillingCycle, self).save(force_insert, force_update) # Call the "real" save() method.
 
 
@@ -103,7 +108,6 @@ class Bill(models.Model):
 
     is_paid = models.BooleanField(default=False)
     reference_number = models.CharField(max_length=64, unique=True) # NOT an integer since it can begin with 0 XXX: format
-    sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     created = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now=True)
@@ -113,25 +117,16 @@ class Bill(models.Model):
 
     def save(self, force_insert=False, force_update=False):
         if not self.due_date:
-            self.due_date = datetime.now() + timedelta(days=14)
+            self.due_date = datetime.now() + timedelta(days=14) # XXX Hardcoded
         if not self.reference_number:
-            # ID is not available before first save, so we look for the previous one
-            # XXX There is a better way in Postgres, but is there a portable way?
-            last = Bill.objects.order_by('id')[:1]
-            if not last:
-                number = 0
-            else:
-                number = last[0].id + 1
-            self.reference_number = add_checknumber(str(number))
-        if not self.sum:
-            self.sum = settings.MEMBERSHIP_FEE
+            self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
         super(Bill, self).save(force_insert, force_update) # Call the "real" save() method.
 
     def render_as_text(self): # XXX: Use django.template.loader.render_to_string
         t = get_template('membership/bill.txt')
         return t.render(Context(
             {'cycle': self.cycle, 'due_date': self.due_date, 'account': settings.BANK_ACCOUNT_NUMBER,
-             'reference_number': self.reference_number, 'sum': self.sum}))
+             'reference_number': self.reference_number, 'sum': self.cycle.sum}))
 
     # XXX: Should save sending date
     def send_as_email(self):
@@ -146,19 +141,20 @@ class Payment(models.Model):
     """
     Payment object for billing
     """
-    bill = models.ForeignKey('Bill')
-    transaction_id = models.CharField(max_length=30) # arkistointitunnus
-    #XXX-paste: Again? It's in Bill. Also unique prevents double payments, which can happen IRL
-    reference_number = models.CharField(max_length=64, unique=True)
+    # While Payment refers to Bill, someone might send a payment that has a reference
+    # number, which does not correspond to any Bills...
+    bill = models.ForeignKey('Bill', blank=True)
 
+    # Not unique, because people can send multiple payments
+    reference_number = models.CharField(max_length=64)
+
+    transaction_id = models.CharField(max_length=30) # arkistointitunnus
     payment_day = models.DateTimeField()
     amount = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
     type = models.CharField(max_length=64) # tilisiirto/pano/jokumuu
     payer_name = models.CharField(max_length=64) # maksajan nimi
     message = models.CharField(max_length=64) # viesti (viestikenttä)
 
-    created = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now=True)
 
 models.signals.post_save.connect(log_change, sender=Membership)
 models.signals.post_save.connect(log_change, sender=Alias)

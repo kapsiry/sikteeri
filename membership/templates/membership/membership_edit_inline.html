@@ -6,6 +6,8 @@
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
+<a href="{% url membership_preapprove membership.id %}">{% trans "Preapprove" %}</a>
+
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
     <li>{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}
         <ul>{% for bill in billingcycle.bill_set.all %}
