@@ -121,7 +121,7 @@ class Bill(models.Model):
             if not last:
                 number = 0
             else:
-                number = last[0].id
+                number = last[0].id + 1
             self.reference_number = add_checknumber(str(number))
         if not self.sum:
             self.sum = settings.MEMBERSHIP_FEE
