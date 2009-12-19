@@ -13,8 +13,10 @@ export PYTHONPATH=`pwd`
 
 cd sikteeri
 
-if [ ! -r sikteeri_test.sqlite ]; then
+if [ -r sikteeri_test.sqlite ]; then
     ./manage.py syncdb || fail "Updating database failed"
+else
+    ./manage.py syncdb || fail "Creating database failed"
     ./manage.py loaddata test_data.json || fail "Loading test data failed"
 fi
 
