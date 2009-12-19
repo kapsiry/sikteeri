@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-19 21:19+0200\n"
+"POT-Creation-Date: 2009-12-19 21:41+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -208,6 +208,11 @@ msgstr "Viitenumero"
 msgid "last changed"
 msgstr "muutettu"
 
+#: models.py:143
+#, fuzzy
+msgid "Sent on"
+msgstr "lähetetty"
+
 #: models.py:160
 msgid "Your bill for Kapsi membership"
 msgstr "Kapsin jäsenmaksusi"
@@ -247,11 +252,11 @@ msgstr "euroa"
 #: templates/membership/bill_list.html:8
 #, fuzzy
 msgid "sent on"
-msgstr "erääntyy"
+msgstr "lähetetty"
 
 #: templates/membership/bill_list.html:10
 msgid "overdue for"
-msgstr "myöhästynyt"
+msgstr "myöhässä"
 
 #: templates/membership/bill_list.html:12
 #, fuzzy

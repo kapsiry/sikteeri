@@ -140,7 +140,7 @@ class Bill(models.Model):
         return self.due_date < datetime.now()
 
     def __unicode__(self):
-        return 'Sent on ' + str(self.created)
+        return _('Sent on') + ' ' + str(self.created)
 
     def save(self, force_insert=False, force_update=False):
         if not self.due_date:
