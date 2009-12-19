@@ -42,10 +42,10 @@ class Membership(models.Model):
     municipality = models.CharField(_('place of residence'), max_length=128)
     nationality = models.CharField(max_length=128)
 
-    billing_first_names = models.CharField(max_length=128, verbose_name=_('given name'))
-    billing_last_name = models.CharField(max_length=128, verbose_name=_('first names'))
-    billing_street_address = models.CharField(max_length=128, verbose_name=_('last name'))
-    billing_postal_code = models.CharField(max_length=10, verbose_name=_('organization name'))
+    billing_first_names = models.CharField(max_length=128, verbose_name=_('first names'))
+    billing_last_name = models.CharField(max_length=128, verbose_name=_('last names'))
+    billing_street_address = models.CharField(max_length=128, verbose_name=_('street address'))
+    billing_postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
     billing_post_office = models.CharField(max_length=128, verbose_name=_('post office'))
     billing_country = models.CharField(max_length=128, verbose_name=_('country'))
     billing_phone = models.CharField(max_length=64, verbose_name=_('phone'))
@@ -104,6 +104,9 @@ class BillingCycle(models.Model):
     end =  models.DateTimeField(verbose_name=_('end'))
 
     sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
+
+    def is_paid(self):
+        return False # XXX
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
