@@ -31,11 +31,11 @@ def log_change(sender, instance, created, **kwargs):
 class Membership(models.Model):
     logs = GenericRelation(LogEntry)
 
-    type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('type'))
-    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('status'))
-    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
-    accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('accepted'))
-    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('changed'))
+    type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('membership type'))
+    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('membership status'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('membership created'))
+    accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('membership accepted'))
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('membership changed'))
 
     given_name = models.CharField(max_length=128, blank=True, verbose_name=_('given name'))
     first_names = models.CharField(max_length=128, blank=True, verbose_name=_('first names'))
@@ -69,10 +69,10 @@ class Membership(models.Model):
 
 
 class Alias(models.Model):
-    owner = models.ForeignKey('Membership', verbose_name=_('owner'))
-    name = models.CharField(max_length=128, unique=True, verbose_name=_('name'))
+    owner = models.ForeignKey('Membership', verbose_name=_('alias owner'))
+    name = models.CharField(max_length=128, unique=True, verbose_name=_('alias name'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
-    expiration_date = models.DateTimeField(blank=True, verbose_name=_('expiration date'))
+    expiration_date = models.DateTimeField(blank=True, verbose_name=_('alias expiration date'))
 
 
 class BillingCycle(models.Model):
