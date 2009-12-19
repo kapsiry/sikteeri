@@ -1,0 +1,23 @@
+[branch "master"]
+	remote = kapsi
+	merge = refs/heads/master
+
+# git clone --bare django-sikteeri/.git django-sikteeri.git 
+# scp -r django-sikteeri.git lakka.kapsi.fi:public_html/
+# git remote add -t master kapsi ssh://foo@lakka.kapsi.fi/~/public_html/django-sikteeri.git
+[remote "kapsi"]
+	url = ssh://foo@lakka.kapsi.fi/~/public_html/django-sikteeri.git
+	fetch = +refs/heads/master:refs/remotes/kapsi/master
+
+[remote "gua"]
+	url = https://gua.kapsi.fi/git/django-sikteeri.git
+	fetch = +refs/heads/master:refs/remotes/gua/master
+
+[remote "hukka"]
+	url = http://koti.kapsi.fi/hukka/django-sikteeri.git
+	fetch = +refs/heads/master:refs/remotes/hukka/master
+
+# git remotes add -t master jkj http://koti.kapsi.fi/oh8glv/django-sikteeri.git
+[remote "jkj"]
+	url = http://koti.kapsi.fi/oh8glv/django-sikteeri.git
+	fetch = +refs/heads/master:refs/remotes/jkj/master
