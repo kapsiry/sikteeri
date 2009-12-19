@@ -112,6 +112,20 @@ def membership_approve(request, id):
     bill.send_as_email()
     return redirect('membership_edit', id)
 
+def membership_preapprove_many(request, id_list):
+    for id in id_list:
+        membership_preapprove(id)
+
+@login_required
+def bill_list(request, template_name='membership/bill_list.html'):
+    return render_to_response(template_name, {'bills': Bill.objects.all()},
+                              context_instance=RequestContext(request))
+@login_required
+def unpaid_bill_list(request, template_name='membership/bill_list.html'):
+    return render_to_response(template_name, {'bills': Bill.objects.filter(is_paid__exact=False)},
+                              context_instance=RequestContext(request))
+
+
 def handle_json(request):
     msg = cjson.decode(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_many}
