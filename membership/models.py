@@ -130,6 +130,9 @@ class Bill(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
 
+    def is_due(self):
+        return self.due_date < datetime.now()
+
     def __unicode__(self):
         return 'Sent on ' + str(self.created)
 
@@ -161,17 +164,15 @@ class Payment(models.Model):
     """
     # While Payment refers to Bill, someone might send a payment that has a reference
     # number, which does not correspond to any Bills...
-    bill = models.ForeignKey('Bill', verbose_name=_('bill'))
+    bill = models.ForeignKey('Bill', verbose_name=_('bill'), null=True)
 
-    # Not unique, because people can send multiple payments
-    reference_number = models.CharField(max_length=64, unique=True, verbose_name=_('reference number'))
-
+    reference_number = models.CharField(max_length=64, verbose_name=_('reference number'), blank=True) # Not unique, because people can send multiple payments
+    message = models.CharField(max_length=64, verbose_name=_('message'), blank=True) # viesti (viestikenttä)
     transaction_id = models.CharField(max_length=30, verbose_name=_('transaction id')) # arkistointitunnus
     payment_day = models.DateTimeField(verbose_name=_('payment day'))
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('amount')) # This limits sum to 9999,99
     type = models.CharField(max_length=64, verbose_name=_('type')) # tilisiirto/pano/jokumuu
     payer_name = models.CharField(max_length=64, verbose_name=_('payer name')) # maksajan nimi
-    message = models.CharField(max_length=64, verbose_name=_('message')) # viesti (viestikenttä)
 
 
 models.signals.post_save.connect(log_change, sender=Membership)
