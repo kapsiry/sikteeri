@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-06 11:20+0200\n"
+"POT-Creation-Date: 2009-12-19 13:23+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -23,37 +23,205 @@ msgstr "Et voi määritellä sekä yhdistyksen nimeä, että erisnimeä."
 msgid "You have to give a given name, all first names and surname."
 msgstr "Sinun täytyy määritellä "
 
-#: models.py:15
+#: models.py:19
 msgid "Person"
 msgstr "Henkilö"
 
-#: models.py:16
+#: models.py:20
 msgid "Organization"
 msgstr "Yhdistys"
 
-#: models.py:17
+#: models.py:21
 msgid "New"
 msgstr "Uusi"
 
-#: models.py:18
+#: models.py:22
 msgid "Pre-approved"
 msgstr "Esihyväksytty"
 
-#: models.py:19
+#: models.py:23
 msgid "Approved"
 msgstr "Hyväksytty"
 
-#: models.py:20
+#: models.py:24
 msgid "Disabled"
 msgstr "Disabloitu"
 
 #: models.py:34
-msgid "place of residence"
-msgstr "asuinpaikka"
+msgid "membership type"
+msgstr "Jäsenyystyyppi"
 
-#: models.py:127
+#: models.py:35
+msgid "membership status"
+msgstr "Jäsenyyden tila"
+
+#: models.py:36
+msgid "membership created"
+msgstr "luotu"
+
+#: models.py:37
+msgid "membership accepted"
+msgstr "hyväksytty"
+
+#: models.py:38
+msgid "membership changed"
+msgstr "muutettu"
+
+#: models.py:40
+msgid "given name"
+msgstr "Etunimi"
+
+#: models.py:41
+msgid "first names"
+msgstr "Etunimet"
+
+#: models.py:42
+msgid "last name"
+msgstr "Sukunimi"
+
+#: models.py:43
+#, fuzzy
+msgid "organization name"
+msgstr "Yhdistys"
+
+#: models.py:45
+msgid "place of residence"
+msgstr "Asuinpaikka"
+
+#: models.py:46
+msgid "nationality"
+msgstr "Kansallisuus"
+
+#: models.py:48
+msgid "street address"
+msgstr "Katuosoite"
+
+#: models.py:49
+msgid "postal code"
+msgstr "Postinumero"
+
+#: models.py:50
+msgid "post office"
+msgstr "Postitoimipaikka"
+
+#: models.py:51
+msgid "country"
+msgstr "Maa"
+
+#: models.py:53
+msgid "phone"
+msgstr "Puhelinnumero"
+
+#: models.py:54
+msgid "sms"
+msgstr "Tekstiviestinumero"
+
+#: models.py:55
+msgid "email"
+msgstr "Sähköpostiosoite"
+
+#: models.py:56
+msgid "homepage"
+msgstr "Kotisivu"
+
+#: models.py:57
+msgid "info"
+msgstr "tieto"
+
+#: models.py:72
+msgid "alias owner"
+msgstr "Aliaksen omistaja"
+
+#: models.py:73
+msgid "alias name"
+msgstr "Aliaksen nimi"
+
+#: models.py:74 models.py:88 models.py:108 models.py:160
+msgid "created"
+msgstr "luotu"
+
+#: models.py:75
+msgid "alias expiration date"
+msgstr "Aliaksen erääntymispäivä"
+
+#: models.py:79
+msgid "membership"
+msgstr "jäsenyys"
+
+#: models.py:80
+msgid "start"
+msgstr "alku"
+
+#: models.py:81
+msgid "end"
+msgstr "loppu"
+
+#: models.py:84 models.py:104
+#, fuzzy
+msgid "is paid"
+msgstr "maksettu"
+
+#: models.py:85
+#, fuzzy
+msgid "bill sent"
+msgstr "Maksu lähetetty"
+
+#: models.py:89 models.py:109 models.py:161
+msgid "last changed"
+msgstr "muutettu"
+
+#: models.py:100
+#, fuzzy
+msgid "cycle"
+msgstr "Kausi"
+
+#: models.py:101
+msgid "reminder count"
+msgstr "muistutusten luku"
+
+#: models.py:102
+msgid "due date"
+msgstr "Eräpäivä"
+
+#: models.py:105 models.py:152
+msgid "reference number"
+msgstr "Viitenumero"
+
+#: models.py:106
+msgid "sum"
+msgstr "summa"
+
+#: models.py:138
 msgid "Your bill for Kapsi membership"
 msgstr "Kapsin jäsenmaksusi"
+
+#: models.py:149
+msgid "bill"
+msgstr "Lasku"
+
+#: models.py:150
+msgid "transaction id"
+msgstr "maksutunnus"
+
+#: models.py:154
+msgid "payment day"
+msgstr "maksupäivä"
+
+#: models.py:155
+msgid "amount"
+msgstr "summa"
+
+#: models.py:156
+msgid "type"
+msgstr "tyyppi"
+
+#: models.py:157
+msgid "payer name"
+msgstr "maksajan nimi"
+
+#: models.py:158
+msgid "message"
+msgstr "viesti"
 
 #: templates/membership/membership_edit_inline.html:10
 msgid "Cycle"
@@ -75,7 +243,7 @@ msgstr "maksettu"
 msgid "not paid"
 msgstr "ei maksettu"
 
-#: templates/membership/membership_edit_inline.html:20
+#: templates/membership/membership_edit_inline.html:24
 msgid "Comments for management"
 msgstr "Lisäpalaute hallinnolle"
 
