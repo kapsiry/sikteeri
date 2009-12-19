@@ -5,13 +5,13 @@
 <ul>
 {% for bill in bills %}
 <p {% if bill.is_due %}style="color: red"{% endif %}>
-{{ bill.cycle.membership }}, {{ bill.cycle.sum }} euros, sent on {{ bill.created }},
+{{ bill.cycle.membership }}, {{ bill.cycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created }},
 {% if bill.is_due %}
-overdue for {{ bill.due_date|timesince }}
+{% trans "overdue for" %} {{ bill.due_date|timesince }}
 {% else %}
-due in {{ bill.due_date|timeuntil }}
+{% trans "due in" %} {{ bill.due_date|timeuntil }}
 {% endif %}
-{% if bill.is_paid %} paid on {{ bill.payment_set.all.0.payment_day }}{% endif %}</p>
+{% if bill.is_paid %} {% trans "paid on" %} {{ bill.payment_set.all.0.payment_day }}{% endif %}</p>
 {% empty %}
 {% trans "No bill matches this filter, try seeing the full list." %}
 {% endfor %}
