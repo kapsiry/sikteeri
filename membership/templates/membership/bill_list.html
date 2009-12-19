@@ -11,7 +11,9 @@ overdue for {{ bill.due_date|timesince }}
 {% else %}
 due in {{ bill.due_date|timeuntil }}
 {% endif %}
-{% if bill.is_paid %} paid on {{ bill.payment_set.all.0.payment_day }}{% endif %}</p>
+{% if bill.is_paid %} paid on {{ bill.payment_set.all.0.payment_day }}{% endif %}
+<ul>{% for payment in bill.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
+</p>
 {% empty %}
 {% trans "No bill matches this filter, try seeing the full list." %}
 {% endfor %}
