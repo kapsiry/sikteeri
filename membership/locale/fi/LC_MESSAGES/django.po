@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-19 21:41+0200\n"
+"POT-Creation-Date: 2009-12-19 21:58+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -128,6 +128,10 @@ msgstr "muutettu"
 msgid "place of residence"
 msgstr "Asuinpaikka"
 
+#: models.py:67
+msgid "nationality"
+msgstr "Kansallisuus"
+
 #: models.py:69
 #, fuzzy
 msgid "person"
@@ -170,6 +174,20 @@ msgstr "kommentti"
 msgid "alias expiration date"
 msgstr "Aliaksen erääntymispäivä"
 
+#: models.py:100
+#, fuzzy
+msgid "fee type"
+msgstr "tyyppi"
+
+#: models.py:101
+#, fuzzy
+msgid "valid from date"
+msgstr "Aliaksen erääntymispäivä"
+
+#: models.py:102 models.py:112
+msgid "sum"
+msgstr "summa"
+
 #: models.py:108
 msgid "membership"
 msgstr "jäsenyys"
@@ -189,7 +207,7 @@ msgstr "Kausi"
 
 #: models.py:130
 msgid "reminder count"
-msgstr "muistutusten luku"
+msgstr "muistutusten määrä"
 
 #: models.py:131
 msgid "due date"
@@ -227,7 +245,7 @@ msgstr "viesti"
 
 #: models.py:177
 msgid "transaction id"
-msgstr "maksutunnus"
+msgstr "arkistointitunnus"
 
 #: models.py:178
 msgid "payment day"
@@ -312,17 +330,11 @@ msgid "No membership matches this filter, try seeing the full list"
 msgstr "Jäsenyyksiä ei löydetty tällä hakusanalla, kokeile koko listaa."
 
 #~ msgid "You can't supply both an organization name and a private name"
-#~ msgstr "Et voi määritellä sekä yhdistyksen nimeä, että erisnimeä."
+#~ msgstr "Et voi määritellä sekä yhdistyksen nimeä että erisnimeä."
 
 #~ msgid "You have to give a given name, all first names and surname."
-#~ msgstr "Sinun täytyy määritellä "
-
-#~ msgid "nationality"
-#~ msgstr "Kansallisuus"
+#~ msgstr "Sinun täytyy antaa kutsumanimi, kaikki etunimet ja sukunimi."
 
 #, fuzzy
 #~ msgid "bill sent"
-#~ msgstr "Maksu lähetetty"
-
-#~ msgid "sum"
-#~ msgstr "summa"
+#~ msgstr "maksu lähetetty"

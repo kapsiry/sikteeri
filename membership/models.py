@@ -64,7 +64,7 @@ class Membership(models.Model):
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('membership changed'))
 
     municipality = models.CharField(_('place of residence'), max_length=128)
-    nationality = models.CharField(max_length=128)
+    nationality = models.CharField(_('nationality'), max_length=128)
 
     person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('person'))
     billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('billing contact'), blank=True, null=True)
@@ -97,9 +97,9 @@ class Alias(models.Model):
 
 
 class Fee(models.Model):
-    type = models.CharField(max_length=1, choices=MEMBER_TYPES)
-    start = models.DateTimeField()
-    sum = models.DecimalField(max_digits=6, decimal_places=2)
+    type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('fee type'))
+    start = models.DateTimeField(_('valid from date'))
+    sum = models.DecimalField(_('sum'), max_digits=6, decimal_places=2)
 
     def __unicode__(self):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
@@ -109,7 +109,7 @@ class BillingCycle(models.Model):
     start =  models.DateTimeField(default=datetime.now(), verbose_name=_('start'))
     end =  models.DateTimeField(verbose_name=_('end'))
 
-    sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
+    sum = models.DecimalField(_('sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     def is_paid(self):
         return False # XXX
