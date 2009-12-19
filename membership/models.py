@@ -180,6 +180,8 @@ class Payment(models.Model):
     type = models.CharField(max_length=64, verbose_name=_('type')) # tilisiirto/pano/jokumuu
     payer_name = models.CharField(max_length=64, verbose_name=_('payer name')) # maksajan nimi
 
+    def __unicode__(self):
+        return 'Payment for %s euros paid on %s' % (str(self.amount), str(self.payment_day))
 
 models.signals.post_save.connect(log_change, sender=Membership)
 models.signals.post_save.connect(log_change, sender=Contact)

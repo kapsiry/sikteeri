@@ -45,3 +45,16 @@ def sendreminder(membership): # XXX Test if cycle is paid?
 
 def disable_member(membership): 
     pass # XXX
+
+def log_change(object, before=None, after=None, change_message=None):
+    if not change_message and before and after:
+        change_message  = repr(dict_diff(before, after)) # XXX
+    from django.contrib.admin.models import LogEntry, CHANGE
+    LogEntry.objects.log_action(
+        user_id         = request.user.pk,
+        content_type_id = ContentType.objects.get_for_model(object).pk,
+        object_id       = object.pk,
+        object_repr     = force_unicode(object),
+        action_flag     = CHANGE,
+        change_message  = change_message
+    )
