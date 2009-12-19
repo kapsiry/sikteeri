@@ -1,28 +1,38 @@
 [
     {
         "pk": 1, 
+        "model": "membership.contact", 
+
+        "fields": {
+            "created": "2009-11-03 22:22:46", 
+            "last_changed": "2009-11-04 00:03:03", 
+            "sms": "", 
+            "country": "United Kingdom", 
+            "first_name": "Jim", 
+            "given_names": "James", 
+            "last_name": "Erving", 
+            "phone": "0123000123", 
+            "postal_code": "LI-123123", 
+            "post_office": "Liverpool", 
+            "email": "paul@kapsi.fi", 
+            "street_address": "Beatle St. 2",
+            "homepage": ""
+        }
+    },
+    {
+        "pk": 1, 
         "model": "membership.membership", 
 
         "fields": {
-            "status": "P", 
-            "billing_first_names": "James Paul", 
-            "billing_last_name": "McCartney", 
             "created": "2009-11-03 22:22:46", 
-            "municipality": "Liverpool", 
             "last_changed": "2009-11-04 00:03:03", 
-            "billing_sms": "", 
-            "billing_country": "United Kingdom", 
-            "calling_name": "James", 
-            "billing_phone": "0123000123", 
-            "billing_postal_code": "LI-123123", 
-            "billing_post_office": "Liverpool", 
-            "billing_email": "paul@kapsi.fi", 
-            "billing_street_address": "Beatle St. 2",
-            "nationality": "English", 
-            "homepage": "", 
-            "extra_info": "", 
+            "status": "P", 
+            "type": "P" ,
             "accepted": null, 
-            "type": "P" 
+            "municipality": "Liverpool", 
+            "person": 1,
+            "nationality": "English", 
+            "extra_info": ""
         }
     }, 
     {

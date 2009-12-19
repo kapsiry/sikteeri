@@ -28,6 +28,31 @@ def log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logging.info('%s %s: %s' % (sender, operation, repr(instance)))
 
+class Contact(models.Model):
+    logs = GenericRelation(LogEntry)
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('contact changed'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('contact created'))
+
+    first_name = models.CharField(max_length=128, verbose_name=_('first_name')) # Primary first name
+    given_names = models.CharField(max_length=128, verbose_name=_('given names'))
+    last_name = models.CharField(max_length=128, verbose_name=_('last name'))
+    organization_name = models.CharField(max_length=256, verbose_name=_('organization name'))
+    street_address = models.CharField(max_length=128, verbose_name=_('street address'))
+    postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
+    post_office = models.CharField(max_length=128, verbose_name=_('post office'))
+    country = models.CharField(max_length=128, verbose_name=_('country'))
+    phone = models.CharField(max_length=64, verbose_name=_('phone'))
+    sms = models.CharField(max_length=64, blank=True, verbose_name=_('sms'))
+    email = models.EmailField(blank=True, verbose_name=_('email'))
+    homepage = models.URLField(blank=True, verbose_name=_('homepage'))
+
+    def __unicode__(self):
+        if self.organization_name:
+            return self.organization_name
+        else:
+            return u'%s %s' % (self.last_name, self.first_name)
+
+
 
 class Membership(models.Model):
     logs = GenericRelation(LogEntry)
@@ -38,44 +63,24 @@ class Membership(models.Model):
     accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('membership accepted'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('membership changed'))
 
-    calling_name = models.CharField(max_length=128, blank=True) # Primary first name or organization name
     municipality = models.CharField(_('place of residence'), max_length=128)
     nationality = models.CharField(max_length=128)
 
-    billing_first_names = models.CharField(max_length=128, verbose_name=_('first names'))
-    billing_last_name = models.CharField(max_length=128, verbose_name=_('last names'))
-    billing_street_address = models.CharField(max_length=128, verbose_name=_('street address'))
-    billing_postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
-    billing_post_office = models.CharField(max_length=128, verbose_name=_('post office'))
-    billing_country = models.CharField(max_length=128, verbose_name=_('country'))
-    billing_phone = models.CharField(max_length=64, verbose_name=_('phone'))
-    billing_sms = models.CharField(max_length=64, blank=True, verbose_name=_('sms'))
-    billing_email = models.EmailField(blank=True, verbose_name=_('email'))
+    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('person'))
+    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('billing contact'), blank=True, null=True)
+    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('tech contact'), blank=True, null=True)
+    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('organization'), blank=True, null=True)
 
-    contact_first_names = models.CharField(max_length=128, blank=True)
-    contact_last_name = models.CharField(max_length=128, blank=True)
-    contact_street_address = models.CharField(max_length=128, blank=True)
-    contact_postal_code = models.CharField(max_length=10, blank=True)
-    contact_post_office = models.CharField(max_length=128, blank=True)
-    contact_country = models.CharField(max_length=128, blank=True)
-    contact_phone = models.CharField(max_length=64, blank=True)
-    contact_sms = models.CharField(max_length=64, blank=True)
-    contact_email = models.EmailField(blank=True)
-
-    homepage = models.URLField(blank=True, verbose_name=_('homepage'))
     extra_info = models.TextField(blank=True, verbose_name=_('info'))
 
     def email(self):
-        if self.contact_email:
-            return self.contact_email
-        elif self.billing_email:
-            return self.billing_email
+        return self.person.email
 
     def __unicode__(self):
-        if self.type == 'O':
-            return self.calling_name
+        if self.organization:
+            return self.organization.__unicode__()
         else:
-            return u'%s, %s' % (self.billing_last_name, self.calling_name)
+            return self.person.__unicode__()
 
     def accept(self):
         self.status = 'A'
@@ -177,6 +182,7 @@ class Payment(models.Model):
 
 
 models.signals.post_save.connect(log_change, sender=Membership)
+models.signals.post_save.connect(log_change, sender=Contact)
 models.signals.post_save.connect(log_change, sender=Alias)
 models.signals.post_save.connect(log_change, sender=BillingCycle)
 models.signals.post_save.connect(log_change, sender=Bill)
