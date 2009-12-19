@@ -31,30 +31,30 @@ def log_change(sender, instance, created, **kwargs):
 class Membership(models.Model):
     logs = GenericRelation(LogEntry)
 
-    type = models.CharField(max_length=1, choices=MEMBER_TYPES)
-    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N')
-    created = models.DateTimeField(auto_now_add=True)
-    accepted = models.DateTimeField(blank=True, null=True)
-    last_changed = models.DateTimeField(auto_now=True)
+    type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('type'))
+    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('status'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('accepted'))
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('changed'))
 
-    given_name = models.CharField(max_length=128, blank=True)
-    first_names = models.CharField(max_length=128, blank=True)
-    last_name = models.CharField(max_length=128, blank=True)
-    organization_name = models.CharField(max_length=256, blank=True)
+    given_name = models.CharField(max_length=128, blank=True, verbose_name=_('given name'))
+    first_names = models.CharField(max_length=128, blank=True, verbose_name=_('first names'))
+    last_name = models.CharField(max_length=128, blank=True, verbose_name=_('last name'))
+    organization_name = models.CharField(max_length=256, blank=True, verbose_name=_('organization name'))
 
-    municipality = models.CharField(_('place of residence'), max_length=128)
-    nationality = models.CharField(max_length=128)
+    municipality = models.CharField(_('place of residence'), max_length=128,)
+    nationality = models.CharField(max_length=128, verbose_name=_('nationality'))
 
-    street_address = models.CharField(max_length=128)
-    postal_code = models.CharField(max_length=10)
-    post_office = models.CharField(max_length=128)
-    country = models.CharField(max_length=128)
+    street_address = models.CharField(max_length=128, verbose_name=_('street address'))
+    postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
+    post_office = models.CharField(max_length=128, verbose_name=_('post office'))
+    country = models.CharField(max_length=128, verbose_name=_('country'))
 
-    phone = models.CharField(max_length=64)
-    sms = models.CharField(max_length=64, blank=True)
-    email = models.EmailField(blank=True)
-    homepage = models.URLField(blank=True)
-    info = models.TextField(blank=True)
+    phone = models.CharField(max_length=64, verbose_name=_('phone'))
+    sms = models.CharField(max_length=64, blank=True, verbose_name=_('sms'))
+    email = models.EmailField(blank=True, verbose_name=_('email'))
+    homepage = models.URLField(blank=True, verbose_name=_('homepage'))
+    info = models.TextField(blank=True, verbose_name=_('info'))
 
     def __unicode__(self):
         if self.organization_name:
@@ -69,24 +69,24 @@ class Membership(models.Model):
 
 
 class Alias(models.Model):
-    owner = models.ForeignKey('Membership')
-    name = models.CharField(max_length=128, unique=True)
-    created = models.DateTimeField(auto_now_add=True)
-    expiration_date = models.DateTimeField(blank=True)
+    owner = models.ForeignKey('Membership', verbose_name=_('owner'))
+    name = models.CharField(max_length=128, unique=True, verbose_name=_('name'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    expiration_date = models.DateTimeField(blank=True, verbose_name=_('expiration date'))
 
 
 class BillingCycle(models.Model):
-    membership = models.ForeignKey('Membership')
-    start =  models.DateTimeField(default=datetime.now())
-    end =  models.DateTimeField()
+    membership = models.ForeignKey('Membership', verbose_name=_('membership'))
+    start =  models.DateTimeField(default=datetime.now(), verbose_name=_('start'))
+    end =  models.DateTimeField(verbose_name=_('end'))
 
     # XXX-paste: Why are these fields here, when they are also in the Bill class?
-    is_paid = models.BooleanField(default=False)
-    bill_sent = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False, verbose_name=_('is paid'))
+    bill_sent = models.BooleanField(default=False, verbose_name=_('bill sent'))
 
     # XXX-paste: Do these have any significance?
-    created = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
@@ -97,16 +97,16 @@ class BillingCycle(models.Model):
 
 
 class Bill(models.Model):
-    cycle = models.ForeignKey(BillingCycle)
-    reminder_count = models.IntegerField(default=0)
-    due_date = models.DateTimeField()
+    cycle = models.ForeignKey(BillingCycle, verbose_name=_('cycle'))
+    reminder_count = models.IntegerField(default=0, verbose_name=_('reminder count'))
+    due_date = models.DateTimeField(verbose_name=_('due date'))
 
-    is_paid = models.BooleanField(default=False)
-    reference_number = models.CharField(max_length=64, unique=True) # NOT an integer since it can begin with 0 XXX: format
-    sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
+    is_paid = models.BooleanField(default=False, verbose_name=_('is paid'))
+    reference_number = models.CharField(max_length=64, unique=True, verbose_name=_('reference number')) # NOT an integer since it can begin with 0 XXX: format
+    sum = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('sum')) # This limits sum to 9999,99
 
-    created = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
 
     def __unicode__(self):
         return 'Sent on ' + str(self.created)
@@ -146,19 +146,19 @@ class Payment(models.Model):
     """
     Payment object for billing
     """
-    bill = models.ForeignKey('Bill')
-    transaction_id = models.CharField(max_length=30) # arkistointitunnus
+    bill = models.ForeignKey('Bill', verbose_name=_('bill'))
+    transaction_id = models.CharField(max_length=30, verbose_name=_('transaction id')) # arkistointitunnus
     #XXX-paste: Again? It's in Bill. Also unique prevents double payments, which can happen IRL
-    reference_number = models.CharField(max_length=64, unique=True)
+    reference_number = models.CharField(max_length=64, unique=True, verbose_name=_('reference number'))
 
-    payment_day = models.DateTimeField()
-    amount = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
-    type = models.CharField(max_length=64) # tilisiirto/pano/jokumuu
-    payer_name = models.CharField(max_length=64) # maksajan nimi
-    message = models.CharField(max_length=64) # viesti (viestikenttä)
+    payment_day = models.DateTimeField(verbose_name=_('payment day'))
+    amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('amount')) # This limits sum to 9999,99
+    type = models.CharField(max_length=64, verbose_name=_('type')) # tilisiirto/pano/jokumuu
+    payer_name = models.CharField(max_length=64, verbose_name=_('payer name')) # maksajan nimi
+    message = models.CharField(max_length=64, verbose_name=_('message')) # viesti (viestikenttä)
 
-    created = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
 
 models.signals.post_save.connect(log_change, sender=Membership)
 models.signals.post_save.connect(log_change, sender=Alias)
