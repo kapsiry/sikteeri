@@ -88,16 +88,29 @@ def membership_preapprove(request, id):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.now()
     comment.save()
+    return redirect('membership_edit', id)
+
+def membership_preapprove_many(request, id_list):
+    for id in id_list:
+        membership_preapprove(id)
+
+def membership_approve(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    membership.status = 'A' # XXX hardcoding
+    membership.save()
+    comment = Comment()
+    comment.content_object = membership
+    comment.user = request.user
+    comment.comment = "Approved"
+    comment.site_id = settings.SITE_ID
+    comment.submit_date = datetime.now()
+    comment.save()
     billing_cycle = BillingCycle(membership=membership)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
     bill = Bill(cycle=billing_cycle)
     bill.save()
     bill.send_as_email()
     return redirect('membership_edit', id)
-
-def membership_preapprove_many(request, id_list):
-    for id in id_list:
-        membership_preapprove(id)
 
 def handle_json(request):
     msg = cjson.decode(request.raw_post_data)
