@@ -2,13 +2,14 @@
 
 import logging
 
+from django.conf import settings
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm
 from django.utils.encoding import force_unicode
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
+from django.contrib.comments.models import Comment
 
 from models import *
 from forms import MembershipForm
@@ -86,9 +87,11 @@ def membership_preapprove(request, id):
     membership.status = 'A' # XXX hardcoding
     membership.save()
     comment = Comment()
+    comment.content_object = membership
     comment.user = request.user
     comment.comment = "Preapproved"
     comment.site_id = settings.SITE_ID
+    comment.submit_date = datetime.now()
     comment.save()
     return redirect('membership_edit', id)
 

@@ -17,6 +17,7 @@ from reference_numbers import *
 
 
 MEMBER_TYPES = (('P', _('Person')),
+                ('S', _('Supporting')),
                 ('O', _('Organization')))
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
@@ -37,30 +38,44 @@ class Membership(models.Model):
     accepted = models.DateTimeField(blank=True, null=True)
     last_changed = models.DateTimeField(auto_now=True)
 
-    given_name = models.CharField(max_length=128, blank=True)
-    first_names = models.CharField(max_length=128, blank=True)
-    last_name = models.CharField(max_length=128, blank=True)
-    organization_name = models.CharField(max_length=256, blank=True)
-
+    calling_name = models.CharField(max_length=128, blank=True) # Primary first name or organization name
     municipality = models.CharField(_('place of residence'), max_length=128)
     nationality = models.CharField(max_length=128)
 
-    street_address = models.CharField(max_length=128)
-    postal_code = models.CharField(max_length=10)
-    post_office = models.CharField(max_length=128)
-    country = models.CharField(max_length=128)
+    billing_first_names = models.CharField(max_length=128)
+    billing_last_name = models.CharField(max_length=128)
+    billing_street_address = models.CharField(max_length=128)
+    billing_postal_code = models.CharField(max_length=10)
+    billing_post_office = models.CharField(max_length=128)
+    billing_country = models.CharField(max_length=128)
+    billing_phone = models.CharField(max_length=64)
+    billing_sms = models.CharField(max_length=64, blank=True)
+    billing_email = models.EmailField(blank=True)
 
-    phone = models.CharField(max_length=64)
-    sms = models.CharField(max_length=64, blank=True)
-    email = models.EmailField(blank=True)
+    contact_first_names = models.CharField(max_length=128, blank=True)
+    contact_last_name = models.CharField(max_length=128, blank=True)
+    contact_street_address = models.CharField(max_length=128, blank=True)
+    contact_postal_code = models.CharField(max_length=10, blank=True)
+    contact_post_office = models.CharField(max_length=128, blank=True)
+    contact_country = models.CharField(max_length=128, blank=True)
+    contact_phone = models.CharField(max_length=64, blank=True)
+    contact_sms = models.CharField(max_length=64, blank=True)
+    contact_email = models.EmailField(blank=True)
+
     homepage = models.URLField(blank=True)
-    info = models.TextField(blank=True)
+    extra_info = models.TextField(blank=True)
+
+    def email(self):
+        if self.contact_email:
+            return self.contact_email
+        elif self.billing_email:
+            return self.billing_email
 
     def __unicode__(self):
-        if self.organization_name:
-            return self.organization_name
+        if self.type == 'O':
+            return self.calling_name
         else:
-            return u'%s %s' % (self.last_name, self.given_name)
+            return u'%s, %s' % (self.billing_last_name, self.calling_name)
 
     def accept(self):
         self.status = 'A'
@@ -81,7 +96,7 @@ class Fee(models.Model):
     sum = models.DecimalField(max_digits=6, decimal_places=2)
 
     def __unicode__(self):
-        return "Fee %s %s" % (str(self.start), str(self.sum))
+        return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
 
 class BillingCycle(models.Model):
     membership = models.ForeignKey('Membership')
@@ -131,7 +146,7 @@ class Bill(models.Model):
     # XXX: Should save sending date
     def send_as_email(self):
         send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
-            [self.cycle.membership.email], fail_silently=False)
+            [self.cycle.membership.billing_email], fail_silently=False)
         logging.info('A Bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True
         self.cycle.save()
