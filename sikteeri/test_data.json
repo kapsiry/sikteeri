@@ -47,5 +47,32 @@
             "reminder_count": 0, 
             "cycle": 1
         }
+    },
+    {
+        "pk": 1, 
+        "model": "membership.fee",
+        "fields": {
+            "type": 1,
+            "start": "2009-11-17 22:22:46", 
+            "sum": "30"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "membership.fee",
+        "fields": {
+            "type": 2,
+            "start": "2009-11-17 22:22:46", 
+            "sum": "100"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "membership.fee",
+        "fields": {
+            "type": 3,
+            "start": "2009-11-17 22:22:46", 
+            "sum": "100"
+        }
     }
 ]
