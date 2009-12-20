@@ -1,10 +1,16 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
 
 <form method="POST">
 <div id="new_application">
-{{ form.as_p }}
+{{ membership_form.as_p }}
+
+{% for form in contact_forms %}
+  {% trans form.prefix %}
+  {{ form.as_p }}
+{% endfor %}
 </div>
 <input type="submit" value="Submit" />
 </form>

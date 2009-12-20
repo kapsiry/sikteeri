@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<p>
+  {% trans "person application description" %}<br />
+  <a href="{% url new_person_application %}">{% trans "person application" %}</a>
+</p>
+
+<p>
+  {% trans "person application description" %}<br />
+  <a href="{% url new_organization_application %}">{% trans "organization application" %}</a>
+</p>
+{% endblock %}
