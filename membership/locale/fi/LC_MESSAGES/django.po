@@ -8,245 +8,333 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-19 13:23+0200\n"
+"POT-Creation-Date: 2009-12-19 21:58+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: forms.py:13
-msgid "You can't supply both an organization name and a private name"
-msgstr "Et voi määritellä sekä yhdistyksen nimeä, että erisnimeä."
-
-#: forms.py:16
-msgid "You have to give a given name, all first names and surname."
-msgstr "Sinun täytyy määritellä "
-
 #: models.py:19
 msgid "Person"
 msgstr "Yksityishenkilö"
 
 #: models.py:20
+msgid "Supporting"
+msgstr "Kannatusjäsen"
+
+#: models.py:21
 msgid "Organization"
 msgstr "Yhteisö"
 
-#: models.py:21
+#: models.py:22
 msgid "New"
 msgstr "Uusi"
 
-#: models.py:22
+#: models.py:23
 msgid "Pre-approved"
 msgstr "Esihyväksytty"
 
-#: models.py:23
+#: models.py:24
 msgid "Approved"
 msgstr "Hyväksytty"
 
-#: models.py:24
+#: models.py:25
 msgid "Disabled"
 msgstr "Disabloitu"
 
-#: models.py:34
-msgid "membership type"
-msgstr "Jäsenyystyyppi"
-
-#: models.py:35
-msgid "membership status"
-msgstr "Jäsenyyden tila"
-
-#: models.py:36
-msgid "membership created"
-msgstr "luotu"
-
-#: models.py:37
-msgid "membership accepted"
-msgstr "hyväksytty"
-
-#: models.py:38
-msgid "membership changed"
+#: models.py:33
+#, fuzzy
+msgid "contact changed"
 msgstr "muutettu"
 
-#: models.py:40
-msgid "given name"
-msgstr "Etunimi"
+#: models.py:34
+#, fuzzy
+msgid "contact created"
+msgstr "luotu"
 
-#: models.py:41
-msgid "first names"
+#: models.py:36
+#, fuzzy
+msgid "first_name"
 msgstr "Etunimet"
 
-#: models.py:42
+#: models.py:37
+#, fuzzy
+msgid "given names"
+msgstr "Etunimi"
+
+#: models.py:38
 msgid "last name"
 msgstr "Sukunimi"
 
-#: models.py:43
+#: models.py:39
 #, fuzzy
 msgid "organization name"
 msgstr "Yhdistys"
 
-#: models.py:45
-msgid "place of residence"
-msgstr "Asuinpaikka"
-
-#: models.py:46
-msgid "nationality"
-msgstr "Kansallisuus"
-
-#: models.py:48
+#: models.py:40
 msgid "street address"
 msgstr "Katuosoite"
 
-#: models.py:49
+#: models.py:41
 msgid "postal code"
 msgstr "Postinumero"
 
-#: models.py:50
+#: models.py:42
 msgid "post office"
 msgstr "Postitoimipaikka"
 
-#: models.py:51
+#: models.py:43
 msgid "country"
 msgstr "Maa"
 
-#: models.py:53
+#: models.py:44
 msgid "phone"
 msgstr "Puhelinnumero"
 
-#: models.py:54
+#: models.py:45
 msgid "sms"
 msgstr "Tekstiviestinumero"
 
-#: models.py:55
+#: models.py:46
 msgid "email"
 msgstr "Sähköpostiosoite"
 
-#: models.py:56
+#: models.py:47
 msgid "homepage"
 msgstr "Kotisivu"
 
-#: models.py:57
+#: models.py:60
+msgid "membership type"
+msgstr "Jäsenyystyyppi"
+
+#: models.py:61
+msgid "membership status"
+msgstr "Jäsenyyden tila"
+
+#: models.py:62
+msgid "membership created"
+msgstr "luotu"
+
+#: models.py:63
+msgid "membership accepted"
+msgstr "hyväksytty"
+
+#: models.py:64
+msgid "membership changed"
+msgstr "muutettu"
+
+#: models.py:66
+msgid "place of residence"
+msgstr "Asuinpaikka"
+
+#: models.py:67
+msgid "nationality"
+msgstr "Kansallisuus"
+
+#: models.py:69
+#, fuzzy
+msgid "person"
+msgstr "Yksityishenkilö"
+
+#: models.py:70
+msgid "billing contact"
+msgstr "laskutusyhteystieto"
+
+#: models.py:71
+msgid "tech contact"
+msgstr "tekninen yhteystieto"
+
+#: models.py:72
+#, fuzzy
+msgid "organization"
+msgstr "Yhteisö"
+
+#: models.py:74
 msgid "info"
 msgstr "tieto"
 
-#: models.py:72
+#: models.py:92
 msgid "alias owner"
 msgstr "Aliaksen omistaja"
 
-#: models.py:73
+#: models.py:93
 msgid "alias name"
 msgstr "Aliaksen nimi"
 
-#: models.py:74 models.py:88 models.py:108 models.py:160
+#: models.py:94 models.py:136
 msgid "created"
 msgstr "luotu"
 
-#: models.py:75
+#: models.py:95
+msgid "comment"
+msgstr "kommentti"
+
+#: models.py:96
 msgid "alias expiration date"
 msgstr "Aliaksen erääntymispäivä"
 
-#: models.py:79
+#: models.py:100
+#, fuzzy
+msgid "fee type"
+msgstr "tyyppi"
+
+#: models.py:101
+#, fuzzy
+msgid "valid from date"
+msgstr "Aliaksen erääntymispäivä"
+
+#: models.py:102 models.py:112
+msgid "sum"
+msgstr "summa"
+
+#: models.py:108
 msgid "membership"
 msgstr "jäsenyys"
 
-#: models.py:80
+#: models.py:109
 msgid "start"
 msgstr "alku"
 
-#: models.py:81
+#: models.py:110
 msgid "end"
 msgstr "loppu"
 
-#: models.py:84 models.py:104
-#, fuzzy
-msgid "is paid"
-msgstr "maksettu"
-
-#: models.py:85
-#, fuzzy
-msgid "bill sent"
-msgstr "Maksu lähetetty"
-
-#: models.py:89 models.py:109 models.py:161
-msgid "last changed"
-msgstr "muutettu"
-
-#: models.py:100
+#: models.py:129
 #, fuzzy
 msgid "cycle"
 msgstr "Kausi"
 
-#: models.py:101
+#: models.py:130
 msgid "reminder count"
-msgstr "muistutusten luku"
+msgstr "muistutusten määrä"
 
-#: models.py:102
+#: models.py:131
 msgid "due date"
 msgstr "Eräpäivä"
 
-#: models.py:105 models.py:152
+#: models.py:133
+#, fuzzy
+msgid "is paid"
+msgstr "maksettu"
+
+#: models.py:134 models.py:175
 msgid "reference number"
 msgstr "Viitenumero"
 
-#: models.py:106
-msgid "sum"
-msgstr "summa"
+#: models.py:137
+msgid "last changed"
+msgstr "muutettu"
 
-#: models.py:138
+#: models.py:143
+#, fuzzy
+msgid "Sent on"
+msgstr "lähetetty"
+
+#: models.py:160
 msgid "Your bill for Kapsi membership"
 msgstr "Kapsin jäsenmaksusi"
 
-#: models.py:149
+#: models.py:173
 msgid "bill"
 msgstr "Lasku"
 
-#: models.py:150
-msgid "transaction id"
-msgstr "maksutunnus"
-
-#: models.py:154
-msgid "payment day"
-msgstr "maksupäivä"
-
-#: models.py:155
-msgid "amount"
-msgstr "summa"
-
-#: models.py:156
-msgid "type"
-msgstr "tyyppi"
-
-#: models.py:157
-msgid "payer name"
-msgstr "maksajan nimi"
-
-#: models.py:158
+#: models.py:176
 msgid "message"
 msgstr "viesti"
 
+#: models.py:177
+msgid "transaction id"
+msgstr "arkistointitunnus"
+
+#: models.py:178
+msgid "payment day"
+msgstr "maksupäivä"
+
+#: models.py:179
+msgid "amount"
+msgstr "summa"
+
+#: models.py:180
+msgid "type"
+msgstr "tyyppi"
+
+#: models.py:181
+msgid "payer name"
+msgstr "maksajan nimi"
+
+#: templates/membership/bill_list.html:8
+msgid "euros"
+msgstr "euroa"
+
+#: templates/membership/bill_list.html:8
+#, fuzzy
+msgid "sent on"
+msgstr "lähetetty"
+
+#: templates/membership/bill_list.html:10
+msgid "overdue for"
+msgstr "myöhässä"
+
+#: templates/membership/bill_list.html:12
+#, fuzzy
+msgid "due in"
+msgstr "erääntyy"
+
+#: templates/membership/bill_list.html:14
+#, fuzzy
+msgid "paid on"
+msgstr "maksettu"
+
+#: templates/membership/bill_list.html:16
+#, fuzzy
+msgid "No bill matches this filter, try seeing the full list."
+msgstr "Jäsenyyksiä ei löydetty tällä hakusanalla, kokeile koko listaa."
+
+#: templates/membership/membership_edit_inline.html:9
+#, fuzzy
+msgid "Preapprove"
+msgstr "Esihyväksytty"
+
 #: templates/membership/membership_edit_inline.html:10
+#, fuzzy
+msgid "Approve"
+msgstr "Hyväksytty"
+
+#: templates/membership/membership_edit_inline.html:13
 msgid "Cycle"
 msgstr "Kausi"
 
-#: templates/membership/membership_edit_inline.html:12
+#: templates/membership/membership_edit_inline.html:15
 msgid "Bill sent"
 msgstr "Maksu lähetetty"
 
-#: templates/membership/membership_edit_inline.html:12
+#: templates/membership/membership_edit_inline.html:15
 msgid "due on"
 msgstr "erääntyy"
 
-#: templates/membership/membership_edit_inline.html:12
+#: templates/membership/membership_edit_inline.html:15
 msgid "paid"
 msgstr "maksettu"
 
-#: templates/membership/membership_edit_inline.html:12
+#: templates/membership/membership_edit_inline.html:15
 msgid "not paid"
 msgstr "ei maksettu"
 
-#: templates/membership/membership_edit_inline.html:24
+#: templates/membership/membership_edit_inline.html:27
 msgid "Comments for management"
 msgstr "Lisätietoja hallitukselle"
 
 #: templates/membership/membership_list.html:10
 msgid "No membership matches this filter, try seeing the full list"
 msgstr "Jäsenyyksiä ei löydetty tällä hakusanalla, kokeile koko listaa."
+
+#~ msgid "You can't supply both an organization name and a private name"
+#~ msgstr "Et voi määritellä sekä yhdistyksen nimeä että erisnimeä."
+
+#~ msgid "You have to give a given name, all first names and surname."
+#~ msgstr "Sinun täytyy antaa kutsumanimi, kaikki etunimet ja sukunimi."
+
+#, fuzzy
+#~ msgid "bill sent"
+#~ msgstr "maksu lähetetty"
