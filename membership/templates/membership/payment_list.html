@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<ul>
+{% for payment in payment_list %}
+    {{ payment }}
+{% empty %}
+{% trans "No payment matches this filter, try seeing the full list." %}
+{% endfor %}
+</ul>
+{% endblock %}
