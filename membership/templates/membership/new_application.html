@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 {% load i18n %}
 
@@ -6,10 +7,11 @@
 <form method="POST">
 <div id="new_application">
 {% for form in contact_forms %}
-  {{ form.translated_title }}
+  <h3>{{ form.translated_title }}</h3>
   {{ form.as_p }}
 {% endfor %}
 
+<h3>Jäsenen yleistiedot</h3>
 {{ membership_form.as_p }}
 </div>
 <input type="submit" value="Submit" />

@@ -41,7 +41,9 @@ urlpatterns += patterns('django.views.generic',
          'template_object_name': 'payment'}, name='unknown_payment_list'),
 
     url(r'new/success/$', 'simple.direct_to_template',
-        {'template': 'membership/new_application_success.html'}, name='new_application_success'),
+        {'template': 'membership/new_person_application_success.html'}, name='new_person_application_success'),
+    url(r'new/contacts/$', 'simple.direct_to_template',
+        {'template': 'membership/new_organization_application_success.html'}, name='new_organization_application_success'),
     url(r'new/fail/$', 'simple.direct_to_template',
         {'template': 'membership/new_application_fail.html'}, name='new_application_fail'),
 )

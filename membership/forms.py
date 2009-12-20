@@ -6,11 +6,13 @@ from django.utils.translation import ugettext_lazy as _
 from models import *
 
 class MembershipForm(forms.Form):
-    extra_info = forms.CharField(label=_('Additional information'), widget=forms.Textarea(attrs={'cols': '40'}),
+    nationality = forms.CharField(max_length=30, min_length=5,
+                                  label=_('Nationality'))
+    municipality = forms.CharField(max_length=30, min_length=2,
+                                   label=_('Home municipality'))
+    extra_info = forms.CharField(label=_('Additional information'),
+                                 widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False)
-    nationality = forms.CharField(max_length=30, min_length=5, label=_('Nationality'))
-    municipality = forms.CharField(max_length=30, min_length=2, label=_('Home municipality'))
-
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
