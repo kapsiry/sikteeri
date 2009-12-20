@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Atte Hinkka <atte.hinkka@kapsi.fi>, 2009.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-20 17:30+0200\n"
+"POT-Creation-Date: 2009-12-20 18:36+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -55,14 +54,34 @@ msgstr "Lista maksamattomista laskuista"
 msgid "All bills"
 msgstr "Kaikki laskut"
 
+#: templates/menu.html:23
+msgid "Unknown payments"
+msgstr "Tunnistamattomat maksut"
+
+#: templates/menu.html:24
+msgid "All payments"
+msgstr "Kaikki maksut"
+
 #: templates/registration/login.html:87
-msgid "Username:"
+msgid "Username"
 msgstr "Käyttäjätunnus"
 
 #: templates/registration/login.html:90
-msgid "Password:"
+msgid "Password"
 msgstr "Salasana"
 
 #: templates/registration/login.html:94
 msgid "Log in"
 msgstr "Kirjaudu sisään"
+
+#~ msgid "Organization's contact"
+#~ msgstr "Yhteisön yhteystiedot"
+
+#~ msgid "Administrative contact"
+#~ msgstr "Hallinnollinen yhteystieto"
+
+#~ msgid "Technical contact"
+#~ msgstr "Tekninen yhteystieto"
+
+#~ msgid "Billing contact"
+#~ msgstr "Laskutusyhteystieto"

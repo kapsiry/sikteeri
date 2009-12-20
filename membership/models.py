@@ -72,7 +72,7 @@ class Membership(models.Model):
     tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'), blank=True, null=True)
     organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
 
-    extra_info = models.TextField(blank=True, verbose_name=_('Info'))
+    extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     def email(self):
         return self.person.email
