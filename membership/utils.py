@@ -1,5 +1,8 @@
-from membership.models import BillingCycle, Bill
+from django.contrib.contenttypes.models import ContentType
+from django.utils.encoding import force_unicode
 
+
+from membership.models import BillingCycle, Bill
 
 # http://code.activestate.com/recipes/576644/
 
