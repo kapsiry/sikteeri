@@ -129,19 +129,6 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 def check_alias_availability(request):
     pass
 
-# XXX Replace with a generic view in URLconf
-@login_required
-def membership_list(request, template_name='membership/membership_list.html'):
-    return render_to_response(template_name, {'members': Membership.objects.all()},
-                              context_instance=RequestContext(request))
-
-# XXX Replace with a generic view in URLconf
-@login_required
-def membership_list_new(request, template_name='membership/membership_list.html'):
-    return render_to_response(template_name,
-        {'members': Membership.objects.filter(status__exact='N')},
-        context_instance=RequestContext(request))
-
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
