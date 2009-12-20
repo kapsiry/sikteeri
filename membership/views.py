@@ -9,7 +9,7 @@ from django.forms import ModelForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
-from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 from models import *
 from forms import MembershipForm, PersonContactForm, OrganizationContactForm
@@ -101,13 +101,13 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                 f = PersonContactForm(prefix=pfx)
             
             if pfx == 'organization_contact':
-                f.translate_string = "Organization's contact"
+                f.translated_title = _("Organization's contact")
             elif pfx == 'administrative_contact':
-                f.translate_string = 'Administrative contact'
+                f.translated_title = _('Administrative contact')
             elif pfx == 'tech_contact':
-                f.translate_string = 'Technical contact'
+                f.translated_title = _('Technical contact')
             elif pfx == 'billing_contact':
-                f.translate_string = 'Billing contact'
+                f.translated_title = _('Billing contact')
             contact_forms.append(f)
     
     return render_to_response(template_name, {"membership_form": membership_form,
