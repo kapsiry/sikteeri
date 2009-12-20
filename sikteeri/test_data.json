@@ -14,7 +14,7 @@
             "phone": "0123000123", 
             "postal_code": "LI-123123", 
             "post_office": "Liverpool", 
-            "email": "paul@kapsi.fi", 
+            "email": "test@email.invalid", 
             "street_address": "Beatle St. 2",
             "homepage": ""
         }
@@ -33,6 +33,18 @@
             "person": 1,
             "nationality": "English", 
             "extra_info": ""
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "membership.alias", 
+
+        "fields": {
+            "created": "2009-11-03 22:22:46", 
+            "owner": 1, 
+            "name": "testuser", 
+            "account": 1,
+            "comment": "More info goes here" 
         }
     }, 
     {
@@ -62,7 +74,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 'P',
+            "type": "P",
             "start": "2009-11-17 22:22:46", 
             "sum": "30"
         }
@@ -71,7 +83,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 'O',
+            "type": "O",
             "start": "2009-11-17 22:22:46", 
             "sum": "100"
         }
@@ -80,7 +92,7 @@
         "pk": 1, 
         "model": "membership.fee",
         "fields": {
-            "type": 'S',
+            "type": "S",
             "start": "2009-11-17 22:22:46", 
             "sum": "100"
         }
