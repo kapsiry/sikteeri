@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-20 18:36+0200\n"
+"POT-Creation-Date: 2009-12-20 18:43+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -144,7 +144,7 @@ msgstr "yhteystieto luotu"
 
 #: models.py:45
 msgid "Phone"
-msgstr ""
+msgstr "Puhelin"
 
 #: models.py:47
 msgid "E-mail"
@@ -170,11 +170,11 @@ msgstr "Jäsenyys hyväksytty"
 msgid "Membership changed"
 msgstr "Jäsenyyttä muutettu"
 
-#: models.py:71
+#: models.py:71 views.py:110
 msgid "Billing contact"
 msgstr "Laskutusyhteystieto"
 
-#: models.py:72
+#: models.py:72 views.py:108
 msgid "Technical contact"
 msgstr "Tekninen yhteystieto"
 
@@ -285,6 +285,14 @@ msgstr "Tyyppi"
 #: models.py:189
 msgid "Payer name"
 msgstr "Maksajan nimi"
+
+#: views.py:104
+msgid "Organization's contact"
+msgstr "Yhteisön yhteystiedot"
+
+#: views.py:106
+msgid "Administrative contact"
+msgstr "Hallinnolliset yhteystiedot"
 
 #: templates/membership/bill_list.html:8
 msgid "euros"
