@@ -60,14 +60,14 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                 print cf.prefix
                 contacts[cf.prefix] = contact
             try:
-                contacts['person_contact'].save()
+                contacts['administrative_contact'].save()
                 membership = Membership(type=membership_type, status='N',
-                                        person=contacts['person_contact'],
+                                        person=contacts['administrative_contact'],
                                         nationality=mf['nationality'],
                                         municipality=mf['municipality'],
                                         extra_info=mf['extra_info'])
                 for cf in contact_forms:
-                    if cf.prefix == 'person_contact':
+                    if cf.prefix == 'administrative_contact':
                         continue
                     contact = contacts[cf.prefix]
                     if cf.prefix == 'billing_contact':
@@ -102,8 +102,8 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
             
             if pfx == 'organization_contact':
                 f.translate_string = "Organization's contact"
-            elif pfx == 'person_contact':
-                f.translate_string = 'Contact person'
+            elif pfx == 'administrative_contact':
+                f.translate_string = 'Administrative contact'
             elif pfx == 'tech_contact':
                 f.translate_string = 'Technical contact'
             elif pfx == 'billing_contact':
@@ -116,11 +116,11 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
 
 
 def new_organization_application(request, template_name='membership/new_application.html'):
-    return new_application_worker(request, ['organization_contact', 'person_contact',
+    return new_application_worker(request, ['organization_contact', 'administrative_contact',
                                             'billing_contact', 'tech_contact'], template_name, 'O')
 
 def new_person_application(request, template_name='membership/new_application.html'):
-    return new_application_worker(request, ['person_contact'], template_name, 'P')
+    return new_application_worker(request, ['administrative_contact'], template_name, 'P')
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {})
