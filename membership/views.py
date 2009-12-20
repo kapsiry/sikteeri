@@ -6,9 +6,7 @@ from django.conf import settings
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm
-from django.utils.encoding import force_unicode
 from django.contrib.auth.decorators import login_required
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.comments.models import Comment
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -117,19 +115,6 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 def check_alias_availability(request):
     pass
 
-# XXX Replace with a generic view in URLconf
-@login_required
-def membership_list(request, template_name='membership/membership_list.html'):
-    return render_to_response(template_name, {'members': Membership.objects.all()},
-                              context_instance=RequestContext(request))
-
-# XXX Replace with a generic view in URLconf
-@login_required
-def membership_list_new(request, template_name='membership/membership_list.html'):
-    return render_to_response(template_name,
-        {'members': Membership.objects.filter(status__exact='N')},
-        context_instance=RequestContext(request))
-
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
@@ -166,7 +151,7 @@ def membership_preapprove(request, id):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.now()
     comment.save()
-    log_change(object, request.user, change_message="Preapproved")
+    log_change(membership, request.user, change_message="Preapproved")
     return redirect('membership_edit', id)
 
 def membership_preapprove_many(request, id_list):
@@ -195,16 +180,6 @@ def membership_approve(request, id):
 def membership_preapprove_many(request, id_list):
     for id in id_list:
         membership_preapprove(id)
-
-@login_required
-def bill_list(request, template_name='membership/bill_list.html'):
-    return render_to_response(template_name, {'bills': Bill.objects.all()},
-                              context_instance=RequestContext(request))
-@login_required
-def unpaid_bill_list(request, template_name='membership/bill_list.html'):
-    return render_to_response(template_name, {'bills': Bill.objects.filter(is_paid__exact=False)},
-                              context_instance=RequestContext(request))
-
 
 def handle_json(request):
     msg = cjson.decode(request.raw_post_data)
