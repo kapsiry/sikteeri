@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PORT=$1
+
 fail () {
     echo $@
     exit 1
@@ -20,8 +22,9 @@ else
     ./manage.py loaddata test_data.json || fail "Loading test data failed"
 fi
 
-# Asks from user which port (s)he wants run the Develompent server
-echo "Anna haluamasi portti: "
-read PORT
+if [[ -z $PORT ]]; then
+    PORT=12765
+fi
 
 ./manage.py runserver $PORT || fail "Starting server failed"
+
