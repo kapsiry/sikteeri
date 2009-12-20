@@ -33,10 +33,11 @@ class Contact(models.Model):
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('contact changed'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('contact created'))
 
-    first_name = models.CharField(max_length=128, verbose_name=_('first_name')) # Primary first name
-    given_names = models.CharField(max_length=128, verbose_name=_('given names'))
-    last_name = models.CharField(max_length=128, verbose_name=_('last name'))
-    organization_name = models.CharField(max_length=256, blank=True, verbose_name=_('organization name'))
+    first_name = models.CharField(max_length=128, verbose_name=_('first_name'), blank=True) # Primary first name
+    given_names = models.CharField(max_length=128, verbose_name=_('given names'), blank=True)
+    last_name = models.CharField(max_length=128, verbose_name=_('last name'), blank=True)
+    organization_name = models.CharField(max_length=256, verbose_name=_('organization name'), blank=True)
+
     street_address = models.CharField(max_length=128, verbose_name=_('street address'))
     postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
     post_office = models.CharField(max_length=128, verbose_name=_('post office'))
