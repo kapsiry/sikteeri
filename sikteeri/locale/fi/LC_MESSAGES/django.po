@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-20 18:36+0200\n"
+"POT-Creation-Date: 2009-12-20 18:43+0200\n"
 "PO-Revision-Date: 2009-12-19 11:32+EET\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -62,6 +62,10 @@ msgstr "Tunnistamattomat maksut"
 msgid "All payments"
 msgstr "Kaikki maksut"
 
+#: templates/menu.html:29
+msgid "Admin"
+msgstr ""
+
 #: templates/registration/login.html:87
 msgid "Username"
 msgstr "Käyttäjätunnus"
@@ -73,15 +77,3 @@ msgstr "Salasana"
 #: templates/registration/login.html:94
 msgid "Log in"
 msgstr "Kirjaudu sisään"
-
-#~ msgid "Organization's contact"
-#~ msgstr "Yhteisön yhteystiedot"
-
-#~ msgid "Administrative contact"
-#~ msgstr "Hallinnollinen yhteystieto"
-
-#~ msgid "Technical contact"
-#~ msgstr "Tekninen yhteystieto"
-
-#~ msgid "Billing contact"
-#~ msgstr "Laskutusyhteystieto"
