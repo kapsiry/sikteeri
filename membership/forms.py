@@ -6,45 +6,45 @@ from django.utils.translation import ugettext_lazy as _
 from models import *
 
 class MembershipForm(forms.Form):
-    extra_info = forms.CharField(label=_('info'), widget=forms.Textarea(attrs={'cols': '80'}),
+    extra_info = forms.CharField(label=_('Additional information'), widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False)
-    nationality = forms.CharField(max_length=30, min_length=5, label=_('nationality'))
-    municipality = forms.CharField(max_length=30, min_length=2, label=_('municipality'))
+    nationality = forms.CharField(max_length=30, min_length=5, label=_('Nationality'))
+    municipality = forms.CharField(max_length=30, min_length=2, label=_('Home municipality'))
 
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
-                                     error_messages={'required': _('street address required')},
-                                     label=_('street address'))
+                                     error_messages={'required': _('Street address required')},
+                                     label=_('Street address'))
     postal_code = forms.RegexField(regex='^\d{5}$',
-                                   error_messages={'required': _('postal code required'),
-                                                   'invalid': 'postal code invalid'},
-                                   label=_('postal code'))
+                                   error_messages={'required': _('Postal code required'),
+                                                   'invalid': _('Postal code invalid')},
+                                   label=_('Postal code'))
     
-    post_office = forms.CharField(max_length=30, min_length=2, label=_('post office'))
-    country = forms.CharField(max_length=128, label=_('country'))
+    post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
+    country = forms.CharField(max_length=128, label=_('Country'))
     phone = forms.RegexField(regex='[\d\+-]{5,20}',
-                             error_messages={'invalid': _('phone invalid')},
-                             min_length=5, max_length=20, label=_('phone number'))
+                             error_messages={'invalid': _('Phone invalid')},
+                             min_length=5, max_length=20, label=_('Phone number'))
     sms = forms.RegexField(regex='[\d\+-]{5,20}',
-                           error_messages={'invalid': _('sms invalid')},
-                           min_length=5, max_length=20, label=_('sms'))
-    email = forms.EmailField(label=_('email'))
-    homepage = forms.URLField(required=False, label=_('homepage'))
+                           error_messages={'invalid': _('SMS number invalid')},
+                           min_length=5, max_length=20, label=_('SMS'))
+    email = forms.EmailField(label=_('Email'))
+    homepage = forms.URLField(required=False, label=_('Homepage'))
 
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
-                                 error_messages={'required': _('first name required')},
-                                 label=_('first name'))
+                                 error_messages={'required': _('First name required')},
+                                 label=_('First name'))
     given_names = forms.CharField(max_length=30, min_length=2,
-                                  error_messages={'required': _('given names required')},
-                                  label=_('given names'))
+                                  error_messages={'required': _('Given names required')},
+                                  label=_('Given names'))
     last_name = forms.CharField(max_length=30, min_length=2,
-                                error_messages={'required': _('last name required')},
-                                label=_('last name'))
+                                error_messages={'required': _('Last name required')},
+                                label=_('Last name'))
 
 class OrganizationBaseContactForm(forms.Form):
-    organization_name = forms.CharField(max_length=50, label=_('organization name'))
+    organization_name = forms.CharField(max_length=50, label=_('Organization name'))
 
 
 class PersonContactForm(PersonBaseContactForm, BaseContactForm):
