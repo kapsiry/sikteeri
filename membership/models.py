@@ -97,6 +97,7 @@ class Membership(models.Model):
 class Alias(models.Model):
     owner = models.ForeignKey('Membership', verbose_name=_('alias owner'))
     name = models.CharField(max_length=128, unique=True, verbose_name=_('alias name'))
+    account = models.BooleanField(default=False, verbose_name=_('is useraccount'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
     comment = models.CharField(max_length=128, verbose_name=_('comment'))
     expiration_date = models.DateTimeField(blank=True, verbose_name=_('alias expiration date'))
