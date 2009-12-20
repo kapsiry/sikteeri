@@ -3,7 +3,7 @@
 
 {% block content %}
 <ul>
-{% for bill in bills %}
+{% for bill in bill_list %}
 <p {% if bill.is_due %}style="color: red"{% endif %}>
 {{ bill.cycle.membership }}, {{ bill.cycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created }},
 {% if bill.is_due %}

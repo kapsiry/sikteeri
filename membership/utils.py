@@ -1,5 +1,8 @@
-from membership.models import BillingCycle, Bill
+from django.contrib.contenttypes.models import ContentType
+from django.utils.encoding import force_unicode
 
+
+from membership.models import BillingCycle, Bill
 
 # http://code.activestate.com/recipes/576644/
 
@@ -46,12 +49,15 @@ def sendreminder(membership): # XXX Test if cycle is paid?
 def disable_member(membership): 
     pass # XXX
 
-def log_change(object, before=None, after=None, change_message=None):
-    if not change_message and before and after:
-        change_message  = repr(dict_diff(before, after)) # XXX
+def log_change(object, user, before=None, after=None, change_message=None):
+    if not change_message:
+        if before and after:
+            change_message  = repr(dict_diff(before, after)) # XXX
+        else:
+            change_message = "Some changes were made"
     from django.contrib.admin.models import LogEntry, CHANGE
     LogEntry.objects.log_action(
-        user_id         = request.user.pk,
+        user_id         = user.pk,
         content_type_id = ContentType.objects.get_for_model(object).pk,
         object_id       = object.pk,
         object_repr     = force_unicode(object),
