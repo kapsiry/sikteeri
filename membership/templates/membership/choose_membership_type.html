@@ -3,12 +3,12 @@
 
 {% block content %}
 <p>
-  {% trans "person application description" %}<br />
-  <a href="{% url new_person_application %}">{% trans "person application" %}</a>
+  Kirjoita normaalin hakemuksen kuvaus tähän.
+  <a href="{% url new_person_application %}">normaali</a>
 </p>
 
 <p>
-  {% trans "person application description" %}<br />
-  <a href="{% url new_organization_application %}">{% trans "organization application" %}</a>
+  Kirjoita yhdistyshakemuksen kuvaus tähän.
+  <a href="{% url new_organization_application %}">yhdistyshakemus</a>
 </p>
 {% endblock %}
