@@ -20,4 +20,8 @@ else
     ./manage.py loaddata test_data.json || fail "Loading test data failed"
 fi
 
-./manage.py runserver || fail "Starting server failed"
+# Asks from user which port (s)he wants run the Develompent server
+echo "Anna haluamasi portti: "
+read PORT
+
+./manage.py runserver $PORT || fail "Starting server failed"
