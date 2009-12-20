@@ -16,38 +16,84 @@ from models import *
 from forms import MembershipForm, ContactForm
 from utils import dict_diff
 
-@transaction.commit_manually
-def new_application(request, template_name='membership/new_application.html'):
-    contact_prefixes = ['', 'adm', 'tech', 'billing']
+
+def contact_from_contact_form(f):
+    c = Contact(first_name=f['first_name'],
+                given_names=f['given_names'],
+                last_name=f['last_name'],
+                street_address=f['street_address'],
+                postal_code=f['postal_code'],
+                post_office=f['post_office'],
+                country=f['country'],
+                phone=f['phone'],
+                sms=f['sms'],
+                email=f['email'],
+                homepage=f['homepage'])
+    if f.has_key['organization_name']:
+        c.organization_name = f['organization_name']
+    return c
+
+
+def new_application_worker(request, contact_prefixes, template_name, membership_type):
     if request.method == 'POST':
-        membership_form = MembershipForm(request.POST, instance=Membership())
+        membership_form = MembershipForm(request.POST)
         contact_forms = []
         for pfx in contact_prefixes:
-            contact_forms.append(ContactForm(request.POST, prefix=pfx, instance=Contact()))
+            f = ContactForm(request.POST, prefix=pfx)
+            if pfx == 'organization_contact':
+                f.enable_organization_name()
+            contact_forms.append(f)
         
         if membership_form.is_valid() and all([cf.is_valid() for cf in contact_forms]):
-            membership = membership_form.save()
-            for c in contact_forms:
-                contact = c.save()
-                if c.prefix == 'adm':
-                    membership.administrational_contact = contact
-                elif c.prefix == 'tech':
-                    membership.technical_contact = contact
-                elif c.prefix == 'billing':
+            mf = membership_form.cleaned_data
+            membership = Membership(type=membership_type, status='N',
+                                    municipality=f['municipality'],
+                                    nationality=f['nationality'],
+                                    extra_info=f['info'])
+            for cf in contact_forms:
+                contact = contact_from_contact_form(cf.cleaned_data)
+                if c.prefix == 'person_contact':
+                    membership.person = contact
+                elif c.prefix == 'billing_contact':
                     membership.billing_contact = contact
+                elif c.prefix == 'tech_contact':
+                    membership.tech_contact = contact
+                elif c.prefix == 'organization_contact':
+                    membership.organization = contact
+                contact.save()
             membership.save()
             transaction.commit()
-            logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(form.cleaned_data)))            
+            logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(membership_form.cleaned_data)))            
             return HttpResponseRedirect('/new/success/')
     else:
         membership_form = MembershipForm()
         contact_forms = []
         for pfx in contact_prefixes:
-            contact_forms.append(ContactForm(prefix=pfx, instance=Contact()))
+            f = ContactForm(prefix=pfx)
+            if pfx == 'organization_contact':
+                f.enable_organization_name()
+            contact_forms.append(f)
     
-    return render_to_response(template_name, {"form": form,
+    return render_to_response(template_name, {"membership_form": membership_form,
                                               "contact_forms": contact_forms},
-                              context_instance=RequestContext(request))    
+                              context_instance=RequestContext(request))
+
+
+@transaction.commit_manually
+def new_organization_application(request, template_name='membership/new_application.html'):
+    return new_application_worker(request, ['organization_contact', 'person_contact',
+                                            'billing_contact', 'tech_contact'], template_name,
+                                  'O')
+#    membership_type = forms.ChoiceField(choices=MEMBER_TYPES, label=_('membership type'))
+#    status = forms.ChoiceField(choices=MEMBER_STATUS, label=_('membership status'))
+
+@transaction.commit_manually
+def new_person_application(request, template_name='membership/new_application.html'):
+    return new_application_worker(request, ['person_contact'], template_name, 'P')
+
+def new_application(request, template_name='membership/choose_membership_type.html'):
+    return render_to_response(template_name, {})
+
 
 def check_alias_availability(request):
     pass
