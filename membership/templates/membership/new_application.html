@@ -8,7 +8,7 @@
 {{ membership_form.as_p }}
 
 {% for form in contact_forms %}
-  {% trans form.prefix %}
+  {% trans form.translate_string %}
   {{ form.as_p }}
 {% endfor %}
 </div>
