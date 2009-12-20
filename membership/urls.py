@@ -7,9 +7,13 @@ urlpatterns = patterns('',
     # urlconf that is not yet defined...
     url(r'pre-approval/', 'membership.views.membership_list_new', name='pre-approval'),
 
-    url(r'new/person/', 'membership.views.new_person_application', name='new_person_application'),
-    url(r'new/organization', 'membership.views.new_organization_application', name='new_organization_application'),
-    url(r'new/', 'membership.views.new_application', name='new_application'),
+    url(r'new/$', 'membership.views.new_application', name='new_application'),
+    url(r'new/person/$', 'membership.views.new_person_application', name='new_person_application'),
+    url(r'new/organization$', 'membership.views.new_organization_application', name='new_organization_application'),
+    url(r'new/success/$', 'django.views.generic.simple.direct_to_template',
+        {'template': 'membership/new_application_success.html'}, name='new_application_success'),
+    url(r'new/fail/$', 'django.views.generic.simple.direct_to_template',
+        {'template': 'membership/new_application_fail.html'}, name='new_application_fail'),
 
     url(r'list/', 'membership.views.membership_list', name='membership_list'),
     url(r'edit_inline/(\d+)/', 'membership.views.membership_edit_inline', name='membership_edit_inline'),

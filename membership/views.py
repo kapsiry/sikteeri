@@ -12,10 +12,11 @@ from django.db import transaction
 from django.http import HttpResponseRedirect
 
 from models import *
-from forms import MembershipForm, ContactForm
+from forms import MembershipForm, PersonContactForm, OrganizationContactForm
 from utils import log_change
 
 def contact_from_contact_form(f):
+    f = f.cleaned_data
     c = Contact(first_name=f['first_name'],
                 given_names=f['given_names'],
                 last_name=f['last_name'],
@@ -27,34 +28,38 @@ def contact_from_contact_form(f):
                 sms=f['sms'],
                 email=f['email'],
                 homepage=f['homepage'])
+    
     if f.has_key('organization_name'):
         c.organization_name = f['organization_name']
+    else:
+        c.first_name = f['first_name']
+        c.given_names = f['given_names']
+        c.last_name = f['last_name']
     return c
 
 @transaction.commit_manually
 def new_application_worker(request, contact_prefixes, template_name, membership_type):
     '''Does the heavy lifting for new application form.
 
-    TODO: better debug output for transactions that are rolled back
-          implement /new/fail
-          ease the validation of contacts for organizations, fix fields?
-          make some contacts optional for them'''
+    TODO: implement optional contacts for for organizations'''
     if request.method == 'POST':
         membership_form = MembershipForm(request.POST)
         contact_forms = []
         for pfx in contact_prefixes:
-            f = ContactForm(request.POST, prefix=pfx)
             if pfx == 'organization_contact':
-                f.enable_organization_name()
+                f = OrganizationContactForm(request.POST, prefix=pfx)
+            else:
+                f = PersonContactForm(request.POST, prefix=pfx)
             contact_forms.append(f)
         
         if membership_form.is_valid() and all([cf.is_valid() for cf in contact_forms]):
             mf = membership_form.cleaned_data
             contacts = {}
             for cf in contact_forms:
-                contact = contact_from_contact_form(cf.cleaned_data)
+                contact = contact_from_contact_form(cf)
+                print cf.prefix
                 contacts[cf.prefix] = contact
-
+            
             try:
                 contacts['person_contact'].save()
                 membership = Membership(type=membership_type, status='N',
@@ -62,7 +67,7 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                                         nationality=mf['nationality'],
                                         municipality=mf['municipality'],
                                         extra_info=mf['extra_info'])
-            
+                
                 for cf in contact_forms:
                     if cf.prefix == 'person_contact':
                         continue
@@ -78,22 +83,24 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                         logging.debug("Added organization contact %s to %s." % (str(contact), str(membership)))
                     contact.save()
                 membership.save()
-            except:
-                transaction.rollback()
-                logging.error("Transaction rolled back while trying to save %s or its contacts." % repr(membership_form.cleaned_data))
-                return HttpResponseRedirect('/new/fail/')
-            else:
                 transaction.commit()
                 logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(membership_form.cleaned_data)))
-                pass
-            return HttpResponseRedirect('/new/success/')
+            except Exception, e:
+                transaction.rollback()
+                logging.error("Encountered %s" % repr(e))
+                logging.error("Transaction rolled back while trying to save %s or one of the following contacts:" % repr(membership_form.cleaned_data))
+                for cf in contact_forms:
+                    logging.error("%s: %s" % (cf.prefix, repr(cf.cleaned_data)))
+                return redirect('new_application_fail')
+            return redirect('new_application_success')
     else:
         membership_form = MembershipForm()
         contact_forms = []
         for pfx in contact_prefixes:
-            f = ContactForm(prefix=pfx)
             if pfx == 'organization_contact':
-                f.enable_organization_name()
+                f = OrganizationContactForm(prefix=pfx)
+            else:
+                f = PersonContactForm(prefix=pfx)
             contact_forms.append(f)
     
     return render_to_response(template_name, {"membership_form": membership_form,
