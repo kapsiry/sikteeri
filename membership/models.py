@@ -37,6 +37,7 @@ class Contact(models.Model):
     given_names = models.CharField(max_length=128, verbose_name=_('Given names'), blank=True)
     last_name = models.CharField(max_length=128, verbose_name=_('Last name'), blank=True)
     organization_name = models.CharField(max_length=256, verbose_name=_('Organization name'), blank=True)
+
     street_address = models.CharField(max_length=128, verbose_name=_('Street address'))
     postal_code = models.CharField(max_length=10, verbose_name=_('Postal code'))
     post_office = models.CharField(max_length=128, verbose_name=_('Post office'))
