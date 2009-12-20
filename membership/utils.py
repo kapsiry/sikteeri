@@ -1,3 +1,6 @@
+from membership.models import BillingCycle, Bill
+
+
 # http://code.activestate.com/recipes/576644/
 
 KEYNOTFOUNDIN1 = '<KEYNOTFOUNDIN1>'       # KeyNotFound for dictDiff
@@ -24,3 +27,34 @@ def dict_diff(first, second):
         if first[key] != second[key]:
             diff[key] = (first[key], second[key])    
     return diff
+
+
+def new_cycle(membership):
+    old_cycle = membership.billingcycle_set.order_by('-end')[0]
+    billing_cycle = BillingCycle(membership=membership, start=old_cycle.end)
+    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
+    bill = Bill(cycle=billing_cycle)
+    bill.save()
+    bill.send_as_email()
+
+def sendreminder(membership): # XXX Test if cycle is paid?
+    billing_cycle = membership.billingcycle_set.order_by('-end')[0]
+    bill = Bill(cycle=billing_cycle)
+    bill.save()
+    bill.send_as_email()
+
+def disable_member(membership): 
+    pass # XXX
+
+def log_change(object, before=None, after=None, change_message=None):
+    if not change_message and before and after:
+        change_message  = repr(dict_diff(before, after)) # XXX
+    from django.contrib.admin.models import LogEntry, CHANGE
+    LogEntry.objects.log_action(
+        user_id         = request.user.pk,
+        content_type_id = ContentType.objects.get_for_model(object).pk,
+        object_id       = object.pk,
+        object_repr     = force_unicode(object),
+        action_flag     = CHANGE,
+        change_message  = change_message
+    )

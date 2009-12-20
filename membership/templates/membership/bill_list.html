@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<ul>
+{% for bill in bills %}
+<p {% if bill.is_due %}style="color: red"{% endif %}>
+{{ bill.cycle.membership }}, {{ bill.cycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created }},
+{% if bill.is_due %}
+{% trans "overdue for" %} {{ bill.due_date|timesince }}
+{% else %}
+{% trans "due in" %} {{ bill.due_date|timeuntil }}
+{% endif %}
+{% if bill.is_paid %} {% trans "paid on" %} {{ bill.payment_set.all.0.payment_day }}{% endif %}
+<ul>{% for payment in bill.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
+</p>
+{% empty %}
+{% trans "No bill matches this filter, try seeing the full list." %}
+{% endfor %}
+</ul>
+{% endblock %}

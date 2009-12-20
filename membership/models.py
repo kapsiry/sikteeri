@@ -28,6 +28,31 @@ def log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logging.info('%s %s: %s' % (sender, operation, repr(instance)))
 
+class Contact(models.Model):
+    logs = GenericRelation(LogEntry)
+    last_changed = models.DateTimeField(auto_now=True, verbose_name=_('contact changed'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('contact created'))
+
+    first_name = models.CharField(max_length=128, verbose_name=_('first_name')) # Primary first name
+    given_names = models.CharField(max_length=128, verbose_name=_('given names'))
+    last_name = models.CharField(max_length=128, verbose_name=_('last name'))
+    organization_name = models.CharField(max_length=256, verbose_name=_('organization name'))
+    street_address = models.CharField(max_length=128, verbose_name=_('street address'))
+    postal_code = models.CharField(max_length=10, verbose_name=_('postal code'))
+    post_office = models.CharField(max_length=128, verbose_name=_('post office'))
+    country = models.CharField(max_length=128, verbose_name=_('country'))
+    phone = models.CharField(max_length=64, verbose_name=_('phone'))
+    sms = models.CharField(max_length=64, blank=True, verbose_name=_('sms'))
+    email = models.EmailField(blank=True, verbose_name=_('email'))
+    homepage = models.URLField(blank=True, verbose_name=_('homepage'))
+
+    def __unicode__(self):
+        if self.organization_name:
+            return self.organization_name
+        else:
+            return u'%s %s' % (self.last_name, self.first_name)
+
+
 
 class Membership(models.Model):
     logs = GenericRelation(LogEntry)
@@ -38,44 +63,24 @@ class Membership(models.Model):
     accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('membership accepted'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('membership changed'))
 
-    calling_name = models.CharField(max_length=128, blank=True) # Primary first name or organization name
     municipality = models.CharField(_('place of residence'), max_length=128)
-    nationality = models.CharField(max_length=128)
+    nationality = models.CharField(_('nationality'), max_length=128)
 
-    billing_first_names = models.CharField(max_length=128, verbose_name=_('given name'))
-    billing_last_name = models.CharField(max_length=128, verbose_name=_('first names'))
-    billing_street_address = models.CharField(max_length=128, verbose_name=_('last name'))
-    billing_postal_code = models.CharField(max_length=10, verbose_name=_('organization name'))
-    billing_post_office = models.CharField(max_length=128, verbose_name=_('post office'))
-    billing_country = models.CharField(max_length=128, verbose_name=_('country'))
-    billing_phone = models.CharField(max_length=64, verbose_name=_('phone'))
-    billing_sms = models.CharField(max_length=64, blank=True, verbose_name=_('sms'))
-    billing_email = models.EmailField(blank=True, verbose_name=_('email'))
+    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('person'))
+    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('billing contact'), blank=True, null=True)
+    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('tech contact'), blank=True, null=True)
+    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('organization'), blank=True, null=True)
 
-    contact_first_names = models.CharField(max_length=128, blank=True)
-    contact_last_name = models.CharField(max_length=128, blank=True)
-    contact_street_address = models.CharField(max_length=128, blank=True)
-    contact_postal_code = models.CharField(max_length=10, blank=True)
-    contact_post_office = models.CharField(max_length=128, blank=True)
-    contact_country = models.CharField(max_length=128, blank=True)
-    contact_phone = models.CharField(max_length=64, blank=True)
-    contact_sms = models.CharField(max_length=64, blank=True)
-    contact_email = models.EmailField(blank=True)
-
-    homepage = models.URLField(blank=True, verbose_name=_('homepage'))
     extra_info = models.TextField(blank=True, verbose_name=_('info'))
 
     def email(self):
-        if self.contact_email:
-            return self.contact_email
-        elif self.billing_email:
-            return self.billing_email
+        return self.person.email
 
     def __unicode__(self):
-        if self.type == 'O':
-            return self.calling_name
+        if self.organization:
+            return self.organization.__unicode__()
         else:
-            return u'%s, %s' % (self.billing_last_name, self.calling_name)
+            return self.person.__unicode__()
 
     def accept(self):
         self.status = 'A'
@@ -87,13 +92,14 @@ class Alias(models.Model):
     owner = models.ForeignKey('Membership', verbose_name=_('alias owner'))
     name = models.CharField(max_length=128, unique=True, verbose_name=_('alias name'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
+    comment = models.CharField(max_length=128, verbose_name=_('comment'))
     expiration_date = models.DateTimeField(blank=True, verbose_name=_('alias expiration date'))
 
 
 class Fee(models.Model):
-    type = models.CharField(max_length=1, choices=MEMBER_TYPES)
-    start = models.DateTimeField()
-    sum = models.DecimalField(max_digits=6, decimal_places=2)
+    type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('fee type'))
+    start = models.DateTimeField(_('valid from date'))
+    sum = models.DecimalField(_('sum'), max_digits=6, decimal_places=2)
 
     def __unicode__(self):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
@@ -103,7 +109,10 @@ class BillingCycle(models.Model):
     start =  models.DateTimeField(default=datetime.now(), verbose_name=_('start'))
     end =  models.DateTimeField(verbose_name=_('end'))
 
-    sum = models.DecimalField(max_digits=6, decimal_places=2) # This limits sum to 9999,99
+    sum = models.DecimalField(_('sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
+
+    def is_paid(self):
+        return False # XXX
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
@@ -127,8 +136,11 @@ class Bill(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('last changed'))
 
+    def is_due(self):
+        return self.due_date < datetime.now()
+
     def __unicode__(self):
-        return 'Sent on ' + str(self.created)
+        return _('Sent on') + ' ' + str(self.created)
 
     def save(self, force_insert=False, force_update=False):
         if not self.due_date:
@@ -158,20 +170,21 @@ class Payment(models.Model):
     """
     # While Payment refers to Bill, someone might send a payment that has a reference
     # number, which does not correspond to any Bills...
-    bill = models.ForeignKey('Bill', verbose_name=_('bill'))
+    bill = models.ForeignKey('Bill', verbose_name=_('bill'), null=True)
 
-    # Not unique, because people can send multiple payments
-    reference_number = models.CharField(max_length=64, unique=True, verbose_name=_('reference number'))
-
+    reference_number = models.CharField(max_length=64, verbose_name=_('reference number'), blank=True) # Not unique, because people can send multiple payments
+    message = models.CharField(max_length=64, verbose_name=_('message'), blank=True) # viesti (viestikenttä)
     transaction_id = models.CharField(max_length=30, verbose_name=_('transaction id')) # arkistointitunnus
     payment_day = models.DateTimeField(verbose_name=_('payment day'))
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('amount')) # This limits sum to 9999,99
     type = models.CharField(max_length=64, verbose_name=_('type')) # tilisiirto/pano/jokumuu
     payer_name = models.CharField(max_length=64, verbose_name=_('payer name')) # maksajan nimi
-    message = models.CharField(max_length=64, verbose_name=_('message')) # viesti (viestikenttä)
 
+    def __unicode__(self):
+        return 'Payment for %s euros paid on %s' % (str(self.amount), str(self.payment_day))
 
 models.signals.post_save.connect(log_change, sender=Membership)
+models.signals.post_save.connect(log_change, sender=Contact)
 models.signals.post_save.connect(log_change, sender=Alias)
 models.signals.post_save.connect(log_change, sender=BillingCycle)
 models.signals.post_save.connect(log_change, sender=Bill)
