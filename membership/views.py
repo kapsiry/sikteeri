@@ -14,7 +14,7 @@ from django.db import transaction
 
 from models import *
 from forms import MembershipForm, ContactForm
-from utils import dict_diff
+from utils import log_change
 
 
 def contact_from_contact_form(f):
@@ -126,16 +126,7 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         form.save()
         after = membership.__dict__
         if form.is_valid():
-            from django.contrib.admin.models import LogEntry, CHANGE
-            LogEntry.objects.log_action(
-                user_id         = request.user.pk,
-                content_type_id = ContentType.objects.get_for_model(membership).pk,
-                object_id       = membership.pk,
-                object_repr     = force_unicode(membership),
-                action_flag     = CHANGE,
-                change_message  = repr(dict_diff(before, after)) # XXX
-            )
-
+            log_change(membership, request.user, before, after)
     else:
         form =  Form(instance=membership)
     return render_to_response(template_name, {'form': form, 'membership': membership},
@@ -156,6 +147,7 @@ def membership_preapprove(request, id):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.now()
     comment.save()
+    log_change(object, request.user, change_message="Preapproved")
     return redirect('membership_edit', id)
 
 def membership_preapprove_many(request, id_list):
@@ -178,6 +170,7 @@ def membership_approve(request, id):
     bill = Bill(cycle=billing_cycle)
     bill.save()
     bill.send_as_email()
+    log_change(object, request.user, change_message="Approved")
     return redirect('membership_edit', id)
 
 def membership_preapprove_many(request, id_list):
