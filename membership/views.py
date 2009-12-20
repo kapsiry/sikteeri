@@ -59,7 +59,6 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                 contact = contact_from_contact_form(cf)
                 print cf.prefix
                 contacts[cf.prefix] = contact
-            
             try:
                 contacts['person_contact'].save()
                 membership = Membership(type=membership_type, status='N',
@@ -67,7 +66,6 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
                                         nationality=mf['nationality'],
                                         municipality=mf['municipality'],
                                         extra_info=mf['extra_info'])
-                
                 for cf in contact_forms:
                     if cf.prefix == 'person_contact':
                         continue
@@ -99,8 +97,17 @@ def new_application_worker(request, contact_prefixes, template_name, membership_
         for pfx in contact_prefixes:
             if pfx == 'organization_contact':
                 f = OrganizationContactForm(prefix=pfx)
-            else:
+            if pfx != 'organization_contact':
                 f = PersonContactForm(prefix=pfx)
+            
+            if pfx == 'organization_contact':
+                f.translate_string = "Organization's contact"
+            elif pfx == 'person_contact':
+                f.translate_string = 'Contact person'
+            elif pfx == 'tech_contact':
+                f.translate_string = 'Technical contact'
+            elif pfx == 'billing_contact':
+                f.translate_string = 'Billing contact'
             contact_forms.append(f)
     
     return render_to_response(template_name, {"membership_form": membership_form,
