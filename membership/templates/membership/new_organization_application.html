@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<form method="POST">
+<div id="new_application">
+  {{ form.as_p }}
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Save and continue to next stage" %}" />
+</p>
+</div>
+</form>
+<p>Voit vielä lisätä lisäyhteystietoja tallennettuasi tämän lomakkeen tiedot. Huomaa,
+että jo tämän lomakkeen lähetys on jäsenhakemus.</p>
+{% endblock %}

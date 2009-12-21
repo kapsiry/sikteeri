@@ -10,196 +10,154 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
+from django.http import HttpResponseForbidden
 
 from models import *
-from forms import MembershipForm, PersonContactForm, OrganizationContactForm
+from forms import PersonApplicationForm, OrganizationApplicationForm
 from utils import log_change
 
-def contact_from_contact_form(f):
-    f = f.cleaned_data
-    c = Contact(street_address=f['street_address'],
-                postal_code=f['postal_code'],
-                post_office=f['post_office'],
-                country=f['country'],
-                phone=f['phone'],
-                sms=f['sms'],
-                email=f['email'],
-                homepage=f['homepage'])
-    
-    if f.has_key('organization_name'):
-        c.organization_name = f['organization_name']
-    else:
-        c.first_name = f['first_name']
-        c.given_names = f['given_names']
-        c.last_name = f['last_name']
-    return c
-
-@transaction.commit_manually
-def new_application_worker(request, contact_prefixes, template_name, membership_type):
-    '''Does the heavy lifting for new application form.
-
-    TODO: implement optional contacts for for organizations'''
-    if request.method == 'POST':
-        membership_form = MembershipForm(request.POST)
-        contact_forms = []
-        for pfx in contact_prefixes:
-            if pfx == 'organization_contact':
-                f = OrganizationContactForm(request.POST, prefix=pfx)
-            else:
-                f = PersonContactForm(request.POST, prefix=pfx)
-            if pfx == 'organization_contact':
-                f.translated_title = _("Organization's contact")
-            elif pfx == 'administrative_contact':
-                f.translated_title = _('Administrative contact')
-            elif pfx == 'tech_contact':
-                f.translated_title = _('Technical contact')
-            elif pfx == 'billing_contact':
-                f.translated_title = _('Billing contact')
-            contact_forms.append(f)
-        
-        if membership_form.is_valid() and all([cf.is_valid() for cf in contact_forms]):
-            mf = membership_form.cleaned_data
-            contacts = {}
-            for cf in contact_forms:
-                contact = contact_from_contact_form(cf)
-                contacts[cf.prefix] = contact
-            try:
-                contacts['administrative_contact'].save()
-                if contacts.has_key('organization_contact'):
-                    contacts['organization_contact'].save()
-                membership = Membership(type=membership_type, status='N',
-                                        person=contacts['administrative_contact'],
-                                        nationality=mf['nationality'],
-                                        municipality=mf['municipality'],
-                                        extra_info=mf['extra_info'])
-                
-                if contacts.has_key('organization_contact'):
-                    membership.organization = contacts['organization_contact']
-                
-                for cf in contact_forms:
-                    if cf.prefix == 'administrative_contact':
-                        continue
-                    contact = contacts[cf.prefix]
-                    if cf.prefix == 'billing_contact':
-                        membership.billing_contact = contact
-                        logging.debug("Added billing contact %s to %s." % (str(contact), str(membership)))
-                    elif cf.prefix == 'tech_contact':
-                        membership.tech_contact = contact
-                        logging.debug("Added tech contact %s to %s." % (str(contact), str(membership)))
-                    elif cf.prefix == 'organization_contact':
-                        membership.organization = contact
-                        logging.debug("Added organization contact %s to %s." % (str(contact), str(membership)))
-                    contact.save()
-                membership.save()
-                transaction.commit()
-                if contacts.has_key('organization_contact'):
-                    request.session.set_expiry(0) # make this expire when the browser exits
-                    request.session['new_membership_id'] = membership.id
-                    logging.debug("Registered session, membership id: %i." %request.session['new_membership_id'])
-                logging.info('A new membership application from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(membership_form.cleaned_data)))
-            except Exception, e:
-                transaction.rollback()
-                logging.error("Encountered %s" % repr(e))
-                logging.error("Transaction rolled back while trying to save %s or one of the following contacts:" % repr(membership_form.cleaned_data))
-                for cf in contact_forms:
-                    logging.error("%s: %s" % (cf.prefix, repr(cf.cleaned_data)))
-                return redirect('new_application_fail')
-            if contacts.has_key('organization_contact'):
-                return redirect('new_organization_application_success')
-            else:
-                return redirect('new_person_application_success')
-    else:
-        membership_form = MembershipForm()
-        contact_forms = []
-        for pfx in contact_prefixes:
-            if pfx == 'organization_contact':
-                f = OrganizationContactForm(prefix=pfx)
-            if pfx != 'organization_contact':
-                f = PersonContactForm(prefix=pfx)
-            
-            if pfx == 'organization_contact':
-                f.translated_title = _("Organization's contact")
-            elif pfx == 'administrative_contact':
-                f.translated_title = _('Administrative contact')
-            elif pfx == 'tech_contact':
-                f.translated_title = _('Technical contact')
-            elif pfx == 'billing_contact':
-                f.translated_title = _('Billing contact')
-            contact_forms.append(f)
-    
-    return render_to_response(template_name, {"membership_form": membership_form,
-                                              "contact_forms": contact_forms},
-                              context_instance=RequestContext(request))
-
-
-@transaction.commit_manually
-def new_contact_worker(request, contact_prefix, next_contact_prefix, template_name):
-    if request.method == 'POST':
-        if contact_prefix == 'organization_contact':
-            f = OrganizationContactForm(request.POST, prefix=contact_prefix)
-        else:
-            f = PersonContactForm(request.POST, prefix=contact_prefix)
-        
-        if f.is_valid():
-            f = f.cleaned_data
-            contact = contact_from_contact_form(cf)
-            try:
-                membership = Membership.objects.get(id=request.session['new_membership_id'])
-                contact.save()
-                if cf.prefix == 'billing_contact':
-                    membership.billing_contact = contact
-                    logging.debug("Added billing contact %s to %s." % (str(contact), str(membership)))
-                elif cf.prefix == 'tech_contact':
-                    membership.tech_contact = contact
-                    logging.debug("Added tech contact %s to %s." % (str(contact), str(membership)))
-                elif cf.prefix == 'organization_contact':
-                    membership.organization = contact
-                    logging.debug("Added organization contact %s to %s." % (str(contact), str(membership)))
-                contact.save()
-                membership.save()
-                transaction.commit()
-                logging.info('Modified membership from %s:\n %s' % (request.META['REMOTE_ADDR'], repr(membership)))
-            except Exception, e:
-                transaction.rollback()
-                logging.error("Encountered %s" % repr(e))
-                logging.error("Transaction rolled back while trying to save %s or the following contact:" % repr(membership_form.cleaned_data))
-                logging.error("%s: %s" % (contact_prefix, repr(f)))
-                return redirect('new_contact_fail')
-            return redirect('new_application_success')
-    else:
-        membership_form = MembershipForm()
-        contact_forms = []
-        for pfx in contact_prefixes:
-            if pfx == 'organization_contact':
-                f = OrganizationContactForm(prefix=pfx)
-            if pfx != 'organization_contact':
-                f = PersonContactForm(prefix=pfx)
-            
-            if pfx == 'organization_contact':
-                f.translated_title = _("Organization's contact")
-            elif pfx == 'administrative_contact':
-                f.translated_title = _('Administrative contact')
-            elif pfx == 'tech_contact':
-                f.translated_title = _('Technical contact')
-            elif pfx == 'billing_contact':
-                f.translated_title = _('Billing contact')
-            contact_forms.append(f)
-    
-    return render_to_response(template_name, {"membership_form": membership_form,
-                                              "contact_forms": contact_forms},
-                              context_instance=RequestContext(request))
-
-
-def new_organization_application(request, template_name='membership/new_application.html'):
-    return new_application_worker(request, ['organization_contact', 'billing_contact'], template_name, 'O')
-#['administrative_contact', 'billing_contact', 'tech_contact']
-
-def new_person_application(request, template_name='membership/new_application.html'):
-    return new_application_worker(request, ['administrative_contact'], template_name, 'P')
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
-    return render_to_response(template_name, {})
+    return render_to_response(template_name, {},
+                              context_instance=RequestContext(request))
 
+
+def contact_from_form(f, prefix=''):
+    if len(prefix) > 0:
+        prefix = prefix + '_'
+    c = Contact(street_address=f['%sstreet_address' % prefix],
+                postal_code=f['%spostal_code' % prefix],
+                post_office=f['%spost_office' % prefix],
+                country=f['%scountry' % prefix],
+                phone=f['%sphone' % prefix],
+                sms=f['%ssms' % prefix],
+                email=f['%semail' % prefix],
+                homepage=f['%shomepage' % prefix])
+    
+    if f.has_key('organization_name'):
+        c.organization_name = f['%sorganization_name' % prefix]
+    else:
+        c.first_name = f['%sfirst_name' % prefix]
+        c.given_names = f['%sgiven_names' % prefix]
+        c.last_name = f['%slast_name' % prefix]
+    return c
+
+
+@transaction.commit_manually
+def person_application(request, template_name='membership/new_person_application.html'):
+    if request.method == 'POST':
+        application_form = PersonApplicationForm(request.POST)
+        
+        if application_form.is_valid():
+            f = application_form.cleaned_data
+            try:
+                person = contact_from_form(f)
+                person.save()
+                membership = Membership(type='P', status='N',
+                                        person=person,
+                                        nationality=f['nationality'],
+                                        municipality=f['municipality'],
+                                        extra_info=f['extra_info'])
+                membership.save()
+                transaction.commit()
+                logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
+                return redirect('new_person_application_success')                
+            except Exception, e:
+                transaction.rollback()
+                logging.error("Encountered %s" % repr(e))
+                logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
+                return redirect('new_application_fail')
+    else:
+        application_form = PersonApplicationForm()
+    return render_to_response(template_name, {"form": application_form},
+                              context_instance=RequestContext(request))
+
+@transaction.commit_manually
+def organization_application(request, template_name='membership/new_organization_application.html'):
+    if request.method == 'POST':
+        application_form = OrganizationApplicationForm(request.POST)
+        
+        if application_form.is_valid():
+            f = application_form.cleaned_data
+            try:
+                organization = contact_from_form(f)
+                organization.save()
+                membership = Membership(type='O', status='N',
+                                        organization=organization,
+                                        nationality=f['nationality'],
+                                        municipality=f['municipality'],
+                                        extra_info=f['extra_info'])
+                membership.save()
+                transaction.commit()
+                request.session.set_expiry(0) # make this expire when the browser exits
+                request.session['new_membership_id'] = membership.id
+                logging.debug("Registered session, membership id: %i." %request.session['new_membership_id'])
+                logging.info("New application %s from %s:." % (str(organization), request.META['REMOTE_ADDR']))
+                return redirect('organization_application_add_contacts', membership.id)
+            except Exception, e:
+                transaction.rollback()
+                logging.error("Encountered %s" % repr(e))
+                logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
+                return redirect('new_application_fail')
+    else:
+        application_form = OrganizationApplicationForm()
+    return render_to_response(template_name, {"form": application_form},
+                              context_instance=RequestContext(request))
+
+def organization_application_add_contacts(request, id, template_name='membership/organization_application_add_contacts.html'):
+    if str(request.session['new_membership_id']) != str(id):
+        return HttpResponseForbidden()
+    return render_to_response(template_name, {"membership": Membership.objects.get(id=id)},
+                              context_instance=RequestContext(request))
+
+def organization_application_contact_create_update(request, type, id, template_name='membership/organization_application_contact_create_update.html'):
+    if str(request.session["new_membership_id"]) != str(id):
+        return HttpResponseForbidden("Access denied")
+    if type not in ['person', 'billing_contact', 'tech_contact']:
+        return HttpResponseForbidden("Access denied")
+    
+    class Form(ModelForm):
+        class Meta:
+            model = Contact
+            fields = ('first_name', 'given_names', 'last_name', 'street_address',
+                      'postal_code', 'post_office', 'country', 'phone', 'sms',
+                      'email', 'homepage')
+    
+    membership = Membership.objects.get(id=id)
+    contact = None
+    contact_form = None
+    contact_type = ''
+    if type == 'person':
+        contact = membership.person
+        contact_type = _('Administrative contact')
+    elif type == 'billing_contact':
+        contact = membership.billing_contact
+        contact_type = _('Billing contact')
+    elif type == 'tech_contact':
+        contact = membership.tech_contact
+        contact_type = _('Technical contact')
+    
+    if request.method == 'POST':
+        form = Form(request.POST, instance=contact)
+        form.save()
+        if type == 'person':
+            membership.person = form.instance
+        elif type == 'billing_contact':
+            membership.billing_contact = form.instance
+        elif type == 'tech_contact':
+            membership.tech_contact = form.instance
+        membership.save()
+        return redirect('organization_application_add_contacts', membership.id)
+    else:
+        if contact is not None:
+            contact_form = Form(instance=contact)
+        else:
+            contact_form = Form()
+    
+    return render_to_response(template_name, {"form": contact_form,
+                                              "type": type,
+                                              "contact_type": contact_type},
+                              context_instance=RequestContext(request))
 
 def check_alias_availability(request):
     pass

@@ -3,8 +3,13 @@ from django.conf.urls.defaults import *
 from membership.models import *
 
 urlpatterns = patterns('',
-    url(r'persons/new/$', 'membership.views.new_person_application', name='new_person_application'),
-    url(r'organizations/new/$', 'membership.views.new_organization_application', name='new_organization_application'),
+    url(r'persons/new/$', 'membership.views.person_application', name='person_application'),
+    url(r'organizations/new/$', 'membership.views.organization_application',
+        name='organization_application'),
+    url(r'organizations/add_contacts/(\d+)/$', 'membership.views.organization_application_add_contacts',
+        name='organization_application_add_contacts'),
+    url(r'organizations/contact_create_update/(\w+)/(\d+)/$', 'membership.views.organization_application_contact_create_update',
+        name='organization_application_contact_create_update'),
     url(r'memberships/new/$', 'membership.views.new_application', name='new_application'),
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),

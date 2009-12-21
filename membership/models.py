@@ -67,7 +67,7 @@ class Membership(models.Model):
     municipality = models.CharField(_('Home municipality'), max_length=128)
     nationality = models.CharField(_('Nationality'), max_length=128)
 
-    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'))
+    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
     billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)
     tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'), blank=True, null=True)
     organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)

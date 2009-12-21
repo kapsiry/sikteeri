@@ -5,7 +5,20 @@ from django.utils.translation import ugettext_lazy as _
 
 from models import *
 
-class MembershipForm(forms.Form):
+class PersonMembershipForm(forms.Form):
+    nationality = forms.CharField(max_length=30, min_length=5,
+                                  label=_('Nationality'),
+                                  initial=_('Finnish nationality'),
+                                  help_text=_('Your nationality'))
+    municipality = forms.CharField(max_length=30, min_length=2,
+                                   label=_('Home municipality'),
+                                   help_text=_('Place of residence'))
+    extra_info = forms.CharField(label=_('Additional information'),
+                                 widget=forms.Textarea(attrs={'cols': '40'}),
+                                 required=False,
+                                 help_text=_('You can write additional questions or details here'))
+
+class OrganizationMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
                                   label=_('Nationality'),
                                   initial=_('Finnish nationality'),
@@ -27,16 +40,15 @@ class BaseContactForm(forms.Form):
                                                    'invalid': _('Postal code invalid')},
                                    label=_('Postal code'))
     
-    post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'),
-                                  help_text=_('Post office is normally the city part of the address'))
-    country = forms.CharField(max_length=128, label=_('Country'))
+    post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
+    country = forms.CharField(max_length=128, label=_('Country'), initial=_('Finland'))
     phone = forms.RegexField(regex='[\d\+-]{5,20}',
                              error_messages={'invalid': _('Phone invalid')},
                              min_length=5, max_length=20, label=_('Phone number'),
                              help_text=_('Phone number that accepts calls'))
     sms = forms.RegexField(regex='[\d\+-]{5,20}',
                            error_messages={'invalid': _('SMS number invalid')},
-                           min_length=5, max_length=20, label=_('SMS'),
+                           min_length=5, max_length=20, label=_('SMS number'),
                            help_text=_('Phone number that accepts text messages'))
     email = forms.EmailField(label=_('E-mail'))
     homepage = forms.URLField(required=False, label=_('Homepage'))
@@ -63,14 +75,8 @@ class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
     pass
 
 
-#    login = UniqueAliasField(regex='^[a-z][a-z0-9_\-\.]{1,15}$',
-#                             error_messages={'invalid': 'Syöttämäsi käyttäjätunnus ei kelpaa. Se on joko olemassa tai sisältää merkkejä, joita ei voi sisällyttää käyttäjätunnukseen. Vain merkit a-z, 0-9, _, - ja . kelpaavat. Tämän lisäksi tunnuksen täytyy alkaa kirjaimella.'},
-#                             label='Käyttäjätunnustoive',
-#                             help_text='''(sisältää sähköpostin tunnus@kapsi.fi)''',
-#                             widget=forms.TextInput)
+class PersonApplicationForm(PersonContactForm, PersonMembershipForm):
+    pass
 
-#    email_forward = forms.BooleanField(label='etunimi.sukunimi@kapsi.fi sähköpostiohjaus', required=False)
-#    publish_in_list = forms.BooleanField(label='Nimeni saa näyttää julkisessa jäsenlistauksessa.', required=False,
-#                                         help_text='''(etunimi ja sukunimi julkiseen, indeksoimattomaan jäsenlistaan)''')
-
-
+class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):
+    pass
