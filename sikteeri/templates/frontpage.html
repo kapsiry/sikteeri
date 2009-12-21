@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
-<p>Tämä on se jazzaava Sikteeri.</p>
-        <p><img src="/static/images/django.jpg" alt="Django ja jazztupakka"></p>
+<p>{% trans "Presenting the new jazzy Sikteeri" %}.</p>
+
+<p><img src="/static/images/django.jpg" alt="{% trans "Django and the jazz cigarette" %}"></p>
 {% endblock %}
