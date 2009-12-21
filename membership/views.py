@@ -191,7 +191,7 @@ def new_contact_worker(request, contact_prefix, next_contact_prefix, template_na
 
 
 def new_organization_application(request, template_name='membership/new_application.html'):
-    return new_application_worker(request, ['organization_contact', 'administrative_contact'], template_name, 'O')
+    return new_application_worker(request, ['organization_contact', 'billing_contact'], template_name, 'O')
 #['administrative_contact', 'billing_contact', 'tech_contact']
 
 def new_person_application(request, template_name='membership/new_application.html'):

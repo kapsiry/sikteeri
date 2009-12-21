@@ -62,6 +62,14 @@ ul.errorlist li {
     clear: none;
     width: 200px;
     text-align: right;
-    padding-right: 0.3em;
+    font-size: 120%;
     /* vertical-align: text-top; */
+}
+
+#new_application p {
+    font-size: 80%;
+}
+
+#new_application input, textarea {
+    margin: 0 0.4em;
 }

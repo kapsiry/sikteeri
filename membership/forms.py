@@ -7,12 +7,16 @@ from models import *
 
 class MembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
-                                  label=_('Nationality'))
+                                  label=_('Nationality'),
+                                  initial=_('Finnish nationality'),
+                                  help_text=_('Home country of your organization'))
     municipality = forms.CharField(max_length=30, min_length=2,
-                                   label=_('Home municipality'))
+                                   label=_('Home municipality'),
+                                   help_text=_('Place where your organization is registered to'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
-                                 required=False)
+                                 required=False,
+                                 help_text=_('You can write additional questions or details here'))
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
@@ -23,15 +27,18 @@ class BaseContactForm(forms.Form):
                                                    'invalid': _('Postal code invalid')},
                                    label=_('Postal code'))
     
-    post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
+    post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'),
+                                  help_text=_('Post office is normally the city part of the address'))
     country = forms.CharField(max_length=128, label=_('Country'))
     phone = forms.RegexField(regex='[\d\+-]{5,20}',
                              error_messages={'invalid': _('Phone invalid')},
-                             min_length=5, max_length=20, label=_('Phone number'))
+                             min_length=5, max_length=20, label=_('Phone number'),
+                             help_text=_('Phone number that accepts calls'))
     sms = forms.RegexField(regex='[\d\+-]{5,20}',
                            error_messages={'invalid': _('SMS number invalid')},
-                           min_length=5, max_length=20, label=_('SMS'))
-    email = forms.EmailField(label=_('Email'))
+                           min_length=5, max_length=20, label=_('SMS'),
+                           help_text=_('Phone number that accepts text messages'))
+    email = forms.EmailField(label=_('E-mail'))
     homepage = forms.URLField(required=False, label=_('Homepage'))
 
 class PersonBaseContactForm(forms.Form):
