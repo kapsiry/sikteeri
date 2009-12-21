@@ -30,7 +30,7 @@ class BaseContactForm(forms.Form):
                              min_length=5, max_length=20, label=_('Phone number'))
     sms = forms.RegexField(regex='[\d\+-]{5,20}',
                            error_messages={'invalid': _('SMS number invalid')},
-                           min_length=5, max_length=20, label=_('SMS'))
+                           min_length=5, max_length=20, label=_('SMS number'))
     email = forms.EmailField(label=_('Email'))
     homepage = forms.URLField(required=False, label=_('Homepage'))
 
