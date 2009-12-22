@@ -1,15 +1,18 @@
 from django.conf.urls.defaults import *
 
 from membership.models import *
+from membership.forms import *
 
 urlpatterns = patterns('',
     url(r'persons/new/$', 'membership.views.person_application', name='person_application'),
     url(r'organizations/new/$', 'membership.views.organization_application',
         name='organization_application'),
-    url(r'organizations/add_contacts/(\d+)/$', 'membership.views.organization_application_add_contacts',
-        name='organization_application_add_contacts'),
-    url(r'organizations/contact_create_update/(\w+)/(\d+)/$', 'membership.views.organization_application_contact_create_update',
-        name='organization_application_contact_create_update'),
+    url(r'organizations/new/add_contact/(\w+)/$', 'membership.views.organization_application_add_contact',
+        name='organization_application_add_contact'),
+    url(r'organizations/new/application/review/$', 'membership.views.organization_application_review',
+        name='organization_application_review'),
+    url(r'organizations/new/application/save/$', 'membership.views.organization_application_save',
+        name='organization_application_save'),
     url(r'memberships/new/$', 'membership.views.new_application', name='new_application'),
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
@@ -47,7 +50,7 @@ urlpatterns += patterns('django.views.generic',
 
     url(r'new/success/$', 'simple.direct_to_template',
         {'template': 'membership/new_person_application_success.html'}, name='new_person_application_success'),
-    url(r'new/contacts/$', 'simple.direct_to_template',
+    url(r'organizations/new/success/$', 'simple.direct_to_template',
         {'template': 'membership/new_organization_application_success.html'}, name='new_organization_application_success'),
     url(r'new/fail/$', 'simple.direct_to_template',
         {'template': 'membership/new_application_fail.html'}, name='new_application_fail'),

@@ -2,7 +2,8 @@
 {% load i18n %}
 
 {% block content %}
-<h2>Yhteisöjäsenen liittymislomake</h2>
+<h2>{% trans "Organization member's application form" %}</h2>
+Osa 1/4.
 <form method="POST">
 <div id="new_application">
   {{ form.as_p }}
@@ -12,6 +13,4 @@
 </p>
 </div>
 </form>
-<p>Voit vielä lisätä lisäyhteystietoja tallennettuasi tämän lomakkeen tiedot. Huomaa,
-että jo tämän lomakkeen lähetys on jäsenhakemus.</p>
 {% endblock %}

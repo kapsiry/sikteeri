@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from utils import log_change
 from models import *
+
 
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -67,13 +70,11 @@ class PersonBaseContactForm(forms.Form):
 class OrganizationBaseContactForm(forms.Form):
     organization_name = forms.CharField(max_length=50, label=_('Organization name'))
 
-
 class PersonContactForm(PersonBaseContactForm, BaseContactForm):
     pass
 
 class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
     pass
-
 
 class PersonApplicationForm(PersonContactForm, PersonMembershipForm):
     pass

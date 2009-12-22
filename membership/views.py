@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseForbidden
 
 from models import *
-from forms import PersonApplicationForm, OrganizationApplicationForm
+from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change
 
 
@@ -21,27 +21,29 @@ def new_application(request, template_name='membership/choose_membership_type.ht
     return render_to_response(template_name, {},
                               context_instance=RequestContext(request))
 
-
-def contact_from_form(f, prefix=''):
-    if len(prefix) > 0:
-        prefix = prefix + '_'
-    c = Contact(street_address=f['%sstreet_address' % prefix],
-                postal_code=f['%spostal_code' % prefix],
-                post_office=f['%spost_office' % prefix],
-                country=f['%scountry' % prefix],
-                phone=f['%sphone' % prefix],
-                sms=f['%ssms' % prefix],
-                email=f['%semail' % prefix],
-                homepage=f['%shomepage' % prefix])
+def contact_from_dict(d):
+    if d is None:
+        return None
     
-    if f.has_key('organization_name'):
-        c.organization_name = f['%sorganization_name' % prefix]
+    try:
+        c = Contact(street_address=d['street_address'],
+                    postal_code=d['postal_code'],
+                    post_office=d['post_office'],
+                    country=d['country'],
+                    phone=d['phone'],
+                    sms=d['sms'],
+                    email=d['email'],
+                    homepage=d['homepage'])
+    except:
+        return None
+    
+    if d.has_key('organization_name') and len(d['organization_name']) > 5:
+        c.organization_name = d['organization_name']
     else:
-        c.first_name = f['%sfirst_name' % prefix]
-        c.given_names = f['%sgiven_names' % prefix]
-        c.last_name = f['%slast_name' % prefix]
+        c.first_name = d['first_name']
+        c.given_names = d['given_names']
+        c.last_name = d['last_name']
     return c
-
 
 @transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
@@ -51,7 +53,7 @@ def person_application(request, template_name='membership/new_person_application
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
-                person = contact_from_form(f)
+                person = contact_from_dict(f)
                 person.save()
                 membership = Membership(type='P', status='N',
                                         person=person,
@@ -72,92 +74,141 @@ def person_application(request, template_name='membership/new_person_application
     return render_to_response(template_name, {"form": application_form},
                               context_instance=RequestContext(request))
 
-@transaction.commit_manually
 def organization_application(request, template_name='membership/new_organization_application.html'):
     if request.method == 'POST':
-        application_form = OrganizationApplicationForm(request.POST)
+        form = OrganizationApplicationForm(request.POST)
         
-        if application_form.is_valid():
-            f = application_form.cleaned_data
-            try:
-                organization = contact_from_form(f)
-                organization.save()
-                membership = Membership(type='O', status='N',
-                                        organization=organization,
-                                        nationality=f['nationality'],
-                                        municipality=f['municipality'],
-                                        extra_info=f['extra_info'])
-                membership.save()
-                transaction.commit()
-                request.session.set_expiry(0) # make this expire when the browser exits
-                request.session['new_membership_id'] = membership.id
-                logging.debug("Registered session, membership id: %i." %request.session['new_membership_id'])
-                logging.info("New application %s from %s:." % (str(organization), request.META['REMOTE_ADDR']))
-                return redirect('organization_application_add_contacts', membership.id)
-            except Exception, e:
-                transaction.rollback()
-                logging.error("Encountered %s" % repr(e))
-                logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
-                return redirect('new_application_fail')
+        if form.is_valid():
+            f = form.cleaned_data
+            organization = contact_from_dict(f)
+            membership = Membership(type='O', status='N',
+                                    nationality=f['nationality'],
+                                    municipality=f['municipality'],
+                                    extra_info=f['extra_info'])
+
+            request.session.set_expiry(0) # make this expire when the browser exits
+            request.session['membership'] = membership.__dict__.copy()
+            request.session['organization'] = organization.__dict__.copy()
+            return redirect('organization_application_add_contact', 'person')
     else:
-        application_form = OrganizationApplicationForm()
-    return render_to_response(template_name, {"form": application_form},
+        form = OrganizationApplicationForm()
+    return render_to_response(template_name, {"form": form},
                               context_instance=RequestContext(request))
 
-def organization_application_add_contacts(request, id, template_name='membership/organization_application_add_contacts.html'):
-    if str(request.session['new_membership_id']) != str(id):
-        return HttpResponseForbidden()
-    return render_to_response(template_name, {"membership": Membership.objects.get(id=id)},
-                              context_instance=RequestContext(request))
-
-def organization_application_contact_create_update(request, type, id, template_name='membership/organization_application_contact_create_update.html'):
-    if str(request.session["new_membership_id"]) != str(id):
-        return HttpResponseForbidden("Access denied")
-    if type not in ['person', 'billing_contact', 'tech_contact']:
+def organization_application_add_contact(request, contact_type, template_name='membership/new_organization_application_add_contact.html'):
+    forms = ['person', 'billing_contact', 'tech_contact']
+    if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
     
-    class Form(ModelForm):
-        class Meta:
-            model = Contact
-            fields = ('first_name', 'given_names', 'last_name', 'street_address',
-                      'postal_code', 'post_office', 'country', 'phone', 'sms',
-                      'email', 'homepage')
-    
-    membership = Membership.objects.get(id=id)
-    contact = None
-    contact_form = None
-    contact_type = ''
-    if type == 'person':
-        contact = membership.person
-        contact_type = _('Administrative contact')
-    elif type == 'billing_contact':
-        contact = membership.billing_contact
-        contact_type = _('Billing contact')
-    elif type == 'tech_contact':
-        contact = membership.tech_contact
-        contact_type = _('Technical contact')
+    if contact_type == 'person':
+        type_text = 'Administrative contact'
+    elif contact_type == 'billing_contact':
+        type_text = 'Billing contact'
+    elif contact_type == 'tech_contact':
+        type_text = 'Technical contact'
     
     if request.method == 'POST':
-        form = Form(request.POST, instance=contact)
-        form.save()
-        if type == 'person':
-            membership.person = form.instance
-        elif type == 'billing_contact':
-            membership.billing_contact = form.instance
-        elif type == 'tech_contact':
-            membership.tech_contact = form.instance
-        membership.save()
-        return redirect('organization_application_add_contacts', membership.id)
+        form = PersonContactForm(request.POST)
+        if form.is_valid() or len(form.changed_data) == 0:
+            if form.is_valid():
+                f = form.cleaned_data
+                contact = contact_from_dict(f)
+                request.session[contact_type] = contact.__dict__.copy()
+            else:
+                request.session[contact_type] = None
+            next_idx = forms.index(contact_type) + 1
+            if next_idx == len(forms):
+                return redirect('organization_application_review')
+            return redirect('organization_application_add_contact', forms[next_idx])
     else:
-        if contact is not None:
-            contact_form = Form(instance=contact)
+        if request.session.has_key(contact_type):
+            form = PersonApplicationForm(request.session[contact_type])
         else:
-            contact_form = Form()
-    
-    return render_to_response(template_name, {"form": contact_form,
-                                              "type": type,
-                                              "contact_type": contact_type},
+            form = PersonApplicationForm()
+    return render_to_response(template_name, {"form": form, "contact_type": type_text},
                               context_instance=RequestContext(request))
+
+def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
+    membership = Membership(type='O', status='N',
+                            nationality=request.session['membership']['nationality'],
+                            municipality=request.session['membership']['municipality'],
+                            extra_info=request.session['membership']['extra_info'])
+    
+    def get_or_none(dict, key):
+        if dict.has_key(key):
+            return dict[key]
+        else:
+            return None
+    
+    organization = contact_from_dict(request.session['organization'])
+    person = contact_from_dict(get_or_none(request.session, 'person'))
+    billing_contact = contact_from_dict(get_or_none(request.session, 'billing_contact'))
+    tech_contact = contact_from_dict(get_or_none(request.session, 'tech_contact'))
+    
+    forms = []
+    combo_dict = request.session['membership']
+    for k, v in request.session['organization'].items():
+        combo_dict[k] = v
+    forms.append(OrganizationApplicationForm(combo_dict))
+    if person:
+        forms.append(PersonContactForm(request.session['person']))
+        forms[-1].name = _("Administrative contact")
+    if billing_contact:
+        forms.append(PersonContactForm(request.session['billing_contact']))
+        forms[-1].name = _("Billing contact")
+    if tech_contact:
+        forms.append(PersonContactForm(request.session['tech_contact']))
+        forms[-1].name = _("Technical contact")
+    return render_to_response(template_name, {"forms": forms},
+                              context_instance=RequestContext(request))
+
+@transaction.commit_manually
+def organization_application_save(request):
+    try:
+        membership = Membership(type='O', status='N',
+                                nationality=request.session['membership']['nationality'],
+                                municipality=request.session['membership']['municipality'],
+                                extra_info=request.session['membership']['extra_info'])
+        
+        organization = contact_from_dict(request.session['organization'])
+        
+        def get_or_none(dict, key):
+            if dict.has_key(key):
+                return dict[key]
+            else:
+                return None
+        
+        person = contact_from_dict(get_or_none(request.session, 'person'))
+        billing_contact = contact_from_dict(get_or_none(request.session, 'billing_contact'))
+        tech_contact = contact_from_dict(get_or_none(request.session, 'tech_contact'))
+        
+        organization.save()
+        membership.organization = organization
+        if person:
+            person.save()
+            membership.person = person
+        if billing_contact:
+            billing_contact.save()
+            membership.billing_contact = billing_contact
+        if tech_contact:
+            tech_contact.save()
+            membership.tech_contact = tech_contact
+        
+        membership.save()
+        transaction.commit()
+        request.session.set_expiry(0) # make this expire when the browser exits
+        for i in ['membership', 'person', 'billing_contact', 'tech_contact']:
+            try:
+                del request.session[i]
+            except:
+                pass
+        logging.info("New application %s from %s:." % (str(organization), request.META['REMOTE_ADDR']))
+        return redirect('new_organization_application_success')
+    except Exception, e:
+        transaction.rollback()
+        logging.error("Encountered %s" % repr(e))
+        logging.error("Transaction rolled back.")
+        return redirect('new_application_fail')
 
 def check_alias_availability(request):
     pass

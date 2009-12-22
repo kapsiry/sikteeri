@@ -3,12 +3,14 @@
 
 {% block content %}
 <h2>{{ contact_type }}</h2>
+<p>Jos jätät lomakkeen tyhjäksi, olettaa järjestelmä ettet halua tallentaa kyseisenlaista
+yhteystietoa.</p>
 <form method="POST">
 <div id="new_application">
   {{ form.as_p }}
 <p>
   <label for="submit_button"></label>
-  <input id="submit_button" type="submit" value="{% trans "Save contact" %}" />
+  <input id="submit_button" type="submit" value="{% trans "Save contact or skip to next stage" %}" />
 </p>
 </div>
 </form>
