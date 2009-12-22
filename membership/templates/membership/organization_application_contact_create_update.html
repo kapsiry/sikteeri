@@ -2,17 +2,15 @@
 {% load i18n %}
 
 {% block content %}
-
+<h2>{{ contact_type }}</h2>
 <form method="POST">
 <div id="new_application">
-{{ membership_form.as_p }}
-
-{% for form in contact_forms %}
-  {% trans form.translate_string %}
   {{ form.as_p }}
-{% endfor %}
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Save contact" %}" />
+</p>
 </div>
-<input type="submit" value="Submit" />
 </form>
 
 {% endblock %}

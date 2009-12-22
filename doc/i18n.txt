@@ -1,0 +1,68 @@
+# Sikteerin lokalisointi #
+
+Sikteerin lähdekoodit on kirjoitettu hyvän tavan mukaisesti englanniksi. Kaikki
+käyttäjälle näkyvät tekstit kulkevat gettext-kirjaston läpi niin, että gettext
+korvaa suomenkieliselle käyttäjälle tekstit suomenkielisillä versioilla.
+Vastaavasti kielituen lisääminen ruotsille, saamelle tai klingonille vaatii vain
+käännöstiedostojen lisäämisen. Tarkasti Django-ympäristön kansainvälistämisestä
+on kerrottu [Djangon omassa dokumentaatiossa][djangoi18n].
+
+ [djangoi18n]: http://docs.djangoproject.com/en/dev/topics/i18n/ "Django documentation - Internationalization"
+
+Tässä on kuvattu lyhyesti miten kansainvälistys toimii sikteerissä.
+
+## Tekstien kääntäminen ##
+
+Aluksi on luotava pohja käännökselle ajamalla kunkin modulin hakemistossa käsky
+
+<code>
+ $ djangoadmin.py makemessages -a
+</code>
+
+Käsky luo tiedoston **locale/fi/LC_MESSAGES/django.po**, jossa on kaikki
+ohjelmassa käytetyt käännettäväksi tarkoitetut merkkijonot. Tiedoston
+merkkijonot näyttävät esimerkiksi tältä:
+
+<code>
+ #: forms.py:17
+ msgid "Street address required"
+ msgstr ""
+</code>
+
+**msgstr ""** tarkoittaa, että tekstiä ei ole vielä käännetty. Jos ohjelmaa
+yrittää käyttää, näkyy englanninkielinen **msgid** mukainen teksti käyttäjälle.
+Esimerkin merkkijono voitaisiin kääntää esimerkiksi seuraavasti:
+
+<code>
+ #: forms.py:17
+ msgid "Street address required"
+ msgstr "Katuosoite vaaditaan"
+</code>
+
+Kääntäessä on hyvä muistaa tarkistaa, että käännetty teksti sopii asiayhteyteen.
+Kommentissa oleva tiedostonnimi ja rivinumero auttaa löytämään missä teksti
+tulee näkymään.
+
+Mikäli käännöstiedostosta löytyy merkintä "fuzzy", se tarkoittaa että käännös on
+muodostettu automaattisesti ja on todennäköisesti väärä. "fuzzy"-merkintä tulee
+poistaa, kun ihminen on korjannut käännöksen oikeaksi. "fuzzy"-merkityt
+käännökset jäävät täysin huomioimatta ja ne ovat vain käännöksen tekijän avuksi.
+
+## Käännöksen käyttöönotto ##
+
+Ennen kuin django pystyy käyttämään käännöstä, se pitää muuttaa sisäiseen
+"käännettyyn" muotoon. Tämä tarvitsee myös tehdä kullekin modulille erikseen:
+
+<code>
+ $ djangoadmin.py compilemessages
+</code>
+
+Käännös luo tarvitun **django.mo** tiedoston, joka sisältää koneen tulkittavan
+version käännöksestä. Nyt käännöksen pitäisi näkyä myös käyttäjälle.
+
+## Lopuksi ##
+
+Sikteerin git-repositoriossa löytyy skripti **build.sh**, joka kääntää
+viesteistä konekielisen version. Uudet **.po** tiedostot pitää kuitenkin
+päivittää käsin, jos koodissa tehdään muutoksia.
+

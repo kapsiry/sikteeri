@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<form method="POST">
+<div id="new_application">
+  {{ form.as_p }}
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Send application" %}" />
+</p>
+</div>
+</form>
+{% endblock %}
