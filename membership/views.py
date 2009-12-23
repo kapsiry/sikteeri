@@ -92,7 +92,8 @@ def organization_application(request, template_name='membership/new_organization
             return redirect('organization_application_add_contact', 'person')
     else:
         form = OrganizationApplicationForm()
-    return render_to_response(template_name, {"form": form},
+    return render_to_response(template_name, {"form": form,
+                                              "title": _('Organization application')},
                               context_instance=RequestContext(request))
 
 def organization_application_add_contact(request, contact_type, template_name='membership/new_organization_application_add_contact.html'):
@@ -125,7 +126,9 @@ def organization_application_add_contact(request, contact_type, template_name='m
             form = PersonApplicationForm(request.session[contact_type])
         else:
             form = PersonApplicationForm()
-    return render_to_response(template_name, {"form": form, "contact_type": type_text},
+    return render_to_response(template_name, {"form": form, "contact_type": type_text,
+                                              "step_number": forms.index(contact_type) + 2,
+                                              "title": _('Organization application') + ' - ' + type_text},
                               context_instance=RequestContext(request))
 
 def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
@@ -159,7 +162,8 @@ def organization_application_review(request, template_name='membership/new_organ
     if tech_contact:
         forms.append(PersonContactForm(request.session['tech_contact']))
         forms[-1].name = _("Technical contact")
-    return render_to_response(template_name, {"forms": forms},
+    return render_to_response(template_name, {"forms": forms,
+                                              "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))},
                               context_instance=RequestContext(request))
 
 @transaction.commit_manually

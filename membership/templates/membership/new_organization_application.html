@@ -3,7 +3,23 @@
 
 {% block content %}
 <h2>{% trans "Organization member's application form" %}</h2>
-Osa 1/4.
+<p>Osa 1/5.</p>
+<p>
+  Voit missä tahansa vaiheessa palata taaksepäin selaimen back-näppäimellä ja
+  täyttää lomakkeen uudestaan. Lomake lähetetään vasta kun hyväksyt tiedot
+  vaiheessa <em>Tietojen tarkistus</em>.
+</p>
+<p>
+  Hakemus koostuu seuraavista vaiheista. Olet nyt ensimmäisessä vaiheessa.
+</p>
+<ol>
+  <li><strong>Järjestön yleistiedot</strong></li>
+  <li>Hallintoyhteystieto</li>
+  <li>Laskutusyhteystieto</li>
+  <li>Tekninen yhteystieto</li>
+  <li>TODO: Palveluiden lisääminen</li>
+  <li>Tietojen tarkistus</li>
+</ol>
 <form method="POST">
 <div id="new_application">
   {{ form.as_p }}
