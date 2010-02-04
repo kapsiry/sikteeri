@@ -12,7 +12,7 @@ import os
 from datetime import datetime
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
-sys.path.insert(0, '/Users/joneskoo/git/django-sikteeri')
+sys.path.insert(0, '..')
 
 from django.conf import settings
 import logging
