@@ -80,7 +80,7 @@
         }
     },
     {
-        "pk": 1, 
+        "pk": 2, 
         "model": "membership.fee",
         "fields": {
             "type": "O",
@@ -89,7 +89,7 @@
         }
     },
     {
-        "pk": 1, 
+        "pk": 3, 
         "model": "membership.fee",
         "fields": {
             "type": "S",
