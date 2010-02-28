@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block content %}
+{% include "membership/paginating_snippet.html" %}
 <ul>
 {% for bill in bill_list %}
 <p {% if bill.is_due %}style="color: red"{% endif %}>
@@ -18,4 +19,5 @@
 {% trans "No bill matches this filter, try seeing the full list." %}
 {% endfor %}
 </ul>
+{% include "membership/paginating_snippet.html" %}
 {% endblock %}

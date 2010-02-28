@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block content %}
+{% include "membership/paginating_snippet.html" %}
 <ul>
 {% for payment in payment_list %}
     {{ payment }}
@@ -9,4 +10,5 @@
 {% trans "No payment matches this filter, try seeing the full list." %}
 {% endfor %}
 </ul>
+{% include "membership/paginating_snippet.html" %}
 {% endblock %}

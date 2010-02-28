@@ -2,12 +2,15 @@
 {% load i18n %}
 
 {% block content %}
+{% include "membership/paginating_snippet.html" %}
 <ul>
 {% for member in member_list %}
     <li><span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
         <span class="status">{{ member.get_status_display }}</span></li>
+
 {% empty %}
 {% trans "No membership matches this filter, try seeing the full list" %}
 {% endfor %}
 </ul>
+{% include "membership/paginating_snippet.html" %}
 {% endblock %}
