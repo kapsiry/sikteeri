@@ -18,36 +18,13 @@ import simplejson
 
 from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
-from utils import log_change
+from utils import log_change, contact_from_dict, serializable_membership_info
+from utils import save_membership_approved_comment, save_membership_preapproved_comment
 
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
                               context_instance=RequestContext(request))
-
-def contact_from_dict(d):
-    if d is None:
-        return None
-    
-    try:
-        c = Contact(street_address=d['street_address'],
-                    postal_code=d['postal_code'],
-                    post_office=d['post_office'],
-                    country=d['country'],
-                    phone=d['phone'],
-                    sms=d['sms'],
-                    email=d['email'],
-                    homepage=d['homepage'])
-    except:
-        return None
-    
-    if d.has_key('organization_name') and len(d['organization_name']) > 5:
-        c.organization_name = d['organization_name']
-    else:
-        c.first_name = d['first_name']
-        c.given_names = d['given_names']
-        c.last_name = d['last_name']
-    return c
 
 @transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
@@ -67,7 +44,7 @@ def person_application(request, template_name='membership/new_person_application
                 membership.save()
                 transaction.commit()
                 logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
-                return redirect('new_person_application_success')                
+                return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
                 logging.error("Encountered %s" % repr(e))
@@ -210,7 +187,7 @@ def organization_application_save(request):
                 del request.session[i]
             except:
                 pass
-        logging.info("New application %s from %s:." % (str(organization), request.META['REMOTE_ADDR']))
+        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         return redirect('new_organization_application_success')
     except Exception, e:
         transaction.rollback()
@@ -247,6 +224,25 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return membership_edit_inline(request, id, template_name)
 
 @transaction.commit_on_success
+def membership_do_approve(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    if membership.status != 'P':
+        logging.debug("Tried to approve membership in state %s (!=P)." % membership.status)
+    membership.status = 'A' # XXX hardcoding
+    membership.save()
+    save_membership_approved_comment(request.user, membership)
+    billing_cycle = BillingCycle(membership=membership)
+    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
+    bill = Bill(cycle=billing_cycle)
+    bill.save()
+    bill.send_as_email()
+    log_change(object, request.user, change_message="Approved")
+
+def membership_approve(request, id):
+    membership_do_approve(request, id)
+    return redirect('membership_edit', id)
+
+@transaction.commit_on_success
 def membership_do_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'N':
@@ -254,97 +250,32 @@ def membership_do_preapprove(request, id):
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = request.user
-    comment.comment = "Preapproved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    comment.save()
+    save_membership_preapproved_comment(request.user, membership)
     log_change(membership, request.user, change_message="Preapproved")
 
 def membership_preapprove(request, id):
     membership_do_preapprove(request, id)
     return redirect('membership_edit', id)
 
-def membership_preapprove_ajax(request, id):
+def membership_preapprove_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     membership_do_preapprove(request, id)
     return HttpResponse(id, mimetype='text/plain')
 
-def membership_preapprove_many(request, id_list):
-    for id in id_list:
-        membership_preapprove(id)
-
-def membership_approve(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    membership.status = 'A' # XXX hardcoding
-    membership.save()
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = request.user
-    comment.comment = "Approved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    comment.save()
-    billing_cycle = BillingCycle(membership=membership)
-    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(cycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
-    log_change(object, request.user, change_message="Approved")
-    return redirect('membership_edit', id)
-
-def membership_approve_many(request, id_list):
-    for id in id_list:
-        membership_approve(id)
-
 def handle_json(request):
     msg = cjson.decode(request.raw_post_data)
-    funcs = {'PREAPPROVE': membership_preapprove_many}
+    funcs = {'PREAPPROVE': membership_preapprove_single_json}
+    if not funcs.has_key(content['requestType']):
+        raise NotImplementedError()
     return funcs[content['requestType']](request, msg['payload'])
 
 def membership_json_detail(request, id):
-    # A naive method of dict construction is used here. It's not very fancy,
-    # but Django's serialization seems to take such a tedious route that this
-    # seems simpler.
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
-    
-    json_obj = {}
-    for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'extra_info']:
-        # Get the translated value for choice fields, not database field values
-        if attr in ['type', 'status']:
-            attr_val = getattr(membership, 'get_' + attr + '_display')()
-        else:
-            attr_val = getattr(membership, attr, u'')
+    json_obj = serializable_membership_info(membership)
         
-        if isinstance(attr_val, basestring):
-            json_obj[attr] = attr_val
-        elif isinstance(attr_val, datetime):
-            json_obj[attr] = attr_val.ctime()
-        else:
-            json_obj[attr] = str(attr_val)
-    json_obj['str'] = str(membership)
-    
-    contacts_json_obj = {}
-    json_obj['contacts'] = contacts_json_obj
-    for attr in ['person', 'billing_contact', 'tech_contact', 'organization']:
-        attr_val = getattr(membership, attr, None)
-        if not attr_val:
-            continue
-        
-        contact_json_obj = {}
-        for c_attr in ['first_name', 'given_names', 'last_name',
-                       'organization_name', 'street_address', 'postal_code',
-                       'post_office', 'country', 'phone', 'sms', 'email',
-                       'homepage']:
-            c_attr_val = getattr(attr_val, c_attr, u'')
-            contact_json_obj[c_attr] = c_attr_val
-            contacts_json_obj[attr] = contact_json_obj
-    
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
     #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
+

@@ -25,7 +25,7 @@ urlpatterns = patterns('',
     
     url(r'memberships/pre-approval/json_detail/(\d+)/$', 'membership.views.membership_json_detail',
         name='membership_json_detail'),
-    url(r'memberships/pre-approval/preapprove_ajax/(\d+)/$', 'membership.views.membership_preapprove_ajax', name='membership_preapprove_ajax'),
+    url(r'memberships/pre-approval/preapprove_ajax/(\d+)/$', 'membership.views.membership_preapprove_json', name='membership_preapprove_json'),
     
     url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
 )
