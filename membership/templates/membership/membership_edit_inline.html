@@ -4,7 +4,7 @@
 
 <form method="POST">
 {{ form.as_p }}
-<input type="submit" value="Submit" />
+<input type="submit" value="{% trans "Save membership changes" %}" />
 </form>
 <a href="{% url membership_preapprove membership.id %}">{% trans "Preapprove" %}</a>
 <a href="{% url membership_approve membership.id %}">{% trans "Approve" %}</a>
@@ -46,6 +46,6 @@
     <input type="hidden" name="next" value="{% url membership_edit membership.id %}" />
     <tr>
         <td></td>
-        <td><input type="submit" class="submit-post" value="Post"></td>
+        <td><input type="submit" class="submit-post" value="{% trans "Comment on membership" %}"></td>
     </tr>
 </form>
