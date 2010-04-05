@@ -13,15 +13,22 @@ Tässä on kuvattu lyhyesti miten kansainvälistys toimii sikteerissä.
 
 ## Tekstien kääntäminen ##
 
-Aluksi on luotava pohja käännökselle ajamalla kunkin modulin hakemistossa käsky
+Aluksi on luotava pohja käännökselle ajamalla kunkin moduulin hakemistossa
+käsky
 
 <code>
  $ djangoadmin.py makemessages -a
 </code>
 
-Käsky luo tiedoston **locale/fi/LC_MESSAGES/django.po**, jossa on kaikki
-ohjelmassa käytetyt käännettäväksi tarkoitetut merkkijonot. Tiedoston
-merkkijonot näyttävät esimerkiksi tältä:
+Ja niiden moduulien, joista löytyy käännettävää JavaScriptiä käsky
+
+<code>
+ $ django-admin.py makemessages -d djangojs -l fi
+</code>
+
+Käsky luo tiedoston **locale/fi/LC_MESSAGES/django.po** (tai ...djangojs.po),
+jossa on kaikki ohjelmassa käytetyt käännettäväksi tarkoitetut
+merkkijonot. Tiedoston merkkijonot näyttävät esimerkiksi tältä:
 
 <code>
  #: forms.py:17
@@ -57,12 +64,12 @@ Ennen kuin django pystyy käyttämään käännöstä, se pitää muuttaa sisäi
  $ djangoadmin.py compilemessages
 </code>
 
-Käännös luo tarvitun **django.mo** tiedoston, joka sisältää koneen tulkittavan
-version käännöksestä. Nyt käännöksen pitäisi näkyä myös käyttäjälle.
+Käännös luo tarvitun **django.mo** (tai **djangojs.mo**) tiedoston, joka
+sisältää koneen tulkittavan version käännöksestä. Nyt käännöksen pitäisi näkyä
+myös käyttäjälle.
 
 ## Lopuksi ##
 
 Sikteerin git-repositoriossa löytyy skripti **build.sh**, joka kääntää
 viesteistä konekielisen version. Uudet **.po** tiedostot pitää kuitenkin
 päivittää käsin, jos koodissa tehdään muutoksia.
-
