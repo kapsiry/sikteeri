@@ -101,6 +101,7 @@ def serializable_membership_info(membership):
     seems simpler.
     """
     json_obj = {}
+    # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
                  'nationality', 'extra_info']:
         # Get the translated value for choice fields, not database field values
@@ -117,6 +118,7 @@ def serializable_membership_info(membership):
             json_obj[attr] = unicode(attr_val)
     json_obj['str'] = unicode(membership)
 
+    # Contacts
     contacts_json_obj = {}
     json_obj['contacts'] = contacts_json_obj
     for attr in ['person', 'billing_contact', 'tech_contact', 'organization']:
@@ -132,6 +134,36 @@ def serializable_membership_info(membership):
             c_attr_val = getattr(attr_val, c_attr, u'')
             contact_json_obj[c_attr] = c_attr_val
             contacts_json_obj[attr] = contact_json_obj
+
+    # Events (comments + log entries)
+    event_list = []
+    json_obj['events'] = event_list
+    
+    comments = Comment.objects.filter(object_pk=membership.pk)
+    for comment in comments:
+        d = { 'user_name': unicode(comment.user),
+              'text': comment.comment,
+              'date': comment.submit_date }
+        event_list.append(d)
+
+    log_entries = membership.logs.all()
+    for entry in log_entries:
+        d = { 'user_name': unicode(entry.user),
+              'text': "%s %s" % (unicode(entry.action_flag), unicode(entry.change_message)),
+              'date': entry.action_time }
+        event_list.append(d)
+
+    def event_cmp(x, y):
+        if x['date'] > y['date']:
+            return 1
+        if x['date'] == y['date']:
+            return 0
+        return -1
+
+    event_list.sort(event_cmp)
+
+    for event in event_list:
+        event['date'] = event['date'].ctime()
 
     return json_obj
 

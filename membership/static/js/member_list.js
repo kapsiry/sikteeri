@@ -36,7 +36,7 @@ function getMemberDetails (id, callbackFunction) {
  */
 function makeMembershipDetailObject(id) {
     var obj = $("<div>").addClass("membership_details");
-    obj.table = $("<table>").addClass("infobox").hide();
+    obj.table = $("<table>").addClass("infobox");
     obj.title = $("<a>").html(gettext("Membership details")).addClass("member_detail_title");
     obj.title.click(function(){return function(){obj.table.slideToggle();}}());
     obj.append(obj.title);
@@ -80,7 +80,7 @@ function translateContactType (text) {
  */
 function makeContactDetailObject (id, type) {
     var obj = $("<div>").addClass("contact_details").addClass(type + "_contact_details");
-    obj.table = $("<table>").addClass("infobox").hide();
+    obj.table = $("<table>").addClass("infobox");
     obj.title = $("<a>").html(translateContactType(type)).addClass("member_detail_title");
     
     obj.title.click(function(){return function(){obj.table.slideToggle();}}());
@@ -122,6 +122,40 @@ function makeContactDetailObject (id, type) {
 }
 
 /**
+ * Creates the event list object.
+ */
+function makeMembershipEventsObject (id) {
+    var obj = $("<div>").addClass("membership_events");
+    obj.table = $("<table>").addClass("infobox");
+    obj.title = $("<a>").html(gettext("Events")).addClass("member_detail_title");
+    
+    obj.title.click(function(){return function(){obj.table.slideToggle();}}());
+    obj.append(obj.title);
+    obj.append(obj.table);
+    
+    obj.populate = function(obj) {
+	var data = $(memberDetailStore[id]["events"]);
+	obj.table.html("");
+	if (data.length == 0) {
+	    return false;
+	}
+	function addRow (elem, title, key) {
+	    var rowElem = $("<tr>").addClass("table_row");
+	    rowElem.append($("<td>").html(title).addClass("key_column"));
+	    rowElem.append($("<td>").html(key).addClass("value_column"));
+	    elem.append(rowElem);
+	}
+	for (var i=0; i<data.length;i++) {
+	    var item = data[i];
+	    addRow(obj.table, item["user_name"] + ": " + item["date"], item["text"]);
+	}
+	
+	return true;
+    }
+    return obj;
+}
+
+/**
  * Initializes member list items for AJAX details.
  */
 function addMemberDetails (item) {
@@ -139,6 +173,9 @@ function addMemberDetails (item) {
     
     item.organizationContactDetails = makeContactDetailObject(item.attr("id"), "organization");
     item.memberDetails.append(item.organizationContactDetails);
+    
+    item.membershipEvents = makeMembershipEventsObject(item.attr("id"));
+    item.memberDetails.append(item.membershipEvents);
     
     item.viewDetailsButton = $("<a>").html(gettext("show details")).addClass("cart_function");  
     item.buttons.append(item.viewDetailsButton);
@@ -171,6 +208,9 @@ function addMemberDetails (item) {
 				     }
 				     if (!item.organizationContactDetails.populate(item.organizationContactDetails, "organization")) {
 					 item.organizationContactDetails.hide();
+				     }
+				     if (!item.membershipEvents.populate(item.membershipEvents)) {
+					 item.membershipEvents.hide();
 				     }
 				     item.memberDetails.slideDown();
 				     item.viewDetailsButton.hide();

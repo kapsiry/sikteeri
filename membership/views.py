@@ -117,18 +117,12 @@ def organization_application_review(request, template_name='membership/new_organ
                             nationality=request.session['membership']['nationality'],
                             municipality=request.session['membership']['municipality'],
                             extra_info=request.session['membership']['extra_info'])
-    
-    def get_or_none(dict, key):
-        if dict.has_key(key):
-            return dict[key]
-        else:
-            return None
-    
-    organization = contact_from_dict(request.session['organization'])
-    person = contact_from_dict(get_or_none(request.session, 'person'))
-    billing_contact = contact_from_dict(get_or_none(request.session, 'billing_contact'))
-    tech_contact = contact_from_dict(get_or_none(request.session, 'tech_contact'))
-    
+
+    organization = contact_from_dict(request.session.get('organization'))
+    person = contact_from_dict(request.session.get('person'))
+    billing_contact = contact_from_dict(request.session.get('billing_contact'))
+    tech_contact = contact_from_dict(request.session.get('tech_contact'))
+
     forms = []
     combo_dict = request.session['membership']
     for k, v in request.session['organization'].items():
