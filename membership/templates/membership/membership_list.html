@@ -3,14 +3,65 @@
 
 {% block content %}
 {% include "membership/paginating_snippet.html" %}
-<ul>
+<ul id="member_list">
 {% for member in member_list %}
-    <li><span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
-        <span class="status">{{ member.get_status_display }}</span></li>
+  {% ifequal member.status "N" %}
+    <li class="preapprovable" id="{{ member.id }}">
+  {% else %}
+    <li id="{{ member.id }}">
+  {% endifequal %}
+      <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
+      <span class="status">{{ member.get_status_display }}</span>
+    </li>
 
 {% empty %}
 {% trans "No membership matches this filter, try seeing the full list" %}
 {% endfor %}
 </ul>
 {% include "membership/paginating_snippet.html" %}
+
+<script type="text/javascript">
+/**
+ * Saves preapprove-cart contents. (Preapproves selected members that are in
+ * state "New".)
+ */
+function preapprove () {
+  var ids = [];
+  $("#preapprovable_cart").children().each(function (idx, object) {
+    var id = $(object).attr("id");
+    ids.push(id);
+  });
+  for (var idx in ids) {
+    var id = ids[idx];
+    // foo, here?
+  }
+  for (var idx in ids) {
+    var id = ids[idx];
+    jQuery.get("preapprove_ajax/" + id + "/", function (data) { $("#" + data).remove()});
+  }
+}
+
+/**
+ * Adds details to member list items. Also adds a preapprove cart and buttons
+ * if the class preapprovable is found from the list item.
+ */
+$("#member_list").children().each(function (idx, object) {
+  var item = enhanceMemberItem($(object));
+  addMemberDetails(item);
+  
+  var cartCreated = false;
+  if ($(object).hasClass("preapprovable")) {
+    if (!cartCreated) {
+      var cart = $("<div>").addClass("cart");
+      cart.append($("<h3>").html("{% trans "Pre-approvable cart" %}"));
+      cart.append($("<ul>").attr("id", "preapprovable_cart"));
+      cart.append($("<input type=\"submit\" value=\"{% trans "Preapprove these" %}\" onclick=\"preapprove()\">"));
+      $("#member_list").after(cart);
+      cartCreated = true;
+    }
+    preapproveify(item);
+  }
+});
+
+</script>
 {% endblock %}

@@ -239,7 +239,47 @@ code {
     font-family: monospace;
 }
 
+table.infobox {
+    margin: 0em 0 1em 1em;
+}
 
+.table_row td {
+    padding: 0.3em;
+    margin: 0;
+}
 
+.key_column {
+    float: left;
+    width: 10em;
+    border: 1px;
+}
 
+.value_column {
+    float: left;
+    border: 1px solid #ccc;
+    background-color: white;
+}
 
+.cart_function {
+    margin-left: 1ex;
+}
+
+.cart_function:hover {
+    cursor: pointer;
+}
+
+.cart {
+    margin-top: 1em;
+    /* clear: both; */
+    background-color: #e7e7e7;
+    border: 1px solid #777878;
+    padding: 0.2em 1em 1em 1em;
+}
+
+.member_detail_title {
+    margin-left: 2em;
+}
+
+.member_detail_title:hover {
+    cursor: pointer;
+}

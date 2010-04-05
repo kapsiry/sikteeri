@@ -4,6 +4,8 @@ from membership.models import *
 from membership.forms import *
 
 urlpatterns = patterns('',
+    (r'jsi18n/$', 'django.views.i18n.javascript_catalog', {'packages': ('membership')}),
+    
     url(r'persons/new/$', 'membership.views.person_application', name='person_application'),
     url(r'organizations/new/$', 'membership.views.organization_application',
         name='organization_application'),
@@ -17,8 +19,17 @@ urlpatterns = patterns('',
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
     url(r'memberships/preapprove/(\d+)/$', 'membership.views.membership_preapprove', name='membership_preapprove'),
+
     url(r'memberships/approve/(\d+)/$', 'membership.views.membership_approve', name='membership_approve'),
+    url(r'memberships/json_detail/(\d+)/$', 'membership.views.membership_json_detail', name='membership_json_detail'),
+    
+    url(r'memberships/pre-approval/json_detail/(\d+)/$', 'membership.views.membership_json_detail',
+        name='membership_json_detail'),
+    url(r'memberships/pre-approval/preapprove_ajax/(\d+)/$', 'membership.views.membership_preapprove_ajax', name='membership_preapprove_ajax'),
+    
+    url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
 )
+
 
 urlpatterns += patterns('django.views.generic',
     url(r'memberships/$', 'list_detail.object_list',
@@ -26,7 +37,7 @@ urlpatterns += patterns('django.views.generic',
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': 100}, name='membership_list'),
-    url(r'membership/pre-approval/$', 'list_detail.object_list',
+    url(r'memberships/pre-approval/$', 'list_detail.object_list',
         {'queryset': Membership.objects.filter(status__exact='N'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
@@ -53,10 +64,10 @@ urlpatterns += patterns('django.views.generic',
          'template_object_name': 'payment',
          'paginate_by': 100}, name='unknown_payment_list'),
 
-    url(r'new/success/$', 'simple.direct_to_template',
+    url(r'memberships/new/success/$', 'simple.direct_to_template',
         {'template': 'membership/new_person_application_success.html'}, name='new_person_application_success'),
     url(r'organizations/new/success/$', 'simple.direct_to_template',
         {'template': 'membership/new_organization_application_success.html'}, name='new_organization_application_success'),
-    url(r'new/fail/$', 'simple.direct_to_template',
+    url(r'memberships/new/fail/$', 'simple.direct_to_template',
         {'template': 'membership/new_application_fail.html'}, name='new_application_fail'),
 )

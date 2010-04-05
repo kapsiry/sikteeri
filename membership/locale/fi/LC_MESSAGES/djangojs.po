@@ -1,0 +1,127 @@
+# Sikteeri membership module translations
+# Copyright (C) Kapsi Internet-käyttäjät ry
+# This file is distributed under the same license as the sikteeri package.
+# Atte Hinkka <atte.hinkka@kapsi.fi>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-04 22:54+0300\n"
+"PO-Revision-Date: 2010-04-04 22:45+0300\n"
+"Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: static/js/member_list.js:39
+msgid "Membership details"
+msgstr "Jäsenyystiedot"
+
+#: static/js/member_list.js:54
+msgid "Type"
+msgstr "Tyyppi"
+
+#: static/js/member_list.js:55
+msgid "Status"
+msgstr "Tila"
+
+#: static/js/member_list.js:56
+msgid "Created"
+msgstr "Luotu"
+
+#: static/js/member_list.js:57
+msgid "Last changed"
+msgstr "Muokattu"
+
+#: static/js/member_list.js:58
+msgid "Home municipality"
+msgstr "Kotipaikka"
+
+#: static/js/member_list.js:59
+msgid "Nationality"
+msgstr "Kansallisuus"
+
+#: static/js/member_list.js:60
+msgid "Additional information"
+msgstr "Lisätietoja"
+
+#: static/js/member_list.js:70
+msgid "Person contact"
+msgstr "Henkilöyhteystieto"
+
+#: static/js/member_list.js:71
+msgid "Billing contact"
+msgstr "Laskutusyhteystieto"
+
+#: static/js/member_list.js:72
+msgid "Technical contact"
+msgstr "Tekninen yhteystieto"
+
+#: static/js/member_list.js:73
+msgid "Organization"
+msgstr "Yhteisö"
+
+#: static/js/member_list.js:108
+msgid "First name"
+msgstr "Kutsumanimi"
+
+#: static/js/member_list.js:109
+msgid "Given names"
+msgstr "Etunimet"
+
+#: static/js/member_list.js:110
+msgid "Last name"
+msgstr "Sukunimi"
+
+#: static/js/member_list.js:111
+msgid "Organization name"
+msgstr "Yhteisön nimi"
+
+#: static/js/member_list.js:112
+msgid "Street address"
+msgstr "Katuosoite"
+
+#: static/js/member_list.js:113
+msgid "Postal code"
+msgstr "Postinumero"
+
+#: static/js/member_list.js:114
+msgid "Post office"
+msgstr "Postitoimipaikka"
+
+#: static/js/member_list.js:115
+msgid "Country"
+msgstr "Maa"
+
+#: static/js/member_list.js:116
+msgid "Phone number"
+msgstr "Puhelinnumero"
+
+#: static/js/member_list.js:117
+msgid "SMS number"
+msgstr "Tekstiviestinumero"
+
+#: static/js/member_list.js:118
+msgid "E-mail"
+msgstr "Sähköpostiosoite"
+
+#: static/js/member_list.js:119
+msgid "Homepage"
+msgstr "Kotisivu"
+
+#: static/js/member_list.js:144
+msgid "show details"
+msgstr "näytä lisätiedot"
+
+#: static/js/member_list.js:147
+msgid "hide details"
+msgstr "piilota lisätiedot"
+
+#: static/js/member_list.js:194
+msgid "add to pre-approve cart"
+msgstr "lisää esihyväksyntäkoriin"
+
+#: static/js/member_list.js:197
+msgid "remove from pre-approve cart"
+msgstr "poista esihyväksyntäkorista"
