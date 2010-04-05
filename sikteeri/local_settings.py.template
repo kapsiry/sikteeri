@@ -2,3 +2,7 @@ SECRET_KEY = ''
 BANK_ACCOUNT_NUMBER = "123-123"
 BILLING_EMAIL_FROM = "foobar@kapsi.fi"
 MEMBERSHIP_FEE = 30
+
+# Uncomment the following lines to enable more verbose stdout logging.
+#import logging
+#logging.basicConfig(level=logging.DEBUG)

@@ -96,14 +96,12 @@ function makeContactDetailObject (id, type) {
 	}
 	
 	function addRow (elem, title, key) {
+            if ($(data).attr(key) === undefined || $(data).attr(key) == "") {
+		return
+	    }
 	    var rowElem = $("<tr>").addClass("table_row");
 	    rowElem.append($("<td>").html(title).addClass("key_column"));
-	    if ($(data).attr(key) !== undefined) {
-		rowElem.append($("<td>").html(data.attr(key)).addClass("value_column"));
-	    }
-	    else {
-		rowElem.append($("<td>").html("").addClass("value_column"));
-	    }
+	    rowElem.append($("<td>").html(data.attr(key)).addClass("value_column"));
 	    elem.append(rowElem);
 	}
 	addRow(obj.table, gettext("First name"), "first_name");

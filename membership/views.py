@@ -246,9 +246,12 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     # XXX: Inline template name is hardcoded in template :/
     return membership_edit_inline(request, id, template_name)
 
-
+@transaction.commit_on_success
 def membership_do_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
+    if membership.status != 'N':
+        logging.debug("Tried to preapprove membership in state %s (!=N)." % membership.status)
+        return
     membership.status = 'P' # XXX hardcoding
     membership.save()
     comment = Comment()
@@ -266,8 +269,6 @@ def membership_preapprove(request, id):
 
 def membership_preapprove_ajax(request, id):
     membership = get_object_or_404(Membership, id=id)
-    if membership.status != 'N':
-        return HttpResponse(id, mimetype='text/plain')
     membership_do_preapprove(request, id)
     return HttpResponse(id, mimetype='text/plain')
 
@@ -343,7 +344,7 @@ def membership_json_detail(request, id):
             contact_json_obj[c_attr] = c_attr_val
             contacts_json_obj[attr] = contact_json_obj
     
-    #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-    #                    mimetype='application/json')
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='text/plain')
+                        mimetype='application/json')
+    #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    #                    mimetype='text/plain')
