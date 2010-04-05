@@ -37,7 +37,7 @@ function preapprove () {
   }
   for (var idx in ids) {
     var id = ids[idx];
-    jQuery.get("preapprove_ajax/" + id + "/", function (data) { $("#" + data).remove()});
+    jQuery.post("../handle_json/", '{"requestType": "PREAPPROVE", "payload": ' + id + '}', function (data) { $("#" + data).remove()});
   }
 }
 

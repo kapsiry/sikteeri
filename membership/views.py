@@ -256,14 +256,7 @@ def membership_preapprove_json(request, id):
     membership_do_preapprove(request, id)
     return HttpResponse(id, mimetype='text/plain')
 
-def handle_json(request):
-    msg = cjson.decode(request.raw_post_data)
-    funcs = {'PREAPPROVE': membership_preapprove_single_json}
-    if not funcs.has_key(content['requestType']):
-        raise NotImplementedError()
-    return funcs[content['requestType']](request, msg['payload'])
-
-def membership_json_detail(request, id):
+def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
@@ -272,4 +265,15 @@ def membership_json_detail(request, id):
                         mimetype='application/json')
     #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
+
+def handle_json(request):
+    print request.raw_post_data
+    msg = simplejson.loads(request.raw_post_data)
+    funcs = {'PREAPPROVE': membership_preapprove_json,
+             'MEMBERSHIP_DETAIL': membership_detail_json}
+    if not funcs.has_key(msg['requestType']):
+        raise NotImplementedError()
+    logging.debug("AJAX call %s, payload: %s" % (msg['requestType'],
+                                                 unicode(msg['payload'])))
+    return funcs[msg['requestType']](request, msg['payload'])
 

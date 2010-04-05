@@ -22,8 +22,8 @@ function enhanceMemberItem (item) {
 var memberDetailStore = {};
 function getMemberDetails (id, callbackFunction) {
     if (memberDetailStore[id] === undefined) {
-	jQuery.getJSON("json_detail/" + id + "/",
-                       function(){return function(data){memberDetailStore[id]=data;callbackFunction(id);}}());
+	jQuery.post("handle_json/", '{"requestType": "MEMBERSHIP_DETAIL", "payload": ' + id + '}',
+                    function(){return function(data){memberDetailStore[id]=data;callbackFunction(id);}}());
     }
     else {
 	callbackFunction(id);
