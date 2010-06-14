@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Run in virtualenv
+test -r env/bin/activate && source env/bin/activate
+
 PORT=$1
 
 fail () {

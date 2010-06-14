@@ -8,3 +8,4 @@ local_settings.py
 *.log
 .todo.*
 *.mo
+/env
