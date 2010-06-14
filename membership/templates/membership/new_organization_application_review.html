@@ -5,7 +5,7 @@
 <h2>{% trans "Application review" %}</h2>
 <p>Osa 5/5.</p>
 <p>Foobar.</p>
-<form method="POST" action="{% url organization_application_save %}">
+<form method="POST" action="{% url organization_application_save %}">{% csrf_token %}
 <div id="new_application">
   {% for form in forms %}
     <h3>{{ form.name }}</h3>

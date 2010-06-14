@@ -20,7 +20,7 @@
   <li>TODO: Palveluiden lisääminen</li>
   <li>Tietojen tarkistus</li>
 </ol>
-<form method="POST">
+<form method="POST">{% csrf_token %}
 <div id="new_application">
   {{ form.as_p }}
 <p>

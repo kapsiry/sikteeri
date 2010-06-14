@@ -2,7 +2,7 @@
 {% load humanize %}
 {% load comments %}
 
-<form method="POST">
+<form method="POST">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="{% trans "Save membership changes" %}" />
 </form>
@@ -31,7 +31,7 @@
 {% endfor %}
 
 {% get_comment_form for membership as commentform %}
-<form action="{% comment_form_target %}" method="POST">
+<form action="{% comment_form_target %}" method="POST">{% csrf_token %}
     {% comment %}
     The comments app is normally used on public websites, so it includes
     several ways to combat spam. For example we need the following four hidden fields.

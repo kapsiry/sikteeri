@@ -3,7 +3,7 @@
 
 {% block content %}
 <h2>Yksityisjäsenen liittymislomake</h2>
-<form method="POST">
+<form method="POST">{% csrf_token %}
 <div id="new_application">
   {{ form.as_p }}
 <p>

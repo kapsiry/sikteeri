@@ -6,7 +6,7 @@
 <p>Osa {{ step_number }}/5.</p>
 <p>Jos jätät lomakkeen tyhjäksi, olettaa järjestelmä ettet halua tallentaa kyseisenlaista
 yhteystietoa.</p>
-<form method="POST">
+<form method="POST">{% csrf_token %}
 <div id="new_application">
   {{ form.as_p }}
 <p>
