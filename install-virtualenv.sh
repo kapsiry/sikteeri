@@ -43,6 +43,8 @@ for pkg in django simplejson; do
     $ENVDIR/bin/pip install $pkg || fatal "Could not install $pkg in $ENVDIR"
 done
 
+echo "export PYTHONPATH=.." >> $ENVDIR/bin/activate
+
 echo "Virtualenv environment $ENVDIR done"
 echo "To later activate the environment, type"
 echo "  . env/bin/activate"
