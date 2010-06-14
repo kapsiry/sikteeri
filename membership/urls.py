@@ -1,4 +1,6 @@
+from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import *
+import django.views.generic.list_detail
 
 from membership.models import *
 from membership.forms import *
@@ -28,35 +30,39 @@ urlpatterns = patterns('',
     url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
 )
 
+# FIXME: should require admin priviledge, too.
+@login_required
+def limited_object_list(*args, **kwargs): 
+    return django.views.generic.list_detail.object_list(*args, **kwargs) 
 
 urlpatterns += patterns('django.views.generic',
-    url(r'memberships/$', 'list_detail.object_list',
+    url(r'memberships/$', limited_object_list,
         {'queryset': Membership.objects.all(),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': 100}, name='membership_list'),
-    url(r'memberships/pre-approval/$', 'list_detail.object_list',
+    url(r'memberships/pre-approval/$', limited_object_list,
         {'queryset': Membership.objects.filter(status__exact='N'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': 100}, name='pre-approval'),
-    url(r'bills/$', 'list_detail.object_list',
+    url(r'bills/$', limited_object_list,
         {'queryset': Bill.objects.all(),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'bill',
          'paginate_by': 100}, name='bill_list'),
-    url(r'bills/unpaid/$', 'list_detail.object_list',
+    url(r'bills/unpaid/$', limited_object_list,
         {'queryset': Bill.objects.filter(is_paid__exact=False),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'bill',
          'paginate_by': 100}, name='unpaid_bill_list'),
 
-    url(r'payments/$', 'list_detail.object_list',
+    url(r'payments/$', limited_object_list,
         {'queryset': Payment.objects.all(),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': 100}, name='payment_list'),
-    url(r'payments/unknown/$', 'list_detail.object_list',
+    url(r'payments/unknown/$', limited_object_list,
         {'queryset': Payment.objects.filter(bill__exact=None),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
