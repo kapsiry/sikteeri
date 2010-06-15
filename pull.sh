@@ -8,7 +8,7 @@ remote () {
 remote hukka http://koti.kapsi.fi/hukka/django-sikteeri.git
 remote gua https://gua.kapsi.fi/git/django-sikteeri.git
 remote jkj http://koti.kapsi.fi/oh8glv/django-sikteeri.git
-remote joneskoo http://joneskoo.kapsi.fi/django-sikteeri.git
+remote joneskoo git://github.com/joneskoo/sikteeri.git
 remote ilkka http://koti.kapsi.fi/ilkka/django-sikteeri.git
 
 git pull hukka master
