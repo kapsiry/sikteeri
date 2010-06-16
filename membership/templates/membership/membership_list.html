@@ -5,11 +5,11 @@
 {% include "membership/paginating_snippet.html" %}
 <ul id="member_list">
 {% for member in member_list %}
-  {% ifequal member.status "N" %}
+  {% if member.status == "N" %}
     <li class="preapprovable" id="{{ member.id }}">
   {% else %}
     <li id="{{ member.id }}">
-  {% endifequal %}
+  {% endif %}
       <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
       <span class="status">{{ member.get_status_display }}</span>
     </li>
