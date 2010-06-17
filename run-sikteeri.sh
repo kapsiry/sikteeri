@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # Run in virtualenv
-test -r env/bin/activate && source env/bin/activate
+test -r env/bin/activate && . env/bin/activate
 
 PORT=$1
 
