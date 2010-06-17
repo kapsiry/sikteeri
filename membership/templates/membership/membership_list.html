@@ -45,11 +45,11 @@ function preapprove () {
  * Adds details to member list items. Also adds a preapprove cart and buttons
  * if the class preapprovable is found from the list item.
  */
+var cartCreated = false;
 $("#member_list").children().each(function (idx, object) {
   var item = enhanceMemberItem($(object));
   addMemberDetails(item);
   
-  var cartCreated = false;
   if ($(object).hasClass("preapprovable")) {
     if (!cartCreated) {
       var cart = $("<div>").addClass("cart");

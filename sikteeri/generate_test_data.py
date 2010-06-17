@@ -20,7 +20,19 @@ from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 from membership.views import contact_from_dict
-from membership.models import Membership, Bill, BillingCycle
+from membership.models import Membership, Bill, BillingCycle, Fee, MEMBER_TYPES
+
+fees = Fee.objects.all()
+if len(fees) == 0:
+	print "No fees in the database, generating default fees..."
+        for k, v in MEMBER_TYPES:
+            print "Creating fee for member type %s..." % k,
+            fee = Fee()
+            fee.start = datetime.now()
+            fee.sum = settings.MEMBERSHIP_FEE
+            fee.type = k
+            fee.save()
+            print "done."
 
 user = User.objects.get(id=1)
 
@@ -88,11 +100,11 @@ def main():
         membership_preapprove(i)
         approve(i)
     # Pre-approved members
-    for i in xrange(2001,2100):
+    for i in xrange(2000,2100):
         create_dummy_member(i, 'N')
         membership_preapprove(i)
     # New applications
-    for i in xrange(2101,2200):
+    for i in xrange(2100,2200):
         create_dummy_member(i, 'N')
 
         
