@@ -47,9 +47,9 @@ RekisterinHallinta
    * Modulaarinen laskutuslogiikka (poikkeuslaskut)
    * Laskutuskauden siirtymä(?)
    * Uuden jäsenen lasku siirtymän jälkeen
-   * Karhulaskut 
+   * Karhulaskut
    * Laskun manuaalinen uudelleenlähetys, tarvittaessa eri osoitteeseen
-   * Laskutusjärjestys: (?) 
+   * Laskutusjärjestys: (?)
      * 1. email
      * 2. sms (1. muistutus)
      * 3. paperilasku

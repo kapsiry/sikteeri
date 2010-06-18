@@ -32,8 +32,8 @@ urlpatterns = patterns('',
 
 # FIXME: should require admin priviledge, too.
 @login_required
-def limited_object_list(*args, **kwargs): 
-    return django.views.generic.list_detail.object_list(*args, **kwargs) 
+def limited_object_list(*args, **kwargs):
+    return django.views.generic.list_detail.object_list(*args, **kwargs)
 
 urlpatterns += patterns('django.views.generic',
     url(r'memberships/$', limited_object_list,

@@ -51,7 +51,7 @@ def sendreminder(membership): # XXX Test if cycle is paid?
     bill.save()
     bill.send_as_email()
 
-def disable_member(membership): 
+def disable_member(membership):
     pass # XXX
 
 def log_change(object, user, before=None, after=None, change_message=None):
