@@ -20,19 +20,12 @@ from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 from membership.views import contact_from_dict
-from membership.models import Membership, Bill, BillingCycle, Fee, MEMBER_TYPES
+from membership.models import Membership, Bill, BillingCycle, Fee
 
-fees = Fee.objects.all()
-if len(fees) == 0:
-	print "No fees in the database, generating default fees..."
-        for k, v in MEMBER_TYPES:
-            print "Creating fee for member type %s..." % k,
-            fee = Fee()
-            fee.start = datetime.now()
-            fee.sum = settings.MEMBERSHIP_FEE
-            fee.type = k
-            fee.save()
-            print "done."
+
+if Fee.objects.all().count() == 0:
+    sys.exit("No fees in the database. Did you load fixtures into the " +
+	     "database first?\n (./manage.py loaddata test_data.json)")
 
 user = User.objects.get(id=1)
 
