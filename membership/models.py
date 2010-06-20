@@ -80,8 +80,10 @@ class Membership(models.Model):
     def billing_email(self):
         if self.billing_contact:
             return self.billing_contact.email
-        else:
+        elif self.person:
             return self.person.email
+        else:
+            return self.organization.email
 
     def __unicode__(self):
         if self.organization:

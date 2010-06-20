@@ -221,7 +221,8 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 def membership_do_approve(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'P':
-        logging.debug("Tried to approve membership in state %s (!=P)." % membership.status)
+        logging.info("Tried to approve membership in state %s (!=P)." % membership.status)
+        return
     membership.status = 'A' # XXX hardcoding
     membership.save()
     save_membership_approved_comment(request.user, membership)
@@ -229,8 +230,9 @@ def membership_do_approve(request, id):
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
     bill = Bill(cycle=billing_cycle)
     bill.save()
+    log_change(membership, request.user, change_message="Approved")
     bill.send_as_email()
-    log_change(object, request.user, change_message="Approved")
+    logging.info("Sent membership approval e-mail to %s." % membership)
 
 def membership_approve(request, id):
     membership_do_approve(request, id)
@@ -240,7 +242,7 @@ def membership_approve(request, id):
 def membership_do_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'N':
-        logging.debug("Tried to preapprove membership in state %s (!=N)." % membership.status)
+        logging.error("Tried to preapprove membership in state %s (!=N)." % membership.status)
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
@@ -267,7 +269,7 @@ def membership_detail_json(request, id):
     #                    mimetype='text/plain')
 
 def handle_json(request):
-    print request.raw_post_data
+    logging.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'MEMBERSHIP_DETAIL': membership_detail_json}
