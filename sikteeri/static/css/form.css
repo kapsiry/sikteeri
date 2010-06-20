@@ -57,7 +57,7 @@ ul.errorlist li {
 }
 
 /* New application form item alignment */
-#new_application label {
+#new_application label, #login-form label {
     display: inline-block;
     clear: none;
     width: 200px;
@@ -66,10 +66,10 @@ ul.errorlist li {
     /* vertical-align: text-top; */
 }
 
-#new_application p {
+#new_application p, #login-form p {
     font-size: 80%;
 }
 
-#new_application input, textarea {
+#new_application input, #login-form input, textarea {
     margin: 0 0.4em;
 }
