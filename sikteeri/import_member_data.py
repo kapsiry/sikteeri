@@ -119,7 +119,7 @@ if __name__ == '__main__':
                       help="read member data from FILE", metavar="FILE",
                       default="jasendata.json")
     (options, args) = parser.parse_args()
-    
-    if not os.path.isfile('jasendata.json'):
-        parser.error("File '%s' not found.")
+
+    if not os.path.isfile(options.filename):
+        parser.error("File '%s' not found." % options.filename)
     main(options.filename)
