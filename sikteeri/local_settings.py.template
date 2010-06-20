@@ -6,3 +6,7 @@ MEMBERSHIP_FEE = 30
 # Uncomment the following lines to enable more verbose stdout logging.
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
+
+# Secure cookies require https, for local development needs to be False.
+# Default = True
+SESSION_COOKIE_SECURE = False

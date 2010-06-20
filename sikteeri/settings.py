@@ -86,4 +86,6 @@ INSTALLED_APPS = (
     'membership',
 )
 
+SESSION_COOKIE_SECURE = True
+
 from local_settings import *
