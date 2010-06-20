@@ -68,7 +68,7 @@ class PersonBaseContactForm(forms.Form):
                                 label=_('Last name'))
 
 class OrganizationBaseContactForm(forms.Form):
-    organization_name = forms.CharField(max_length=50, label=_('Organization name'))
+    organization_name = forms.CharField(max_length=50, min_length=5, label=_('Organization name'))
 
 class PersonContactForm(PersonBaseContactForm, BaseContactForm):
     pass
