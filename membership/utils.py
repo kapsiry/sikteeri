@@ -136,7 +136,11 @@ def serializable_membership_info(membership):
             contacts_json_obj[attr] = contact_json_obj
 
     # Events (comments + log entries)
+    comment_list = []
+    log_entry_list = []
     event_list = []
+    json_obj['comments'] = comment_list
+    json_obj['log_entries'] = log_entry_list
     json_obj['events'] = event_list
     
     comments = Comment.objects.filter(object_pk=membership.pk)
@@ -144,6 +148,7 @@ def serializable_membership_info(membership):
         d = { 'user_name': unicode(comment.user),
               'text': comment.comment,
               'date': comment.submit_date }
+        comment_list.append(d)
         event_list.append(d)
 
     log_entries = membership.logs.all()
@@ -151,19 +156,28 @@ def serializable_membership_info(membership):
         d = { 'user_name': unicode(entry.user),
               'text': "%s %s" % (unicode(entry.action_flag), unicode(entry.change_message)),
               'date': entry.action_time }
+        log_entry_list.append(d)
         event_list.append(d)
 
-    def event_cmp(x, y):
+    def cmp_fun(x, y):
         if x['date'] > y['date']:
             return 1
         if x['date'] == y['date']:
             return 0
         return -1
 
-    event_list.sort(event_cmp)
+    comment_list.sort(cmp_fun)
+    log_entry_list.sort(cmp_fun)
+    event_list.sort(cmp_fun)
 
-    for event in event_list:
-        event['date'] = event['date'].ctime()
+    def ctimeify(lst):
+        for item in lst:
+            if isinstance(item['date'], basestring):
+                continue # some are already in ctime format since they are part of multiple lists
+            item['date'] = item['date'].ctime()
+    ctimeify(comment_list)
+    ctimeify(log_entry_list)
+    ctimeify(event_list)
 
     return json_obj
 

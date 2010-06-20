@@ -242,7 +242,7 @@ def membership_approve(request, id):
 def membership_do_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'N':
-        logging.error("Tried to preapprove membership in state %s (!=N)." % membership.status)
+        logging.info("Tried to preapprove membership in state %s (!=N)." % membership.status)
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
@@ -262,7 +262,6 @@ def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
-        
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
     #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
