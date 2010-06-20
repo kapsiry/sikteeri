@@ -63,7 +63,7 @@ def create_member(status, mdata):
         mtype = 'S'
     person = contact_from_dict(d)
     person.save()
-    membership = Membership(type=mtype, status=status,
+    membership = Membership(id=mdata['id'], type=mtype, status=status,
                             person=person,
                             nationality=mdata['nationality'],
                             municipality=mdata['residence'],
