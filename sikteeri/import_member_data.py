@@ -48,13 +48,17 @@ def create_member(mdata):
         'phone' : mdata['phone'],
         'sms' : mdata['sms'],
         'email' : mdata['email'],
-        'homepage' : mdata['publicwebsite'],
+        'homepage' : mdata['website'],
         'first_name' : mdata['name'],
         'given_names' : mdata['firstnames'],
         'last_name' : mdata['lastname'],
         # mdata['application_id'],
         # mdata['sendinfo'],
     }
+
+    # Hide non-public websites
+    if not mdata['publicwebsite']:
+        d['homepage'] = ""
 
     if not mdata['memberclass']:
         mtype = 'P'
@@ -93,7 +97,7 @@ def create_member(mdata):
         created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
     #bill.send_as_email()
-    log_change(membership, user, change_message="Approved")
+    log_change(membership, user, change_message="Imported from legacy")
     return True
     
 
