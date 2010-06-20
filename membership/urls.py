@@ -24,7 +24,8 @@ urlpatterns = patterns('',
 
     url(r'memberships/approve/(\d+)/$', 'membership.views.membership_approve', name='membership_approve'),
     
-    url(r'memberships/pre-approval/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
+    # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
+    url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
     url(r'memberships/handle_json/$', 'membership.views.handle_json', name='membership_handle_json'),
     
     url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
