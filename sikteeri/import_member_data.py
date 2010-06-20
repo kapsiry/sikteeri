@@ -1,7 +1,7 @@
-#!/Users/joneskoo/git/sikteeri/env/bin/python
+#!/usr/bin/env python
 # encoding: utf-8
 """
-generate_test_data.py
+import_member_data.py
 
 Created by Joonas Kortesalmi on 2010-06-18.
 Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
@@ -10,6 +10,7 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 import sys
 import os
 from datetime import datetime
+from optparse import OptionParser
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
@@ -105,12 +106,20 @@ def approve(i):
     log_change(membership, user, change_message="Approved")
     
 
-def main():
+def main(filename):
     import simplejson
-    members = simplejson.load(open('jasendata.json'))
+    members = simplejson.load(open(filename, 'r'))
     for mid, mdata in members.iteritems():
         assert mid == str(mdata['id'])
         create_member('A', mdata)
 
 if __name__ == '__main__':
-    main()
+    parser = OptionParser()
+    parser.add_option("-f", "--file", dest="filename",
+                      help="read member data from FILE", metavar="FILE",
+                      default="jasendata.json")
+    (options, args) = parser.parse_args()
+    
+    if not os.path.isfile('jasendata.json'):
+        parser.error("File '%s' not found.")
+    main(options.filename)
