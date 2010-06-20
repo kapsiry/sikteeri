@@ -9,7 +9,7 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from optparse import OptionParser
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
@@ -29,12 +29,13 @@ user = User.objects.get(id=1)
 #                 ('S', _('Supporting')),
 #                 ('O', _('Organization')))
 
-def create_member(status, mdata):
+def create_member(mdata):
     # legacy fields
     # ['application_id', 'sendinfo', 'memberclass', 'applicationtime', 'sms',
     # 'id', 'email', 'website', 'publicwebsite', 'lastname', 'phone',
     # 'firstnames', 'address', 'nationality', 'post', 'removed', 'publicname',
-    # 'name', 'mobile', 'residence', 'time', 'publicemail']
+    # 'name', 'mobile', 'residence', 'time', 'publicemail', 'period_start',
+    # 'period_end']
     # TODO: latest billing period start date?
     post_index = mdata['post'].find(' ')
     postcode = mdata['post'][:post_index]
@@ -54,56 +55,46 @@ def create_member(status, mdata):
         # mdata['application_id'],
         # mdata['sendinfo'],
     }
-    
+
     if not mdata['memberclass']:
         mtype = 'P'
-        print "Member type missing for mid %d" % mdata['id']
+        print "Member type missing for member %d" % mdata['id']
     elif mdata['memberclass'] == 'member':
         mtype = 'P'
     elif mdata['memberclass'] == 'supporting':
         mtype = 'S'
+    else:
+        print "Not importing, member class unknown for member %d" % mdata['id']
+        return False
     person = contact_from_dict(d)
     person.save()
-    membership = Membership(id=mdata['id'], type=mtype, status=status,
+    membership = Membership(id=mdata['id'], type=mtype, status='A',
+                            created=datetime.utcfromtimestamp(mdata['time']),
+                            accepted=datetime.utcfromtimestamp(mdata['time']),
                             person=person,
                             nationality=mdata['nationality'],
                             municipality=mdata['residence'],
-                            extra_info='')
-    logging.info("New application %s imported from legacy database." % (str(person)))
-    print unicode(person)
+                            extra_info='Imported from legacy')
+    logging.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
-
-def membership_preapprove(i):
-    membership = Membership.objects.get(id=i)
-    membership.status = 'P'
-    membership.save()
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = user
-    comment.comment = "Preapproved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    comment.save()
-    log_change(membership, user, change_message="Preapproved")
-
-
-def approve(i):
-    membership = Membership.objects.get(id=i)
-    membership.status = 'A'
     comment = Comment()
     comment.content_object = membership
     comment.user = user
     comment.comment = "Approved"
     comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
+    comment.submit_date = datetime.utcfromtimestamp(mdata['time'])
     comment.save()
-    billing_cycle = BillingCycle(membership=membership)
+    billing_cycle = BillingCycle(membership=membership,
+        start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
+        end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
     # Creating an instance does not touch db and we need and id for the Bill
     billing_cycle.save()
-    bill = Bill(cycle=billing_cycle)
+    bill = Bill(cycle=billing_cycle, is_paid=True,
+        created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
     #bill.send_as_email()
     log_change(membership, user, change_message="Approved")
+    return True
     
 
 def main(filename):
@@ -111,7 +102,7 @@ def main(filename):
     members = simplejson.load(open(filename, 'r'))
     for mid, mdata in members.iteritems():
         assert mid == str(mdata['id'])
-        create_member('A', mdata)
+        create_member(mdata)
 
 if __name__ == '__main__':
     parser = OptionParser()
