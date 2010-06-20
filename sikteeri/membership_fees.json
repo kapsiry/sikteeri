@@ -1,0 +1,29 @@
+[
+    {
+        "pk": 1, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "P",
+            "start": "2009-11-17 22:22:46", 
+            "sum": "30"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "O",
+            "start": "2009-11-17 22:22:46", 
+            "sum": "100"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "S",
+            "start": "2009-11-17 22:22:46", 
+            "sum": "100"
+        }
+    }
+]

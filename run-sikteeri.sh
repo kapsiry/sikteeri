@@ -22,7 +22,7 @@ if [ -r sikteeri_test.sqlite ]; then
     ./manage.py syncdb || fail "Updating database failed"
 else
     ./manage.py syncdb || fail "Creating database failed"
-    ./manage.py loaddata test_data.json || fail "Loading test data failed"
+    ./manage.py loaddata membership_fees.json || fail "Loading test data failed"
 fi
 
 if [[ -z $PORT ]]; then
