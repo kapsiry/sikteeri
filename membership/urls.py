@@ -18,6 +18,9 @@ urlpatterns = patterns('',
     url(r'organizations/new/application/save/$', 'membership.views.organization_application_save',
         name='organization_application_save'),
     url(r'memberships/application/$', 'membership.views.new_application', name='new_application'),
+
+    url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
+
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
     url(r'memberships/preapprove/(\d+)/$', 'membership.views.membership_preapprove', name='membership_preapprove'),

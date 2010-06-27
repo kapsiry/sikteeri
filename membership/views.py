@@ -193,14 +193,42 @@ def check_alias_availability(request):
     pass
 
 @login_required
-def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
-    membership = get_object_or_404(Membership, id=id)
+def contact_edit(request, id, template_name='membership/contact_edit.html'):
+    contact = get_object_or_404(Contact, id=id)
 
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
     class Form(ModelForm):
         class Meta:
-            model = Membership
+            model = Contact
+            
+    before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    if request.method == 'POST':
+        form = Form(request.POST, instance=contact)
 
+        if form.is_valid():
+            form.save()
+            after = contact.__dict__
+            log_change(contact, request.user, before, after)
+            print before
+            print after
+            message = _("Changes saved.")
+        else:
+            message = _("Changes not saved.")
+    else:
+        form =  Form(instance=contact)
+        message = ""
+    return render_to_response(template_name, {'form': form, 'contact': contact, 'message': message},
+                              context_instance=RequestContext(request))
+
+@login_required
+def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
+    membership = get_object_or_404(Membership, id=id)
+
+    class Form(ModelForm):
+        class Meta:
+            model = Membership
+            exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+    
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
         before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance

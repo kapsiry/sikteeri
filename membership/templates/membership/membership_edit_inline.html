@@ -2,10 +2,27 @@
 {% load humanize %}
 {% load comments %}
 
+{% if membership.person %}
+<a href="{% url contact_edit membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
+{% endif %}
+{% if membership.billing_contact %}
+<a href="{% url contact_edit membership.billing_contact.id %}">{% trans "Edit billing contact" %} ({{ membership.billing_contact }})</a><br />
+{% endif %}
+{% if membership.tech_contact %}
+<a href="{% url contact_edit membership.tech_contact.id %}">{% trans "Edit technical contact" %} ({{ membership.tech_contact }})</a><br />
+{% endif %}
+{% if membership.organization %}
+<a href="{% url contact_edit membership.organization.id %}">{% trans "Edit organization contact" %} ({{ membership.organization }})</a><br />
+{% endif %}
+<hr />
+
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="{% trans "Save membership changes" %}" />
 </form>
+
+<hr />
+
 <a href="{% url membership_preapprove membership.id %}">{% trans "Preapprove" %}</a>
 <a href="{% url membership_approve membership.id %}">{% trans "Approve" %}</a>
 
