@@ -64,6 +64,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'sikteeri.SQLLogMiddleware.SQLLogMiddleware',
 )
 
 ROOT_URLCONF = 'sikteeri.urls'
