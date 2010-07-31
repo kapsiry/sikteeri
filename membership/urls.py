@@ -39,6 +39,32 @@ urlpatterns = patterns('',
 def limited_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
 
+def search(request, string,
+           template_name='membership/membership_list.html'):
+    # This could be simplified into a single SQL query, but isn't done so due
+    # to the most probable SQL syntax incompatibilities.
+    person_first_name_ids = Contact.objects.filter(first_name__icontains=string).values('id')
+    person_given_names_ids = Contact.objects.filter(given_names__icontains=string).values('id')
+    person_last_name_ids = Contact.objects.filter(last_name__icontains=string).values('id')
+    organization_name_ids = Contact.objects.filter(organization_name__icontains=string).values('id')
+    
+    all_ids = set()
+    def add_dict_values_to_set(dicts):
+        for dict in dicts:
+            all_ids.add(str(dict["id"]))
+    
+    add_dict_values_to_set(person_first_name_ids)
+    add_dict_values_to_set(person_given_names_ids)
+    add_dict_values_to_set(person_last_name_ids)
+    add_dict_values_to_set(organization_name_ids)
+    
+    qs = Membership.objects.extra(where=['id IN (%s)' % ", ".join(all_ids)])
+    
+    return django.views.generic.list_detail.object_list(request, queryset=qs,
+                                                        template_name=template_name,
+                                                        template_object_name='member',
+                                                        paginate_by=100)
+
 urlpatterns += patterns('django.views.generic',
 
     url(r'memberships/new/$', limited_object_list,
@@ -66,6 +92,10 @@ urlpatterns += patterns('django.views.generic',
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': 100}, name='all_memberships'),
+
+    url(r'^memberships/inline/(?P<string>\w+)/$', search,
+        {'template_name': 'membership/membership_list_inline.html'}),
+    url(r'^memberships/(?P<string>\w+)/$', search),
 
     url(r'bills/$', limited_object_list,
         {'queryset': Bill.objects.all(),
