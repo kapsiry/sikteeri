@@ -21,6 +21,12 @@
    <li><a href="{% url approved_memberships %}">{% trans "Members" %}</a></li>
    <li><a href="{% url disabled_memberships %}">{% trans "Disabled members" %}</a></li>
    <li><small><a href="{% url all_memberships %}">{% trans "All membership entities" %}</a></small></li>
+   <li>
+     <form action="{% url membership_search %}">
+       <input name="query" type="text">
+       <input type="submit" value="{% trans "Search memberships" %}">
+     </form>
+   </li>
    <li><a href="{% url unpaid_bill_list %}">{% trans "List of unpaid bills" %}</a></li>
    <li><a href="{% url bill_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
