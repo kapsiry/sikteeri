@@ -11,9 +11,6 @@ from membership.models import BillingCycle, Bill, Contact, Membership
 
 # http://code.activestate.com/recipes/576644/
 
-KEYNOTFOUNDIN1 = '<KEYNOTFOUNDIN1>'       # KeyNotFound for dictDiff
-KEYNOTFOUNDIN2 = '<KEYNOTFOUNDIN2>'       # KeyNotFound for dictDiff
-
 def dict_diff(first, second):
     """ Return a dict of keys that differ with another config object.  If a value is
         not found in one fo the configs, it will be represented by KEYNOTFOUND.
@@ -26,17 +23,31 @@ def dict_diff(first, second):
     sd2 = set(second)
     #Keys missing in the second dict
     for key in sd1.difference(sd2):
-        diff[key] = KEYNOTFOUNDIN2
+        diff[key] = (first[key], None)
     #Keys missing in the first dict
     for key in sd2.difference(sd1):
-        diff[key] = KEYNOTFOUNDIN1
+        diff[key] = (None, second[key])
     #Check for differences
     for key in sd1.intersection(sd2):
         if first[key] != second[key]:
-            diff[key] = (first[key], second[key])    
+            diff[key] = (first[key], second[key])
     return diff
 
-
+def diff_humanize(diff):
+    # Human readable output
+    txt = ""
+    for key in diff:
+        if key == 'last_changed' or key.startswith("_"):
+            continue
+        change = diff[key]
+        if change[0] == None:
+            txt += "%s: () -> '%s'. " % (key, change[1])
+        elif change[1] == None:
+            txt += "%s: '%s' -> (). " % (key, change[0])
+        else:
+            txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
+    return txt
+    
 def new_cycle(membership):
     old_cycle = membership.billingcycle_set.order_by('-end')[0]
     billing_cycle = BillingCycle(membership=membership, start=old_cycle.end)
@@ -57,7 +68,7 @@ def disable_member(membership):
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:
-            change_message  = repr(dict_diff(before, after)) # XXX
+            change_message  = diff_humanize(dict_diff(before, after))
         else:
             change_message = "Some changes were made"
     from django.contrib.admin.models import LogEntry, CHANGE
