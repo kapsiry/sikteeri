@@ -20,6 +20,7 @@ from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change, contact_from_dict, serializable_membership_info
 from utils import save_membership_approved_comment, save_membership_preapproved_comment
+from utils import bake_log_entries
 
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
@@ -219,8 +220,10 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
     else:
         form =  Form(instance=contact)
         message = ""
-    return render_to_response(template_name, {'form': form, 'contact': contact, 'message': message},
-                              context_instance=RequestContext(request))
+    logentries = bake_log_entries(contact.logs.all())
+    return render_to_response(template_name, {'form': form, 'contact': contact,
+        'logentries': logentries, 'message': message},
+        context_instance=RequestContext(request))
 
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
@@ -241,13 +244,7 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
     else:
         form =  Form(instance=membership)
     # Pretty print log entries for template
-    ACTION_FLAGS = {1 : _('Addition'),
-                    2 : _('Change'),
-                    3 : _('Deletion')}
-    logentries = []
-    for x in membership.logs.all():
-        logentries.append("%s %s <%s>: %s" % (x.action_time,
-            unicode(ACTION_FLAGS[x.action_flag]), x.user, x.change_message))
+    logentries = bake_log_entries(membership.logs.all())
     return render_to_response(template_name, {'form': form,
         'membership': membership, 'logentries': logentries},
         context_instance=RequestContext(request))
