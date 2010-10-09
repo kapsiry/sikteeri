@@ -238,8 +238,17 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             log_change(membership, request.user, before, after)
     else:
         form =  Form(instance=membership)
-    return render_to_response(template_name, {'form': form, 'membership': membership},
-                                  context_instance=RequestContext(request))
+    # Pretty print log entries for template
+    ACTION_FLAGS = {1 : _('Addition'),
+                    2 : _('Change'),
+                    3 : _('Deletion')}
+    logentries = []
+    for x in membership.logs.all():
+        logentries.append("%s %s <%s>: %s" % (x.action_time,
+            unicode(ACTION_FLAGS[x.action_flag]), x.user, x.change_message))
+    return render_to_response(template_name, {'form': form,
+        'membership': membership, 'logentries': logentries},
+        context_instance=RequestContext(request))
 
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     # XXX: Inline template name is hardcoded in template :/

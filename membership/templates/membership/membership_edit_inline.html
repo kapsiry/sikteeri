@@ -36,8 +36,8 @@
     {% endfor %}
 </ul>
 
-{% for logentry in membership.logs.all %}
-<p>{{ logentry.action_time }} {{ logentry.user }} {{ logentry.action_flag }}: {{ logentry.change_message }}</p>
+{% for logentry in logentries %}
+<p>{{ logentry }}</p>
 {% endfor %}
 
 
