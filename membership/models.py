@@ -6,7 +6,7 @@ import logging
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.template.loader import get_template
+from django.template.loader import render_to_string
 from django.template import Context
 from django.core.mail import send_mail
 
@@ -75,15 +75,19 @@ class Membership(models.Model):
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     def email(self):
-        return self.person.email
-
-    def billing_email(self):
-        if self.billing_contact:
-            return self.billing_contact.email
-        elif self.person:
-            return self.person.email
-        else:
+        if self.organization:
             return self.organization.email
+        else:
+            return self.person.email
+
+    def get_billing_contact(self):
+        '''Resolves the actual billing contact. Useful for billing details.'''
+        if self.billing_contact:
+            return self.billing_contact
+        elif self.person:
+            return self.person
+        else:
+            return self.organization
 
     def __unicode__(self):
         if self.organization:
@@ -159,11 +163,22 @@ class Bill(models.Model):
             self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
         super(Bill, self).save(force_insert, force_update) # Call the "real" save() method.
 
-    def render_as_text(self): # XXX: Use django.template.loader.render_to_string
-        t = get_template('membership/bill.txt')
-        return t.render(Context(
-            {'cycle': self.cycle, 'due_date': self.due_date, 'account': settings.BANK_ACCOUNT_NUMBER,
-             'reference_number': self.reference_number, 'sum': self.cycle.sum}))
+    def render_as_text(self):
+        return render_to_string('membership/bill.txt', {
+            'bill_id': self.id,
+            'member_id': self.cycle.membership.id,
+            'billing_name': unicode(self.cycle.membership.get_billing_contact()),
+            'street_address': self.cycle.membership.get_billing_contact().street_address,
+            'postal_code': self.cycle.membership.get_billing_contact().postal_code,
+            'post_office': self.cycle.membership.get_billing_contact().post_office,
+            'cycle': self.cycle,
+            'bank_account_number': settings.BANK_ACCOUNT_NUMBER,
+            'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
+            'bic_code': settings.BIC_CODE,
+            'due_date': self.due_date,
+            'reference_number': self.reference_number,
+            'sum': self.cycle.sum
+            })
 
     # XXX: Should save sending date
     def send_as_email(self):

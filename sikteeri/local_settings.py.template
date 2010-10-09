@@ -1,6 +1,9 @@
-SECRET_KEY = ''
-BANK_ACCOUNT_NUMBER = "123-123"
-BILLING_EMAIL_FROM = "foobar@kapsi.fi"
+# The following need to be defined (empty strings are fine for development)
+SECRET_KEY = None
+BANK_ACCOUNT_NUMBER = None # Finnish bank account number
+IBAN_ACCOUNT_NUMBER = None # Pan-European new standard bank account number
+BIC_CODE = None # Bank account's bank code in the BIC format
+BILLING_EMAIL_FROM = None # E-mail address for bill sending. Also see EMAIL_BACKEND.
 
 # Uncomment the following lines to enable more verbose stdout logging.
 #import logging

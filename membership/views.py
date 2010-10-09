@@ -5,6 +5,7 @@ import logging
 from time import sleep
 
 from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm
@@ -18,7 +19,7 @@ import simplejson
 
 from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
-from utils import log_change, contact_from_dict, serializable_membership_info
+from utils import log_change, serializable_membership_info
 from utils import save_membership_approved_comment, save_membership_preapproved_comment
 
 
@@ -34,7 +35,7 @@ def person_application(request, template_name='membership/new_person_application
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
-                person = contact_from_dict(f)
+                person = Contact(f)
                 person.save()
                 membership = Membership(type='P', status='N',
                                         person=person,
@@ -44,7 +45,13 @@ def person_application(request, template_name='membership/new_person_application
                 membership.save()
                 transaction.commit()
                 logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
-                # TODO: send an e-mail
+                send_mail(_('Membership application received'),
+                          render_to_string('membership/person_application_email_confirmation.txt',
+                                           { 'membership': membership,
+                                             'person': membership.person,
+                                             'ip': request.META['REMOTE_ADDR']})
+                          settings.FROM_EMAIL,
+                          [membership.person.email], fail_silently=False)
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
@@ -62,7 +69,7 @@ def organization_application(request, template_name='membership/new_organization
         
         if form.is_valid():
             f = form.cleaned_data
-            organization = contact_from_dict(f)
+            organization = Contact(f)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
@@ -95,7 +102,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
         if form.is_valid() or len(form.changed_data) == 0:
             if form.is_valid():
                 f = form.cleaned_data
-                contact = contact_from_dict(f)
+                contact = Contact(f)
                 request.session[contact_type] = contact.__dict__.copy()
             else:
                 request.session[contact_type] = None
@@ -118,11 +125,22 @@ def organization_application_review(request, template_name='membership/new_organ
                             nationality=request.session['membership']['nationality'],
                             municipality=request.session['membership']['municipality'],
                             extra_info=request.session['membership']['extra_info'])
+    organization = Contact(request.session.get('organization'))
 
-    organization = contact_from_dict(request.session.get('organization'))
-    person = contact_from_dict(request.session.get('person'))
-    billing_contact = contact_from_dict(request.session.get('billing_contact'))
-    tech_contact = contact_from_dict(request.session.get('tech_contact'))
+    try:
+        person = Contact(request.session['person'])
+    except:
+        person = None
+
+    try:
+        billing_contact = Contact(request.session['billing_contact'])
+    except:
+        billing_contact = None
+
+    try:
+        tech_contact = Contact(request.session['tech_contact'])
+    except:
+        tech_contact = None
 
     forms = []
     combo_dict = request.session['membership']
@@ -149,19 +167,24 @@ def organization_application_save(request):
                                 nationality=request.session['membership']['nationality'],
                                 municipality=request.session['membership']['municipality'],
                                 extra_info=request.session['membership']['extra_info'])
-        
-        organization = contact_from_dict(request.session['organization'])
-        
-        def get_or_none(dict, key):
-            if dict.has_key(key):
-                return dict[key]
-            else:
-                return None
-        
-        person = contact_from_dict(get_or_none(request.session, 'person'))
-        billing_contact = contact_from_dict(get_or_none(request.session, 'billing_contact'))
-        tech_contact = contact_from_dict(get_or_none(request.session, 'tech_contact'))
-        
+
+        organization = Contact(request.session['organization'])
+
+        try:
+            person = Contact(request.session['person'])
+        except:
+            person = None
+
+        try:
+            billing_contact = Contact(request.session['billing_contact'])
+        except:
+            billing_contact = None
+
+        try:
+            tech_contact = Contact(request.session['tech_contact'])
+        except:
+            tech_contact = None
+
         organization.save()
         membership.organization = organization
         if person:

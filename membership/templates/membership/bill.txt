@@ -1,3 +1,49 @@
-Pay {{ sum }} before {{ due_date }} to account number {{ account }} or else!
+Hei!
 
-Use reference number {{ reference_number }}.
+Tämä on Kapsi Internet-käyttäjät ry:n jäsenmaksulasku. Jos laskussa on
+virheitä tai muuta kysyttävää, voit ottaa yhteyttä vastaamalla tähän
+viestiin.
+
+Kapsi Internet-käyttäjät ry             LASKU
+PL 11                                   
+90571 OULU                              {% now "SHORT_DATE_FORMAT" %}
+                                        
+{{ billing_name|ljust:"40" }}Jäsennumero   {{ member_id }}
+{{ street_address|ljust:"40" }}Laskunnumero  {{ bill_id }}
+{{ postal_code|ljust:"6" }} {{ post_office|ljust:"33" }}Eräpäivä      {{ due_date|date:"SHORT_DATE_FORMAT" }}
+
+Laskun erittely
+----------------------------------------------------------------------
+Jäsenmaksu {{ cycle.start|date:"SHORT_DATE_FORMAT" }} - {{ cycle.end|date:"SHORT_DATE_FORMAT" }}                             {{ sum|rjust:"5"}} e
+----------------------------------------------------------------------
+Loppusumma yhteensä                                            {{ sum|rjust:"5"}} e
+
+Maksaminen
+----------------------------------------------------------------------
+Tili                {{ bank_account_number }}
+IBAN                {{ iban_account_number }}
+BIC                 {{ bic_code }}
+Eräpäivä            {{ due_date|date:"SHORT_DATE_FORMAT" }}
+Viitenumero         {{ reference_number }}
+
+Viitenumeroa on ehdottomasti käytettävä maksaessa jotta maksu
+kohdistuisi oikein!
+
+Voit myös maksaa enemmän, jolloin ylimenevä osuus tulkitaan
+lahjoitukseksi.
+
+Laskuttaja
+----------------------------------------------------------------------
+Kapsi Internet-käyttäjät ry
+PL 11
+90571 OULU
+Sähköposti: laskutus@tuki.kapsi.fi
+Yhdistysrekisterinumero: 187.418
+
+Huomautukset laskusta on tehtävä kirjallisesti kahdeksan (8) päivän
+kuluessa laskun päivämäärästä. Maksun suorittamatta jättäminen
+eräpäivään mennessä johtaa jäsenpalveluiden lukitsemiseen ja lopulta
+erottamiseen yhdistyksestä.
+
+-- 
+Kapsin laskutus <laskutus@tuki.kapsi.fi>

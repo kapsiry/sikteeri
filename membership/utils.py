@@ -81,30 +81,6 @@ def log_change(object, user, before=None, after=None, change_message=None):
         change_message  = change_message
     )
 
-def contact_from_dict(d):
-    if d is None:
-        return None
-    
-    try:
-        c = Contact(street_address=d['street_address'],
-                    postal_code=d['postal_code'],
-                    post_office=d['post_office'],
-                    country=d['country'],
-                    phone=d['phone'],
-                    sms=d['sms'],
-                    email=d['email'],
-                    homepage=d['homepage'])
-    except:
-        return None
-    
-    if d.has_key('organization_name') and len(d['organization_name']) > 5:
-        c.organization_name = d['organization_name']
-    else:
-        c.first_name = d['first_name']
-        c.given_names = d['given_names']
-        c.last_name = d['last_name']
-    return c
-
 def serializable_membership_info(membership):
     """
     A naive method of dict construction is used here. It's not very fancy,
