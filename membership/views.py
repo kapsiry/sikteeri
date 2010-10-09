@@ -44,6 +44,7 @@ def person_application(request, template_name='membership/new_person_application
                 membership.save()
                 transaction.commit()
                 logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
+                # TODO: send an e-mail
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
@@ -175,13 +176,14 @@ def organization_application_save(request):
         
         membership.save()
         transaction.commit()
+        # TODO: send an e-mail
+        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
         for i in ['membership', 'person', 'billing_contact', 'tech_contact']:
             try:
                 del request.session[i]
             except:
                 pass
-        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         return redirect('new_organization_application_success')
     except Exception, e:
         transaction.rollback()
