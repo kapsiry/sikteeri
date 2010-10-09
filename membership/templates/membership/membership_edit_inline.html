@@ -36,9 +36,16 @@
     {% endfor %}
 </ul>
 
-{% for logentry in membership.logs.all %}
-<p>{{ logentry.action_time }} {{ logentry.user }} {{ logentry.action_flag }}: {{ logentry.change_message }}</p>
+<table>
+{% for logentry in logentries %}
+<tr>
+<td> {{ logentry.action_time }} </td>
+<td> {{ logentry.action_flag_str}} </td>
+<td> {{ logentry.user }} </td>
+<td> {{ logentry.change_message }} </td>
+</tr>
 {% endfor %}
+</table>
 
 
 <h2>{% trans "Comments for management" %}</h2>

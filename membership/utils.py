@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
+from django.utils.translation import ugettext_lazy as _
 
 from membership.models import BillingCycle, Bill, Contact, Membership
 
@@ -81,6 +82,14 @@ def log_change(object, user, before=None, after=None, change_message=None):
         change_message  = change_message
     )
 
+def bake_log_entries(raw_log_entries):
+    ACTION_FLAGS = {1 : _('Addition'),
+                    2 : _('Change'),
+                    3 : _('Deletion')}
+    for x in raw_log_entries:
+        x.action_flag_str = unicode(ACTION_FLAGS[x.action_flag])
+    return raw_log_entries
+
 def serializable_membership_info(membership):
     """
     A naive method of dict construction is used here. It's not very fancy,
@@ -138,10 +147,10 @@ def serializable_membership_info(membership):
         comment_list.append(d)
         event_list.append(d)
 
-    log_entries = membership.logs.all()
+    log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
         d = { 'user_name': unicode(entry.user),
-              'text': "%s %s" % (unicode(entry.action_flag), unicode(entry.change_message)),
+              'text': "%s %s" % (unicode(entry.action_flag_str), unicode(entry.change_message)),
               'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)

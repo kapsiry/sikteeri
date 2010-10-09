@@ -22,6 +22,7 @@ from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change, serializable_membership_info
 from utils import save_membership_approved_comment, save_membership_preapproved_comment
+from utils import bake_log_entries
 
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
@@ -248,8 +249,10 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
     else:
         form =  Form(instance=contact)
         message = ""
-    return render_to_response(template_name, {'form': form, 'contact': contact, 'message': message},
-                              context_instance=RequestContext(request))
+    logentries = bake_log_entries(contact.logs.all())
+    return render_to_response(template_name, {'form': form, 'contact': contact,
+        'logentries': logentries, 'message': message},
+        context_instance=RequestContext(request))
 
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
@@ -269,8 +272,11 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             log_change(membership, request.user, before, after)
     else:
         form =  Form(instance=membership)
-    return render_to_response(template_name, {'form': form, 'membership': membership},
-                                  context_instance=RequestContext(request))
+    # Pretty print log entries for template
+    logentries = bake_log_entries(membership.logs.all())
+    return render_to_response(template_name, {'form': form,
+        'membership': membership, 'logentries': logentries},
+        context_instance=RequestContext(request))
 
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     # XXX: Inline template name is hardcoded in template :/
