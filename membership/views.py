@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import traceback
 
 from time import sleep
 
@@ -35,7 +36,12 @@ def person_application(request, template_name='membership/new_person_application
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
-                person = Contact(f)
+                d = {}
+                for k, v in f.items():
+                    if k not in ['nationality', 'municipality', 'extra_info']:
+                        d[k] = v
+                
+                person = Contact(**d)
                 person.save()
                 membership = Membership(type='P', status='N',
                                         person=person,
@@ -49,13 +55,13 @@ def person_application(request, template_name='membership/new_person_application
                           render_to_string('membership/person_application_email_confirmation.txt',
                                            { 'membership': membership,
                                              'person': membership.person,
-                                             'ip': request.META['REMOTE_ADDR']})
+                                             'ip': request.META['REMOTE_ADDR']}),
                           settings.FROM_EMAIL,
                           [membership.person.email], fail_silently=False)
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
-                logging.error("Encountered %s" % repr(e))
+                logging.error("Sikteeri: %s" % traceback.format_exc())
                 logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
     else:
@@ -69,7 +75,7 @@ def organization_application(request, template_name='membership/new_organization
         
         if form.is_valid():
             f = form.cleaned_data
-            organization = Contact(f)
+            organization = Contact(**f)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
@@ -102,7 +108,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
         if form.is_valid() or len(form.changed_data) == 0:
             if form.is_valid():
                 f = form.cleaned_data
-                contact = Contact(f)
+                contact = Contact(**f)
                 request.session[contact_type] = contact.__dict__.copy()
             else:
                 request.session[contact_type] = None
@@ -125,20 +131,20 @@ def organization_application_review(request, template_name='membership/new_organ
                             nationality=request.session['membership']['nationality'],
                             municipality=request.session['membership']['municipality'],
                             extra_info=request.session['membership']['extra_info'])
-    organization = Contact(request.session.get('organization'))
+    organization = Contact(**request.session.get('organization'))
 
     try:
-        person = Contact(request.session['person'])
+        person = Contact(**request.session['person'])
     except:
         person = None
 
     try:
-        billing_contact = Contact(request.session['billing_contact'])
+        billing_contact = Contact(**request.session['billing_contact'])
     except:
         billing_contact = None
 
     try:
-        tech_contact = Contact(request.session['tech_contact'])
+        tech_contact = Contact(**request.session['tech_contact'])
     except:
         tech_contact = None
 
@@ -168,20 +174,20 @@ def organization_application_save(request):
                                 municipality=request.session['membership']['municipality'],
                                 extra_info=request.session['membership']['extra_info'])
 
-        organization = Contact(request.session['organization'])
+        organization = Contact(**request.session['organization'])
 
         try:
-            person = Contact(request.session['person'])
+            person = Contact(**request.session['person'])
         except:
             person = None
 
         try:
-            billing_contact = Contact(request.session['billing_contact'])
+            billing_contact = Contact(**request.session['billing_contact'])
         except:
             billing_contact = None
 
         try:
-            tech_contact = Contact(request.session['tech_contact'])
+            tech_contact = Contact(**request.session['tech_contact'])
         except:
             tech_contact = None
 
@@ -210,7 +216,7 @@ def organization_application_save(request):
         return redirect('new_organization_application_success')
     except Exception, e:
         transaction.rollback()
-        logging.error("Encountered %s" % repr(e))
+        logging.error("Sikteeri: %s" % traceback.format_exc())
         logging.error("Transaction rolled back.")
         return redirect('new_application_fail')
 

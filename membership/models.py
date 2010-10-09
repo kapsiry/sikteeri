@@ -182,7 +182,7 @@ class Bill(models.Model):
 
     # XXX: Should save sending date
     def send_as_email(self):
-        send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
+        send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_FROM_EMAIL,
             [self.cycle.membership.billing_email()], fail_silently=False)
         logging.info('A bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True

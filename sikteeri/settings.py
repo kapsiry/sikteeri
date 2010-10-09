@@ -96,5 +96,6 @@ from local_settings import *
 assert(BANK_ACCOUNT_NUMBER)
 assert(IBAN_ACCOUNT_NUMBER)
 assert(BIC_CODE)
-assert(BILLING_EMAIL_FROM)
+assert(BILLING_FROM_EMAIL)
+assert(FROM_EMAIL)
 assert(SECRET_KEY)
