@@ -16,9 +16,9 @@
         @import "{{ MEDIA_URL }}/static/css/content.css";
         @import "{{ MEDIA_URL }}/static/css/form.css";
     </style>
-    <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}static/js/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
-    <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/member_list.js"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}membership/static/js/member_list.js"></script>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
