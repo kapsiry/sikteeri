@@ -68,7 +68,6 @@ class PersonBaseContactForm(forms.Form):
                                 label=_('Last name'))
 
 class OrganizationBaseContactForm(forms.Form):
-    # Also see utils.py's function contact_from_dict if you want to make this shorter.
     organization_name = forms.CharField(max_length=50, min_length=6, label=_('Organization name'))
 
 class PersonContactForm(PersonBaseContactForm, BaseContactForm):
