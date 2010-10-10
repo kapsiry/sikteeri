@@ -47,6 +47,12 @@ class Contact(models.Model):
     email = models.EmailField(blank=True, verbose_name=_('E-mail'))
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
 
+    def save(self, force_insert=False, force_update=False):
+        if self.organization_name:
+            if len(self.organization_name) < 5:
+                raise Exception("Organization's name should be at least 5 characters.")
+        super(Contact, self).save(force_insert, force_update)
+
     def __unicode__(self):
         if self.organization_name:
             return self.organization_name
@@ -182,7 +188,7 @@ class Bill(models.Model):
 
     # XXX: Should save sending date
     def send_as_email(self):
-        send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_FROM_EMAIL,
+        send_mail(settings.BILL_SUBJECT, self.render_as_text(), settings.BILLING_FROM_EMAIL,
             [self.cycle.membership.billing_email()], fail_silently=False)
         logging.info('A bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True
