@@ -58,7 +58,7 @@ def person_application(request, template_name='membership/new_person_application
                                              'person': membership.person,
                                              'ip': request.META['REMOTE_ADDR']}),
                           settings.FROM_EMAIL,
-                          [membership.person.email], fail_silently=False)
+                          [membership.email()], fail_silently=False)
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
@@ -76,7 +76,13 @@ def organization_application(request, template_name='membership/new_organization
         
         if form.is_valid():
             f = form.cleaned_data
-            organization = Contact(**f)
+            
+            d = {}
+            for k, v in f.items():
+                if k not in ['nationality', 'municipality', 'extra_info']:
+                    d[k] = v
+            
+            organization = Contact(**d)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
@@ -203,10 +209,20 @@ def organization_application_save(request):
         if tech_contact:
             tech_contact.save()
             membership.tech_contact = tech_contact
-        
+
         membership.save()
         transaction.commit()
-        # TODO: send an e-mail
+
+        send_mail(_('Membership application received'),
+                  render_to_string('membership/person_application_email_confirmation.txt',
+                                   { 'membership': membership,
+                                     'organization': membership.organization,
+                                     'billing_contact': membership.billing_contact,
+                                     'tech_contact': membership.tech_contact,
+                                     'ip': request.META['REMOTE_ADDR']}),
+                  settings.FROM_EMAIL,
+                  [membership.email()], fail_silently=False)
+
         logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
         for i in ['membership', 'person', 'billing_contact', 'tech_contact']:

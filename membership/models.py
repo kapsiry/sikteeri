@@ -47,11 +47,11 @@ class Contact(models.Model):
     email = models.EmailField(blank=True, verbose_name=_('E-mail'))
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         if self.organization_name:
             if len(self.organization_name) < 5:
                 raise Exception("Organization's name should be at least 5 characters.")
-        super(Contact, self).save(force_insert, force_update)
+        super(Contact, self).save(*args, **kwargs)
 
     def __unicode__(self):
         if self.organization_name:
@@ -95,6 +95,13 @@ class Membership(models.Model):
         else:
             return self.organization
 
+    def save(self, *args, **kwargs):
+        if self.person and self.organization:
+            raise Exception("Person-contact and organization-contact are mutually exclusive.")
+        if not self.person and not self.organization:
+            raise Exception("Either Person-contact or organization-contact must be defined.")
+        super(Membership, self).save(*args, **kwargs)
+
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
@@ -137,12 +144,12 @@ class BillingCycle(models.Model):
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         if not self.end:
             self.end = self.start + timedelta(days=365)
         if not self.sum:
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
-        super(BillingCycle, self).save(force_insert, force_update) # Call the "real" save() method.
+        super(BillingCycle, self).save(*args, **kwargs)
 
 
 class Bill(models.Model):
@@ -162,12 +169,12 @@ class Bill(models.Model):
     def __unicode__(self):
         return _('Sent on') + ' ' + str(self.created)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=14) # XXX Hardcoded
         if not self.reference_number:
             self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
-        super(Bill, self).save(force_insert, force_update) # Call the "real" save() method.
+        super(Bill, self).save(*args, **kwargs)
 
     def render_as_text(self):
         return render_to_string('membership/bill.txt', {
