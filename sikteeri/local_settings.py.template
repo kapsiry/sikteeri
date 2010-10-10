@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # The following need to be defined (empty strings might work for development)
 SECRET_KEY = None
 BANK_ACCOUNT_NUMBER = None  # Finnish bank account number
