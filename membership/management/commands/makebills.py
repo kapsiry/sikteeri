@@ -18,7 +18,8 @@ class Command(NoArgsCommand):
                 continue
             if cycle.is_paid():
                 continue
-
+            
+            # FIXME: should reflect last bill due date, not cycle start
             if cycle.start < datetime.now() + timedelta(days=7) and len(cycle.bill_set.all()) == 1:
                 sendreminder(member)
                 print "Reminder"

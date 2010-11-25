@@ -18,7 +18,8 @@ from reference_numbers import *
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
-                ('O', _('Organization')))
+                ('O', _('Organization')),
+                ('H', _('Honorary')))
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
@@ -139,7 +140,7 @@ class BillingCycle(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     def is_paid(self):
-        return False # XXX
+        return False # FIXME: not implemented
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
@@ -148,6 +149,7 @@ class BillingCycle(models.Model):
         if not self.end:
             self.end = self.start + timedelta(days=365)
         if not self.sum:
+            # FIXME: should be Membership method get_current_fee()
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
         super(BillingCycle, self).save(*args, **kwargs)
 
@@ -193,7 +195,8 @@ class Bill(models.Model):
             'sum': self.cycle.sum
             })
 
-    # XXX: Should save sending date
+    # FIXME: Should save sending date
+    # FIXME: Should only send if fee > 0
     def send_as_email(self):
         send_mail(settings.BILL_SUBJECT, self.render_as_text(), settings.BILLING_FROM_EMAIL,
             [self.cycle.membership.billing_email()], fail_silently=False)
