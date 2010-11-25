@@ -20,8 +20,7 @@ import logging
 from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
-from membership.views import contact_from_dict
-from membership.models import Membership, Bill, BillingCycle, Fee
+from membership.models import Contact, Membership, Bill, BillingCycle, Fee
 
 
 if Fee.objects.all().count() == 0:
@@ -195,10 +194,10 @@ def create_dummy_member(i, status):
         'email' : 'user%d@example.com' % i,
         'homepage' : 'http://www.example.com/%d'%i,
         'first_name' : fname,
-        'given_names' : '%s %s' % (fname, get_random_first_name()),
+        'given_names' : '%s %s' % (fname, "Kapsi"),
         'last_name' : get_random_last_name(),
     }
-    person = contact_from_dict(d)
+    person = Contact(**d)
     person.save()
     membership = Membership(type='P', status=status,
                             person=person,
