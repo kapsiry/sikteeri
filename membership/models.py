@@ -114,7 +114,6 @@ class Membership(models.Model):
         self.accepted = datetime.now()
         self.save()
 
-
 class Alias(models.Model):
     owner = models.ForeignKey('Membership', verbose_name=_('Alias owner'))
     name = models.CharField(max_length=128, unique=True, verbose_name=_('Alias name'))
@@ -140,7 +139,12 @@ class BillingCycle(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     def is_paid(self):
-        return False # FIXME: not implemented
+        '''True if any of the bills for the Billing Cycle is marked paid'''
+        paid_bills = Bill.objects.filter(cycle=self, is_paid=True)
+        if paid_bills.count() > 0:
+            return True
+        else:
+            return False
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
@@ -153,7 +157,7 @@ class BillingCycle(models.Model):
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
         super(BillingCycle, self).save(*args, **kwargs)
 
-
+# FIXME: refactor cycle to 'billingcycle'
 class Bill(models.Model):
     cycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
