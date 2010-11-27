@@ -178,6 +178,10 @@ class Bill(models.Model):
             self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
         super(Bill, self).save(*args, **kwargs)
 
+    def fee(self):
+        '''Get the fee for the bill'''
+        return self.cycle.sum
+
     def render_as_text(self):
         return render_to_string('membership/bill.txt', {
             'bill_id': self.id,
@@ -192,15 +196,20 @@ class Bill(models.Model):
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,
             'reference_number': self.reference_number,
-            'sum': self.cycle.sum
+            'sum': self.fee()
             })
 
     # FIXME: Should save sending date
-    # FIXME: Should only send if fee > 0
     def send_as_email(self):
-        send_mail(settings.BILL_SUBJECT, self.render_as_text(), settings.BILLING_FROM_EMAIL,
-            [self.cycle.membership.billing_email()], fail_silently=False)
-        logging.info('A bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
+        if self.fee() > 0:
+            send_mail(settings.BILL_SUBJECT, self.render_as_text(),
+                settings.BILLING_FROM_EMAIL,
+                [self.cycle.membership.billing_email()], fail_silently=False)
+            logging.info('A bill sent as email to %s: %s' % (
+                self.cycle.membership.email, repr(Bill)))
+        else:
+            logging.info('Bill not sent: membership fee zero for %s: %s' % (
+                self.cycle.membership.email, repr(Bill)))
         self.cycle.bill_sent = True
         self.cycle.save()
 
