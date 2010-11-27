@@ -15,6 +15,7 @@ from django.contrib.contenttypes.generic import GenericRelation
 
 from reference_numbers import *
 
+class BillingEmailNotFound(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
@@ -95,6 +96,17 @@ class Membership(models.Model):
             return self.person
         else:
             return self.organization
+
+    def billing_email(self):
+        '''Finds the best email address for billing'''
+        contact_priority_list = [self.billing_contact, self.person,
+            self.organization]
+        for contact in contact_priority_list:
+            if contact:
+                if contact.email:
+                    return contact.email
+        raise BillingEmailNotFound("Neither billing or administrative contact "+
+            "has an email address")
 
     def save(self, *args, **kwargs):
         if self.person and self.organization:
