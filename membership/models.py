@@ -140,7 +140,7 @@ class BillingCycle(models.Model):
 
     def is_paid(self):
         '''True if any of the bills for the Billing Cycle is marked paid'''
-        paid_bills = Bill.objects.filter(cycle=self, is_paid=True)
+        paid_bills = Bill.objects.filter(billingcycle=self, is_paid=True)
         if paid_bills.count() > 0:
             return True
         else:
@@ -157,9 +157,8 @@ class BillingCycle(models.Model):
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
         super(BillingCycle, self).save(*args, **kwargs)
 
-# FIXME: refactor cycle to 'billingcycle'
 class Bill(models.Model):
-    cycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
+    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
     due_date = models.DateTimeField(verbose_name=_('Due date'))
 
@@ -177,24 +176,25 @@ class Bill(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.due_date:
-            self.due_date = datetime.now() + timedelta(days=14) # XXX Hardcoded
+            self.due_date = datetime.now() + timedelta(days=14) # FIXME: Hardcoded
         if not self.reference_number:
-            self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
+            self.reference_number = add_checknumber('1337' + str(self.billingcycle.membership.id))
         super(Bill, self).save(*args, **kwargs)
 
     def fee(self):
         '''Get the fee for the bill'''
-        return self.cycle.sum
+        return self.billingcycle.sum
 
     def render_as_text(self):
+        membership = self.billingcycle.membership
         return render_to_string('membership/bill.txt', {
             'bill_id': self.id,
-            'member_id': self.cycle.membership.id,
-            'billing_name': unicode(self.cycle.membership.get_billing_contact()),
-            'street_address': self.cycle.membership.get_billing_contact().street_address,
-            'postal_code': self.cycle.membership.get_billing_contact().postal_code,
-            'post_office': self.cycle.membership.get_billing_contact().post_office,
-            'cycle': self.cycle,
+            'member_id': membership.id,
+            'billing_name': unicode(membership.get_billing_contact()),
+            'street_address': membership.get_billing_contact().street_address,
+            'postal_code': membership.get_billing_contact().postal_code,
+            'post_office': membership.get_billing_contact().post_office,
+            'billingcycle': self.billingcycle,
             'bank_account_number': settings.BANK_ACCOUNT_NUMBER,
             'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
             'bic_code': settings.BIC_CODE,
@@ -205,17 +205,18 @@ class Bill(models.Model):
 
     # FIXME: Should save sending date
     def send_as_email(self):
+        membership = self.billingcycle.membership
         if self.fee() > 0:
             send_mail(settings.BILL_SUBJECT, self.render_as_text(),
                 settings.BILLING_FROM_EMAIL,
-                [self.cycle.membership.billing_email()], fail_silently=False)
-            logging.info('A bill sent as email to %s: %s' % (
-                self.cycle.membership.email, repr(Bill)))
+                [membership.billing_email()], fail_silently=False)
+            logging.info('A bill sent as email to %s: %s' % (membership.email,
+                repr(Bill)))
         else:
             logging.info('Bill not sent: membership fee zero for %s: %s' % (
-                self.cycle.membership.email, repr(Bill)))
-        self.cycle.bill_sent = True
-        self.cycle.save()
+                membership.email, repr(Bill)))
+        self.billingcycle.bill_sent = True
+        self.billingcycle.save()
 
 
 class Payment(models.Model):

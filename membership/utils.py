@@ -53,13 +53,13 @@ def new_cycle(membership):
     old_cycle = membership.billingcycle_set.order_by('-end')[0]
     billing_cycle = BillingCycle(membership=membership, start=old_cycle.end)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(cycle=billing_cycle)
+    bill = Bill(billingcycle=billing_cycle)
     bill.save()
     bill.send_as_email()
 
 def sendreminder(membership): # XXX Test if cycle is paid?
     billing_cycle = membership.billingcycle_set.order_by('-end')[0]
-    bill = Bill(cycle=billing_cycle)
+    bill = Bill(billingcycle=billing_cycle)
     bill.save()
     bill.send_as_email()
 

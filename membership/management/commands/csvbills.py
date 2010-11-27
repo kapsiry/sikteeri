@@ -7,7 +7,7 @@ from membership.utils import *
 
 
 class Command(LabelCommand):
-    help = 'Find expiring cycles, send bills, send reminders'
+    help = 'Find expiring billing cycles, send bills, send reminders'
 
     def handle_label(self, label, *options):
         reader = csv.reader(open(label), delimiter=';', quotechar='\\')
@@ -18,7 +18,7 @@ class Command(LabelCommand):
                               payer_name=row[4], reference_number=row[6], message=row[7], transaction_id=row[8])
             try:
                 payment.bill = Bill.objects.filter(reference_number__exact=row[6]).order('-id')[0]
-                if payment.amount >= bill.cycle.sum:
+                if payment.amount >= bill.billingcycle.sum:
                     bill.is_paid = True
                     bill.save
             except:

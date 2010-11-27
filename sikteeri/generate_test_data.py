@@ -234,7 +234,7 @@ def approve(i):
     comment.save()
     billing_cycle = BillingCycle(membership=membership)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(cycle=billing_cycle)
+    bill = Bill(billingcycle=billing_cycle)
     bill.save()
     #bill.send_as_email()
     log_change(membership, user, change_message="Approved")

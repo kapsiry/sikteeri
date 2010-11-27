@@ -93,7 +93,7 @@ def create_member(mdata):
         end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
     # Creating an instance does not touch db and we need and id for the Bill
     billing_cycle.save()
-    bill = Bill(cycle=billing_cycle, is_paid=True,
+    bill = Bill(billingcycle=billing_cycle, is_paid=True,
         created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
     #bill.send_as_email()
