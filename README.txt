@@ -4,7 +4,10 @@ REQUIREMENTS
 * django (1.2, known not to work on older versions)
 * simplejson
 * pysqlite, if using Python < 2.5
+* gettext
 
+The virtualenv install script installs everything but the Python sqlite
+extension.
 
 HOW TO RUN
 ==========
