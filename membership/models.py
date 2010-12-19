@@ -190,7 +190,7 @@ class Bill(models.Model):
         if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=14) # FIXME: Hardcoded
         if not self.reference_number:
-            self.reference_number = generate_membership_bill_reference_number(self.cycle.membership.id, self.cycle.start.year)
+            self.reference_number = generate_membership_bill_reference_number(self.billingcycle.membership.id, self.billingcycle.start.year)
         super(Bill, self).save(*args, **kwargs)
 
     def fee(self):
