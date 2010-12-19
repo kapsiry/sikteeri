@@ -173,7 +173,7 @@ class Bill(models.Model):
         if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=14) # XXX Hardcoded
         if not self.reference_number:
-            self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
+            self.reference_number = generate_membership_bill_reference_number(self.cycle.membership.id, self.cycle.start.year)
         super(Bill, self).save(*args, **kwargs)
 
     def render_as_text(self):
