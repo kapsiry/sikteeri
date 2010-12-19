@@ -39,6 +39,7 @@ urlpatterns = patterns('',
 def limited_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
 
+@login_required
 def search(request, query=None,
            template_name='membership/membership_list.html'):
     if not query:
