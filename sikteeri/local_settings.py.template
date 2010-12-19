@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 # The following need to be defined (empty strings might work for development)
 SECRET_KEY = None
 BANK_ACCOUNT_NUMBER = None  # Finnish bank account number
 IBAN_ACCOUNT_NUMBER = None  # Pan-European new standard bank account number
 BIC_CODE = None             # Bank account's bank code in the BIC format
-BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see EMAIL_BACKEND.
+BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see
+                            # the setting EMAIL_BACKEND.
 FROM_EMAIL = None           # Generic from e-mail
 BILL_SUBJECT = None         # Text to be used as bill subjects
 SYSTEM_NAME = None          # Membership management system should have a name
