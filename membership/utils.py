@@ -176,18 +176,3 @@ def serializable_membership_info(membership):
     ctimeify(event_list)
 
     return json_obj
-
-def _do_save_membership_status_change_comment(user, membership, comment_text):
-    comment = Comment()
-    comment.user = user
-    comment.content_object = membership
-    comment.comment = comment_text
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    return comment.save()
-
-def save_membership_approved_comment(user, membership):
-    return _do_save_membership_status_change_comment(user, membership, u"Approved")
-
-def save_membership_preapproved_comment(user, membership):
-    return _do_save_membership_status_change_comment(user, membership, u"Preapproved")

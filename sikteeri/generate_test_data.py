@@ -212,26 +212,12 @@ def membership_preapprove(i):
     membership = Membership.objects.get(id=i)
     membership.status = 'P'
     membership.save()
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = user
-    comment.comment = "Preapproved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    comment.save()
     log_change(membership, user, change_message="Preapproved")
 
 
 def approve(i):
     membership = Membership.objects.get(id=i)
     membership.status = 'A'
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = user
-    comment.comment = "Approved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    comment.save()
     billing_cycle = BillingCycle(membership=membership)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
     bill = Bill(billingcycle=billing_cycle)

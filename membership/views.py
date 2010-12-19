@@ -21,7 +21,6 @@ import simplejson
 from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change, serializable_membership_info
-from utils import save_membership_approved_comment, save_membership_preapproved_comment
 from utils import bake_log_entries
 
 
@@ -306,7 +305,6 @@ def membership_do_approve(request, id):
         return
     membership.status = 'A' # XXX hardcoding
     membership.save()
-    save_membership_approved_comment(request.user, membership)
     billing_cycle = BillingCycle(membership=membership)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
     bill = Bill(billingcycle=billing_cycle)
@@ -327,7 +325,6 @@ def membership_do_preapprove(request, id):
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
-    save_membership_preapproved_comment(request.user, membership)
     log_change(membership, request.user, change_message="Preapproved")
 
 def membership_preapprove(request, id):
