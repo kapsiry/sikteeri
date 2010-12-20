@@ -73,12 +73,9 @@ class BillingTest(TestCase):
     #
     # http://docs.djangoproject.com/en/dev/topics/testing/#django.core.mail.django.core.mail.outbox
 
-    # How should we differentiate between approved, pre-approved etc?  These
-    # are corner cases aswell and should be handled in different tests.
-    
     # NOTE: also make sure billing addresses are correct
     def test_single_preapproved_no_op(self):
-        "Test preapproved membership: nothing should be created"
+        "makebills: preapproved membership no-op"
         membership = create_dummy_member('N')
         membership.preapprove()
         c = makebills_command()
@@ -89,7 +86,7 @@ class BillingTest(TestCase):
         self.assertEqual(len(cycles), 0)
 
     def test_membership_approved_time_no_entries(self):
-        "Test to see if approved time resolver raises correct errors."
+        "makebills: approved_time with no entries"
         membership = create_dummy_member('N')
         membership.preapprove()
         membership.status = 'A'
@@ -97,7 +94,7 @@ class BillingTest(TestCase):
         self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership)
 
     def test_membership_approved_time_multiple_entries(self):
-        "Test to see if approved time resolver picks the right time."
+        "makebills: approved_time multiple entries"
         user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
@@ -110,6 +107,7 @@ class BillingTest(TestCase):
         self.assertEquals(t, approve_entries[0].action_time)
 
     def test_bill_is_reminder(self):
+        "models.bill.is_reminder()"
         user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
@@ -124,6 +122,7 @@ class BillingTest(TestCase):
         self.assertFalse(first_bill.is_reminder())
 
     def test_billing_cycle_last_bill(self):
+        "models.Bill.last_bill()"
         user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
@@ -139,6 +138,7 @@ class BillingTest(TestCase):
         self.assertNotEquals(last_bill.id, first_bill.id)
 
     def test_billing_cycle_is_last_bill_late(self):
+        "models.Bill.is_last_bill_late()"
         user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
@@ -152,7 +152,7 @@ class BillingTest(TestCase):
         self.assertTrue(datetime.now() + timedelta(days=15) > last_bill.due_date)
 
     def test_approved_cycle_and_bill_creation(self):
-        "Test approved membership: cycle and bill creation"
+        "makebills: cycle and bill creation"
         user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
@@ -170,7 +170,6 @@ class BillingTest(TestCase):
         log_change(membership2, user, change_message="Approved")
 
         c.handle_noargs()
-
 
         self.assertEqual(len(membership2.billingcycle_set.all()), 1)
         self.assertEqual(len(mail.outbox), 2)
@@ -198,7 +197,7 @@ class BillingTest(TestCase):
         # c = makebills_command()
         # c.handle_noargs({})
     def test_reminder_sending(self):
-        print "test_reminder_sending not implemented"
+        "Reminder sending"
         # TODO:
         #  - populate database
         #    - a membership whose bill is overdue
@@ -211,3 +210,23 @@ class BillingTest(TestCase):
 
         # c = makebills_command()
         # c.handle_noargs({})
+        user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, user, change_message="Approved")
+        c = makebills_command()
+        c.handle_noargs()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(membership.billingcycle_set.all()), 1)
+
+        membership2 = create_dummy_member('N')
+        membership2.preapprove()
+        membership2.approve()
+        log_change(membership2, user, change_message="Approved")
+
+        c.handle_noargs()
+
+        self.assertEqual(len(membership2.billingcycle_set.all()), 1)
+        self.assertEqual(len(mail.outbox), 2)
