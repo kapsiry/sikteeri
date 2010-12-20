@@ -196,37 +196,36 @@ class BillingTest(TestCase):
         #      (the system should throw an error when handling this (should never happen))
         # c = makebills_command()
         # c.handle_noargs({})
-    def test_reminder_sending(self):
-        "Reminder sending"
-        # TODO:
-        #  - populate database
-        #    - a membership whose bill is overdue
-        #    - a membership whose bill is not overdue
-        #    - a membership who should be reminded again
-        
-        # How many times do we remind?  Should a special e-mail message be
-        # sent to billing people once a certain count is reached?  Or is every
-        # reminder already sent to billing?
 
-        # c = makebills_command()
-        # c.handle_noargs({})
+    def test_new_billing_cycle_with_existing(self):
+        "makebills: new billing cycle with existing cycles present"
         user = User.objects.get(id=1)
-        membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, user, change_message="Approved")
         c = makebills_command()
+        
+        m1 = create_dummy_member('N')
+        m1.preapprove()
+        m1.approve()
+        log_change(m1, user, change_message="Approved")
+        
         c.handle_noargs()
+        self.assertEqual(len(m1.billingcycle_set.all()), 1)
+        
+        m2 = create_dummy_member('N')
+        m2.preapprove()
+        m2.approve()
+        log_change(m2, user, change_message="Approved")
+        
+        c.handle_noargs()
+        self.assertEqual(len(m2.billingcycle_set.all()), 1)
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(len(membership.billingcycle_set.all()), 1)
-
-        membership2 = create_dummy_member('N')
-        membership2.preapprove()
-        membership2.approve()
-        log_change(membership2, user, change_message="Approved")
+        yesterday = datetime.now() - timedelta(days=1)
+        bc2 = m2.billingcycle_set.all()[0]
+        bc2.end = yesterday
+        bc2.save()
+        b2 = bc2.last_bill()
+        b2.due_date = yesterday
+        b2.save()
 
         c.handle_noargs()
-
-        self.assertEqual(len(membership2.billingcycle_set.all()), 1)
-        self.assertEqual(len(mail.outbox), 2)
+        self.assertTrue(len(m2.billingcycle_set.all()), 2)
+        self.assertEqual(len(mail.outbox), 3)
