@@ -16,6 +16,7 @@ from django.contrib.contenttypes.generic import GenericRelation
 from reference_numbers import *
 
 class BillingEmailNotFound(Exception): pass
+class MembershipFlowError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
@@ -115,16 +116,24 @@ class Membership(models.Model):
             raise Exception("Either Person-contact or organization-contact must be defined.")
         super(Membership, self).save(*args, **kwargs)
 
+    def preapprove(self):
+        if self.status != 'N':
+            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+        self.status = 'P'
+        self.save()
+
+    def approve(self):
+        if self.status != 'P':
+            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+        self.status = 'A'
+        self.save()
+
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
         else:
             return self.person.__unicode__()
 
-    def accept(self):
-        self.status = 'A'
-        self.accepted = datetime.now()
-        self.save()
 
 class Alias(models.Model):
     owner = models.ForeignKey('Membership', verbose_name=_('Alias owner'))
