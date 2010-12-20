@@ -49,23 +49,6 @@ def diff_humanize(diff):
             txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
     return txt
     
-def new_cycle(membership):
-    old_cycle = membership.billingcycle_set.order_by('-end')[0]
-    billing_cycle = BillingCycle(membership=membership, start=old_cycle.end)
-    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(billingcycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
-
-def sendreminder(membership): # XXX Test if cycle is paid?
-    billing_cycle = membership.billingcycle_set.order_by('-end')[0]
-    bill = Bill(billingcycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
-
-def disable_member(membership):
-    pass # XXX
-
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:
