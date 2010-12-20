@@ -27,7 +27,7 @@ MEMBER_STATUS = (('N', _('New')),
                  ('A', _('Approved')),
                  ('D', _('Disabled')))
 
-def log_change(sender, instance, created, **kwargs):
+def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logging.info('%s %s: %s' % (sender, operation, repr(instance)))
 
@@ -61,7 +61,6 @@ class Contact(models.Model):
             return self.organization_name
         else:
             return u'%s %s' % (self.last_name, self.first_name)
-
 
 
 class Membership(models.Model):
@@ -170,6 +169,19 @@ class BillingCycle(models.Model):
         else:
             return False
 
+    def last_bill(self):
+        try:
+            return Bill.objects.filter(billingcycle=self).order_by('-due_date')[0]
+        except IndexError, ie:
+            return None
+
+    def is_last_bill_late(self):
+        if self.is_paid() or self.last_bill() == None:
+            return False
+        if datetime.now() > self.last_bill().due_date:
+            return True
+        return False
+
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
 
@@ -208,6 +220,13 @@ class Bill(models.Model):
     def fee(self):
         '''Get the fee for the bill'''
         return self.billingcycle.sum
+
+    def is_reminder(self):
+        cycle = self.billingcycle
+        bills = cycle.bill_set.order_by('due_date')
+        if self.id != bills[0].id:
+            return True
+        return False
 
     def render_as_text(self):
         membership = self.billingcycle.membership
@@ -262,9 +281,9 @@ class Payment(models.Model):
     def __unicode__(self):
         return 'Payment for %s euros paid on %s' % (str(self.amount), str(self.payment_day))
 
-models.signals.post_save.connect(log_change, sender=Membership)
-models.signals.post_save.connect(log_change, sender=Contact)
-models.signals.post_save.connect(log_change, sender=Alias)
-models.signals.post_save.connect(log_change, sender=BillingCycle)
-models.signals.post_save.connect(log_change, sender=Bill)
-models.signals.post_save.connect(log_change, sender=Payment)
+models.signals.post_save.connect(logging_log_change, sender=Membership)
+models.signals.post_save.connect(logging_log_change, sender=Contact)
+models.signals.post_save.connect(logging_log_change, sender=Alias)
+models.signals.post_save.connect(logging_log_change, sender=BillingCycle)
+models.signals.post_save.connect(logging_log_change, sender=Bill)
+models.signals.post_save.connect(logging_log_change, sender=Payment)
