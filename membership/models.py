@@ -128,6 +128,9 @@ class Membership(models.Model):
         self.status = 'A'
         self.save()
 
+    def __repr__(self):
+        return "<%s: %s (%i)>" % ('Membership', unicode(self), self.id)
+
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
