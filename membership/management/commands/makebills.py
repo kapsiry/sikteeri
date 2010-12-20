@@ -1,58 +1,77 @@
 from django.core.management.base import NoArgsCommand
 
 import logging
-import datetime
+from datetime import datetime, timedelta
 
 from membership.models import *
 from membership.utils import *
 
 class NoApprovedLogEntry(Exception): pass
 
+def membership_approved_time(membership):
+    """
+    Fetches the newest 'Approved' entry and returns its time.
+    """
+    approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
+    if len(approve_entries) == 0:
+        logging.critical("makebills: %s doesn't have Approved log entry"
+                         % repr(membership))
+        raise NoApprovedLogEntry("%s doesn't have an Approved log entry,"
+                                 % repr(membership)
+                                 + " start time for billing cycle can't be determined.")
+    newest = approve_entries[0]
+    if len(approve_entries) > 1:
+        logging.warning('makebills: more than one Approved-entry for %s, choosing %s'
+                        % (repr(membership), newest.action_time.strftime("%Y-%m-%d %H:%M")))
+    return newest.action_time
+
 def create_billingcycle(membership):
     """
     Creates a new billing cycle for a membership.
     
     If a previous billing cycle exists, the end date is used as the start
-    date for the new one.  If a previous one doesn't exist, the event log
-    of the membership is consulted and the newest 'Approved" entry is used
-    as the start date.
+    date for the new one.  If a previous one doesn't exist, e.g. it is a new
+    user, we use the time when they were last approved.
     """
     try:
-        old_cycle = membership.billingcycle_set.order_by('-end')[0]
+        newest_existing_billing_cycle = membership.billingcycle_set.order_by('-end')[0]
     except IndexError, ie:
-        old_cycle = None
+        newest_existing_billing_cycle = None
 
-    if old_cycle != None:
-        cycle_start = old_cycle.end
+    if newest_existing_billing_cycle != None:
+        cycle_start = newest_existing_billing_cycle.end
     else:
-        log_items = membership.logs.all()
-        approve_entries = m.logs.filter(change_message="Approved").order_by('-action_time')
-        if len(approve_entries) == 0:
-            logging.critical("makebills: %s doesn't have Approved log entry"
-                             % repr(membership))
-            raise NoApprovedLogEntry("%s doesn't have an Approved log entry,"
-                                     % repr(membership)
-                                     + " start time for billing cycle can't be determined")
-        newest = approve_entries[0]
-        if len(approve_entries) > 1:
-            logging.warning('makebills: more than one Approved-entry for %s, choosing %s'
-                            % (repr(membership), newest.action_time.strftime("%Y-%m-%d %H:%M")))
-        cycle_start = newest.action_time
+        cycle_start = membership_approved_time(membership)
 
     billing_cycle = BillingCycle(membership=membership, start=cycle_start)
     billing_cycle.save()
     bill = Bill(billingcycle=billing_cycle)
     bill.save()
     bill.send_as_email()
+    return billing_cycle
 
-def sendreminder(membership): # XXX Test if cycle is paid?
+def can_send_reminders():
+    """
+    Determine if we have recent payments so that we can be sure
+    recent payments have been imported into the system.
+    """
+    payments = Payment.objects.order_by("-payment_day")
+    if len(payments):
+        logging.critical("makebills: no payments in the database.")
+        return False
+    last_payment = payments[0]
+    two_weeks_ago = datetime.now() - timedelta(days=14)
+    
+    if last_payment.payment_day < two_weeks_ago:
+        return False
+    return True
+
+def send_reminder(membership):
     billing_cycle = membership.billingcycle_set.order_by('-end')[0]
     bill = Bill(billingcycle=billing_cycle)
     bill.save()
     bill.send_as_email()
-
-def disable_member(membership):
-    pass # XXX
+    return bill
 
 
 class Command(NoArgsCommand):
@@ -60,30 +79,22 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
         for member in Membership.objects.filter(status='A'):
+            # Billing cycles and bills
             cycles = member.billingcycle_set.order_by('-end')
-
             if len(cycles) == 0:
-                billing_cycle = BillingCycle(membership=self)
-                billing_cycle.save()
-                bill = Bill(billingcycle=billing_cycle)
-                bill.save()
-                
-            latest_cycle = cycles
+                create_billingcycle(member)
+            else:
+                latest_cycle = cycles[0]
+                if latest_cycle.end < datetime.now() + timedelta(days=28):
+                    create_billingcycle(member)
 
-            if billingcycle.end < datetime.now() + datetime.timedelta(days=28):
-                new_cycle(member)
-                print "New billing cycle"
-                continue
-            if billingcycle.is_paid():
-                continue
-            
-            # FIXME: should reflect last bill due date, not billing cycle start
-            if billingcycle.start < datetime.now() + datetime.timedelta(days=7) \
-                   and len(billingcycle.bill_set.all()) == 1:
-                sendreminder(member)
-                print "Reminder"
-            elif billingcycle.start < datetime.now():
-                disable_member(member)
-                print "Disabled"
-
-
+            # Reminders
+            latest_cycle = member.billingcycle_set.order_by('-end')[0]
+            if not latest_cycle.is_paid():
+                if latest_cycle.is_last_bill_late():
+                    last_due_date = latest_cycle.last_bill().due_date
+                    two_weeks_from_now = datetime.now() + timedelta(days=14)
+                    if last_due_date > two_weeks_from_now and can_send_reminder():
+                        send_reminder(member)
+                        logging.info("makebills: sent a reminder to %s." %
+                                     member)

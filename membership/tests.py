@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import randint
 
+from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 
@@ -14,7 +15,10 @@ from test_utils import *
 from reference_numbers import *
 
 from management.commands.makebills import Command as makebills_command
-
+from management.commands.makebills import membership_approved_time
+from management.commands.makebills import create_billingcycle
+from management.commands.makebills import send_reminder
+from management.commands.makebills import NoApprovedLogEntry
 
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
@@ -65,7 +69,7 @@ def create_dummy_member(status):
 
 class BillingTest(TestCase):
     # http://docs.djangoproject.com/en/dev/topics/testing/#fixture-loading
-    # fixtures = ['membership_fees.json', 'simple_billing.json']
+    fixtures = ['membership_fees.json', 'test_user.json']
     #
     # http://docs.djangoproject.com/en/dev/topics/testing/#django.core.mail.django.core.mail.outbox
 
@@ -84,17 +88,92 @@ class BillingTest(TestCase):
         cycles = membership.billingcycle_set.all()
         self.assertEqual(len(cycles), 0)
 
-    def test_approved_cycle_and_bill_creation(self):
-        "Test approved membership: cycle and bill creation"
+    def test_membership_approved_time_no_entries(self):
+        "Test to see if approved time resolver raises correct errors."
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.status = 'A'
+        membership.save()
+        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership)
+
+    def test_membership_approved_time_multiple_entries(self):
+        "Test to see if approved time resolver picks the right time."
+        user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
         membership.approve()
+        log_change(membership, user, change_message="Approved")
+        log_change(membership, user, change_message="Approved")
+        approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
+        
+        t = membership_approved_time(membership)
+        self.assertEquals(t, approve_entries[0].action_time)
+
+    def test_bill_is_reminder(self):
+        user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, user, change_message="Approved")
+
+        cycle = create_billingcycle(membership)
+        reminder_bill = send_reminder(membership)
+        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
+
+        self.assertTrue(reminder_bill.is_reminder())
+        self.assertFalse(first_bill.is_reminder())
+
+    def test_billing_cycle_last_bill(self):
+        user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, user, change_message="Approved")
+
+        cycle = create_billingcycle(membership)
+        reminder_bill = send_reminder(membership)
+        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
+
+        last_bill = cycle.bill_set.order_by("-due_date")[0]
+        self.assertEquals(last_bill.id, reminder_bill.id)
+        self.assertNotEquals(last_bill.id, first_bill.id)
+
+    def test_billing_cycle_is_last_bill_late(self):
+        user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, user, change_message="Approved")
+
+        cycle = create_billingcycle(membership)
+        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
+        last_bill = cycle.bill_set.order_by("-due_date")[0]
+
+        self.assertTrue(datetime.now() + timedelta(days=15) > last_bill.due_date)
+
+    def test_approved_cycle_and_bill_creation(self):
+        "Test approved membership: cycle and bill creation"
+        user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, user, change_message="Approved")
         c = makebills_command()
         c.handle_noargs()
-        
+
         self.assertEqual(len(mail.outbox), 1)
-        cycles = membership.billingcycle_set.all()
-        self.assertEqual(len(cycles), 1)
+        self.assertEqual(len(membership.billingcycle_set.all()), 1)
+
+        membership2 = create_dummy_member('N')
+        membership2.preapprove()
+        membership2.approve()
+        log_change(membership2, user, change_message="Approved")
+
+        c.handle_noargs()
+
+
+        self.assertEqual(len(membership2.billingcycle_set.all()), 1)
+        self.assertEqual(len(mail.outbox), 2)
 
     def test_expiring_cycles(self):
         print "test_expiring_cycles not implemented"
