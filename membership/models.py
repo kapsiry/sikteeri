@@ -128,8 +128,10 @@ class Membership(models.Model):
         self.save()
 
     def __repr__(self):
-        return "<Membership(%s): %s (%i)>" % (self.type, unicode(self), self.id)
+        return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
+    def __str__(self):
+        return unicode(self).encode('ASCII', 'backslashreplace')
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
