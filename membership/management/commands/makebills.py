@@ -97,4 +97,4 @@ class Command(NoArgsCommand):
                     if last_due_date > two_weeks_from_now and can_send_reminder():
                         send_reminder(member)
                         logging.info("makebills: sent a reminder to %s." %
-                                     member)
+                                     repr(member))
