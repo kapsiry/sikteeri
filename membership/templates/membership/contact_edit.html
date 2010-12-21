@@ -5,8 +5,13 @@
 {% block content %}
 {% if message %}{{ message }}<hr />{% endif %}
 <form method="POST">{% csrf_token %}
+<div id="contact_edit">
 {{ form.as_p }}
-<input type="submit" value="{% trans "Save contact changes" %}" />
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Save contact changes" %}" />
+</p>
+</div>
 </form>
 <hr />
 <table>
