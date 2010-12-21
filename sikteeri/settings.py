@@ -93,7 +93,6 @@ SESSION_COOKIE_SECURE = True
 from local_settings import *
 
 # Is this the right way to do this?
-assert(BANK_ACCOUNT_NUMBER)
 assert(IBAN_ACCOUNT_NUMBER)
 assert(BIC_CODE)
 assert(BILLING_FROM_EMAIL)

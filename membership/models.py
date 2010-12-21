@@ -240,7 +240,6 @@ class Bill(models.Model):
             'postal_code': membership.get_billing_contact().postal_code,
             'post_office': membership.get_billing_contact().post_office,
             'billingcycle': self.billingcycle,
-            'bank_account_number': settings.BANK_ACCOUNT_NUMBER,
             'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,

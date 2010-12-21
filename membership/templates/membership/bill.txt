@@ -20,8 +20,7 @@ Loppusumma yhteensä                                            {{ sum|rjust:"5"
 
 Maksaminen
 ----------------------------------------------------------------------
-Tili                {{ bank_account_number }}
-IBAN                {{ iban_account_number }}
+Tilinumero          {{ iban_account_number }}
 BIC                 {{ bic_code }}
 Eräpäivä            {{ due_date|date:"SHORT_DATE_FORMAT" }}
 Viitenumero         {{ reference_number }}
