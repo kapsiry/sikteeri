@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import traceback
 
 from time import sleep
 
 from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm
@@ -18,8 +20,8 @@ import simplejson
 
 from models import *
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
-from utils import log_change, contact_from_dict, serializable_membership_info
-from utils import save_membership_approved_comment, save_membership_preapproved_comment
+from utils import log_change, serializable_membership_info
+from utils import bake_log_entries
 
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
@@ -34,7 +36,12 @@ def person_application(request, template_name='membership/new_person_application
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
-                person = contact_from_dict(f)
+                d = {}
+                for k, v in f.items():
+                    if k not in ['nationality', 'municipality', 'extra_info']:
+                        d[k] = v
+                
+                person = Contact(**d)
                 person.save()
                 membership = Membership(type='P', status='N',
                                         person=person,
@@ -44,10 +51,17 @@ def person_application(request, template_name='membership/new_person_application
                 membership.save()
                 transaction.commit()
                 logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
+                send_mail(_('Membership application received'),
+                          render_to_string('membership/person_application_email_confirmation.txt',
+                                           { 'membership': membership,
+                                             'person': membership.person,
+                                             'ip': request.META['REMOTE_ADDR']}),
+                          settings.FROM_EMAIL,
+                          [membership.email()], fail_silently=False)
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
-                logging.error("Encountered %s" % repr(e))
+                logging.error("Sikteeri: %s" % traceback.format_exc())
                 logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
     else:
@@ -61,7 +75,13 @@ def organization_application(request, template_name='membership/new_organization
         
         if form.is_valid():
             f = form.cleaned_data
-            organization = contact_from_dict(f)
+            
+            d = {}
+            for k, v in f.items():
+                if k not in ['nationality', 'municipality', 'extra_info']:
+                    d[k] = v
+            
+            organization = Contact(**d)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
@@ -94,7 +114,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
         if form.is_valid() or len(form.changed_data) == 0:
             if form.is_valid():
                 f = form.cleaned_data
-                contact = contact_from_dict(f)
+                contact = Contact(**f)
                 request.session[contact_type] = contact.__dict__.copy()
             else:
                 request.session[contact_type] = None
@@ -117,11 +137,22 @@ def organization_application_review(request, template_name='membership/new_organ
                             nationality=request.session['membership']['nationality'],
                             municipality=request.session['membership']['municipality'],
                             extra_info=request.session['membership']['extra_info'])
+    organization = Contact(**request.session.get('organization'))
 
-    organization = contact_from_dict(request.session.get('organization'))
-    person = contact_from_dict(request.session.get('person'))
-    billing_contact = contact_from_dict(request.session.get('billing_contact'))
-    tech_contact = contact_from_dict(request.session.get('tech_contact'))
+    try:
+        person = Contact(**request.session['person'])
+    except:
+        person = None
+
+    try:
+        billing_contact = Contact(**request.session['billing_contact'])
+    except:
+        billing_contact = None
+
+    try:
+        tech_contact = Contact(**request.session['tech_contact'])
+    except:
+        tech_contact = None
 
     forms = []
     combo_dict = request.session['membership']
@@ -148,19 +179,24 @@ def organization_application_save(request):
                                 nationality=request.session['membership']['nationality'],
                                 municipality=request.session['membership']['municipality'],
                                 extra_info=request.session['membership']['extra_info'])
-        
-        organization = contact_from_dict(request.session['organization'])
-        
-        def get_or_none(dict, key):
-            if dict.has_key(key):
-                return dict[key]
-            else:
-                return None
-        
-        person = contact_from_dict(get_or_none(request.session, 'person'))
-        billing_contact = contact_from_dict(get_or_none(request.session, 'billing_contact'))
-        tech_contact = contact_from_dict(get_or_none(request.session, 'tech_contact'))
-        
+
+        organization = Contact(**request.session['organization'])
+
+        try:
+            person = Contact(**request.session['person'])
+        except:
+            person = None
+
+        try:
+            billing_contact = Contact(**request.session['billing_contact'])
+        except:
+            billing_contact = None
+
+        try:
+            tech_contact = Contact(**request.session['tech_contact'])
+        except:
+            tech_contact = None
+
         organization.save()
         membership.organization = organization
         if person:
@@ -172,20 +208,31 @@ def organization_application_save(request):
         if tech_contact:
             tech_contact.save()
             membership.tech_contact = tech_contact
-        
+
         membership.save()
         transaction.commit()
+
+        send_mail(_('Membership application received'),
+                  render_to_string('membership/person_application_email_confirmation.txt',
+                                   { 'membership': membership,
+                                     'organization': membership.organization,
+                                     'billing_contact': membership.billing_contact,
+                                     'tech_contact': membership.tech_contact,
+                                     'ip': request.META['REMOTE_ADDR']}),
+                  settings.FROM_EMAIL,
+                  [membership.email()], fail_silently=False)
+
+        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
         for i in ['membership', 'person', 'billing_contact', 'tech_contact']:
             try:
                 del request.session[i]
             except:
                 pass
-        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         return redirect('new_organization_application_success')
     except Exception, e:
         transaction.rollback()
-        logging.error("Encountered %s" % repr(e))
+        logging.error("Sikteeri: %s" % traceback.format_exc())
         logging.error("Transaction rolled back.")
         return redirect('new_application_fail')
 
@@ -193,14 +240,44 @@ def check_alias_availability(request):
     pass
 
 @login_required
-def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
-    membership = get_object_or_404(Membership, id=id)
+def contact_edit(request, id, template_name='membership/contact_edit.html'):
+    contact = get_object_or_404(Contact, id=id)
 
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
     class Form(ModelForm):
         class Meta:
-            model = Membership
+            model = Contact
+            
+    before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    if request.method == 'POST':
+        form = Form(request.POST, instance=contact)
 
+        if form.is_valid():
+            form.save()
+            after = contact.__dict__
+            log_change(contact, request.user, before, after)
+            print before
+            print after
+            message = _("Changes saved.")
+        else:
+            message = _("Changes not saved.")
+    else:
+        form =  Form(instance=contact)
+        message = ""
+    logentries = bake_log_entries(contact.logs.all())
+    return render_to_response(template_name, {'form': form, 'contact': contact,
+        'logentries': logentries, 'message': message},
+        context_instance=RequestContext(request))
+
+@login_required
+def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
+    membership = get_object_or_404(Membership, id=id)
+
+    class Form(ModelForm):
+        class Meta:
+            model = Membership
+            exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+    
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
         before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance
@@ -210,8 +287,11 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             log_change(membership, request.user, before, after)
     else:
         form =  Form(instance=membership)
-    return render_to_response(template_name, {'form': form, 'membership': membership},
-                                  context_instance=RequestContext(request))
+    # Pretty print log entries for template
+    logentries = bake_log_entries(membership.logs.all())
+    return render_to_response(template_name, {'form': form,
+        'membership': membership, 'logentries': logentries},
+        context_instance=RequestContext(request))
 
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     # XXX: Inline template name is hardcoded in template :/
@@ -225,10 +305,9 @@ def membership_do_approve(request, id):
         return
     membership.status = 'A' # XXX hardcoding
     membership.save()
-    save_membership_approved_comment(request.user, membership)
     billing_cycle = BillingCycle(membership=membership)
     billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(cycle=billing_cycle)
+    bill = Bill(billingcycle=billing_cycle)
     bill.save()
     log_change(membership, request.user, change_message="Approved")
     bill.send_as_email()
@@ -246,7 +325,6 @@ def membership_do_preapprove(request, id):
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
-    save_membership_preapproved_comment(request.user, membership)
     log_change(membership, request.user, change_message="Preapproved")
 
 def membership_preapprove(request, id):

@@ -3,12 +3,20 @@
 
 {% block content %}
 <p>
-  Kirjoita normaalin hakemuksen kuvaus tähän.<br />
-  <a href="{% url person_application %}">Klikkaa tästä päästäksesi lomakkeeseen.</a>
+  Kapsilla on kahdenlaisia jäseniä: yksityisjäseniä ja yhteisöjäseniä.
+  Käytännössä suurin ero näiden kahden jäsentyypin välillä on palvelun
+  joustavuus.  Yksityisjäsen on rajoitettu yhteen käyttäjätunnukseen (ja
+  samalla käyttäjään), kun taas yhteisöjäsenelle voidaan perustellusta syystä
+  myöntää useampi käyttäjätunnus.
 </p>
 
 <p>
-  Kirjoita yhdistyshakemuksen kuvaus tähän.<br />
-  <a href="{% url organization_application %}">Klikkaa tästä päästäksesi lomakkeeseen.</a>
+  <a href="{% url person_application %}">Henkilöjäsenen
+  hakemuslomakkeeseen</a>
+</p>
+
+<p>
+  <a href="{% url organization_application %}">Yhteisöjäsenen
+  hakemuslomakkeeseen</a>
 </p>
 {% endblock %}

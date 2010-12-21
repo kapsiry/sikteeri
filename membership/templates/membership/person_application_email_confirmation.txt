@@ -1,0 +1,23 @@
+Hei!
+
+Tämä on vahvistus Kapsi Internet-käyttäjät ry:n jäsenhakemuksen täyttämisestä.
+Jos hakemuksessa on virheitä tai muuta kysyttävää, voit ottaa yhteyttä
+vastaamalla tähän viestiin.
+
+{{ membership }}
+
+Katuosoite          {{ person.street_address }}
+Postinumero         {{ person.postal_code }}
+Postitoimipaikka    {{ person.post_office }}
+Maa                 {{ person.country }}
+Puhelinnumero       {{ person.phone }}
+Sms-numero          {{ person.sms }}
+Sähköpostiosoite    {{ person.email }}
+Kotisivu            {{ person.homepage }}
+
+
+Jos tämä hakemus on aiheeton, pyydämme että ilmoittaisitte siitä mitä
+pikimmiten.  Hakemus on jätettiin IP-osoitteesta {{ ip }}.
+
+-- 
+Kapsin jäsentietojärjestelmä <yllapito@tuki.kapsi.fi>

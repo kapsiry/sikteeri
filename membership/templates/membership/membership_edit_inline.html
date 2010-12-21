@@ -2,13 +2,32 @@
 {% load humanize %}
 {% load comments %}
 
+{% if membership.person %}
+<a href="{% url contact_edit membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
+{% endif %}
+{% if membership.billing_contact %}
+<a href="{% url contact_edit membership.billing_contact.id %}">{% trans "Edit billing contact" %} ({{ membership.billing_contact }})</a><br />
+{% endif %}
+{% if membership.tech_contact %}
+<a href="{% url contact_edit membership.tech_contact.id %}">{% trans "Edit technical contact" %} ({{ membership.tech_contact }})</a><br />
+{% endif %}
+{% if membership.organization %}
+<a href="{% url contact_edit membership.organization.id %}">{% trans "Edit organization contact" %} ({{ membership.organization }})</a><br />
+{% endif %}
+<hr />
+
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="{% trans "Save membership changes" %}" />
 </form>
+
+<hr />
+
+<h2>{% trans "Actions" %}</h2>
 <a href="{% url membership_preapprove membership.id %}">{% trans "Preapprove" %}</a>
 <a href="{% url membership_approve membership.id %}">{% trans "Approve" %}</a>
 
+<h2>{% trans "Billing information" %}</h2>
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
     <li>{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}
         <ul>{% for bill in billingcycle.bill_set.all %}
@@ -19,12 +38,26 @@
     {% endfor %}
 </ul>
 
-{% for logentry in membership.logs.all %}
-<p>{{ logentry.action_time }} {{ logentry.user }} {{ logentry.action_flag }}: {{ logentry.change_message }}</p>
+<h2>{% trans "Event log" %}</h2>
+<table>
+  <tr>
+    <td> {% trans "Time" %} </td>
+    <td> {% trans "Event type" %} </td>
+    <td> {% trans "User" %} </td>
+    <td> {% trans "Summary" %} </td>
+  </tr>
+{% for logentry in logentries %}
+  <tr>
+    <td> {{ logentry.action_time }} </td>
+    <td> {{ logentry.action_flag_str}} </td>
+    <td> {{ logentry.user }} </td>
+    <td> {{ logentry.change_message }} </td>
+  </tr>
 {% endfor %}
+</table>
 
 
-<h2>{% trans "Comments for management" %}</h2>
+<h2>{% trans "Comments" %}</h2>
 {% get_comment_list for membership as comment_list %}
 {% for comment in comment_list %}
     <p>{{ comment }}</p>

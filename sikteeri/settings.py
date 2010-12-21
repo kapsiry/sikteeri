@@ -24,6 +24,7 @@ DATABASES = {
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = 'Europe/Helsinki'
+SHORT_DATE_FORMAT = 'd.m.Y'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -64,6 +65,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'sikteeri.SQLLogMiddleware.SQLLogMiddleware',
 )
 
 ROOT_URLCONF = 'sikteeri.urls'
@@ -89,3 +91,13 @@ INSTALLED_APPS = (
 SESSION_COOKIE_SECURE = True
 
 from local_settings import *
+
+# Is this the right way to do this?
+assert(BANK_ACCOUNT_NUMBER)
+assert(IBAN_ACCOUNT_NUMBER)
+assert(BIC_CODE)
+assert(BILLING_FROM_EMAIL)
+assert(FROM_EMAIL)
+assert(SECRET_KEY)
+assert(BILL_SUBJECT)
+assert(SYSTEM_NAME)

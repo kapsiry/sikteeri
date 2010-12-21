@@ -6,7 +6,7 @@ import logging
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.template.loader import get_template
+from django.template.loader import render_to_string
 from django.template import Context
 from django.core.mail import send_mail
 
@@ -15,16 +15,19 @@ from django.contrib.contenttypes.generic import GenericRelation
 
 from reference_numbers import *
 
+class BillingEmailNotFound(Exception): pass
+class MembershipFlowError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
-                ('O', _('Organization')))
+                ('O', _('Organization')),
+                ('H', _('Honorary')))
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
                  ('D', _('Disabled')))
 
-def log_change(sender, instance, created, **kwargs):
+def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logging.info('%s %s: %s' % (sender, operation, repr(instance)))
 
@@ -47,12 +50,17 @@ class Contact(models.Model):
     email = models.EmailField(blank=True, verbose_name=_('E-mail'))
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
 
+    def save(self, *args, **kwargs):
+        if self.organization_name:
+            if len(self.organization_name) < 5:
+                raise Exception("Organization's name should be at least 5 characters.")
+        super(Contact, self).save(*args, **kwargs)
+
     def __unicode__(self):
         if self.organization_name:
             return self.organization_name
         else:
             return u'%s %s' % (self.last_name, self.first_name)
-
 
 
 class Membership(models.Model):
@@ -75,26 +83,60 @@ class Membership(models.Model):
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     def email(self):
-        return self.person.email
+        if self.organization:
+            return self.organization.email
+        else:
+            return self.person.email
+
+    def get_billing_contact(self):
+        '''Resolves the actual billing contact. Useful for billing details.'''
+        if self.billing_contact:
+            return self.billing_contact
+        elif self.person:
+            return self.person
+        else:
+            return self.organization
 
     def billing_email(self):
-        if self.billing_contact:
-            return self.billing_contact.email
-        elif self.person:
-            return self.person.email
-        else:
-            return self.organization.email
+        '''Finds the best email address for billing'''
+        contact_priority_list = [self.billing_contact, self.person,
+            self.organization]
+        for contact in contact_priority_list:
+            if contact:
+                if contact.email:
+                    return contact.email
+        raise BillingEmailNotFound("Neither billing or administrative contact "+
+            "has an email address")
 
+    def save(self, *args, **kwargs):
+        if self.person and self.organization:
+            raise Exception("Person-contact and organization-contact are mutually exclusive.")
+        if not self.person and not self.organization:
+            raise Exception("Either Person-contact or organization-contact must be defined.")
+        super(Membership, self).save(*args, **kwargs)
+
+    def preapprove(self):
+        if self.status != 'N':
+            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+        self.status = 'P'
+        self.save()
+
+    def approve(self):
+        if self.status != 'P':
+            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+        self.status = 'A'
+        self.save()
+
+    def __repr__(self):
+        return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
+
+    def __str__(self):
+        return unicode(self).encode('ASCII', 'backslashreplace')
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
         else:
             return self.person.__unicode__()
-
-    def accept(self):
-        self.status = 'A'
-        self.accepted = datetime.now()
-        self.save()
 
 
 class Alias(models.Model):
@@ -122,21 +164,39 @@ class BillingCycle(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
 
     def is_paid(self):
-        return False # XXX
+        '''True if any of the bills for the Billing Cycle is marked paid'''
+        paid_bills = Bill.objects.filter(billingcycle=self, is_paid=True)
+        if paid_bills.count() > 0:
+            return True
+        else:
+            return False
+
+    def last_bill(self):
+        try:
+            return Bill.objects.filter(billingcycle=self).order_by('-due_date')[0]
+        except IndexError, ie:
+            return None
+
+    def is_last_bill_late(self):
+        if self.is_paid() or self.last_bill() == None:
+            return False
+        if datetime.now() > self.last_bill().due_date:
+            return True
+        return False
 
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         if not self.end:
             self.end = self.start + timedelta(days=365)
         if not self.sum:
+            # FIXME: should be Membership method get_current_fee()
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
-        super(BillingCycle, self).save(force_insert, force_update) # Call the "real" save() method.
-
+        super(BillingCycle, self).save(*args, **kwargs)
 
 class Bill(models.Model):
-    cycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
+    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
     due_date = models.DateTimeField(verbose_name=_('Due date'))
 
@@ -152,26 +212,56 @@ class Bill(models.Model):
     def __unicode__(self):
         return _('Sent on') + ' ' + str(self.created)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         if not self.due_date:
-            self.due_date = datetime.now() + timedelta(days=14) # XXX Hardcoded
+            self.due_date = datetime.now() + timedelta(days=14) # FIXME: Hardcoded
         if not self.reference_number:
-            self.reference_number = add_checknumber('1337' + str(self.cycle.membership.id))
-        super(Bill, self).save(force_insert, force_update) # Call the "real" save() method.
+            self.reference_number = generate_membership_bill_reference_number(self.billingcycle.membership.id, self.billingcycle.start.year)
+        super(Bill, self).save(*args, **kwargs)
 
-    def render_as_text(self): # XXX: Use django.template.loader.render_to_string
-        t = get_template('membership/bill.txt')
-        return t.render(Context(
-            {'cycle': self.cycle, 'due_date': self.due_date, 'account': settings.BANK_ACCOUNT_NUMBER,
-             'reference_number': self.reference_number, 'sum': self.cycle.sum}))
+    def fee(self):
+        '''Get the fee for the bill'''
+        return self.billingcycle.sum
 
-    # XXX: Should save sending date
+    def is_reminder(self):
+        cycle = self.billingcycle
+        bills = cycle.bill_set.order_by('due_date')
+        if self.id != bills[0].id:
+            return True
+        return False
+
+    def render_as_text(self):
+        membership = self.billingcycle.membership
+        return render_to_string('membership/bill.txt', {
+            'bill_id': self.id,
+            'member_id': membership.id,
+            'billing_name': unicode(membership.get_billing_contact()),
+            'street_address': membership.get_billing_contact().street_address,
+            'postal_code': membership.get_billing_contact().postal_code,
+            'post_office': membership.get_billing_contact().post_office,
+            'billingcycle': self.billingcycle,
+            'bank_account_number': settings.BANK_ACCOUNT_NUMBER,
+            'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
+            'bic_code': settings.BIC_CODE,
+            'due_date': self.due_date,
+            'reference_number': self.reference_number,
+            'sum': self.fee()
+            })
+
+    # FIXME: Should save sending date
     def send_as_email(self):
-        send_mail(_('Your bill for Kapsi membership'), self.render_as_text(), settings.BILLING_EMAIL_FROM,
-            [self.cycle.membership.billing_email()], fail_silently=False)
-        logging.info('A bill sent as email to %s: %s' % (self.cycle.membership.email, repr(Bill)))
-        self.cycle.bill_sent = True
-        self.cycle.save()
+        membership = self.billingcycle.membership
+        if self.fee() > 0:
+            send_mail(settings.BILL_SUBJECT, self.render_as_text(),
+                settings.BILLING_FROM_EMAIL,
+                [membership.billing_email()], fail_silently=False)
+            logging.info('A bill sent as email to %s: %s' % (membership.email,
+                repr(Bill)))
+        else:
+            logging.info('Bill not sent: membership fee zero for %s: %s' % (
+                membership.email, repr(Bill)))
+        self.billingcycle.bill_sent = True
+        self.billingcycle.save()
 
 
 class Payment(models.Model):
@@ -193,9 +283,9 @@ class Payment(models.Model):
     def __unicode__(self):
         return 'Payment for %s euros paid on %s' % (str(self.amount), str(self.payment_day))
 
-models.signals.post_save.connect(log_change, sender=Membership)
-models.signals.post_save.connect(log_change, sender=Contact)
-models.signals.post_save.connect(log_change, sender=Alias)
-models.signals.post_save.connect(log_change, sender=BillingCycle)
-models.signals.post_save.connect(log_change, sender=Bill)
-models.signals.post_save.connect(log_change, sender=Payment)
+models.signals.post_save.connect(logging_log_change, sender=Membership)
+models.signals.post_save.connect(logging_log_change, sender=Contact)
+models.signals.post_save.connect(logging_log_change, sender=Alias)
+models.signals.post_save.connect(logging_log_change, sender=BillingCycle)
+models.signals.post_save.connect(logging_log_change, sender=Bill)
+models.signals.post_save.connect(logging_log_change, sender=Payment)

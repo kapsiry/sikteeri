@@ -9,3 +9,4 @@ local_settings.py
 .todo.*
 *.mo
 /env
+django.wsgi

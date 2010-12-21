@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load comments %}
+
+{% block content %}
+{% if message %}{{ message }}<hr />{% endif %}
+<form method="POST">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="{% trans "Save contact changes" %}" />
+</form>
+<hr />
+<table>
+{% for logentry in logentries %}
+<tr>
+<td> {{ logentry.action_time }} </td>
+<td> {{ logentry.action_flag_str}} </td>
+<td> {{ logentry.user }} </td>
+<td> {{ logentry.change_message }} </td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

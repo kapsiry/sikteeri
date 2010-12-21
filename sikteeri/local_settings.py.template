@@ -1,6 +1,15 @@
-SECRET_KEY = ''
-BANK_ACCOUNT_NUMBER = "123-123"
-BILLING_EMAIL_FROM = "foobar@kapsi.fi"
+# -*- coding: utf-8 -*-
+
+# The following need to be defined (empty strings might work for development)
+SECRET_KEY = None
+BANK_ACCOUNT_NUMBER = None  # Finnish bank account number
+IBAN_ACCOUNT_NUMBER = None  # Pan-European new standard bank account number
+BIC_CODE = None             # Bank account's bank code in the BIC format
+BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see
+                            # the setting EMAIL_BACKEND.
+FROM_EMAIL = None           # Generic from e-mail
+BILL_SUBJECT = None         # Text to be used as bill subjects
+SYSTEM_NAME = None          # Membership management system should have a name
 
 # Uncomment the following lines to enable more verbose stdout logging.
 #import logging
@@ -13,3 +22,5 @@ SESSION_COOKIE_SECURE = False
 # Don't really send email messages, only show them on console
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[sikteeri] '
+
+MEDIA_URL = 'http://localhost:12765'

@@ -6,13 +6,11 @@ from django.conf import settings
 from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
+from django.utils.translation import ugettext_lazy as _
 
 from membership.models import BillingCycle, Bill, Contact, Membership
 
 # http://code.activestate.com/recipes/576644/
-
-KEYNOTFOUNDIN1 = '<KEYNOTFOUNDIN1>'       # KeyNotFound for dictDiff
-KEYNOTFOUNDIN2 = '<KEYNOTFOUNDIN2>'       # KeyNotFound for dictDiff
 
 def dict_diff(first, second):
     """ Return a dict of keys that differ with another config object.  If a value is
@@ -26,38 +24,35 @@ def dict_diff(first, second):
     sd2 = set(second)
     #Keys missing in the second dict
     for key in sd1.difference(sd2):
-        diff[key] = KEYNOTFOUNDIN2
+        diff[key] = (first[key], None)
     #Keys missing in the first dict
     for key in sd2.difference(sd1):
-        diff[key] = KEYNOTFOUNDIN1
+        diff[key] = (None, second[key])
     #Check for differences
     for key in sd1.intersection(sd2):
         if first[key] != second[key]:
-            diff[key] = (first[key], second[key])    
+            diff[key] = (first[key], second[key])
     return diff
 
-
-def new_cycle(membership):
-    old_cycle = membership.billingcycle_set.order_by('-end')[0]
-    billing_cycle = BillingCycle(membership=membership, start=old_cycle.end)
-    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(cycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
-
-def sendreminder(membership): # XXX Test if cycle is paid?
-    billing_cycle = membership.billingcycle_set.order_by('-end')[0]
-    bill = Bill(cycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
-
-def disable_member(membership):
-    pass # XXX
-
+def diff_humanize(diff):
+    # Human readable output
+    txt = ""
+    for key in diff:
+        if key == 'last_changed' or key.startswith("_"):
+            continue
+        change = diff[key]
+        if change[0] == None:
+            txt += "%s: () -> '%s'. " % (key, change[1])
+        elif change[1] == None:
+            txt += "%s: '%s' -> (). " % (key, change[0])
+        else:
+            txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
+    return txt
+    
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:
-            change_message  = repr(dict_diff(before, after)) # XXX
+            change_message  = diff_humanize(dict_diff(before, after))
         else:
             change_message = "Some changes were made"
     from django.contrib.admin.models import LogEntry, CHANGE
@@ -70,29 +65,13 @@ def log_change(object, user, before=None, after=None, change_message=None):
         change_message  = change_message
     )
 
-def contact_from_dict(d):
-    if d is None:
-        return None
-    
-    try:
-        c = Contact(street_address=d['street_address'],
-                    postal_code=d['postal_code'],
-                    post_office=d['post_office'],
-                    country=d['country'],
-                    phone=d['phone'],
-                    sms=d['sms'],
-                    email=d['email'],
-                    homepage=d['homepage'])
-    except:
-        return None
-    
-    if d.has_key('organization_name') and len(d['organization_name']) > 5:
-        c.organization_name = d['organization_name']
-    else:
-        c.first_name = d['first_name']
-        c.given_names = d['given_names']
-        c.last_name = d['last_name']
-    return c
+def bake_log_entries(raw_log_entries):
+    ACTION_FLAGS = {1 : _('Addition'),
+                    2 : _('Change'),
+                    3 : _('Deletion')}
+    for x in raw_log_entries:
+        x.action_flag_str = unicode(ACTION_FLAGS[x.action_flag])
+    return raw_log_entries
 
 def serializable_membership_info(membership):
     """
@@ -151,10 +130,10 @@ def serializable_membership_info(membership):
         comment_list.append(d)
         event_list.append(d)
 
-    log_entries = membership.logs.all()
+    log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
         d = { 'user_name': unicode(entry.user),
-              'text': "%s %s" % (unicode(entry.action_flag), unicode(entry.change_message)),
+              'text': "%s %s" % (unicode(entry.action_flag_str), unicode(entry.change_message)),
               'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)
@@ -180,18 +159,3 @@ def serializable_membership_info(membership):
     ctimeify(event_list)
 
     return json_obj
-
-def _do_save_membership_status_change_comment(user, membership, comment_text):
-    comment = Comment()
-    comment.user = user
-    comment.content_object = membership
-    comment.comment = comment_text
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.now()
-    return comment.save()
-
-def save_membership_approved_comment(user, membership):
-    return _do_save_membership_status_change_comment(user, membership, u"Approved")
-
-def save_membership_preapproved_comment(user, membership):
-    return _do_save_membership_status_change_comment(user, membership, u"Preapproved")

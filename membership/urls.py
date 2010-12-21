@@ -18,6 +18,9 @@ urlpatterns = patterns('',
     url(r'organizations/new/application/save/$', 'membership.views.organization_application_save',
         name='organization_application_save'),
     url(r'memberships/application/$', 'membership.views.new_application', name='new_application'),
+
+    url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
+
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
     url(r'memberships/preapprove/(\d+)/$', 'membership.views.membership_preapprove', name='membership_preapprove'),
@@ -35,6 +38,35 @@ urlpatterns = patterns('',
 @login_required
 def limited_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
+
+@login_required
+def search(request, query=None,
+           template_name='membership/membership_list.html'):
+    if not query:
+        query = request.REQUEST.get("query", None)
+    # This could be simplified into a single SQL query, but isn't done so due
+    # to the most probable SQL syntax incompatibilities.
+    person_first_name_ids = Contact.objects.filter(first_name__icontains=query).values('id')
+    person_given_names_ids = Contact.objects.filter(given_names__icontains=query).values('id')
+    person_last_name_ids = Contact.objects.filter(last_name__icontains=query).values('id')
+    organization_name_ids = Contact.objects.filter(organization_name__icontains=query).values('id')
+    
+    all_ids = set()
+    def add_dict_values_to_set(dicts):
+        for dict in dicts:
+            all_ids.add(str(dict["id"]))
+    
+    add_dict_values_to_set(person_first_name_ids)
+    add_dict_values_to_set(person_given_names_ids)
+    add_dict_values_to_set(person_last_name_ids)
+    add_dict_values_to_set(organization_name_ids)
+    
+    qs = Membership.objects.extra(where=['id IN (%s)' % ", ".join(all_ids)])
+    
+    return django.views.generic.list_detail.object_list(request, queryset=qs,
+                                                        template_name=template_name,
+                                                        template_object_name='member',
+                                                        paginate_by=100)
 
 urlpatterns += patterns('django.views.generic',
 
@@ -63,6 +95,10 @@ urlpatterns += patterns('django.views.generic',
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': 100}, name='all_memberships'),
+
+    url(r'^memberships/inline/search/(?P<query>\w+)/$', search,
+        {'template_name': 'membership/membership_list_inline.html'}),
+    url(r'^memberships/search/((?P<query>\w+)/)?$', search, name="membership_search"),
 
     url(r'bills/$', limited_object_list,
         {'queryset': Bill.objects.all(),
