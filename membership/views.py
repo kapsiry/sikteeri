@@ -89,7 +89,9 @@ def organization_application(request, template_name='membership/new_organization
 
             request.session.set_expiry(0) # make this expire when the browser exits
             request.session['membership'] = membership.__dict__.copy()
-            request.session['organization'] = organization.__dict__.copy()
+            organization_dict = organization.__dict__.copy()
+            del organization_dict['_state']
+            request.session['organization'] = organization_dict
             return redirect('organization_application_add_contact', 'person')
     else:
         form = OrganizationApplicationForm()
@@ -115,7 +117,9 @@ def organization_application_add_contact(request, contact_type, template_name='m
             if form.is_valid():
                 f = form.cleaned_data
                 contact = Contact(**f)
-                request.session[contact_type] = contact.__dict__.copy()
+                contact_dict = contact.__dict__.copy()
+                del contact_dict['_state']
+                request.session[contact_type] = contact_dict
             else:
                 request.session[contact_type] = None
             next_idx = forms.index(contact_type) + 1
