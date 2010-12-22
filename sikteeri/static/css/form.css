@@ -9,6 +9,9 @@ textarea, input {
     background-color: #f0f5e5;
     border: 1px solid #3F4C18;
     padding: 0.2em;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 
 p.field {
@@ -45,6 +48,18 @@ input.button {
     background-color: #fdfdfd;
 }
 
+p.error input {
+    background-color: #fcaf3e;
+}
+
+span.help {
+    display: inline-block;
+}
+span.error {
+    color: #ef2929;
+    font-weight: bold;
+}
+
 ul.errorlist {
     margin-left: 3em;
 }
@@ -62,14 +77,20 @@ ul.errorlist li {
     clear: none;
     width: 200px;
     text-align: right;
+    vertical-align: top;
+    line-height: 19px;
     font-size: 120%;
     /* vertical-align: text-top; */
 }
 
 #new_application p, #login-form p, #contact_edit p {
     font-size: 80%;
+    vertical-align: top;
+    line-height: 19px;
 }
 
 #new_application input, #login-form input, #contact_edit input, textarea {
     margin: 0 0.4em;
+    vertical-align: top;
+    width: 200px;
 }

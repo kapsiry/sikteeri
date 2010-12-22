@@ -36,21 +36,21 @@ class OrganizationMembershipForm(forms.Form):
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
-                                     error_messages={'required': _('Street address required')},
+                                     error_messages={'required': _('Street address required.')},
                                      label=_('Street address'))
     postal_code = forms.RegexField(regex='^\d{5}$',
-                                   error_messages={'required': _('Postal code required'),
-                                                   'invalid': _('Postal code invalid')},
+                                   error_messages={'required': _('Postal code required.'),
+                                                   'invalid': _('Postal code invalid.')},
                                    label=_('Postal code'))
     
     post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
     country = forms.CharField(max_length=128, label=_('Country'), initial=_('Finland'))
     phone = forms.RegexField(regex='[\d\+-]{5,20}',
-                             error_messages={'invalid': _('Phone invalid')},
+                             error_messages={'invalid': _('Phone invalid.')},
                              min_length=5, max_length=20, label=_('Phone number'),
                              help_text=_('Phone number that accepts calls'))
     sms = forms.RegexField(regex='[\d\+-]{5,20}',
-                           error_messages={'invalid': _('SMS number invalid')},
+                           error_messages={'invalid': _('SMS number invalid.')},
                            min_length=5, max_length=20, label=_('SMS number'),
                            help_text=_('Phone number that accepts text messages'))
     email = forms.EmailField(label=_('E-mail'))
@@ -58,13 +58,13 @@ class BaseContactForm(forms.Form):
 
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
-                                 error_messages={'required': _('First name required')},
+                                 error_messages={'required': _('First name required.')},
                                  label=_('First name'))
     given_names = forms.CharField(max_length=30, min_length=2,
-                                  error_messages={'required': _('Given names required')},
+                                  error_messages={'required': _('Given names required.')},
                                   label=_('Given names'))
     last_name = forms.CharField(max_length=30, min_length=2,
-                                error_messages={'required': _('Last name required')},
+                                error_messages={'required': _('Last name required.')},
                                 label=_('Last name'))
 
 class OrganizationBaseContactForm(forms.Form):

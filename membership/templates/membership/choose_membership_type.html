@@ -3,20 +3,38 @@
 
 {% block content %}
 <p>
-  Kapsilla on kahdenlaisia jäseniä: yksityisjäseniä ja yhteisöjäseniä.
-  Käytännössä suurin ero näiden kahden jäsentyypin välillä on palvelun
-  joustavuus.  Yksityisjäsen on rajoitettu yhteen käyttäjätunnukseen (ja
+  Kapsilla on kolmenlaisia jäseniä: yksityis-, yhteisö- ja kannatusjäseniä.
+  Käytännössä suurin ero varsinaisten ja yhteisöjäsenten välillä on palvelun
+  joustavuus.  Varsinainen jäsen on rajoitettu yhteen käyttäjätunnukseen (ja
   samalla käyttäjään), kun taas yhteisöjäsenelle voidaan perustellusta syystä
   myöntää useampi käyttäjätunnus.
 </p>
 
+<h3>Yksityisjäsenet</h3>
 <p>
-  <a href="{% url person_application %}">Henkilöjäsenen
+  Yhdistykseen varsinaiseksi jäseneksi eli yksityisjäseneksi voidaan hyväksyä
+  henkilö, joka hyväksyy yhdistyksen tarkoituksen.</p>
+<p>
+  <a href="{% url person_application %}">Yksityisjäsenen
   hakemuslomakkeeseen</a>
 </p>
 
+<h3>Yhteisöjäsenet</h3>
+<p>
+  Yhteisöjäseneksi voidaan hyväksyä voittoa tavoittelematon oikeuskelpoinen
+  yhteisö, joka hyväksyy yhdistyksen tarkoituksen.</p>
 <p>
   <a href="{% url organization_application %}">Yhteisöjäsenen
   hakemuslomakkeeseen</a>
 </p>
+
+<h3>Kannatusjäsenet</h3>
+<p>
+  Kannatusjäseneksi voidaan hyväksyä yksityinen henkilö tai oikeuskelpoinen
+  yhteisö tai yritys, joka haluaa tukea yhdistyksen tarkoitusta ja toimintaa.
+</p>
+<p>
+  TODO: <a href="#">Kannatusjäsenen hakemuslomakkeeseen</a>
+</p>
+
 {% endblock %}

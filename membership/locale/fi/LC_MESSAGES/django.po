@@ -27,20 +27,20 @@ msgid "Additional information"
 msgstr "Lisätietoja"
 
 #: forms.py:19
-msgid "Street address required"
-msgstr "Katuosoite vaaditaan"
+msgid "Street address required."
+msgstr "Katuosoite vaaditaan."
 
 #: forms.py:20 models.py:41
-msgid "Street address"
-msgstr "Katuosoite"
+msgid "Street address."
+msgstr "Katuosoite."
 
 #: forms.py:22
-msgid "Postal code required"
-msgstr "Postinumero vaaditaan"
+msgid "Postal code required."
+msgstr "Postinumero vaaditaan."
 
 #: forms.py:23
-msgid "Postal code invalid"
-msgstr "Virheellinen postinumero"
+msgid "Postal code invalid."
+msgstr "Virheellinen postinumero."
 
 #: forms.py:24 models.py:42
 msgid "Postal code"
@@ -55,16 +55,16 @@ msgid "Country"
 msgstr "Maa"
 
 #: forms.py:29
-msgid "Phone invalid"
-msgstr "Virheellinen puhelinnumero"
+msgid "Phone invalid."
+msgstr "Virheellinen puhelinnumero."
 
 #: forms.py:30
 msgid "Phone number"
 msgstr "Puhelinnumero"
 
 #: forms.py:32
-msgid "SMS number invalid"
-msgstr "Virheellinen tekstiviestinumero"
+msgid "SMS number invalid."
+msgstr "Virheellinen tekstiviestinumero."
 
 #: forms.py:33 models.py:46
 msgid "SMS number"
@@ -79,24 +79,24 @@ msgid "Homepage"
 msgstr "Kotisivu"
 
 #: forms.py:39
-msgid "First name required"
-msgstr "Etunimi vaaditaan"
+msgid "First name required."
+msgstr "Etunimi vaaditaan."
 
 #: forms.py:40 models.py:36
 msgid "First name"
 msgstr "Kutsumanimi (etunimi)"
 
 #: forms.py:42
-msgid "Given names required"
-msgstr "Kaikki etunimet on vaadittu kenttä"
+msgid "Given names required."
+msgstr "Kaikki etunimet vaaditaan."
 
 #: forms.py:43 models.py:37
 msgid "Given names"
 msgstr "Kaikki etunimet"
 
 #: forms.py:45
-msgid "Last name required"
-msgstr "Sukunimi vaaditaan"
+msgid "Last name required."
+msgstr "Sukunimi vaaditaan."
 
 #: forms.py:46 models.py:38
 msgid "Last name"

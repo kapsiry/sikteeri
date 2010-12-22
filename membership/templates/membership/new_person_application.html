@@ -5,7 +5,14 @@
 <h2>Yksityisjäsenen liittymislomake</h2>
 <form method="POST">{% csrf_token %}
 <div id="new_application">
-  {{ form.as_p }}
+  {% for field in form %}
+  <p{% if field.errors %} class="error"{% endif %}>
+    {{ field.label_tag }} {{ field }} <span class="help">{{ field.help_text }}
+    {% for error in field.errors %}
+    {% if field.help_text %}<br />{% endif %}<span class="error{% if field.help_text %} newline{% endif %}">{{ error }}</span>
+    {% endfor %}</span>
+  </p>
+  {% endfor %}
 <p>
   <label for="submit_button"></label>
   <input id="submit_button" type="submit" value="{% trans "Send application" %}" />
