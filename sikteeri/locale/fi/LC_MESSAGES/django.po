@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-21 09:23+0200\n"
+"POT-Creation-Date: 2010-12-22 18:50+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kortesalmi <joonas.kortesalmi@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,7 @@ msgstr "Django ja jazztupakka"
 msgid "Logout"
 msgstr "Kirjaudu ulos"
 
-#: templates/menu.html:7 templates/registration/login.html:80
+#: templates/menu.html:7 templates/registration/login.html:5
 msgid "Login"
 msgstr "Kirjaudu sisään"
 
@@ -47,41 +47,63 @@ msgid "Membership management"
 msgstr "Jäsenhallinta"
 
 #: templates/menu.html:19
-msgid "Pre-approval"
-msgstr "Esihyväksyminen"
+#, fuzzy
+msgid "Member applications"
+msgstr "Uusi hakemus"
 
 #: templates/menu.html:20
-msgid "List of memberships"
-msgstr "Jäsenlista"
+#, fuzzy
+msgid "Preapproved applications"
+msgstr "Uusi hakemus"
 
 #: templates/menu.html:21
+msgid "Members"
+msgstr ""
+
+#: templates/menu.html:22
+msgid "Disabled members"
+msgstr ""
+
+#: templates/menu.html:23
+msgid "All membership entities"
+msgstr ""
+
+#: templates/menu.html:27
+#, fuzzy
+msgid "Search memberships"
+msgstr "Jäsenlista"
+
+#: templates/menu.html:30
 msgid "List of unpaid bills"
 msgstr "Lista maksamattomista laskuista"
 
-#: templates/menu.html:22
+#: templates/menu.html:31
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:23
+#: templates/menu.html:32
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:24
+#: templates/menu.html:33
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:29
+#: templates/menu.html:38
 msgid "Admin"
 msgstr "Ylläpito"
 
-#: templates/registration/login.html:87
+#: templates/registration/login.html:10
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: templates/registration/login.html:90
+#: templates/registration/login.html:11
 msgid "Password"
 msgstr "Salasana"
 
-#: templates/registration/login.html:94
+#: templates/registration/login.html:12
 msgid "Log in"
 msgstr "Kirjaudu sisään"
+
+#~ msgid "Pre-approval"
+#~ msgstr "Esihyväksyminen"

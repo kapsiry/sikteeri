@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-04 22:54+0300\n"
+"POT-Creation-Date: 2010-12-22 18:57+0200\n"
 "PO-Revision-Date: 2010-04-04 22:45+0300\n"
 "Last-Translator: Atte Hinkka <atte.hinkka@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -62,66 +62,70 @@ msgstr "Tekninen yhteystieto"
 msgid "Organization"
 msgstr "Yhteisö"
 
-#: static/js/member_list.js:108
+#: static/js/member_list.js:106
 msgid "First name"
 msgstr "Kutsumanimi"
 
-#: static/js/member_list.js:109
+#: static/js/member_list.js:107
 msgid "Given names"
 msgstr "Etunimet"
 
-#: static/js/member_list.js:110
+#: static/js/member_list.js:108
 msgid "Last name"
 msgstr "Sukunimi"
 
-#: static/js/member_list.js:111
+#: static/js/member_list.js:109
 msgid "Organization name"
 msgstr "Yhteisön nimi"
 
-#: static/js/member_list.js:112
+#: static/js/member_list.js:110
 msgid "Street address"
 msgstr "Katuosoite"
 
-#: static/js/member_list.js:113
+#: static/js/member_list.js:111
 msgid "Postal code"
 msgstr "Postinumero"
 
-#: static/js/member_list.js:114
+#: static/js/member_list.js:112
 msgid "Post office"
 msgstr "Postitoimipaikka"
 
-#: static/js/member_list.js:115
+#: static/js/member_list.js:113
 msgid "Country"
 msgstr "Maa"
 
-#: static/js/member_list.js:116
+#: static/js/member_list.js:114
 msgid "Phone number"
 msgstr "Puhelinnumero"
 
-#: static/js/member_list.js:117
+#: static/js/member_list.js:115
 msgid "SMS number"
 msgstr "Tekstiviestinumero"
 
-#: static/js/member_list.js:118
+#: static/js/member_list.js:116
 msgid "E-mail"
 msgstr "Sähköpostiosoite"
 
-#: static/js/member_list.js:119
+#: static/js/member_list.js:117
 msgid "Homepage"
 msgstr "Kotisivu"
 
-#: static/js/member_list.js:144
+#: static/js/member_list.js:129
+msgid "Events"
+msgstr "Tapahtumat"
+
+#: static/js/member_list.js:179
 msgid "show details"
 msgstr "näytä lisätiedot"
 
-#: static/js/member_list.js:147
+#: static/js/member_list.js:182
 msgid "hide details"
 msgstr "piilota lisätiedot"
 
-#: static/js/member_list.js:194
+#: static/js/member_list.js:231
 msgid "add to pre-approve cart"
 msgstr "lisää esihyväksyntäkoriin"
 
-#: static/js/member_list.js:197
+#: static/js/member_list.js:234
 msgid "remove from pre-approve cart"
 msgstr "poista esihyväksyntäkorista"
