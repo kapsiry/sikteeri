@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-22 18:50+0200\n"
+"POT-Creation-Date: 2010-12-26 17:37+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kortesalmi <joonas.kortesalmi@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -47,31 +47,29 @@ msgid "Membership management"
 msgstr "Jäsenhallinta"
 
 #: templates/menu.html:19
-#, fuzzy
 msgid "Member applications"
-msgstr "Uusi hakemus"
+msgstr "Jäsenhakemukset"
 
 #: templates/menu.html:20
-#, fuzzy
 msgid "Preapproved applications"
-msgstr "Uusi hakemus"
+msgstr "Esihyväksytyt hakemukset"
 
 #: templates/menu.html:21
 msgid "Members"
-msgstr ""
+msgstr "Jäsenet"
 
 #: templates/menu.html:22
 msgid "Disabled members"
-msgstr ""
+msgstr "Lukitut jäsenet"
 
+# Ei toki suora suomennos
 #: templates/menu.html:23
 msgid "All membership entities"
-msgstr ""
+msgstr "Kaikki jäsenet"
 
 #: templates/menu.html:27
-#, fuzzy
 msgid "Search memberships"
-msgstr "Jäsenlista"
+msgstr "Etsi jäseniä"
 
 #: templates/menu.html:30
 msgid "List of unpaid bills"

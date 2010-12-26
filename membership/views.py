@@ -38,7 +38,7 @@ def person_application(request, template_name='membership/new_person_application
             try:
                 d = {}
                 for k, v in f.items():
-                    if k not in ['nationality', 'municipality', 'extra_info']:
+                    if k not in ['nationality', 'municipality', 'public_memberlist', 'extra_info']:
                         d[k] = v
                 
                 person = Contact(**d)
@@ -47,6 +47,7 @@ def person_application(request, template_name='membership/new_person_application
                                         person=person,
                                         nationality=f['nationality'],
                                         municipality=f['municipality'],
+                                        public_memberlist=f['public_memberlist'],
                                         extra_info=f['extra_info'])
                 membership.save()
                 transaction.commit()

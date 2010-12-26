@@ -82,13 +82,12 @@ def serializable_membership_info(membership):
     json_obj = {}
     # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info']:
         # Get the translated value for choice fields, not database field values
         if attr in ['type', 'status']:
             attr_val = getattr(membership, 'get_' + attr + '_display')()
         else:
             attr_val = getattr(membership, attr, u'')
-        
         if isinstance(attr_val, basestring):
             json_obj[attr] = attr_val
         elif isinstance(attr_val, datetime):
