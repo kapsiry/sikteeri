@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+import tempfile
 import logging
 from datetime import datetime, timedelta
 from random import randint
@@ -14,7 +16,7 @@ from test_utils import *
 
 from reference_numbers import *
 
-from management.commands.makebills import Command as makebills_command
+from management.commands.makebills import makebills
 from management.commands.makebills import membership_approved_time
 from management.commands.makebills import create_billingcycle
 from management.commands.makebills import send_reminder
@@ -70,20 +72,25 @@ def create_dummy_member(status):
 class BillingTest(TestCase):
     # http://docs.djangoproject.com/en/dev/topics/testing/#fixture-loading
     fixtures = ['membership_fees.json', 'test_user.json']
-    #
+
     # http://docs.djangoproject.com/en/dev/topics/testing/#django.core.mail.django.core.mail.outbox
 
-    # NOTE: also make sure billing addresses are correct
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def tearDown(self):
+        pass
+
     def test_single_preapproved_no_op(self):
         "makebills: preapproved membership no-op"
         membership = create_dummy_member('N')
         membership.preapprove()
-        c = makebills_command()
-        c.handle_noargs()
+        makebills()
         
         self.assertEqual(len(mail.outbox), 0)
         cycles = membership.billingcycle_set.all()
         self.assertEqual(len(cycles), 0)
+        membership.delete()
 
     def test_membership_approved_time_no_entries(self):
         "makebills: approved_time with no entries"
@@ -91,141 +98,172 @@ class BillingTest(TestCase):
         membership.preapprove()
         membership.status = 'A'
         membership.save()
-        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership)
+
+        handler = MockLoggingHandler()
+        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership, logHandler=handler)
+
+        criticals = handler.messages["critical"]
+
+        logged = False
+        for critical in criticals:
+            if "doesn't have Approved log entry" in critical:
+                logged = True
+                break
+
+        self.assertTrue(logged)
+        membership.delete()
 
     def test_membership_approved_time_multiple_entries(self):
         "makebills: approved_time multiple entries"
-        user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
         membership.approve()
-        log_change(membership, user, change_message="Approved")
-        log_change(membership, user, change_message="Approved")
+        log_change(membership, self.user, change_message="Approved")
+        log_change(membership, self.user, change_message="Approved")
         approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
-        
+
         t = membership_approved_time(membership)
         self.assertEquals(t, approve_entries[0].action_time)
 
-    def test_bill_is_reminder(self):
-        "models.bill.is_reminder()"
-        user = User.objects.get(id=1)
+
+class SingleMemberBillingTest(TestCase):
+    # http://docs.djangoproject.com/en/dev/topics/testing/#fixture-loading
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    # http://docs.djangoproject.com/en/dev/topics/testing/#django.core.mail.django.core.mail.outbox
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove()
         membership.approve()
-        log_change(membership, user, change_message="Approved")
+        log_change(membership, self.user, change_message="Approved")
+        self.membership = membership
 
-        cycle = create_billingcycle(membership)
-        reminder_bill = send_reminder(membership)
-        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
+    def tearDown(self):
+        self.membership.delete()
 
-        self.assertTrue(reminder_bill.is_reminder())
-        self.assertFalse(first_bill.is_reminder())
+    def test_sending_no_cycle(self):
+        makebills()
+        self.assertEquals(len(mail.outbox), 1)
 
-    def test_billing_cycle_last_bill(self):
-        "models.Bill.last_bill()"
-        user = User.objects.get(id=1)
-        membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, user, change_message="Approved")
+    def test_email_address_correct(self):
+        makebills()
+        self.assertEquals(self.membership.billing_email(), mail.outbox[0].to[0])
 
-        cycle = create_billingcycle(membership)
-        reminder_bill = send_reminder(membership)
-        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
+    def test_expired_cycle(self):
+        "makebills: before a cycle expires, a new one is created"
+        cycle = create_billingcycle(self.membership)
+        cycle.starts = datetime.now() - timedelta(days=365)
+        cycle.ends = datetime.now() + timedelta(days=27)
+        cycle.save()
 
-        last_bill = cycle.bill_set.order_by("-due_date")[0]
-        self.assertEquals(last_bill.id, reminder_bill.id)
-        self.assertNotEquals(last_bill.id, first_bill.id)
+        makebills()
 
-    def test_billing_cycle_is_last_bill_late(self):
-        "models.Bill.is_last_bill_late()"
-        user = User.objects.get(id=1)
-        membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, user, change_message="Approved")
+        self.assertEquals(len(mail.outbox), 1)
 
-        cycle = create_billingcycle(membership)
-        first_bill = Bill.objects.filter(billingcycle=cycle).order_by('due_date')[0]
-        last_bill = cycle.bill_set.order_by("-due_date")[0]
+    def test_no_cycle_created(self):
+        "makebills: no cycles after an expired membership, should log critical"
+        m = self.membership
+        makebills()
 
-        self.assertTrue(datetime.now() + timedelta(days=15) > last_bill.due_date)
+        c = m.billingcycle_set.all()[0]
+        c.end = datetime.now() - timedelta(hours=1)
+        c.save()
+
+        handler = MockLoggingHandler()
+        makebills(logHandler=handler)
+
+        criticals = handler.messages["critical"]
+        self.assertTrue(len(criticals) > 0)
+        
+        logged = False
+        for critical in criticals:
+            if "no new billing cycle created for" in critical:
+                logged = True
+                break
+
+        self.assertTrue(logged)
 
     def test_approved_cycle_and_bill_creation(self):
         "makebills: cycle and bill creation"
-        user = User.objects.get(id=1)
-        membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, user, change_message="Approved")
-        c = makebills_command()
-        c.handle_noargs()
+        makebills()
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(len(membership.billingcycle_set.all()), 1)
+        self.assertEqual(len(self.membership.billingcycle_set.all()), 1)
 
         membership2 = create_dummy_member('N')
         membership2.preapprove()
         membership2.approve()
-        log_change(membership2, user, change_message="Approved")
+        log_change(membership2, self.user, change_message="Approved")
 
-        c.handle_noargs()
+        makebills()
 
         self.assertEqual(len(membership2.billingcycle_set.all()), 1)
         self.assertEqual(len(mail.outbox), 2)
 
-    def test_expiring_cycles(self):
-        print "test_expiring_cycles not implemented"
-        # TODO:
-        #  - create memberships:
-        #    - one with more than a month to go on their cycle
-        #    - one with less than a month to go
-        #    - one whose cycle has ended already and no bill has been sent
-        #      (the system should throw an error when handling this (should never happen))
-        # c = makebills_command()
-        # c.handle_noargs({})
-        # Handle these cases accordingly, focus on the changes in the
-        # database, e-mail sending is handled elsewhere.
-    def test_bill_sending(self):
-        print "test_bill_sending not implemented"
-        # TODO:
-        #  - create memberships:
-        #    - one with less than a month to go (so as to trigger a bill)
-        #    - one with more than a month to go (a bill should not be sent)
-        #    - one whose cycle has ended already and no bill has been sent
-        #      (the system should throw an error when handling this (should never happen))
-        # c = makebills_command()
-        # c.handle_noargs({})
+    def test_new_billing_cycle_with_previous_paid(self):
+        "makebills: new billing cycle with previous already paid"
+        m = self.membership
+        
+        makebills()
+        self.assertEqual(len(m.billingcycle_set.all()), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
-    def test_new_billing_cycle_with_existing(self):
-        "makebills: new billing cycle with existing cycles present"
-        user = User.objects.get(id=1)
-        c = makebills_command()
-        
-        m1 = create_dummy_member('N')
-        m1.preapprove()
-        m1.approve()
-        log_change(m1, user, change_message="Approved")
-        
-        c.handle_noargs()
-        self.assertEqual(len(m1.billingcycle_set.all()), 1)
-        
-        m2 = create_dummy_member('N')
-        m2.preapprove()
-        m2.approve()
-        log_change(m2, user, change_message="Approved")
-        
-        c.handle_noargs()
-        self.assertEqual(len(m2.billingcycle_set.all()), 1)
+        c = m.billingcycle_set.all()[0]
+        c.end = datetime.now() + timedelta(days=5)
+        c.save()
+        b = c.last_bill()
+        b.due_date = datetime.now() + timedelta(days=9)
+        b.save()
+        b.is_paid = True
+        b.save()
 
-        yesterday = datetime.now() - timedelta(days=1)
-        bc2 = m2.billingcycle_set.all()[0]
-        bc2.end = yesterday
-        bc2.save()
-        b2 = bc2.last_bill()
-        b2.due_date = yesterday
-        b2.save()
+        makebills()
 
-        c.handle_noargs()
-        self.assertTrue(len(m2.billingcycle_set.all()), 2)
-        self.assertEqual(len(mail.outbox), 3)
+        self.assertTrue(len(m.billingcycle_set.all()), 2)
+        self.assertEqual(len(mail.outbox), 2)
+
+class SingleMemberBillingModelsTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, self.user, change_message="Approved")
+        self.membership = membership
+        makebills()
+        self.cycle = BillingCycle.objects.get(membership=self.membership)
+        self.bill = Bill.objects.filter(billingcycle=self.cycle).order_by('due_date')[0]
+
+    def tearDown(self):
+        self.bill.delete()
+        self.cycle.delete()
+        self.membership.delete()
+
+    def test_bill_is_reminder(self):
+        "models.bill.is_reminder()"
+        reminder_bill = send_reminder(self.membership)
+        self.assertTrue(reminder_bill.is_reminder())
+        self.assertFalse(self.bill.is_reminder())
+        reminder_bill.delete()
+
+    def test_billing_cycle_last_bill(self):
+        "models.Bill.last_bill()"
+        reminder_bill = send_reminder(self.membership)
+        last_bill = self.cycle.bill_set.order_by("-due_date")[0]
+        self.assertEquals(last_bill.id, reminder_bill.id)
+        self.assertNotEquals(last_bill.id, self.bill.id)
+        reminder_bill.delete()
+
+    def test_billing_cycle_is_last_bill_late(self):
+        "models.Bill.is_last_bill_late()"
+        self.assertFalse(self.cycle.is_last_bill_late())
+        self.bill.due_date = datetime.now() - timedelta(days=1)
+        self.bill.save()
+        self.assertTrue(self.cycle.is_last_bill_late())
+        self.bill.is_paid = True
+        self.bill.save()
+        self.assertFalse(self.cycle.is_last_bill_late())

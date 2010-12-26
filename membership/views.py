@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+logger = logging.getLogger("sikteeri.membership.views")
 import traceback
 
 from time import sleep
@@ -51,7 +52,7 @@ def person_application(request, template_name='membership/new_person_application
                                         extra_info=f['extra_info'])
                 membership.save()
                 transaction.commit()
-                logging.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
+                logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
                           render_to_string('membership/person_application_email_confirmation.txt',
                                            { 'membership': membership,
@@ -62,8 +63,8 @@ def person_application(request, template_name='membership/new_person_application
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
-                logging.error("Sikteeri: %s" % traceback.format_exc())
-                logging.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
+                logger.error("%s" % traceback.format_exc())
+                logger.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
     else:
         application_form = PersonApplicationForm()
@@ -227,7 +228,7 @@ def organization_application_save(request):
                   settings.FROM_EMAIL,
                   [membership.email()], fail_silently=False)
 
-        logging.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
+        logger.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
         for i in ['membership', 'person', 'billing_contact', 'tech_contact']:
             try:
@@ -237,8 +238,8 @@ def organization_application_save(request):
         return redirect('new_organization_application_success')
     except Exception, e:
         transaction.rollback()
-        logging.error("Sikteeri: %s" % traceback.format_exc())
-        logging.error("Transaction rolled back.")
+        logger.error("%s" % traceback.format_exc())
+        logger.error("Transaction rolled back.")
         return redirect('new_application_fail')
 
 def check_alias_availability(request):
@@ -306,7 +307,7 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 def membership_do_approve(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'P':
-        logging.info("Tried to approve membership in state %s (!=P)." % membership.status)
+        logger.info("Tried to approve membership in state %s (!=P)." % membership.status)
         return
     membership.status = 'A' # XXX hardcoding
     membership.save()
@@ -316,7 +317,7 @@ def membership_do_approve(request, id):
     bill.save()
     log_change(membership, request.user, change_message="Approved")
     bill.send_as_email()
-    logging.info("Sent membership approval e-mail to %s." % membership)
+    logger.info("Sent membership approval e-mail to %s." % membership)
 
 def membership_approve(request, id):
     membership_do_approve(request, id)
@@ -326,7 +327,7 @@ def membership_approve(request, id):
 def membership_do_preapprove(request, id):
     membership = get_object_or_404(Membership, id=id)
     if membership.status != 'N':
-        logging.info("Tried to preapprove membership in state %s (!=N)." % membership.status)
+        logger.info("Tried to preapprove membership in state %s (!=N)." % membership.status)
         return
     membership.status = 'P' # XXX hardcoding
     membership.save()
@@ -351,13 +352,13 @@ def membership_detail_json(request, id):
     #                    mimetype='text/plain')
 
 def handle_json(request):
-    logging.debug("RAW POST DATA: %s" % request.raw_post_data)
+    logger.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'MEMBERSHIP_DETAIL': membership_detail_json}
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
-    logging.debug("AJAX call %s, payload: %s" % (msg['requestType'],
+    logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
                                                  unicode(msg['payload'])))
     return funcs[msg['requestType']](request, msg['payload'])
 
