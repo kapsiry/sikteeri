@@ -104,7 +104,7 @@ class Membership(models.Model):
         for contact in contact_priority_list:
             if contact:
                 if contact.email:
-                    return contact.email
+                    return unicode(contact.email)
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
 
