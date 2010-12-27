@@ -5,6 +5,7 @@ import tempfile
 import logging
 from datetime import datetime, timedelta
 from random import randint
+from StringIO import StringIO
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -21,6 +22,8 @@ from management.commands.makebills import membership_approved_time
 from management.commands.makebills import create_billingcycle
 from management.commands.makebills import send_reminder
 from management.commands.makebills import NoApprovedLogEntry
+
+from management.commands.csvbills import process_csv
 
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
@@ -267,3 +270,11 @@ class SingleMemberBillingModelsTest(TestCase):
         self.bill.is_paid = True
         self.bill.save()
         self.assertFalse(self.cycle.is_last_bill_late())
+
+
+class CSVReadingTest(TestCase):
+    # TODO: should be tested more thoroughly, this just as a beginner to get
+    #       character encoding done
+    def test_file_reading(self):
+        "csvbills: process_csv"
+        process_csv("../membership/fixtures/csv-test.txt")
