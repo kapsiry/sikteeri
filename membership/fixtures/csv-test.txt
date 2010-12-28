@@ -1,3 +1,4 @@
+Kirjauspäivä;Arvopäivä;Määrä EUROA;Tapahtumalajikoodi;Selitys;Saaja/Maksaja;Saajan tilinumero;Viite;Viesti;Arkistotunnus;
 21.05.2008;-66,50;106;TILISIIRTO;MATTI MEIKÄLÄINEN;211135-00302106;;VUOSIKOKOUKSEN JA YLLÄPITOMATKAN MATKAKORVAUKSET. HALKO 3/2008.                                                                                                                ;20080521593497O10031;
 03.08.2008;-33,00;106;TILISIIRTO;MATTI MEIKÄLÄINEN;211135-00302106;;POSTIKULUKORVAUS                   LASKUTETTU POSTIKULUSTA. HYVÄKSYTTYHALKOSSA 07/2008 24.7.2008.                                                                              ;20080803593497AK0018;
 27.01.2009;30,00;588;VIITESIIRTO;MEIKÄLÄINEN MATTI JOHANNES;;00000000000007009017;                                                                                                                                                                               ;200901252588NGNO0290;
