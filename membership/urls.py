@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import *
 import django.views.generic.list_detail
@@ -44,25 +45,28 @@ def search(request, query=None,
            template_name='membership/membership_list.html'):
     if not query:
         query = request.REQUEST.get("query", None)
-    # This could be simplified into a single SQL query, but isn't done so due
-    # to the most probable SQL syntax incompatibilities.
-    person_first_name_ids = Contact.objects.filter(first_name__icontains=query).values('id')
-    person_given_names_ids = Contact.objects.filter(given_names__icontains=query).values('id')
-    person_last_name_ids = Contact.objects.filter(last_name__icontains=query).values('id')
-    organization_name_ids = Contact.objects.filter(organization_name__icontains=query).values('id')
-    
-    all_ids = set()
-    def add_dict_values_to_set(dicts):
-        for dict in dicts:
-            all_ids.add(str(dict["id"]))
-    
-    add_dict_values_to_set(person_first_name_ids)
-    add_dict_values_to_set(person_given_names_ids)
-    add_dict_values_to_set(person_last_name_ids)
-    add_dict_values_to_set(organization_name_ids)
-    
-    qs = Membership.objects.extra(where=['id IN (%s)' % ", ".join(all_ids)])
-    
+
+    # Common search parameters
+    email_q = Q(email__icontains=query)
+    phone_q = Q(phone__icontains=query)
+    sms_q = Q(sms__icontains=query)
+    common_q = email_q | phone_q | sms_q
+
+    # Search query for people
+    f_q = Q(first_name__icontains=query)
+    l_q = Q(last_name__icontains=query)
+    g_q = Q(given_names__icontains=query)
+    person_contacts = Contact.objects.filter(f_q | l_q | g_q | common_q)
+
+    # Search for organizations
+    o_q = Q(organization_name__icontains=query)
+    org_contacts = Contact.objects.filter(o_q | common_q)
+
+    # Combined single query
+    person_q = Q(person__in=person_contacts)
+    org_q = Q(organization__in=org_contacts)
+    qs = Membership.objects.filter(person_q | org_q)
+
     return django.views.generic.list_detail.object_list(request, queryset=qs,
                                                         template_name=template_name,
                                                         template_object_name='member',
