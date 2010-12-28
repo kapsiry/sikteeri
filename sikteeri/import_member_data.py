@@ -88,12 +88,12 @@ def create_member(mdata):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.utcfromtimestamp(mdata['time'])
     comment.save()
-    billing_cycle = BillingCycle(membership=membership,
+    billing_cycle = BillingCycle(membership=membership, is_paid=True,
         start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
         end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
     # Creating an instance does not touch db and we need and id for the Bill
     billing_cycle.save()
-    bill = Bill(billingcycle=billing_cycle, is_paid=True,
+    bill = Bill(billingcycle=billing_cycle,
         created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
     #bill.send_as_email()

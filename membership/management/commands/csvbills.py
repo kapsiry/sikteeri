@@ -59,7 +59,7 @@ def process_csv(file):
     # Needs work and testing.
     cycles = BillingCycle.objects.all().annotate(payments_sum=Sum('bill__payment__amount'))
     paid_cycles = cycles.filter(payments_sum__gte=F('sum'))
-    Bill.objects.filter(billingcycle__in=paid_cycles).update(is_paid=True)
+    paid_cycles.update(is_paid=True)
 
 class Command(LabelCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'

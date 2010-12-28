@@ -15,7 +15,8 @@ from models import *
 from utils import *
 from test_utils import *
 
-from reference_numbers import *
+from reference_numbers import generate_membership_bill_reference_number
+from reference_numbers import generate_checknumber, add_checknumber
 
 from management.commands.makebills import makebills
 from management.commands.makebills import membership_approved_time
@@ -219,8 +220,8 @@ class SingleMemberBillingTest(TestCase):
         b = c.last_bill()
         b.due_date = datetime.now() + timedelta(days=9)
         b.save()
-        b.is_paid = True
-        b.save()
+        b.billingcycle.is_paid = True
+        b.billingcycle.save()
 
         makebills()
 
@@ -267,8 +268,8 @@ class SingleMemberBillingModelsTest(TestCase):
         self.bill.due_date = datetime.now() - timedelta(days=1)
         self.bill.save()
         self.assertTrue(self.cycle.is_last_bill_late())
-        self.bill.is_paid = True
-        self.bill.save()
+        self.bill.billingcycle.is_paid = True
+        self.bill.billingcycle.save()
         self.assertFalse(self.cycle.is_last_bill_late())
 
 

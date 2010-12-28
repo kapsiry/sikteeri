@@ -53,6 +53,8 @@
         "fields": {
             "start": "2009-11-03 22:22:24", 
             "membership": 1,
+            "reference_number": "00", 
+            "is_paid": false, 
             "end": "2010-11-03 22:22:24", 
             "sum": "30"
         }
@@ -62,8 +64,6 @@
         "model": "membership.bill", 
         "fields": {
             "due_date": "2009-11-17 22:22:46", 
-            "reference_number": "00", 
-            "is_paid": false, 
             "created": "2009-11-03 22:22:46", 
             "last_changed": "2009-11-03 22:22:46", 
             "reminder_count": 0, 

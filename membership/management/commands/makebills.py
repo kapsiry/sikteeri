@@ -98,7 +98,7 @@ def makebills(logHandler=None):
 
         # Reminders
         latest_cycle = member.billingcycle_set.order_by('-end')[0]
-        if not latest_cycle.is_paid():
+        if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
                 two_weeks_from_now = datetime.now() + timedelta(days=14)

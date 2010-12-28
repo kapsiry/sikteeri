@@ -13,7 +13,8 @@ from django.core.mail import send_mail
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
 
-from reference_numbers import *
+from reference_numbers import generate_membership_bill_reference_number
+from reference_numbers import generate_checknumber, add_checknumber
 
 class BillingEmailNotFound(Exception): pass
 class MembershipFlowError(Exception): pass
@@ -160,16 +161,9 @@ class BillingCycle(models.Model):
     membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
     start =  models.DateTimeField(default=datetime.now(), verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
-
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
-
-    def is_paid(self):
-        '''True if any of the bills for the Billing Cycle is marked paid'''
-        paid_bills = Bill.objects.filter(billingcycle=self, is_paid=True)
-        if paid_bills.count() > 0:
-            return True
-        else:
-            return False
+    is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
+    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
 
     def last_bill(self):
         try:
@@ -178,7 +172,7 @@ class BillingCycle(models.Model):
             return None
 
     def is_last_bill_late(self):
-        if self.is_paid() or self.last_bill() == None:
+        if self.is_paid or self.last_bill() == None:
             return False
         if datetime.now() > self.last_bill().due_date:
             return True
@@ -190,6 +184,8 @@ class BillingCycle(models.Model):
     def save(self, *args, **kwargs):
         if not self.end:
             self.end = self.start + timedelta(days=365)
+        if not self.reference_number:
+            self.reference_number = generate_membership_bill_reference_number(self.membership.id, self.start.year)
         if not self.sum:
             # FIXME: should be Membership method get_current_fee()
             self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
@@ -199,9 +195,6 @@ class Bill(models.Model):
     billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
     due_date = models.DateTimeField(verbose_name=_('Due date'))
-
-    is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
-    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
@@ -215,13 +208,7 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=14) # FIXME: Hardcoded
-        if not self.reference_number:
-            self.reference_number = generate_membership_bill_reference_number(self.billingcycle.membership.id, self.billingcycle.start.year)
         super(Bill, self).save(*args, **kwargs)
-
-    def fee(self):
-        '''Get the fee for the bill'''
-        return self.billingcycle.sum
 
     def is_reminder(self):
         cycle = self.billingcycle
@@ -230,6 +217,7 @@ class Bill(models.Model):
             return True
         return False
 
+    # FIXME: different template based on class? should this code be here?
     def render_as_text(self):
         membership = self.billingcycle.membership
         return render_to_string('membership/bill.txt', {
@@ -243,14 +231,14 @@ class Bill(models.Model):
             'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,
-            'reference_number': self.reference_number,
-            'sum': self.fee()
+            'reference_number': self.billingcycle.reference_number,
+            'sum': self.billingcycle.sum
             })
 
     # FIXME: Should save sending date
     def send_as_email(self):
         membership = self.billingcycle.membership
-        if self.fee() > 0:
+        if self.billingcycle.sum > 0:
             send_mail(settings.BILL_SUBJECT, self.render_as_text(),
                 settings.BILLING_FROM_EMAIL,
                 [membership.billing_email()], fail_silently=False)
