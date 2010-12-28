@@ -9,13 +9,10 @@ from membership.utils import *
 
 class NoApprovedLogEntry(Exception): pass
 
-def membership_approved_time(membership, logHandler=None):
+def membership_approved_time(membership):
     """
     Fetches the newest 'Approved' entry and returns its time.
     """
-    if logHandler != None:
-        logger.addHandler(logHandler)
-
     approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
     if len(approve_entries) == 0:
         logger.critical("%s doesn't have Approved log entry"
@@ -27,9 +24,6 @@ def membership_approved_time(membership, logHandler=None):
     if len(approve_entries) > 1:
         logger.warning('more than one Approved-entry for %s, choosing %s'
                         % (repr(membership), newest.action_time.strftime("%Y-%m-%d %H:%M")))
-
-    if logHandler != None:
-        logger.removeHandler(logHandler)
     return newest.action_time
 
 def create_billingcycle(membership):
@@ -57,14 +51,11 @@ def create_billingcycle(membership):
     bill.send_as_email()
     return billing_cycle
 
-def can_send_reminder(last_due_date, log_handler=None):
+def can_send_reminder(last_due_date):
     """
     Determine if we have recent payments so that we can be sure
     recent payments have been imported into the system.
     """
-    if log_handler:
-        logger.addHandler(log_handler)
-
     can_send = True
     payments = Payment.objects.order_by("-payment_day")
     if payments.count() == 0:
@@ -76,8 +67,6 @@ def can_send_reminder(last_due_date, log_handler=None):
         if last_payment.payment_day < week_after_due:
             can_send = False
     
-    if log_handler:
-        logger.removeHandler(log_handler)
     return can_send
 
 def send_reminder(membership):
@@ -87,10 +76,7 @@ def send_reminder(membership):
     bill.send_as_email()
     return bill
 
-def makebills(logHandler=None):
-    if logHandler != None:
-        logger.addHandler(logHandler)
-
+def makebills():
     for member in Membership.objects.filter(status='A'):
         # Billing cycles and bills
         cycles = member.billingcycle_set.order_by('-end')
@@ -114,9 +100,6 @@ def makebills(logHandler=None):
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
-
-        if logHandler != None:
-            logger.removeHandler(logHandler)
 
 class Command(NoArgsCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'

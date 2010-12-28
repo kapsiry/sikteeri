@@ -18,6 +18,7 @@ from test_utils import *
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber
 
+from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
 from management.commands.makebills import membership_approved_time
 from management.commands.makebills import create_billingcycle
@@ -161,18 +162,18 @@ class BillingTest(TestCase):
         membership.save()
 
         handler = MockLoggingHandler()
-        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership, logHandler=handler)
+        makebills_logger.addHandler(handler)
+        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership)
 
         criticals = handler.messages["critical"]
-
         logged = False
         for critical in criticals:
             if "doesn't have Approved log entry" in critical:
                 logged = True
                 break
-
         self.assertTrue(logged)
         membership.delete()
+        makebills_logger.removeHandler(handler)
 
     def test_membership_approved_time_multiple_entries(self):
         "makebills: approved_time multiple entries"
@@ -233,7 +234,9 @@ class SingleMemberBillingTest(TestCase):
         c.save()
 
         handler = MockLoggingHandler()
-        makebills(logHandler=handler)
+        makebills_logger.addHandler(handler)
+        makebills()
+        makebills_logger.removeHandler(handler)
 
         criticals = handler.messages["critical"]
         self.assertTrue(len(criticals) > 0)
@@ -346,25 +349,29 @@ class CanSendReminderTest(TestCase):
 
     def test_can_send_reminder(self):
         handler = MockLoggingHandler()
+        makebills_logger.addHandler(handler)
         now = datetime.now()
-        can_send = can_send_reminder(now, log_handler=handler)
+        can_send = can_send_reminder(now)
         self.assertFalse(can_send, "Should fail if no payments exist")
         criticals = len(handler.messages['critical'])
         self.assertEqual(criticals, 1, "One log message")
+        makebills_logger.removeHandler(handler)
 
         handler = MockLoggingHandler()
+        makebills_logger.addHandler(handler)
         month_ago = datetime.now() - timedelta(days=30)
         p = Payment(bill=self.bill, amount=5, payment_day=month_ago)
         p.save()
         week_ago = datetime.now() - timedelta(days=7)
-        can_send = can_send_reminder(week_ago, log_handler=handler)
+        can_send = can_send_reminder(week_ago)
         self.assertFalse(can_send, "Should fail if payment is old")
         criticals = len(handler.messages['critical'])
         self.assertEqual(criticals, 0, "No critical log messages, got %d" % criticals)
+        makebills_logger.removeHandler(handler)
 
         p = Payment(bill=self.bill, amount=5, payment_day=now)
         p.save()
-        can_send = can_send_reminder(month_ago, log_handler=handler)
+        can_send = can_send_reminder(month_ago)
         self.assertTrue(can_send, "Should be true with recent payment")
 
 class CSVReadingTest(TestCase):
