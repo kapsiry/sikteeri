@@ -7,54 +7,59 @@ import logging
 logger = logging.getLogger("sikteeri.membership.management.commands.csvbills")
 import csv
 
+from django.db.models import Q, F, Sum
 from django.core.management.base import LabelCommand
 
 from membership.models import *
 from membership.utils import *
 
 def row_to_payment(row):
+    # FIXME: should replace decodes with a decoding CSV 'dialect'
+    transaction_id = row['arkistointitunnus'].decode("ISO8859-1")
     try:
-        payment = Payment.objects.get(transaction_id__exact=row[8])
-        return payment
+        p = Payment.objects.get(transaction_id__exact=transaction_id)
+        return p
     except Payment.DoesNotExist, dne:
-        pass
-
-    payment = Payment(payment_day=datetime.strptime(row[0], "%d.%m.%Y"),
-                      amount=Decimal(row[1].replace(",", ".")),
-                      type=row[3],
-                      payer_name=unicode(row[4]),
-                      reference_number=unicode(row[6]),
-                      message=unicode(row[7]),
-                      transaction_id=unicode(row[8]))
-    return payment
+        p = Payment(payment_day=datetime.strptime(row['pvm'], "%Y%m%d"),
+                    amount=Decimal(row['summa'].replace(",", ".")),
+                    type=row['tapahtuma'].decode("ISO8859-1"),
+                    payer_name=row['nimi'].decode("ISO8859-1"),
+                    reference_number=row['viite'].decode("ISO8859-1"),
+                    message=row['viesti'].decode("ISO8859-1"),
+                    transaction_id=transaction_id)
+    return p
 
 def process_csv(file):
     with open(file, 'r') as f:
-        reader = csv.reader(f, delimiter=';', quotechar='\\')
+        reader = csv.DictReader(f, delimiter=',')
         for row in reader:
-            if Decimal(row[1].replace(",", ".")) < 0: # Transaction is from us to someone else
+            amount = Decimal(row['summa'].replace(",", "."))
+            if amount < 0: # Transaction is paid by us, ignored
                 continue
             payment = row_to_payment(row)
 
-            if payment.bill != None and payment.bill.billingcycle.is_paid():
+            # Do nothing if this payment hasn't been assigned
+            if payment.bill:
+                print "Bill was already assigned to payment"
                 continue
 
-            payment.save()
             try:
-                payment.bill = Bill.objects.filter(reference_number__exact=row[6]).order_by('-due_date')[0]
-                payment.save()
-                logger.info("Payment %s attached to bill %s." % (repr(payment), repr(bill)))
-            except IndexError, ie:
-                logger.warning("No matching bill found for %s." % repr(payment))
-
-            if payment.bill is not None and \
-                   payment.amount >= bill.billingcycle.sum:
-                bill.is_paid = True
+                q = Q(reference_number=payment.reference_number)
+                bill = Bill.objects.filter(q).order_by("-due_date")[0]
                 bill.save()
-                logger.info("Marking bill %s as paid (amount %s)." % (repr(bill), str(payment.amount)))
-            elif payment.bill is not None:
-                logger.warning("Not marking bill %s as paid (amount %s, payment %s)." % (repr(bill), str(payment.amount, repr(payment))))
+            except IndexError:
+                continue # Failed to find bill for this reference number
+            payment.bill = bill
+            payment.save()
+            logger.info("Payment %s attached to bill %s." % (
+                repr(payment), repr(bill)))
 
+    # For each unpaid billing cycle, check if paid now
+    # FIXME: might not fill specifications. Does it work? :)
+    # Needs work and testing.
+    cycles = BillingCycle.objects.all().annotate(payments_sum=Sum('bill__payment__amount'))
+    paid_cycles = cycles.filter(payments_sum__gte=F('sum'))
+    Bill.objects.filter(billingcycle__in=paid_cycles).update(is_paid=True)
 
 class Command(LabelCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'
