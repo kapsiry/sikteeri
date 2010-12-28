@@ -310,12 +310,7 @@ def membership_do_approve(request, id):
         return
     membership.status = 'A' # XXX hardcoding
     membership.save()
-    billing_cycle = BillingCycle(membership=membership)
-    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(billingcycle=billing_cycle)
-    bill.save()
     log_change(membership, request.user, change_message="Approved")
-    bill.send_as_email()
     logger.info("Sent membership approval e-mail to %s." % membership)
 
 def membership_approve(request, id):
