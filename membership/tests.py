@@ -73,6 +73,62 @@ def create_dummy_member(status):
     membership.save()
     return membership
 
+class MembershipFeeTest(TestCase):
+    fixtures = ['test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        membership_p = create_dummy_member('N')
+        membership_o = create_dummy_member('N')
+        membership_o.type='O'
+        membership_s = create_dummy_member('N')
+        membership_s.type='S'
+        membership_h = create_dummy_member('N')
+        membership_h.type='H'
+        for m in [membership_p, membership_o, membership_s, membership_h]:
+            m.save()
+            m.preapprove()
+            m.approve()
+            log_change(m, self.user, change_message="Approved")
+        self.membership_p = membership_p
+        self.membership_o = membership_o
+        self.membership_s = membership_s
+        self.membership_h = membership_h
+
+    def test_fees(self):
+        "Test setting fees and verify that they are set properly"
+        now = datetime.now() - timedelta(seconds=5)
+        week_ago = datetime.now() - timedelta(days=7)
+        P_FEE=30
+        S_FEE=500
+        O_FEE=60
+        H_FEE=0
+        soon = datetime.now() + timedelta(hours=1)
+        # Old fees
+        Fee.objects.create(type='P', start=week_ago, sum=P_FEE/2)
+        Fee.objects.create(type='O', start=week_ago, sum=O_FEE/2)
+        Fee.objects.create(type='S', start=week_ago, sum=S_FEE/2)
+        Fee.objects.create(type='H', start=week_ago, sum=H_FEE/2)
+        # Real fees
+        p_fee = Fee.objects.create(type='P', start=now, sum=P_FEE)
+        o_fee = Fee.objects.create(type='O', start=now, sum=O_FEE)
+        s_fee = Fee.objects.create(type='S', start=now, sum=S_FEE)
+        h_fee = Fee.objects.create(type='H', start=now, sum=H_FEE)
+        # Future fees that must not interfere
+        Fee.objects.create(type='P', start=soon, sum=P_FEE*2)
+        Fee.objects.create(type='O', start=soon, sum=O_FEE*2)
+        Fee.objects.create(type='S', start=soon, sum=S_FEE*2)
+        Fee.objects.create(type='H', start=soon, sum=H_FEE*2)
+        makebills()
+        c_p = BillingCycle.objects.get(membership__type='P')
+        c_o = BillingCycle.objects.get(membership__type='O')
+        c_s = BillingCycle.objects.get(membership__type='S')
+        c_h = BillingCycle.objects.get(membership__type='H')
+        self.assertEqual(c_p.sum, P_FEE)
+        self.assertEqual(c_o.sum, O_FEE)
+        self.assertEqual(c_s.sum, S_FEE)
+        self.assertEqual(c_h.sum, H_FEE)
+
 
 class BillingTest(TestCase):
     # http://docs.djangoproject.com/en/dev/topics/testing/#fixture-loading

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import logging
 
 from django.db import models
+from django.db.models import Q, F
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -178,6 +179,13 @@ class BillingCycle(models.Model):
             return True
         return False
 
+    def get_fee(self):
+        for_this_type = Q(type=self.membership.type)
+        not_before_start = Q(start__lte=self.start)
+        fees = Fee.objects.filter(for_this_type, not_before_start)
+        valid_fee = fees.latest('start').sum
+        return valid_fee
+
     def __unicode__(self):
         return str(self.start) + "--" + str(self.end)
 
@@ -187,8 +195,7 @@ class BillingCycle(models.Model):
         if not self.reference_number:
             self.reference_number = generate_membership_bill_reference_number(self.membership.id, self.start.year)
         if not self.sum:
-            # FIXME: should be Membership method get_current_fee()
-            self.sum = Fee.objects.filter(type__exact=self.membership.type).filter(start__lte=datetime.now()).order_by('-start')[0].sum
+            self.sum = self.get_fee()
         super(BillingCycle, self).save(*args, **kwargs)
 
 class Bill(models.Model):
