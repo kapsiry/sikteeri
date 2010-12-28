@@ -280,7 +280,7 @@ class Payment(models.Model):
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name')) # maksajan nimi
 
     def __unicode__(self):
-        return 'Payment for %s euros paid on %s' % (str(self.amount), str(self.payment_day))
+        return '%.2f euros (reference %s)' % (self.amount, self.reference_number)
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
