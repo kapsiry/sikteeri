@@ -270,6 +270,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.assertTrue(self.cycle.is_last_bill_late())
         self.bill.billingcycle.is_paid = True
         self.bill.billingcycle.save()
+        self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.assertFalse(self.cycle.is_last_bill_late())
 
 
