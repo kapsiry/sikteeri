@@ -22,6 +22,7 @@ from management.commands.makebills import makebills
 from management.commands.makebills import membership_approved_time
 from management.commands.makebills import create_billingcycle
 from management.commands.makebills import send_reminder
+from management.commands.makebills import can_send_reminder
 from management.commands.makebills import NoApprovedLogEntry
 
 from management.commands.csvbills import process_csv
@@ -273,6 +274,42 @@ class SingleMemberBillingModelsTest(TestCase):
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.assertFalse(self.cycle.is_last_bill_late())
 
+class CanSendReminderTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove()
+        membership.approve()
+        log_change(membership, self.user, change_message="Approved")
+        self.membership = membership
+        makebills()
+        self.cycle = BillingCycle.objects.get(membership=self.membership)
+        self.bill = Bill.objects.filter(billingcycle=self.cycle).order_by('due_date')[0]
+
+    def test_can_send_reminder(self):
+        handler = MockLoggingHandler()
+        now = datetime.now()
+        can_send = can_send_reminder(now, log_handler=handler)
+        self.assertFalse(can_send, "Should fail if no payments exist")
+        criticals = len(handler.messages['critical'])
+        self.assertEqual(criticals, 1, "One log message")
+
+        handler = MockLoggingHandler()
+        month_ago = datetime.now() - timedelta(days=30)
+        p = Payment(bill=self.bill, amount=5, payment_day=month_ago)
+        p.save()
+        week_ago = datetime.now() - timedelta(days=7)
+        can_send = can_send_reminder(week_ago, log_handler=handler)
+        self.assertFalse(can_send, "Should fail if payment is old")
+        criticals = len(handler.messages['critical'])
+        self.assertEqual(criticals, 0, "No critical log messages, got %d" % criticals)
+
+        p = Payment(bill=self.bill, amount=5, payment_day=now)
+        p.save()
+        can_send = can_send_reminder(month_ago, log_handler=handler)
+        self.assertTrue(can_send, "Should be true with recent payment")
 
 class CSVReadingTest(TestCase):
     # TODO: should be tested more thoroughly, this just as a beginner to get

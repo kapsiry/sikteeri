@@ -57,21 +57,28 @@ def create_billingcycle(membership):
     bill.send_as_email()
     return billing_cycle
 
-def can_send_reminders():
+def can_send_reminder(last_due_date, log_handler=None):
     """
     Determine if we have recent payments so that we can be sure
     recent payments have been imported into the system.
     """
+    if log_handler:
+        logger.addHandler(log_handler)
+
+    can_send = True
     payments = Payment.objects.order_by("-payment_day")
-    if len(payments) == 0:
+    if payments.count() == 0:
         logger.critical("no payments in the database.")
-        return False
-    last_payment = payments[0]
-    two_weeks_ago = datetime.now() - timedelta(days=14)
+        can_send = False
+    else:
+        last_payment = payments[0]
+        week_after_due = last_due_date + timedelta(days=7)
+        if last_payment.payment_day < week_after_due:
+            can_send = False
     
-    if last_payment.payment_day < two_weeks_ago:
-        return False
-    return True
+    if log_handler:
+        logger.removeHandler(log_handler)
+    return can_send
 
 def send_reminder(membership):
     billing_cycle = membership.billingcycle_set.order_by('-end')[0]
@@ -102,7 +109,8 @@ def makebills(logHandler=None):
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
                 two_weeks_from_now = datetime.now() + timedelta(days=14)
-                if last_due_date > two_weeks_from_now and can_send_reminder():
+                can_send = can_send_reminder(last_due_date)
+                if last_due_date > two_weeks_from_now and can_send:
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
