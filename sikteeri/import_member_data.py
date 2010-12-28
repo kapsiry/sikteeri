@@ -20,8 +20,8 @@ import logging
 from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
-from membership.views import contact_from_dict
-from membership.models import Membership, Bill, BillingCycle, Fee, MEMBER_TYPES
+from membership.models import Contact, Membership, Bill, BillingCycle
+from membership.models import Fee, MEMBER_TYPES
 
 user = User.objects.get(id=1)
 
@@ -70,7 +70,7 @@ def create_member(mdata):
     else:
         print "Not importing, member class unknown for member %d" % mdata['id']
         return False
-    person = contact_from_dict(d)
+    person = Contact(**d)
     person.save()
     membership = Membership(id=mdata['id'], type=mtype, status='A',
                             created=datetime.utcfromtimestamp(mdata['time']),
