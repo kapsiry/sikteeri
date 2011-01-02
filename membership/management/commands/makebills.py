@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
 
 import logging
@@ -13,15 +14,16 @@ def membership_approved_time(membership):
     """
     Fetches the newest 'Approved' entry and returns its time.
     """
-    approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
-    if len(approve_entries) == 0:
+    approve_entries = membership.logs.filter(change_message="Approved")
+    approve_entry_count = approve_entries.count()
+    if approve_entry_count == 0:
         logger.critical("%s doesn't have Approved log entry"
                          % repr(membership))
         raise NoApprovedLogEntry("%s doesn't have an Approved log entry,"
                                  % repr(membership)
                                  + " start time for billing cycle can't be determined.")
-    newest = approve_entries[0]
-    if len(approve_entries) > 1:
+    newest = approve_entries.latest("action_time")
+    if approve_entry_count > 1:
         logger.warning('more than one Approved-entry for %s, choosing %s'
                         % (repr(membership), newest.action_time.strftime("%Y-%m-%d %H:%M")))
     return newest.action_time
@@ -35,8 +37,8 @@ def create_billingcycle(membership):
     user, we use the time when they were last approved.
     """
     try:
-        newest_existing_billing_cycle = membership.billingcycle_set.order_by('-end')[0]
-    except IndexError, ie:
+        newest_existing_billing_cycle = membership.billingcycle_set.latest('end')
+    except ObjectDoesNotExist:
         newest_existing_billing_cycle = None
 
     if newest_existing_billing_cycle != None:
@@ -57,12 +59,12 @@ def can_send_reminder(last_due_date):
     recent payments have been imported into the system.
     """
     can_send = True
-    payments = Payment.objects.order_by("-payment_day")
+    payments = Payment.objects
     if payments.count() == 0:
         logger.critical("no payments in the database.")
         can_send = False
     else:
-        last_payment = payments[0]
+        last_payment = payments.latest("payment_day")
         week_after_due = last_due_date + timedelta(days=7)
         if last_payment.payment_day < week_after_due:
             can_send = False
@@ -70,7 +72,7 @@ def can_send_reminder(last_due_date):
     return can_send
 
 def send_reminder(membership):
-    billing_cycle = membership.billingcycle_set.order_by('-end')[0]
+    billing_cycle = membership.billingcycle_set.latest('end')
     bill = Bill(billingcycle=billing_cycle)
     bill.save()
     bill.send_as_email()
@@ -79,18 +81,18 @@ def send_reminder(membership):
 def makebills():
     for member in Membership.objects.filter(status='A'):
         # Billing cycles and bills
-        cycles = member.billingcycle_set.order_by('-end')
-        if len(cycles) == 0:
+        cycles = member.billingcycle_set
+        if cycles.count() == 0:
             create_billingcycle(member)
         else:
-            latest_cycle = cycles[0]
+            latest_cycle = cycles.latest("end")
             if latest_cycle.end < datetime.now():
                 logger.critical("no new billing cycle created for %s after an expired one!" % repr(member))
             if latest_cycle.end < datetime.now() + timedelta(days=28):
                 create_billingcycle(member)
 
         # Reminders
-        latest_cycle = member.billingcycle_set.order_by('-end')[0]
+        latest_cycle = member.billingcycle_set.latest('end')
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date

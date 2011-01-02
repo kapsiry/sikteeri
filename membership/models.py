@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q, F
 from django.utils.translation import ugettext_lazy as _
@@ -178,8 +179,8 @@ class BillingCycle(models.Model):
 
     def last_bill(self):
         try:
-            return Bill.objects.filter(billingcycle=self).order_by('-due_date')[0]
-        except IndexError, ie:
+            return self.bill_set.latest("due_date")
+        except ObjectDoesNotExist:
             return None
 
     def is_last_bill_late(self):

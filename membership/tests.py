@@ -182,10 +182,10 @@ class BillingTest(TestCase):
         membership.approve()
         log_change(membership, self.user, change_message="Approved")
         log_change(membership, self.user, change_message="Approved")
-        approve_entries = membership.logs.filter(change_message="Approved").order_by('-action_time')
+        approve_entries = membership.logs.filter(change_message="Approved")
 
         t = membership_approved_time(membership)
-        self.assertEquals(t, approve_entries[0].action_time)
+        self.assertEquals(t, approve_entries.latest("action_time").action_time)
 
 
 class SingleMemberBillingTest(TestCase):
@@ -300,7 +300,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.membership = membership
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
-        self.bill = Bill.objects.filter(billingcycle=self.cycle).order_by('due_date')[0]
+        self.bill = self.cycle.bill_set.order_by('due_date')[0]
 
     def tearDown(self):
         self.bill.delete()
@@ -317,7 +317,7 @@ class SingleMemberBillingModelsTest(TestCase):
     def test_billing_cycle_last_bill(self):
         "models.Bill.last_bill()"
         reminder_bill = send_reminder(self.membership)
-        last_bill = self.cycle.bill_set.order_by("-due_date")[0]
+        last_bill = self.cycle.bill_set.latest("due_date")
         self.assertEquals(last_bill.id, reminder_bill.id)
         self.assertNotEquals(last_bill.id, self.bill.id)
         reminder_bill.delete()
@@ -345,7 +345,7 @@ class CanSendReminderTest(TestCase):
         self.membership = membership
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
-        self.bill = Bill.objects.filter(billingcycle=self.cycle).order_by('due_date')[0]
+        self.bill = self.cycle.bill_set.order_by('due_date')[0]
 
     def test_can_send_reminder(self):
         handler = MockLoggingHandler()
