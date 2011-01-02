@@ -13,6 +13,7 @@ from django.core.mail import send_mail
 
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber
@@ -33,8 +34,17 @@ def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logging.info('%s %s: %s' % (sender, operation, repr(instance)))
 
+def _get_logs(self):
+    '''Gets the log entries related to this object.
+    Getter to be used as property instead of GenericRelation'''
+    my_class = self.__class__
+    ct = ContentType.objects.get_for_model(my_class)
+    object_logs = ct.logentry_set.filter(object_id=self.id)
+    return object_logs
+
 class Contact(models.Model):
-    logs = GenericRelation(LogEntry)
+    logs = property(_get_logs)
+
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('contact changed'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('contact created'))
 
@@ -66,7 +76,7 @@ class Contact(models.Model):
 
 
 class Membership(models.Model):
-    logs = GenericRelation(LogEntry)
+    logs = property(_get_logs)
 
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Membership type'))
     status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('Membership status'))
