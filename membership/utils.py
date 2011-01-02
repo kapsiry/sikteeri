@@ -122,6 +122,9 @@ def serializable_membership_info(membership):
     json_obj['log_entries'] = log_entry_list
     json_obj['events'] = event_list
     
+    # FIXME: This is broken. Should probably replace:
+    # {% get_comment_list for [object] as [varname] %}
+    # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
         d = { 'user_name': unicode(comment.user),
