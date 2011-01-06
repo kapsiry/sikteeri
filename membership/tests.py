@@ -12,7 +12,6 @@ from django.core import mail
 from django.test import TestCase
 
 from models import *
-from model_utils import *
 from utils import *
 from test_utils import *
 

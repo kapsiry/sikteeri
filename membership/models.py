@@ -16,8 +16,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
-from model_utils import tupletuple_to_dict
-from utils import log_change
+from utils import log_change, tupletuple_to_dict
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber

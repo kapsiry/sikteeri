@@ -160,3 +160,19 @@ def serializable_membership_info(membership):
     ctimeify(event_list)
 
     return json_obj
+
+def tupletuple_to_dict(tupletuple):
+    '''Convert a tuple of tuples to dict
+
+    >>> tupletuple = (('A', 'Value1'), ('B', 'Value2'))
+    >>> d = tupletuple_to_dict(tupletuple)
+    >>> d['A']
+    'Value1'
+    >>> d['B']
+    'Value2'
+    '''
+    d = {}
+    for t in tupletuple:
+        (key, value) = t
+        d[key] = value
+    return d
