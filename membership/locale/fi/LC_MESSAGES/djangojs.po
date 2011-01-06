@@ -120,8 +120,8 @@ msgstr "piilota lisätiedot"
 
 #: static/js/member_list.js:194
 msgid "add to pre-approve cart"
-msgstr "lisää esihyväksyntäkoriin"
+msgstr "lisää esihyväksyttäviin"
 
 #: static/js/member_list.js:197
 msgid "remove from pre-approve cart"
-msgstr "poista esihyväksyntäkorista"
+msgstr "poista esihyväksyttävistä"
