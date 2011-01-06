@@ -62,8 +62,8 @@ def person_application(request, template_name='membership/new_person_application
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
-                logger.error("%s" % traceback.format_exc())
-                logger.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
+                logger.critical("%s" % traceback.format_exc())
+                logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
     else:
         application_form = PersonApplicationForm()
@@ -303,47 +303,28 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return membership_edit_inline(request, id, template_name)
 
 @transaction.commit_on_success
-def membership_do_approve(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    if membership.status != 'P':
-        logger.info("Tried to approve membership in state %s (!=P)." % membership.status)
-        return
-    membership.status = 'A' # XXX hardcoding
-    membership.save()
-    log_change(membership, request.user, change_message="Approved")
-    logger.info("Sent membership approval e-mail to %s." % membership)
-
 def membership_approve(request, id):
-    membership_do_approve(request, id)
+    get_object_or_404(Membership, id=id).approve(request.user)
     return redirect('membership_edit', id)
 
 @transaction.commit_on_success
-def membership_do_preapprove(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    if membership.status != 'N':
-        logger.info("Tried to preapprove membership in state %s (!=N)." % membership.status)
-        return
-    membership.status = 'P' # XXX hardcoding
-    membership.save()
-    log_change(membership, request.user, change_message="Preapproved")
-
 def membership_preapprove(request, id):
-    membership_do_preapprove(request, id)
+    get_object_or_404(Membership, id=id).preapprove(request.user)
     return redirect('membership_edit', id)
 
+@transaction.commit_on_success
 def membership_preapprove_json(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    membership_do_preapprove(request, id)
+    get_object_or_404(Membership, id=id).preapprove(request.user)
     return HttpResponse(id, mimetype='text/plain')
 
 def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
+    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    #                     mimetype='application/json')
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='application/json')
-    #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-    #                    mimetype='text/plain')
+                       mimetype='text/plain')
 
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
@@ -355,4 +336,3 @@ def handle_json(request):
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
                                                  unicode(msg['payload'])))
     return funcs[msg['requestType']](request, msg['payload'])
-

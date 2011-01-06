@@ -19,7 +19,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 
-from membership.utils import log_change
 from membership.models import Contact, Membership, Bill, BillingCycle, Fee
 from membership.test_utils import *
 
@@ -60,17 +59,14 @@ def main():
     for i in xrange(1,2000):
         create_dummy_member(i, 'N')
         membership = Membership.objects.get(pk=i)
-        membership.preapprove()
-        log_change(membership, user, change_message="Preapproved")
-        membership.approve()
-        log_change(membership, user, change_message="Approved")
+        membership.preapprove(user)
+        membership.approve(user)
 
     # Pre-approved members
     for i in xrange(2000,2100):
         create_dummy_member(i, 'N')
         membership = Membership.objects.get(pk=i)
-        membership.preapprove()
-        log_change(membership, user, change_message="Preapproved")
+        membership.preapprove(user)
 
     # New applications
     for i in xrange(2100,2200):
