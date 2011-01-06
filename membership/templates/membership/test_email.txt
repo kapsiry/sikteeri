@@ -1,0 +1,8 @@
+Hei!
+
+
+Tämä on Kapsin jäsentietojärjestelmän lähettämä sähköposti.
+Sähköpostin lähetti käyttäjä {{ user.first_name }} {{ user.last_name }}.
+
+--
+Kapsin jäsentietojärjestelmä

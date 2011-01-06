@@ -17,11 +17,13 @@ from django.contrib.contenttypes.generic import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from model_utils import tupletuple_to_dict
+from utils import log_change
+
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber
 
 class BillingEmailNotFound(Exception): pass
-class MembershipFlowError(Exception): pass
+class MembershipOperationError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
@@ -132,17 +134,29 @@ class Membership(models.Model):
             raise Exception("Either Person-contact or organization-contact must be defined.")
         super(Membership, self).save(*args, **kwargs)
 
-    def preapprove(self):
+    def preapprove(self, user):
         if self.status != 'N':
-            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+            raise MembershipOperationError("A membership from other state than new can't be preapproved.")
+        if user == None:
+            msg = "Membership.preapprove() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
         self.status = 'P'
         self.save()
+        log_change(self, user, change_message="Preapproved")
 
-    def approve(self):
+    def approve(self, user):
         if self.status != 'P':
             raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
+        if user == None:
+            msg = "Membership.approve() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
         self.status = 'A'
         self.save()
+        log_change(self, user, change_message="Approved")
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
@@ -255,6 +269,7 @@ class Bill(models.Model):
             'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,
+            'today': datetime.now(),
             'reference_number': self.billingcycle.reference_number,
             'sum': self.billingcycle.sum
             })

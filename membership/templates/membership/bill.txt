@@ -6,7 +6,7 @@ viestiin.
 
 Kapsi Internet-käyttäjät ry             LASKU
 PL 11                                   
-90571 OULU                              {% now "SHORT_DATE_FORMAT" %}
+90571 OULU                              {{ today|date:"SHORT_DATE_FORMAT" }}
                                         
 {{ billing_name|ljust:"40" }}Jäsennumero   {{ member_id }}
 {{ street_address|ljust:"40" }}Laskunnumero  {{ bill_id }}

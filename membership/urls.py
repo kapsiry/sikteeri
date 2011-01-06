@@ -20,6 +20,8 @@ urlpatterns = patterns('',
         name='organization_application_save'),
     url(r'memberships/application/$', 'membership.views.new_application', name='new_application'),
 
+    url(r'testemail/$', 'membership.views.test_email', name='test_email'),
+
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
 
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),

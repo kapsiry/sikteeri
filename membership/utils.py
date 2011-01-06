@@ -8,8 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 
-from membership.models import BillingCycle, Bill, Contact, Membership
-
 # http://code.activestate.com/recipes/576644/
 
 def dict_diff(first, second):

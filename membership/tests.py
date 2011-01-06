@@ -93,9 +93,8 @@ class MembershipFeeTest(TestCase):
         membership_h.type='H'
         for m in [membership_p, membership_o, membership_s, membership_h]:
             m.save()
-            m.preapprove()
-            m.approve()
-            log_change(m, self.user, change_message="Approved")
+            m.preapprove(self.user)
+            m.approve(self.user)
         self.membership_p = membership_p
         self.membership_o = membership_o
         self.membership_s = membership_s
@@ -151,7 +150,7 @@ class BillingTest(TestCase):
     def test_single_preapproved_no_op(self):
         "makebills: preapproved membership no-op"
         membership = create_dummy_member('N')
-        membership.preapprove()
+        membership.preapprove(self.user)
         makebills()
         
         self.assertEqual(len(mail.outbox), 0)
@@ -162,7 +161,6 @@ class BillingTest(TestCase):
     def test_membership_approved_time_no_entries(self):
         "makebills: approved_time with no entries"
         membership = create_dummy_member('N')
-        membership.preapprove()
         membership.status = 'A'
         membership.save()
 
@@ -183,9 +181,8 @@ class BillingTest(TestCase):
     def test_membership_approved_time_multiple_entries(self):
         "makebills: approved_time multiple entries"
         membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, self.user, change_message="Approved")
+        membership.preapprove(self.user)
+        membership.approve(self.user)
         log_change(membership, self.user, change_message="Approved")
         approve_entries = membership.logs.filter(change_message="Approved")
 
@@ -202,9 +199,8 @@ class SingleMemberBillingTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, self.user, change_message="Approved")
+        membership.preapprove(self.user)
+        membership.approve(self.user)
         self.membership = membership
 
     def tearDown(self):
@@ -262,9 +258,8 @@ class SingleMemberBillingTest(TestCase):
         self.assertEqual(len(self.membership.billingcycle_set.all()), 1)
 
         membership2 = create_dummy_member('N')
-        membership2.preapprove()
-        membership2.approve()
-        log_change(membership2, self.user, change_message="Approved")
+        membership2.preapprove(self.user)
+        membership2.approve(self.user)
 
         makebills()
 
@@ -299,9 +294,8 @@ class SingleMemberBillingModelsTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, self.user, change_message="Approved")
+        membership.preapprove(self.user)
+        membership.approve(self.user)
         self.membership = membership
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
@@ -344,9 +338,8 @@ class CanSendReminderTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
-        membership.preapprove()
-        membership.approve()
-        log_change(membership, self.user, change_message="Approved")
+        membership.preapprove(self.user)
+        membership.approve(self.user)
         self.membership = membership
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
