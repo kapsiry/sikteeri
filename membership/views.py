@@ -317,18 +317,13 @@ def membership_delete(request, id):
     return redirect('membership_edit', id)
 
 @transaction.commit_on_success
-def membership_approve(request, id):
-    get_object_or_404(Membership, id=id).approve(request.user)
-    return redirect('membership_edit', id)
-
-@transaction.commit_on_success
-def membership_preapprove(request, id):
-    get_object_or_404(Membership, id=id).preapprove(request.user)
-    return redirect('membership_edit', id)
-
-@transaction.commit_on_success
 def membership_preapprove_json(request, id):
     get_object_or_404(Membership, id=id).preapprove(request.user)
+    return HttpResponse(id, mimetype='text/plain')
+
+@transaction.commit_on_success
+def membership_approve_json(request, id):
+    get_object_or_404(Membership, id=id).approve(request.user)
     return HttpResponse(id, mimetype='text/plain')
 
 def membership_detail_json(request, id):
@@ -344,6 +339,7 @@ def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
+             'APPROVE': membership_approve_json,
              'MEMBERSHIP_DETAIL': membership_detail_json}
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
