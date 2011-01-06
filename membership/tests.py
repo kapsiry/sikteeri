@@ -43,7 +43,7 @@ class ReferenceNumberTest(TestCase):
 
     def test_uniqueness_of_reference_numbers(self):
         numbers = set([])
-        for i in xrange(1, 10000):
+        for i in xrange(1, 100):
             for j in xrange(datetime.now().year, datetime.now().year + 11):
                 number = generate_membership_bill_reference_number(i, j)
                 self.assertFalse(number in numbers)
