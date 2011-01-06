@@ -54,7 +54,9 @@ def search(request, query=None,
 
     person_contacts = Contact.objects
     org_contacts = Contact.objects
-    for word in query.split(" "):
+    # Split into words and remove duplicates
+    d = {}.fromkeys(query.split(" "))
+    for word in d.keys():
         # Common search parameters
         email_q = Q(email__icontains=word)
         phone_q = Q(phone__icontains=word)
