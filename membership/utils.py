@@ -38,7 +38,13 @@ def diff_humanize(diff):
     for key in diff:
         if key == 'last_changed' or key.startswith("_"):
             continue
-        change = diff[key]
+        change = list(diff[key])
+        try:
+            change[0] = change[0].strftime("%Y-%m-%d %H:%M")
+        except: pass
+        try:
+            change[1] = change[1].strftime("%Y-%m-%d %H:%M")
+        except: pass
         if change[0] == None:
             txt += "%s: () -> '%s'. " % (key, change[1])
         elif change[1] == None:
