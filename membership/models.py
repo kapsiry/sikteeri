@@ -92,7 +92,7 @@ class Membership(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Membership type'))
     status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('Membership status'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Membership created'))
-    accepted = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership accepted'))
+    approved = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership approved'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Membership changed'))
 
     municipality = models.CharField(_('Home municipality'), max_length=128)
@@ -163,6 +163,7 @@ class Membership(models.Model):
             logger.critical(msg)
             raise MembershipOperationError(msg)
         self.status = 'A'
+        self.approved = datetime.now()
         self.save()
         log_change(self, user, change_message="Approved")
 
