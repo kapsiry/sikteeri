@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm
+from django.forms import ModelForm, Form, EmailField
 from django.contrib.auth.decorators import login_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -336,3 +336,26 @@ def handle_json(request):
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
                                                  unicode(msg['payload'])))
     return funcs[msg['requestType']](request, msg['payload'])
+
+@login_required
+def test_email(request, template_name='membership/test_email.html'):
+    class RecipientForm(Form):
+        recipient = EmailField(label=_('Recipient e-mail address'))
+
+    if request.method == 'POST':
+        form = RecipientForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+        else:
+            return render_to_response(template_name, {'form': form},
+                                      context_instance=RequestContext(request))
+        
+        body = render_to_string('membership/test_email.txt', { "user": request.user })
+        send_mail(u"Testisähköposti", body,
+                  settings.FROM_EMAIL,
+#                  request.user.email,
+                  [f["recipient"]], fail_silently=False)
+        logger.info("Sent a test e-mail to %s" % f["recipient"])
+
+    return render_to_response(template_name, {'form': RecipientForm()},
+                              context_instance=RequestContext(request))

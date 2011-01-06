@@ -263,6 +263,7 @@ class Bill(models.Model):
             'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,
+            'today': datetime.now(),
             'reference_number': self.billingcycle.reference_number,
             'sum': self.billingcycle.sum
             })
