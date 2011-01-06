@@ -25,7 +25,6 @@
 
 <h2>{% trans "Actions" %}</h2>
 <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
-{% endif %}
 
 <h2>{% trans "Billing information" %}</h2>
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
