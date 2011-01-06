@@ -212,7 +212,7 @@ class Membership(models.Model):
             if self.person:
                 return self.person.__unicode__()
             else:
-                return "Deleted"
+                return "#%d" % self.id
 
 
 class Alias(models.Model):
