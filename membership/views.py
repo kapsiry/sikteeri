@@ -282,16 +282,23 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         class Meta:
             model = Membership
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
-    
+
+    def disable_fields(form):
+        for field in ['status', 'type', 'accepted']:
+            form.fields[field].required = False
+            form.fields[field].widget.attrs['disabled'] = 'disabled'
+
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
+        disable_fields(form)
         before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance
         form.save()
         after = membership.__dict__
         if form.is_valid():
             log_change(membership, request.user, before, after)
     else:
-        form =  Form(instance=membership)
+        form = Form(instance=membership)
+        disable_fields(form)
     # Pretty print log entries for template
     logentries = bake_log_entries(membership.logs.all())
     return render_to_response(template_name, {'form': form,
