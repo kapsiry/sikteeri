@@ -31,7 +31,7 @@ MEMBER_TYPES = (('P', _('Person')),
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
-                 ('D', _('Disabled')))
+                 ('D', _('Deleted')))
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
