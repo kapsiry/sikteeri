@@ -282,16 +282,23 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         class Meta:
             model = Membership
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
-    
+
+    def disable_fields(form):
+        for field in ['status', 'approved']:
+            form.fields[field].required = False
+            form.fields[field].widget.attrs['disabled'] = 'disabled'
+
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
+        disable_fields(form)
         before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance
         form.save()
         after = membership.__dict__
         if form.is_valid():
             log_change(membership, request.user, before, after)
     else:
-        form =  Form(instance=membership)
+        form = Form(instance=membership)
+        disable_fields(form)
     # Pretty print log entries for template
     logentries = bake_log_entries(membership.logs.all())
     return render_to_response(template_name, {'form': form,
@@ -301,6 +308,13 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     # XXX: Inline template name is hardcoded in template :/
     return membership_edit_inline(request, id, template_name)
+
+@transaction.commit_on_success
+def membership_delete(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    logger.info("Deleting member %s." % str(membership))
+    membership.delete_membership(request.user)
+    return redirect('membership_edit', id)
 
 @transaction.commit_on_success
 def membership_approve(request, id):
@@ -321,10 +335,10 @@ def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
-    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-    #                     mimetype='application/json')
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-                       mimetype='text/plain')
+                        mimetype='application/json')
+    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    #                    mimetype='text/plain')
 
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)

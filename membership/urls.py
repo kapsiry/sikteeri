@@ -26,10 +26,11 @@ urlpatterns = patterns('',
 
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
-    url(r'memberships/preapprove/(\d+)/$', 'membership.views.membership_preapprove', name='membership_preapprove'),
 
+    url(r'memberships/preapprove/(\d+)/$', 'membership.views.membership_preapprove', name='membership_preapprove'),
     url(r'memberships/approve/(\d+)/$', 'membership.views.membership_approve', name='membership_approve'),
-    
+    url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
+
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
     url(r'memberships/handle_json/$', 'membership.views.handle_json', name='membership_handle_json'),

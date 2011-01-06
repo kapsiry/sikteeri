@@ -26,6 +26,7 @@
 <h2>{% trans "Actions" %}</h2>
 <a href="{% url membership_preapprove membership.id %}">{% trans "Preapprove" %}</a>
 <a href="{% url membership_approve membership.id %}">{% trans "Approve" %}</a>
+<a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
 
 <h2>{% trans "Billing information" %}</h2>
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
