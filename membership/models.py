@@ -167,6 +167,8 @@ class Membership(models.Model):
         log_change(self, user, change_message="Approved")
 
     def delete_membership(self, user):
+        if self.status == 'D':
+            raise MembershipOperationError("A deleted membership can't be deleted.")
         self.status = 'D'
         contacts = [self.person, self.billing_contact,
                     self.tech_contact, self.organization]
