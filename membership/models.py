@@ -294,20 +294,21 @@ class Payment(models.Model):
     """
     Payment object for billing
     """
-    # While Payment refers to Bill, someone might send a payment that has a reference
-    # number, which does not correspond to any Bills...
-    bill = models.ForeignKey('Bill', verbose_name=_('Bill'), null=True)
+    # While Payment refers to BillingCycle, the architecture scales to support
+    # recording payments that are not related to any billingcycle for future
+    # extension
+    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
 
-    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True) # Not unique, because people can send multiple payments
-    message = models.CharField(max_length=64, verbose_name=_('Message'), blank=True) # viesti (viestikenttä)
-    transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id')) # arkistointitunnus
+    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
+    message = models.CharField(max_length=64, verbose_name=_('Message'), blank=True)
+    transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999,99
-    type = models.CharField(max_length=64, verbose_name=_('Type')) # tilisiirto/pano/jokumuu
-    payer_name = models.CharField(max_length=64, verbose_name=_('Payer name')) # maksajan nimi
+    type = models.CharField(max_length=64, verbose_name=_('Type'))
+    payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
 
     def __unicode__(self):
-        return '%.2f euros (reference %s)' % (self.amount, self.reference_number)
+        return "%.2f euros (reference '%s')" % (self.amount, self.reference_number)
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)

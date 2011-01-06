@@ -359,7 +359,8 @@ class CanSendReminderTest(TestCase):
         handler = MockLoggingHandler()
         makebills_logger.addHandler(handler)
         month_ago = datetime.now() - timedelta(days=30)
-        p = Payment(bill=self.bill, amount=5, payment_day=month_ago)
+        p = Payment(billingcycle=self.cycle, amount=5, payment_day=month_ago,
+            transaction_id="test_can_send_reminder_1")
         p.save()
         week_ago = datetime.now() - timedelta(days=7)
         can_send = can_send_reminder(week_ago)
@@ -368,14 +369,43 @@ class CanSendReminderTest(TestCase):
         self.assertEqual(criticals, 0, "No critical log messages, got %d" % criticals)
         makebills_logger.removeHandler(handler)
 
-        p = Payment(bill=self.bill, amount=5, payment_day=now)
+        p = Payment(billingcycle=self.cycle, amount=5, payment_day=now,
+            transaction_id="test_can_send_reminder_2")
         p.save()
         can_send = can_send_reminder(month_ago)
         self.assertTrue(can_send, "Should be true with recent payment")
 
-class CSVReadingTest(TestCase):
-    # TODO: should be tested more thoroughly, this just as a beginner to get
-    #       character encoding done
+class CSVNoMembersTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
     def test_file_reading(self):
-        "csvbills: process_csv"
+        "csvbills: process_csv ran with no members"
         process_csv("../membership/fixtures/csv-test.txt")
+        payment_count = Payment.objects.count()
+        error = "No payments should match without any members"
+        self.assertEqual(payment_count, 0, error)
+
+class CSVReadingTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        membership = create_dummy_member('N', mid=11)
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        cycle_start = datetime(2010, 6, 6)
+        self.cycle = BillingCycle(membership=membership, start=cycle_start)
+        self.cycle.save()
+        self.bill = Bill(billingcycle=self.cycle)
+        self.bill.save()
+
+    def test_import_data(self):
+        process_csv("../membership/fixtures/csv-test.txt")
+        payment_count = Payment.objects.count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_count, 1, error)
+        payment = Payment.objects.latest("payment_day")
+        cycle = BillingCycle.objects.get(pk=self.cycle.pk)
+        self.assertEqual(cycle.reference_number, payment.reference_number)
+        self.assertTrue(cycle.is_paid)
+

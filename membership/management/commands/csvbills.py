@@ -105,6 +105,7 @@ class OpDictReader(UnicodeDictReader):
             return None
         row['amount'] = Decimal(row['amount'].replace(",", "."))
         row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
+        row['reference'] = row['reference'].replace(' ', '').lstrip('0')
         if row.has_key('value_date'):
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
@@ -137,26 +138,26 @@ def process_csv(filename):
             payment = row_to_payment(row)
 
             # Do nothing if this payment hasn't been assigned
-            if payment.bill:
-                print "Bill was already assigned to payment"
+            if payment.billingcycle:
                 continue
 
             try:
-                ref = Q(billingcycle__reference_number=payment.reference_number)
-                bill = Bill.objects.filter(ref).latest("due_date")
-                bill.save()
-            except ObjectDoesNotExist:
-                continue # Failed to find bill for this reference number
-            payment.bill = bill
-            payment.save()
-            logger.info("Payment %s attached to bill %s." % (
-                repr(payment), repr(bill)))
-            cycle = bill.billingcycle
-            cycle.annotate(payments_sum=Sum('bill__payment__amount'))
-            if cycle.payments_sum >= cycle.sum:
-                cycle.is_paid = True
-                cycle.save()
-                logger.info("Bill %s marked as paid." % (repr(bill)))
+                reference = payment.reference_number
+                cycle = BillingCycle.objects.get(reference_number=reference)
+                payment.billingcycle = cycle
+                payment.save()
+                logger.info("Payment %s attached to bill %s." % (repr(payment),
+                    repr(payment.billingcycle)))
+                data = payment.billingcycle.payment_set.aggregate(Sum('amount'))
+                total_paid = data['amount__sum']
+                if total_paid >= cycle.sum:
+                    cycle.is_paid = True
+                    cycle.save()
+                    logger.info("Cycle %s marked as paid, total paid: %.2f." % (
+                        repr(cycle), total_paid))
+            except BillingCycle.DoesNotExist:
+                logger.warning("No billing cycle found for %s" % payment.reference_number)
+                continue # Failed to find cycle for this reference number
 
 
 class Command(LabelCommand):
