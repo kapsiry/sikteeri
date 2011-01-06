@@ -78,7 +78,7 @@ $("#member_list").children().each(function (idx, object) {
       cart.append($("<ul>").attr("id", "preapprovable_cart"));
       cart.append($("<input type=\"submit\" value=\"{% trans "Preapprove these" %}\" onclick=\"preapprove()\">"));
       $("#member_list").after(cart);
-      cartCreated = true;
+      preApproveCartCreated = true;
     }
     preapproveify(item);
   }
