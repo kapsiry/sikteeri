@@ -310,6 +310,13 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return membership_edit_inline(request, id, template_name)
 
 @transaction.commit_on_success
+def membership_delete(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    logger.info("Deleting member %s." % str(membership))
+    membership.delete_membership(request.user)
+    return redirect('membership_edit', id)
+
+@transaction.commit_on_success
 def membership_approve(request, id):
     get_object_or_404(Membership, id=id).approve(request.user)
     return redirect('membership_edit', id)
@@ -328,10 +335,10 @@ def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
-    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-    #                     mimetype='application/json')
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-                       mimetype='text/plain')
+                        mimetype='application/json')
+    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    #                    mimetype='text/plain')
 
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)

@@ -71,6 +71,14 @@ class Contact(models.Model):
                 raise Exception("Organization's name should be at least 5 characters.")
         super(Contact, self).save(*args, **kwargs)
 
+    def delete_if_no_references(self, user):
+        if self.organization_set.count() == 0 and \
+               self.person_set.count() == 0 and \
+               self.billing_set.count() == 0 and \
+               self.tech_contact_set.count() == 0:
+            log_change(self, user, change_message="Deleting contact %s: has no references" % str(self))
+            self.delete()
+
     def __unicode__(self):
         if self.organization_name:
             return self.organization_name
@@ -124,10 +132,14 @@ class Membership(models.Model):
             "has an email address")
 
     def save(self, *args, **kwargs):
-        if self.person and self.organization:
-            raise Exception("Person-contact and organization-contact are mutually exclusive.")
-        if not self.person and not self.organization:
-            raise Exception("Either Person-contact or organization-contact must be defined.")
+        if self.status != 'D':
+            if self.person and self.organization:
+                raise Exception("Person-contact and organization-contact are mutually exclusive.")
+            if not self.person and not self.organization:
+                raise Exception("Either Person-contact or organization-contact must be defined.")
+        else:
+            if self.person or self.organization or self.billing_contact or self.tech_contact:
+                raise Exception("A membership may not have any contacts if it is deleted.")
         super(Membership, self).save(*args, **kwargs)
 
     def preapprove(self, user):
@@ -154,6 +166,24 @@ class Membership(models.Model):
         self.save()
         log_change(self, user, change_message="Approved")
 
+    def delete_membership(self, user):
+        self.status = 'D'
+        contacts = [self.person, self.billing_contact,
+                    self.tech_contact, self.organization]
+        self.person = None
+        self.billing_contact = None
+        self.tech_contact = None
+        self.organization = None
+        self.save()
+        for contact in contacts:
+            if contact != None:
+                contact.delete_if_no_references(user)
+
+        for alias in self.alias_set.all():
+            alias.expire()
+
+        log_change(self, user, change_message="Deleted")
+
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
@@ -163,7 +193,10 @@ class Membership(models.Model):
         if self.organization:
             return self.organization.__unicode__()
         else:
-            return self.person.__unicode__()
+            if self.person:
+                return self.person.__unicode__()
+            else:
+                return "Deleted"
 
 
 class Alias(models.Model):
@@ -173,6 +206,12 @@ class Alias(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     comment = models.CharField(max_length=128, blank=True, verbose_name=_('Comment'))
     expiration_date = models.DateTimeField(blank=True, null=True, verbose_name=_('Alias expiration date'))
+
+    def expire(self, time=None):
+        if time == None:
+            time = datetime.now()
+        self.expiration_date = time
+        self.save()
 
 
 class Fee(models.Model):
