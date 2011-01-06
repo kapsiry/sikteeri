@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 import logging
+logger = logging.getLogger("models")
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -39,7 +40,7 @@ MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
-    logging.info('%s %s: %s' % (sender, operation, repr(instance)))
+    logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
 
 def _get_logs(self):
     '''Gets the log entries related to this object.
@@ -172,6 +173,8 @@ class Membership(models.Model):
         log_change(self, user, change_message="Approved")
 
     def delete_membership(self, user):
+        if self.status == 'D':
+            raise MembershipOperationError("A deleted membership can't be deleted.")
         self.status = 'D'
         contacts = [self.person, self.billing_contact,
                     self.tech_contact, self.organization]
@@ -256,7 +259,7 @@ class BillingCycle(models.Model):
         return valid_fee
 
     def __unicode__(self):
-        return str(self.start) + "--" + str(self.end)
+        return str(self.start.date()) + "--" + str(self.end.date())
 
     def save(self, *args, **kwargs):
         if not self.end:
@@ -321,10 +324,10 @@ class Bill(models.Model):
             send_mail(settings.BILL_SUBJECT, self.render_as_text(),
                 settings.BILLING_FROM_EMAIL,
                 [membership.billing_email()], fail_silently=False)
-            logging.info('A bill sent as email to %s: %s' % (membership.email,
+            logger.info('A bill sent as email to %s: %s' % (membership.email,
                 repr(Bill)))
         else:
-            logging.info('Bill not sent: membership fee zero for %s: %s' % (
+            logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.bill_sent = True
         self.billingcycle.save()
@@ -334,20 +337,21 @@ class Payment(models.Model):
     """
     Payment object for billing
     """
-    # While Payment refers to Bill, someone might send a payment that has a reference
-    # number, which does not correspond to any Bills...
-    bill = models.ForeignKey('Bill', verbose_name=_('Bill'), null=True)
+    # While Payment refers to BillingCycle, the architecture scales to support
+    # recording payments that are not related to any billingcycle for future
+    # extension
+    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
 
-    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True) # Not unique, because people can send multiple payments
-    message = models.CharField(max_length=64, verbose_name=_('Message'), blank=True) # viesti (viestikenttä)
-    transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id')) # arkistointitunnus
+    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
+    message = models.CharField(max_length=64, verbose_name=_('Message'), blank=True)
+    transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999,99
-    type = models.CharField(max_length=64, verbose_name=_('Type')) # tilisiirto/pano/jokumuu
-    payer_name = models.CharField(max_length=64, verbose_name=_('Payer name')) # maksajan nimi
+    type = models.CharField(max_length=64, verbose_name=_('Type'))
+    payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
 
     def __unicode__(self):
-        return '%.2f euros (reference %s)' % (self.amount, self.reference_number)
+        return "%.2f euros (reference '%s')" % (self.amount, self.reference_number)
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
