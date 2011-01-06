@@ -138,6 +138,10 @@ class Membership(models.Model):
 
     def save(self, *args, **kwargs):
         if self.status != 'D':
+            if self.type == 'O' and self.person:
+                raise Exception("Organization may not have a person contact.")
+            if self.type != 'O' and self.organization:
+                raise Exception("Non-organization may not have an organization contact.")
             if self.person and self.organization:
                 raise Exception("Person-contact and organization-contact are mutually exclusive.")
             if not self.person and not self.organization:
