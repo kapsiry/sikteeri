@@ -28,6 +28,10 @@ from management.commands.makebills import NoApprovedLogEntry
 
 from management.commands.csvbills import process_csv
 
+__test__ = {
+    "tupletuple_to_dict": tupletuple_to_dict,
+}
+
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
         self.failUnlessEqual(generate_checknumber("1234"), 4)
@@ -38,7 +42,7 @@ class ReferenceNumberTest(TestCase):
 
     def test_uniqueness_of_reference_numbers(self):
         numbers = set([])
-        for i in xrange(1, 10000):
+        for i in xrange(1, 100):
             for j in xrange(datetime.now().year, datetime.now().year + 11):
                 number = generate_membership_bill_reference_number(i, j)
                 self.assertFalse(number in numbers)
