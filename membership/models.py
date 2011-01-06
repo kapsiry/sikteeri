@@ -16,6 +16,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
+from model_utils import tupletuple_to_dict
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber
 
@@ -26,10 +27,13 @@ MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
                 ('O', _('Organization')),
                 ('H', _('Honorary')))
+MEMBER_TYPES_DICT = tupletuple_to_dict(MEMBER_TYPES)
+
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
                  ('D', _('Disabled')))
+MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
@@ -239,6 +243,8 @@ class Bill(models.Model):
     def render_as_text(self):
         membership = self.billingcycle.membership
         return render_to_string('membership/bill.txt', {
+            'membership_type' : MEMBER_TYPES_DICT[membership.type],
+            'membership_type_raw' : membership.type,
             'bill_id': self.id,
             'member_id': membership.id,
             'billing_name': unicode(membership.get_billing_contact()),

@@ -12,6 +12,7 @@ from django.core import mail
 from django.test import TestCase
 
 from models import *
+from model_utils import *
 from utils import *
 from test_utils import *
 
@@ -27,6 +28,10 @@ from management.commands.makebills import can_send_reminder
 from management.commands.makebills import NoApprovedLogEntry
 
 from management.commands.csvbills import process_csv
+
+__test__ = {
+    "tupletuple_to_dict": tupletuple_to_dict,
+}
 
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
