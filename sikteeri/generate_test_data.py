@@ -10,6 +10,8 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 import sys
 import os
 import logging
+logger = logging.getLogger("generate_test_data")
+
 from datetime import datetime
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
@@ -28,7 +30,7 @@ if Fee.objects.all().count() == 0:
 
 user = User.objects.get(id=1)
 
-def create_dummy_member(i, status):
+def create_dummy_member(i):
     fname = random_first_name()
     d = {
         'street_address' : 'Testikatu %d'%i,
@@ -45,33 +47,29 @@ def create_dummy_member(i, status):
     }
     person = Contact(**d)
     person.save()
-    membership = Membership(type='P', status=status,
+    membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
                             municipality='Paska kaupunni',
                             extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logging.info("New application %s from %s:." % (str(person), '::1'))
+    logger.info("New application %s from %s:." % (str(person), '::1'))
     print unicode(person)
     membership.save()
+    return membership
 
 def main():
     # Approved members
     for i in xrange(1,2000):
-        create_dummy_member(i, 'N')
-        membership = Membership.objects.get(pk=i)
+        membership = create_dummy_member(i)
         membership.preapprove(user)
         membership.approve(user)
-
     # Pre-approved members
     for i in xrange(2000,2100):
-        create_dummy_member(i, 'N')
-        membership = Membership.objects.get(pk=i)
+        membership = create_dummy_member(i)
         membership.preapprove(user)
-
     # New applications
     for i in xrange(2100,2200):
-        create_dummy_member(i, 'N')
-
+        membership = create_dummy_member(i)
 
 if __name__ == '__main__':
     main()

@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 import logging
+logger = logging.getLogger("models")
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -38,7 +39,7 @@ MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
-    logging.info('%s %s: %s' % (sender, operation, repr(instance)))
+    logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
 
 def _get_logs(self):
     '''Gets the log entries related to this object.
@@ -215,7 +216,7 @@ class BillingCycle(models.Model):
         return valid_fee
 
     def __unicode__(self):
-        return str(self.start) + "--" + str(self.end)
+        return str(self.start.date()) + "--" + str(self.end.date())
 
     def save(self, *args, **kwargs):
         if not self.end:
@@ -280,10 +281,10 @@ class Bill(models.Model):
             send_mail(settings.BILL_SUBJECT, self.render_as_text(),
                 settings.BILLING_FROM_EMAIL,
                 [membership.billing_email()], fail_silently=False)
-            logging.info('A bill sent as email to %s: %s' % (membership.email,
+            logger.info('A bill sent as email to %s: %s' % (membership.email,
                 repr(Bill)))
         else:
-            logging.info('Bill not sent: membership fee zero for %s: %s' % (
+            logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.bill_sent = True
         self.billingcycle.save()

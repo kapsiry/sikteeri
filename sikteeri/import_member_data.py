@@ -3,7 +3,6 @@
 """
 import_member_data.py
 
-Created by Joonas Kortesalmi on 2010-06-18.
 Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
 
@@ -17,6 +16,8 @@ sys.path.insert(0, '..')
 
 from django.conf import settings
 import logging
+logger = logging.getLogger("import_member_data")
+
 from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
@@ -79,7 +80,7 @@ def create_member(mdata):
                             nationality=mdata['nationality'],
                             municipality=mdata['residence'],
                             extra_info='Imported from legacy')
-    logging.info("Member %s imported from legacy database." % (unicode(person)))
+    logger.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
     comment = Comment()
     comment.content_object = membership

@@ -3,6 +3,8 @@
 import os
 import tempfile
 import logging
+logger = logging.getLogger("tests")
+
 from datetime import datetime, timedelta
 from random import randint
 from StringIO import StringIO
@@ -49,7 +51,7 @@ class ReferenceNumberTest(TestCase):
                 numbers.add(number)
 
 
-def create_dummy_member(status):
+def create_dummy_member(status, mid=None):
     if status not in ['N', 'P', 'A']:
         raise Error("Unknown membership status")
     i = randint(1, 300)
@@ -69,12 +71,12 @@ def create_dummy_member(status):
     }
     person = Contact(**d)
     person.save()
-    membership = Membership(type='P', status=status,
+    membership = Membership(id=mid, type='P', status=status,
                             person=person,
                             nationality='Finnish',
                             municipality='Paska kaupunni',
                             extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logging.info("New application %s from %s:." % (str(person), '::1'))
+    logger.info("New application %s from %s:." % (str(person), '::1'))
     membership.save()
     return membership
 

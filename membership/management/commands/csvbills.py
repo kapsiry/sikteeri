@@ -14,7 +14,7 @@ from datetime import datetime
 from decimal import Decimal
 
 import logging
-logger = logging.getLogger("sikteeri.membership.management.commands.csvbills")
+logger = logging.getLogger("csvbills")
 
 from membership.models import Bill, BillingCycle, Payment
 

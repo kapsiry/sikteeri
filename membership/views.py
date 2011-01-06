@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger("sikteeri.membership.views")
+logger = logging.getLogger("membership.views")
 import traceback
 
 from time import sleep
@@ -261,8 +261,8 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
             form.save()
             after = contact.__dict__
             log_change(contact, request.user, before, after)
-            print before
-            print after
+            # print before
+            # print after
             message = _("Changes saved.")
         else:
             message = _("Changes not saved.")
