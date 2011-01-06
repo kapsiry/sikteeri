@@ -284,7 +284,7 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
 
     def disable_fields(form):
-        for field in ['status', 'type', 'accepted']:
+        for field in ['status', 'approved']:
             form.fields[field].required = False
             form.fields[field].widget.attrs['disabled'] = 'disabled'
 
