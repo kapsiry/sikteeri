@@ -46,13 +46,13 @@ def create_member(mdata):
         'postal_code' : postcode,
         'post_office' : postoffice,
         'country' : mdata['nationality'],
-        'phone' : mdata['phone'],
-        'sms' : mdata['sms'],
-        'email' : mdata['email'],
-        'homepage' : mdata['website'],
-        'first_name' : mdata['name'],
-        'given_names' : mdata['firstnames'],
-        'last_name' : mdata['lastname'],
+        'phone' : mdata['phone'].replace(" ", "").replace("-", ""),
+        'sms' : mdata['sms'].replace(" ", "").replace("-", ""),
+        'email' : mdata['email'].strip(" "),
+        'homepage' : mdata['website'].strip(" "),
+        'first_name' : mdata['name'].strip(" "),
+        'given_names' : mdata['firstnames'].strip(" "),
+        'last_name' : mdata['lastname'].strip(" "),
         # mdata['application_id'],
         # mdata['sendinfo'],
     }
@@ -75,11 +75,12 @@ def create_member(mdata):
     person.save()
     membership = Membership(id=mdata['id'], type=mtype, status='A',
                             created=datetime.utcfromtimestamp(mdata['time']),
-                            accepted=datetime.utcfromtimestamp(mdata['time']),
+                            approved=datetime.utcfromtimestamp(mdata['time']),
                             person=person,
                             nationality=mdata['nationality'],
                             municipality=mdata['residence'],
-                            extra_info='Imported from legacy')
+                            extra_info='Imported from legacy',
+                            public_memberlist=bool(mdata['publicname']))
     logger.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
     comment = Comment()
@@ -89,7 +90,7 @@ def create_member(mdata):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.utcfromtimestamp(mdata['time'])
     comment.save()
-    billing_cycle = BillingCycle(membership=membership, is_paid=True,
+    billing_cycle = BillingCycle(membership=membership, is_paid=False,
         start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
         end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
     # Creating an instance does not touch db and we need and id for the Bill
