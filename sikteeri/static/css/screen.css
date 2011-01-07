@@ -260,6 +260,18 @@ a.member_detail_title:hover {
     background: silver;
 }
 
+/* membership edit / event log */
+table.event_log td {
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+tr.header_row > td {
+    background: #bbb;
+    font-weight: bold;
+}
 
 /* application list */
 .application_is_newFalse {

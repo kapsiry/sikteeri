@@ -40,19 +40,19 @@
 </ul>
 
 <h2>{% trans "Event log" %}</h2>
-<table>
-  <tr>
-    <td> {% trans "Time" %} </td>
-    <td> {% trans "Event type" %} </td>
-    <td> {% trans "User" %} </td>
-    <td> {% trans "Summary" %} </td>
+<table class="event_log">
+  <tr class="header_row">
+    <td>{% trans "Time" %}</td>
+    <td>{% trans "Event type" %}</td>
+    <td>{% trans "User" %}</td>
+    <td>{% trans "Summary" %}</td>
   </tr>
 {% for logentry in logentries %}
   <tr>
-    <td> {{ logentry.action_time }} </td>
-    <td> {{ logentry.action_flag_str}} </td>
-    <td> {{ logentry.user }} </td>
-    <td> {{ logentry.change_message }} </td>
+    <td>{{ logentry.action_time }}</td>
+    <td>{{ logentry.action_flag_str}}</td>
+    <td>{{ logentry.user }}</td>
+    <td>{{ logentry.change_message }}</td>
   </tr>
 {% endfor %}
 </table>
