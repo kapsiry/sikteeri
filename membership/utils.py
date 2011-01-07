@@ -7,6 +7,7 @@ from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
+from django.utils.html import escape
 
 # http://code.activestate.com/recipes/576644/
 
@@ -86,13 +87,12 @@ def serializable_membership_info(membership):
     json_obj = {}
     # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info']:
         # Get the translated value for choice fields, not database field values
         if attr in ['type', 'status']:
             attr_val = getattr(membership, 'get_' + attr + '_display')()
         else:
-            attr_val = getattr(membership, attr, u'')
-        
+            attr_val = escape(getattr(membership, attr, u''))
         if isinstance(attr_val, basestring):
             json_obj[attr] = attr_val
         elif isinstance(attr_val, datetime):
@@ -114,7 +114,7 @@ def serializable_membership_info(membership):
                        'organization_name', 'street_address', 'postal_code',
                        'post_office', 'country', 'phone', 'sms', 'email',
                        'homepage']:
-            c_attr_val = getattr(attr_val, c_attr, u'')
+            c_attr_val = escape(getattr(attr_val, c_attr, u''))
             contact_json_obj[c_attr] = c_attr_val
             contacts_json_obj[attr] = contact_json_obj
 
