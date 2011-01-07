@@ -4,7 +4,7 @@
         "model": "membership.fee",
         "fields": {
             "type": "P",
-            "start": "2009-11-17 22:22:46", 
+            "start": "2003-01-01 00:00:00", 
             "sum": "30"
         }
     },
@@ -13,7 +13,7 @@
         "model": "membership.fee",
         "fields": {
             "type": "O",
-            "start": "2009-11-17 22:22:46", 
+            "start": "2003-01-01 00:00:00", 
             "sum": "100"
         }
     },
@@ -22,8 +22,53 @@
         "model": "membership.fee",
         "fields": {
             "type": "S",
-            "start": "2009-11-17 22:22:46", 
+            "start": "2003-01-01 00:00:00", 
             "sum": "100"
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "H",
+            "start": "2003-01-01 00:00:00", 
+            "sum": "0"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "P",
+            "start": "2011-01-01 00:00:00", 
+            "sum": "35"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "O",
+            "start": "2011-01-01 00:00:00", 
+            "sum": "60"
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "S",
+            "start": "2011-01-01 00:00:00", 
+            "sum": "250"
+        }
+    },
+    {
+        "pk": 8, 
+        "model": "membership.fee",
+        "fields": {
+            "type": "H",
+            "start": "2011-01-01 00:00:00", 
+            "sum": "0"
         }
     }
 ]
