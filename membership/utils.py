@@ -8,8 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 
-from membership.models import BillingCycle, Bill, Contact, Membership
-
 # http://code.activestate.com/recipes/576644/
 
 def dict_diff(first, second):
@@ -40,7 +38,13 @@ def diff_humanize(diff):
     for key in diff:
         if key == 'last_changed' or key.startswith("_"):
             continue
-        change = diff[key]
+        change = list(diff[key])
+        try:
+            change[0] = change[0].strftime("%Y-%m-%d %H:%M")
+        except: pass
+        try:
+            change[1] = change[1].strftime("%Y-%m-%d %H:%M")
+        except: pass
         if change[0] == None:
             txt += "%s: () -> '%s'. " % (key, change[1])
         elif change[1] == None:
@@ -121,6 +125,9 @@ def serializable_membership_info(membership):
     json_obj['log_entries'] = log_entry_list
     json_obj['events'] = event_list
     
+    # FIXME: This is broken. Should probably replace:
+    # {% get_comment_list for [object] as [varname] %}
+    # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
         d = { 'user_name': unicode(comment.user),
@@ -158,3 +165,19 @@ def serializable_membership_info(membership):
     ctimeify(event_list)
 
     return json_obj
+
+def tupletuple_to_dict(tupletuple):
+    '''Convert a tuple of tuples to dict
+
+    >>> tupletuple = (('A', 'Value1'), ('B', 'Value2'))
+    >>> d = tupletuple_to_dict(tupletuple)
+    >>> d['A']
+    'Value1'
+    >>> d['B']
+    'Value2'
+    '''
+    d = {}
+    for t in tupletuple:
+        (key, value) = t
+        d[key] = value
+    return d

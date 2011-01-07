@@ -246,3 +246,27 @@ function preapproveify (item) {
 						  item.removeButton.hide();
 						  item.addButton.show();}}());
 }
+
+
+/**
+ * Makes member list items work with approve-cart.
+ */
+function approveify (item) {
+    var id = item.attr("id");
+    
+    item.addButton = $("<a>").html(gettext("add to approve cart")).addClass("cart_function");
+    item.buttons.append(item.addButton);
+    
+    item.removeButton = $("<a>").html(gettext("remove from approve cart")).addClass("cart_function");
+    item.buttons.append(item.removeButton);
+    item.removeButton.hide();
+    
+    item.addButton.click(function(){
+			     return function(){$("#approvable_cart").append(item);
+                                               item.addButton.hide();
+                                               item.removeButton.show();}}());
+    item.removeButton.click(function(){
+				return function(){$("#member_list").append(item);
+						  item.removeButton.hide();
+						  item.addButton.show();}}());
+}

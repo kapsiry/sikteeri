@@ -28,7 +28,7 @@ SHORT_DATE_FORMAT = 'd.m.Y'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-US'
+LANGUAGE_CODE = 'fi-fi'
 
 SITE_ID = 1
 
@@ -63,7 +63,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    # 'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'sikteeri.SQLLogMiddleware.SQLLogMiddleware',
 )

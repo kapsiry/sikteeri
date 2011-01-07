@@ -21,5 +21,7 @@ SESSION_COOKIE_SECURE = False
 # Don't really send email messages, only show them on console
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[sikteeri] '
+#EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
+#EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
 
 MEDIA_URL = 'http://localhost:12765'

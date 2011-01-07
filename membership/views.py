@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger("sikteeri.membership.views")
+logger = logging.getLogger("membership.views")
 import traceback
 
 from time import sleep
@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm
+from django.forms import ModelForm, Form, EmailField
 from django.contrib.auth.decorators import login_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -63,8 +63,8 @@ def person_application(request, template_name='membership/new_person_application
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
-                logger.error("%s" % traceback.format_exc())
-                logger.error("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
+                logger.critical("%s" % traceback.format_exc())
+                logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
     else:
         application_form = PersonApplicationForm()
@@ -262,8 +262,8 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
             form.save()
             after = contact.__dict__
             log_change(contact, request.user, before, after)
-            print before
-            print after
+            # print before
+            # print after
             message = _("Changes saved.")
         else:
             message = _("Changes not saved.")
@@ -283,16 +283,27 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         class Meta:
             model = Membership
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
-    
+        def clean_approved(self):
+            return self.instance.approved
+        def clean_status(self):
+            return self.instance.status
+
+    def disable_fields(form):
+        for field in ['status', 'approved']:
+            form.fields[field].required = False
+            form.fields[field].widget.attrs['disabled'] = 'disabled'
+
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
+        disable_fields(form)
         before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance
         form.save()
         after = membership.__dict__
         if form.is_valid():
             log_change(membership, request.user, before, after)
     else:
-        form =  Form(instance=membership)
+        form = Form(instance=membership)
+        disable_fields(form)
     # Pretty print log entries for template
     logentries = bake_log_entries(membership.logs.all())
     return render_to_response(template_name, {'form': form,
@@ -304,42 +315,20 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return membership_edit_inline(request, id, template_name)
 
 @transaction.commit_on_success
-def membership_do_approve(request, id):
+def membership_delete(request, id):
     membership = get_object_or_404(Membership, id=id)
-    if membership.status != 'P':
-        logger.info("Tried to approve membership in state %s (!=P)." % membership.status)
-        return
-    membership.status = 'A' # XXX hardcoding
-    membership.save()
-    billing_cycle = BillingCycle(membership=membership)
-    billing_cycle.save() # Creating an instance does not touch db and we need and id for the Bill
-    bill = Bill(billingcycle=billing_cycle)
-    bill.save()
-    log_change(membership, request.user, change_message="Approved")
-    bill.send_as_email()
-    logger.info("Sent membership approval e-mail to %s." % membership)
-
-def membership_approve(request, id):
-    membership_do_approve(request, id)
+    logger.info("Deleting member %s." % str(membership))
+    membership.delete_membership(request.user)
     return redirect('membership_edit', id)
 
 @transaction.commit_on_success
-def membership_do_preapprove(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    if membership.status != 'N':
-        logger.info("Tried to preapprove membership in state %s (!=N)." % membership.status)
-        return
-    membership.status = 'P' # XXX hardcoding
-    membership.save()
-    log_change(membership, request.user, change_message="Preapproved")
-
-def membership_preapprove(request, id):
-    membership_do_preapprove(request, id)
-    return redirect('membership_edit', id)
-
 def membership_preapprove_json(request, id):
-    membership = get_object_or_404(Membership, id=id)
-    membership_do_preapprove(request, id)
+    get_object_or_404(Membership, id=id).preapprove(request.user)
+    return HttpResponse(id, mimetype='text/plain')
+
+@transaction.commit_on_success
+def membership_approve_json(request, id):
+    get_object_or_404(Membership, id=id).approve(request.user)
     return HttpResponse(id, mimetype='text/plain')
 
 def membership_detail_json(request, id):
@@ -348,13 +337,14 @@ def membership_detail_json(request, id):
     json_obj = serializable_membership_info(membership)
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
-    #return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
 
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
+             'APPROVE': membership_approve_json,
              'MEMBERSHIP_DETAIL': membership_detail_json}
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
@@ -362,3 +352,25 @@ def handle_json(request):
                                                  unicode(msg['payload'])))
     return funcs[msg['requestType']](request, msg['payload'])
 
+@login_required
+def test_email(request, template_name='membership/test_email.html'):
+    class RecipientForm(Form):
+        recipient = EmailField(label=_('Recipient e-mail address'))
+
+    if request.method == 'POST':
+        form = RecipientForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+        else:
+            return render_to_response(template_name, {'form': form},
+                                      context_instance=RequestContext(request))
+        
+        body = render_to_string('membership/test_email.txt', { "user": request.user })
+        send_mail(u"Testisähköposti", body,
+                  settings.FROM_EMAIL,
+#                  request.user.email,
+                  [f["recipient"]], fail_silently=False)
+        logger.info("Sent a test e-mail to %s" % f["recipient"])
+
+    return render_to_response(template_name, {'form': RecipientForm()},
+                              context_instance=RequestContext(request))

@@ -19,7 +19,7 @@
    <li><a href="{% url new_memberships %}">{% trans "Member applications" %}</a></li>
    <li><a href="{% url preapproved_memberships %}">{% trans "Preapproved applications" %}</a></li>
    <li><a href="{% url approved_memberships %}">{% trans "Members" %}</a></li>
-   <li><a href="{% url disabled_memberships %}">{% trans "Disabled members" %}</a></li>
+   <li><a href="{% url deleted_memberships %}">{% trans "Disabled members" %}</a></li>
    <li><small><a href="{% url all_memberships %}">{% trans "All membership entities" %}</a></small></li>
    <li>
      <form action="{% url membership_search %}">
@@ -31,6 +31,7 @@
    <li><a href="{% url bill_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
+   <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
 </ul>
 
 <h3>Django</h3>

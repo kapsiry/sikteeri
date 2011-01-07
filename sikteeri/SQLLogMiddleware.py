@@ -4,6 +4,8 @@
 # http://djangosnippets.org/snippets/161/
 
 import logging
+logger = logging.getLogger("SQLLogMiddleware")
+
 from django.db import connection
 from django.template import Template, Context
 
@@ -14,5 +16,5 @@ class SQLLogMiddleware:
             if 'FROM "django_session"' in q['sql'] or 'FROM "auth_user"' in q['sql'] :
                 continue
             time += float(q['time'])
-            logging.debug("SQL query (%s). Finished in %f seconds." % (q['sql'], time))
+            logger.debug("SQL query (%s). Finished in %f seconds." % (q['sql'], time))
         return response

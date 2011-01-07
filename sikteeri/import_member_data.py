@@ -3,7 +3,6 @@
 """
 import_member_data.py
 
-Created by Joonas Kortesalmi on 2010-06-18.
 Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
 
@@ -17,11 +16,13 @@ sys.path.insert(0, '..')
 
 from django.conf import settings
 import logging
+logger = logging.getLogger("import_member_data")
+
 from membership.utils import log_change
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
-from membership.views import contact_from_dict
-from membership.models import Membership, Bill, BillingCycle, Fee, MEMBER_TYPES
+from membership.models import Contact, Membership, Bill, BillingCycle
+from membership.models import Fee, MEMBER_TYPES
 
 user = User.objects.get(id=1)
 
@@ -70,7 +71,7 @@ def create_member(mdata):
     else:
         print "Not importing, member class unknown for member %d" % mdata['id']
         return False
-    person = contact_from_dict(d)
+    person = Contact(**d)
     person.save()
     membership = Membership(id=mdata['id'], type=mtype, status='A',
                             created=datetime.utcfromtimestamp(mdata['time']),
@@ -79,7 +80,7 @@ def create_member(mdata):
                             nationality=mdata['nationality'],
                             municipality=mdata['residence'],
                             extra_info='Imported from legacy')
-    logging.info("Member %s imported from legacy database." % (unicode(person)))
+    logger.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
     comment = Comment()
     comment.content_object = membership
@@ -88,12 +89,12 @@ def create_member(mdata):
     comment.site_id = settings.SITE_ID
     comment.submit_date = datetime.utcfromtimestamp(mdata['time'])
     comment.save()
-    billing_cycle = BillingCycle(membership=membership,
+    billing_cycle = BillingCycle(membership=membership, is_paid=True,
         start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
         end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
     # Creating an instance does not touch db and we need and id for the Bill
     billing_cycle.save()
-    bill = Bill(billingcycle=billing_cycle, is_paid=True,
+    bill = Bill(billingcycle=billing_cycle,
         created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
     #bill.send_as_email()
