@@ -7,7 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2011-01-06 17:37+0200\n"
+=======
+"POT-Creation-Date: 2010-12-26 17:37+0200\n"
+>>>>>>> 1f60e71be0bcff35e3c8bbedd8a558d8c0a016da
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Torste Aikio <zokier@kapsi.fi\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +52,11 @@ msgstr "Jäsenhallinta"
 
 #: templates/menu.html:19
 msgid "Member applications"
+<<<<<<< HEAD
 msgstr "Uudet hakemukset"
+=======
+msgstr "Jäsenhakemukset"
+>>>>>>> 1f60e71be0bcff35e3c8bbedd8a558d8c0a016da
 
 #: templates/menu.html:20
 msgid "Preapproved applications"
@@ -60,6 +68,7 @@ msgstr "Jäsenet"
 
 #: templates/menu.html:22
 msgid "Disabled members"
+<<<<<<< HEAD
 msgstr "Poistetut jäsenet"
 
 #: templates/menu.html:23
@@ -69,6 +78,18 @@ msgstr "Kaikki jäsentietueet"
 #: templates/menu.html:27
 msgid "Search memberships"
 msgstr "Hae"
+=======
+msgstr "Lukitut jäsenet"
+
+# Ei toki suora suomennos
+#: templates/menu.html:23
+msgid "All membership entities"
+msgstr "Kaikki jäsenet"
+
+#: templates/menu.html:27
+msgid "Search memberships"
+msgstr "Etsi jäseniä"
+>>>>>>> 1f60e71be0bcff35e3c8bbedd8a558d8c0a016da
 
 #: templates/menu.html:30
 msgid "List of unpaid bills"
@@ -86,11 +107,15 @@ msgstr "Tunnistamattomat maksut"
 msgid "All payments"
 msgstr "Kaikki maksut"
 
+<<<<<<< HEAD
 #: templates/menu.html:34
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
 #: templates/menu.html:39
+=======
+#: templates/menu.html:38
+>>>>>>> 1f60e71be0bcff35e3c8bbedd8a558d8c0a016da
 msgid "Admin"
 msgstr "Ylläpito"
 

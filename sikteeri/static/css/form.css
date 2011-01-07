@@ -14,6 +14,19 @@ textarea, input {
     border-radius: 2px;
 }
 
+fieldset {
+    border: 0;
+    margin: .5em 0 .5em 0;
+    padding: 0;
+}
+
+fieldset legend {
+    display: block;
+    width: 410px;
+    color: #284b5c;
+    border-bottom: 1px solid #35637a;
+}
+
 p.field {
     text-align: right;
     margin-right: 12em;
@@ -54,10 +67,17 @@ p.error input {
 
 span.help {
     display: inline-block;
+    width: 230px;
 }
+
 span.error {
     color: #ef2929;
     font-weight: bold;
+}
+
+span.newline {
+    display: block;
+    margin-left: 420px;
 }
 
 ul.errorlist {
@@ -72,6 +92,10 @@ ul.errorlist li {
 }
 
 /* New application form item alignment */
+#new_application {
+    margin: 2em 0 0 .5em;
+}
+
 #new_application label, #login-form label, #contact_edit label {
     display: inline-block;
     clear: none;
@@ -89,8 +113,52 @@ ul.errorlist li {
     line-height: 19px;
 }
 
+#new_application fieldset p:nth-child(2) {
+    padding-top: 5px;
+}
+
+#new_application p.introduction {
+    font-size: 100%;
+}
+
 #new_application input, #login-form input, #contact_edit input, textarea {
     margin: 0 0.4em;
     vertical-align: top;
     width: 200px;
+}
+
+#new_application fieldset.wide {
+    width: 650px;
+}
+
+#new_application fieldset.wide span.help {
+    display: block;
+    font-size: 120%;
+    width: auto;
+}
+
+#new_application fieldset.wide legend, #new_application fieldset.wide textarea {
+    width: 100%;
+    margin: 0;
+}
+
+#new_application p.checkbox {
+    line-height: auto;
+}
+
+#new_application p.checkbox input {
+    width: auto;
+    vertical-align: middle;
+}
+
+#new_application p.checkbox label {
+    width: auto;
+    text-align: left;
+    vertical-align: middle;
+}
+
+input[type="submit"] {
+    width: auto !important;
+    padding-left: 2em;
+    padding-right: 2em;
 }

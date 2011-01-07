@@ -99,6 +99,7 @@ class Membership(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Membership created'))
     approved = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership approved'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Membership changed'))
+    public_memberlist = models.BooleanField(_('Show in the memberlist'))
 
     municipality = models.CharField(_('Home municipality'), max_length=128)
     nationality = models.CharField(_('Nationality'), max_length=128)

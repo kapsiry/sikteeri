@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 from utils import log_change
 from models import *
 
-
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
                                   label=_('Nationality'),
@@ -15,11 +14,12 @@ class PersonMembershipForm(forms.Form):
                                   help_text=_('Your nationality'))
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
-                                   help_text=_('Place of residence'))
+                                   help_text=_(u'Home municipality in the population information system. If it\'s abroad, write it in the form of “Municipality, country”.'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'))
+    public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
 
 class OrganizationMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -54,15 +54,19 @@ class BaseContactForm(forms.Form):
                            min_length=5, max_length=20, label=_('SMS number'),
                            help_text=_('Phone number that accepts text messages'))
     email = forms.EmailField(label=_('E-mail'))
-    homepage = forms.URLField(required=False, label=_('Homepage'))
+    homepage = forms.URLField(required=False,
+                              label=_('Homepage'),
+                              help_text=_('Homepage for the public member list'))
 
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
                                  error_messages={'required': _('First name required.')},
-                                 label=_('First name'))
+                                 label=_('First name'),
+                                 help_text=_('First name or preferred given name'))
     given_names = forms.CharField(max_length=30, min_length=2,
                                   error_messages={'required': _('Given names required.')},
-                                  label=_('Given names'))
+                                  label=_('Given names'),
+                                  help_text=_('Including first name'))
     last_name = forms.CharField(max_length=30, min_length=2,
                                 error_messages={'required': _('Last name required.')},
                                 label=_('Last name'))
