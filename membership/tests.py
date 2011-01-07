@@ -7,7 +7,7 @@ logger = logging.getLogger("tests")
 
 from datetime import datetime, timedelta
 from random import randint
-from StringIO import StringIO
+import simplejson
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -51,9 +51,11 @@ class ReferenceNumberTest(TestCase):
                 numbers.add(number)
 
 
-def create_dummy_member(status, mid=None):
+def create_dummy_member(status, type='P', mid=None):
     if status not in ['N', 'P', 'A']:
         raise Error("Unknown membership status")
+    if type not in ['P', 'S', 'O', 'H']:
+        raise Error("Unknown membership type")
     i = randint(1, 300)
     fname = random_first_name()
     d = {
@@ -71,11 +73,18 @@ def create_dummy_member(status, mid=None):
     }
     person = Contact(**d)
     person.save()
-    membership = Membership(id=mid, type='P', status=status,
-                            person=person,
-                            nationality='Finnish',
-                            municipality='Paska kaupunni',
-                            extra_info='Hintsunlaisesti semmoisia tietoja.')
+    if type == 'O':
+        membership = Membership(id=mid, type=type, status=status,
+                                organization=person,
+                                nationality='Finnish',
+                                municipality='Paska kaupunni',
+                                extra_info='Hintsunlaisesti semmoisia tietoja.')
+    else:
+        membership = Membership(id=mid, type=type, status=status,
+                                person=person,
+                                nationality='Finnish',
+                                municipality='Paska kaupunni',
+                                extra_info='Hintsunlaisesti semmoisia tietoja.')
     logger.info("New application %s from %s:." % (str(person), '::1'))
     membership.save()
     return membership
@@ -86,7 +95,7 @@ class MembershipFeeTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         membership_p = create_dummy_member('N')
-        membership_o = create_dummy_member('N')
+        membership_o = create_dummy_member('N', type='O')
         membership_o.type='O'
         membership_s = create_dummy_member('N')
         membership_s.type='S'
@@ -408,4 +417,85 @@ class CSVReadingTest(TestCase):
         cycle = BillingCycle.objects.get(pk=self.cycle.pk)
         self.assertEqual(cycle.reference_number, payment.reference_number)
         self.assertTrue(cycle.is_paid)
+
+class LoginRequiredTest(TestCase):
+    fixtures = ['membpership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.urls = ['/membership/memberships/new/',
+                     '/membership/memberships/preapproved/',
+                     '/membership/memberships/approved/',
+                     '/membership/memberships/deleted/',
+                     '/membership/memberships/',
+                     '/membership/bills/unpaid/',
+                     '/membership/bills/',
+                     '/membership/payments/unknown/',
+                     '/membership/payments/',
+                     '/membership/testemail/',]
+
+    def test_views_with_login(self):
+        "Request a page that is protected with @login_required"
+
+        # Get the page without logging in. Should result in 302.
+        for url in self.urls:
+            response = self.client.get(url)
+            self.assertRedirects(response, '/login/?next=%s' % url)
+
+        login = self.client.login(username='admin', password='dhtn')
+        self.failUnless(login, 'Could not log in')
+
+        # Request a page that requires a login
+        for url in self.urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['user'].username, 'admin')
+
+class MemberApplicationTest(TestCase):
+    fixtures = ['membpership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        self.post_data = {
+            "first_name": "Veijo",
+            "given_names": "Veijo Kapsi",
+            "last_name": "Valpas",
+            "street_address": "Vasagatan 9",
+            "postal_code": "90230",
+            "post_office": "VAASA",
+            "phone": "0123123123",
+            "sms": "0123123123",
+            "email": "veijo.invalid@valpas.kapsi.fi",
+            "homepage": "",
+            "nationality": "Suomi",
+            "country": "Suomi",
+            "municipality": "Vaasa",
+            "extra_info": u"Mää oon testikäyttäjä."
+        }
+
+    def test_do_application(self):
+        response = self.client.post('/membership/persons/application/', self.post_data)
+        self.assertRedirects(response, '/membership/memberships/new/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.first_name, "Veijo")
+
+    def test_clean_ajax_output(self):
+        post_data = self.post_data.copy()
+        post_data['first_name'] = '<b>Veijo</b>'
+        post_data['extra_info'] = '<iframe src="http://www.kapsi.fi" width=200 height=100></iframe>'
+        response = self.client.post('/membership/persons/application/', post_data)
+        self.assertRedirects(response, '/membership/memberships/new/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.first_name, "<b>Veijo</b>")
+
+        login = self.client.login(username='admin', password='dhtn')
+        self.failUnless(login, 'Could not log in')
+        json_response = self.client.post('/membership/memberships/handle_json/',
+                                             simplejson.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
+                                             content_type="application/json")
+        self.assertEqual(json_response.status_code, 200)
+        json_dict = simplejson.loads(json_response.content)
+        self.assertEqual(json_dict['contacts']['person']['first_name'],
+                         '&lt;b&gt;Veijo&lt;/b&gt;')
+        self.assertEqual(json_dict['extra_info'],
+                         '&lt;iframe src=&quot;http://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 

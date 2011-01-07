@@ -341,8 +341,11 @@ def membership_detail_json(request, id):
     # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
 
+@login_required
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
+    print dir(request)
+    print
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
