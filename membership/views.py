@@ -254,7 +254,7 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Contact
-            
+
     before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         form = Form(request.POST, instance=contact)
@@ -345,6 +345,36 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
                                                     membership_str,
                                                     unicode(_('successfully deleted.'))))
             logger.info("User %s deleted member %s." % (request.user.username, membership))
+            return redirect('membership_edit', membership.id)
+    else:
+        form = ConfirmForm()
+
+    return render_to_response(template_name,
+                              {'form': form,
+                               'membership': membership },
+                              context_instance=RequestContext(request))
+
+@transaction.commit_on_success
+def membership_convert_to_organization(request, id, template_name='membership/membership_convert_to_organization.html'):
+    membership = get_object_or_404(Membership, id=id)
+    class ConfirmForm(Form):
+        confirm = BooleanField(label=_('To confirm conversion, you must check this box:'),
+                               required=True)
+
+    if request.method == 'POST':
+        form = ConfirmForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            membership.type = 'O'
+            contact = membership.person
+            membership.person = None
+            membership.organization = contact
+            membership.save()
+            log_change(membership, request.user, change_message="Converted to an organization")
+            messages.success(request, "%s %s %s" % (unicode(_('Member')),
+                                                    unicode(membership),
+                                                    unicode(_('successfully converted to an organization.'))))
+            logger.info("User %s converted member %s to an organization." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
         form = ConfirmForm()

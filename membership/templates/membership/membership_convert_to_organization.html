@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load comments %}
+
+{% block content %}
+<p>
+  {% trans "Converting membership" %} <strong>{{ membership }} ({{ membership.id }}) {% trans "to an organization." %}</strong>.
+</p>
+<form method="POST">{% csrf_token %}
+{{ form.as_p }}
+<p>
+  <input id="submit_button" type="submit" value="{% trans "Convert member" %}" />
+</p>
+
+</form>
+{% endblock %}
