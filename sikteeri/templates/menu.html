@@ -19,7 +19,7 @@
    <li><a href="{% url new_memberships %}">{% trans "Member applications" %}</a></li>
    <li><a href="{% url preapproved_memberships %}">{% trans "Preapproved applications" %}</a></li>
    <li><a href="{% url approved_memberships %}">{% trans "Members" %}</a></li>
-   <li><a href="{% url disabled_memberships %}">{% trans "Disabled members" %}</a></li>
+   <li><a href="{% url deleted_memberships %}">{% trans "Deleted members" %}</a></li>
    <li><small><a href="{% url all_memberships %}">{% trans "All membership entities" %}</a></small></li>
    <li>
      <form action="{% url membership_search %}">

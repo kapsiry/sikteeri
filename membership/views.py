@@ -283,6 +283,10 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         class Meta:
             model = Membership
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+        def clean_approved(self):
+            return self.instance.approved
+        def clean_status(self):
+            return self.instance.status
 
         def disable_fields(self):
             self.fields['status'].required = False

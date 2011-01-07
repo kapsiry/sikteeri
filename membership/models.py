@@ -77,11 +77,15 @@ class Contact(models.Model):
         super(Contact, self).save(*args, **kwargs)
 
     def delete_if_no_references(self, user):
-        if self.organization_set.count() == 0 and \
-               self.person_set.count() == 0 and \
-               self.billing_set.count() == 0 and \
-               self.tech_contact_set.count() == 0:
-            log_change(self, user, change_message="Deleting contact %s: has no references" % str(self))
+        person = Q(person=self)
+        org = Q(organization=self)
+        billing = Q(billing_contact=self)
+        tech = Q(tech_contact=self)
+        refs = Membership.objects.filter(person | org | billing | tech)
+        if refs.count() == 0:
+            logger.info("Deleting contact %s: no more references (by %s)" % (
+                str(self), str(user)))
+            self.logs.delete()
             self.delete()
 
     def __unicode__(self):
@@ -186,8 +190,8 @@ class Membership(models.Model):
         if self.status == 'D':
             raise MembershipOperationError("A deleted membership can't be deleted.")
         self.status = 'D'
-        contacts = [self.person, self.billing_contact,
-                    self.tech_contact, self.organization]
+        contacts = [self.person, self.billing_contact, self.tech_contact,
+            self.organization]
         self.person = None
         self.billing_contact = None
         self.tech_contact = None
@@ -214,7 +218,7 @@ class Membership(models.Model):
             if self.person:
                 return self.person.__unicode__()
             else:
-                return "Deleted"
+                return "#%d" % self.id
 
 
 class Alias(models.Model):
