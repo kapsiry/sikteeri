@@ -10,12 +10,13 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField
+from django.forms import ModelForm, Form, EmailField, BooleanField
 from django.contrib.auth.decorators import login_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, HttpResponseForbidden
+from django.contrib import messages
 
 import simplejson
 
@@ -264,20 +265,29 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
             log_change(contact, request.user, before, after)
             # print before
             # print after
-            message = _("Changes saved.")
+            messages.success(request, "%s %s %s" %
+                             (unicode(_("Changes to contact")),
+                              unicode(contact),
+                              unicode(_("saved."))))
         else:
-            message = _("Changes not saved.")
+            messages.success(request, "%s %s %s" %
+                             (unicode(_("Changes to contact")),
+                              unicode(contact),
+                              unicode(_("not saved."))))
     else:
         form =  Form(instance=contact)
         message = ""
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
-        'logentries': logentries, 'message': message},
+        'logentries': logentries},
         context_instance=RequestContext(request))
 
 @login_required
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
+    from random import random
+    if random() > 0.99:
+        messages.info(request, unicode(_('This is a message from God.')))
 
     class Form(ModelForm):
         class Meta:
@@ -321,11 +331,30 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return membership_edit_inline(request, id, template_name)
 
 @transaction.commit_on_success
-def membership_delete(request, id):
+def membership_delete(request, id, template_name='membership/membership_delete.html'):
     membership = get_object_or_404(Membership, id=id)
-    logger.info("Deleting member %s." % str(membership))
-    membership.delete_membership(request.user)
-    return redirect('membership_edit', id)
+    class ConfirmForm(Form):
+        confirm = BooleanField(label=_('To confirm deletion, you must check this box:'),
+                               required=True)
+
+    if request.method == 'POST':
+        form = ConfirmForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            membership_str = unicode(membership)
+            membership.delete_membership(request.user)
+            messages.success(request, "%s %s %s" % (unicode(_('Member')),
+                                                    membership_str,
+                                                    unicode(_('successfully deleted.'))))
+            logger.info("User %s deleted member %s." % (request.user.username, membership))
+            return redirect('membership_edit', membership.id)
+    else:
+        form = ConfirmForm()
+
+    return render_to_response(template_name,
+                              {'form': form,
+                               'membership': membership },
+                              context_instance=RequestContext(request))
 
 @transaction.commit_on_success
 def membership_preapprove_json(request, id):

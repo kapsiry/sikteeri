@@ -34,6 +34,13 @@
      </div>
      <div class="right">
       <div class="content">
+	{% if messages %}
+	<ul class="messages">
+	  {% for message in messages %}
+	  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	  {% endfor %}
+	</ul>
+	{% endif %}
     {% block content %}{% endblock %}
        <div style="display:block; clear:both"></div>
       </div>
