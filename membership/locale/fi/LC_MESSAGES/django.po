@@ -52,7 +52,7 @@ msgid ""
 "memberlist"
 msgstr ""
 "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää "
-"julkisessajäsenluettelossa"
+"julkisessa jäsenluettelossa"
 
 #: forms.py:28
 msgid "Home country of your organization"
