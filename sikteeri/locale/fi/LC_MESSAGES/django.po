@@ -1,0 +1,107 @@
+# Sikteeri membership module translations
+# Copyright (C) Kapsi Internet-käyttäjät ry
+# This file is distributed under the same license as the PACKAGE package.
+# Atte Hinkka <atte.hinkka@kapsi.fi>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-01-07 17:00+0200\n"
+"PO-Revision-Date: 2009-12-21 09:24+0200\n"
+"Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: templates/frontpage.html:5
+msgid "Presenting the new jazzy Sikteeri"
+msgstr "Tässäpä kauan odotettu jazzaava Sikteeri"
+
+#: templates/frontpage.html:7
+msgid "Django and the jazz cigarette"
+msgstr "Django ja jazztupakka"
+
+#: templates/menu.html:5
+msgid "Logout"
+msgstr "Kirjaudu ulos"
+
+#: templates/menu.html:7 templates/registration/login.html:5
+msgid "Login"
+msgstr "Kirjaudu sisään"
+
+#: templates/menu.html:11
+msgid "Public"
+msgstr "Julkinen"
+
+#: templates/menu.html:13
+msgid "Frontpage"
+msgstr "Etusivu"
+
+#: templates/menu.html:14
+msgid "New application"
+msgstr "Uusi hakemus"
+
+#: templates/menu.html:17
+msgid "Membership management"
+msgstr "Jäsenhallinta"
+
+#: templates/menu.html:19
+msgid "Member applications"
+msgstr "Uudet hakemukset"
+
+#: templates/menu.html:20
+msgid "Preapproved applications"
+msgstr "Esihyväksytyt hakemukset"
+
+#: templates/menu.html:21
+msgid "Members"
+msgstr "Jäsenet"
+
+#: templates/menu.html:22
+msgid "Deleted members"
+msgstr "Poistetut jäsenet"
+
+#: templates/menu.html:23
+msgid "All membership entities"
+msgstr "Kaikki jäsentietueet"
+
+#: templates/menu.html:27
+msgid "Search memberships"
+msgstr "Hae jäsentietoja"
+
+#: templates/menu.html:30
+msgid "List of unpaid bills"
+msgstr "Lista avoimista laskuista"
+
+#: templates/menu.html:31
+msgid "All bills"
+msgstr "Kaikki laskut"
+
+#: templates/menu.html:32
+msgid "Unknown payments"
+msgstr "Tunnistamattomat maksut"
+
+#: templates/menu.html:33
+msgid "All payments"
+msgstr "Kaikki maksut"
+
+#: templates/menu.html:34
+msgid "Send test e-mail"
+msgstr "Lähetä testisähköposti"
+
+#: templates/menu.html:39
+msgid "Admin"
+msgstr "Ylläpito"
+
+#: templates/registration/login.html:10
+msgid "Username"
+msgstr "Käyttäjätunnus"
+
+#: templates/registration/login.html:11
+msgid "Password"
+msgstr "Salasana"
+
+#: templates/registration/login.html:12
+msgid "Log in"
+msgstr "Kirjaudu sisään"
