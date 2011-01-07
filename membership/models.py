@@ -357,7 +357,7 @@ class Payment(models.Model):
     billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
 
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
-    message = models.CharField(max_length=64, verbose_name=_('Message'), blank=True)
+    message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
     transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
     amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999,99
