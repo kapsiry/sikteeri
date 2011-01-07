@@ -3,7 +3,6 @@
 {% load comments %}
 
 {% block content %}
-{% if message %}{{ message }}<hr />{% endif %}
 <form method="POST">{% csrf_token %}
 <div id="contact_edit">
 {{ form.as_p }}

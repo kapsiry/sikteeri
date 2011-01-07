@@ -263,8 +263,6 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
             form.save()
             after = contact.__dict__
             log_change(contact, request.user, before, after)
-            # print before
-            # print after
             messages.success(request, "%s %s %s" %
                              (unicode(_("Changes to contact")),
                               unicode(contact),
