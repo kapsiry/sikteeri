@@ -456,9 +456,9 @@ class MemberApplicationTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         self.post_data = {
-            "first_name": "Veijo",
-            "given_names": "Veijo Kapsi",
-            "last_name": "Valpas",
+            "first_name": u"Yrjö",
+            "given_names": u"Yrjö Kapsi",
+            "last_name": u"Äikäs",
             "street_address": "Vasagatan 9",
             "postal_code": "90230",
             "post_office": "VAASA",
@@ -476,16 +476,16 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/persons/application/', self.post_data)
         self.assertRedirects(response, '/membership/memberships/new/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, "Veijo")
+        self.assertEquals(new.person.first_name, u"Yrjö")
 
     def test_clean_ajax_output(self):
         post_data = self.post_data.copy()
-        post_data['first_name'] = '<b>Veijo</b>'
+        post_data['first_name'] = u'<b>Yrjö</b>'
         post_data['extra_info'] = '<iframe src="http://www.kapsi.fi" width=200 height=100></iframe>'
         response = self.client.post('/membership/persons/application/', post_data)
         self.assertRedirects(response, '/membership/memberships/new/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, "<b>Veijo</b>")
+        self.assertEquals(new.person.first_name, u"<b>Yrjö</b>")
 
         login = self.client.login(username='admin', password='dhtn')
         self.failUnless(login, 'Could not log in')
@@ -495,7 +495,7 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_response.status_code, 200)
         json_dict = simplejson.loads(json_response.content)
         self.assertEqual(json_dict['contacts']['person']['first_name'],
-                         '&lt;b&gt;Veijo&lt;/b&gt;')
+                         u'&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;http://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
