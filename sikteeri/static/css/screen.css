@@ -212,6 +212,14 @@ li.memberlist_item:hover {
 li.memberlist_item {
     padding: 0.5em;
     margin: 0.1em;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+ul#memberlist > li:hover {
+    background: white;
 }
 
 li.memberlist_item span.name {
@@ -232,6 +240,26 @@ li.memberlist_item a.cart_function {
 .membership_details {
     margin-top: 1.5em;
 }
+
+.membership_details, .contact_details, .membership_events {
+    width: 95%;
+    background: #f1f1f1;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+    padding: 0.2em;
+    margin: 0.3em;
+}
+a.member_detail_title {
+    text-decoration: underline;
+}
+
+a.member_detail_title:hover {
+    text-decoration: none;
+    background: silver;
+}
+
 
 /* application list */
 .application_is_newFalse {
