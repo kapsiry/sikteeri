@@ -96,6 +96,13 @@ class Contact(models.Model):
 
 
 class Membership(models.Model):
+    class Meta:
+        permissions = (
+            ("read_members", "Can read member details"),
+            ("manage_members", "Can change details, pre-/approve"),
+            ("delete_members", "Can delete members"),
+        )
+
     logs = property(_get_logs)
 
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Membership type'))
@@ -245,6 +252,12 @@ class Fee(models.Model):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
 
 class BillingCycle(models.Model):
+    class Meta:
+        permissions = (
+            ("read_bills", "Can read billing details"),
+            ("manage_bills", "Can manage billing"),
+        )
+
     membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
     start =  models.DateTimeField(default=datetime.now(), verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
@@ -348,6 +361,11 @@ class Bill(models.Model):
 
 
 class Payment(models.Model):
+    class Meta:
+        permissions = (
+            ("can_import", "Can import payment data"),
+        )
+
     """
     Payment object for billing
     """

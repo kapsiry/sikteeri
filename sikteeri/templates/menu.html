@@ -14,6 +14,7 @@
    <li><a href="{% url new_application %}">{% trans "New application" %}</a></li>
 </ul>
 {% if user.is_authenticated %}
+{% if perms.membership.read_members %}
 <h3>{% trans "Membership management" %}</h3>
 <ul>
    <li><a href="{% url new_memberships %}">{% trans "Member applications" %}</a></li>
@@ -27,12 +28,17 @@
        <input type="submit" value="{% trans "Search memberships" %}">
      </form>
    </li>
+</ul>
+{% endif %}
+{% if perms.membership.read_bills %}
+<ul>
    <li><a href="{% url unpaid_bill_list %}">{% trans "List of unpaid bills" %}</a></li>
    <li><a href="{% url bill_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
    <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
 </ul>
+{% endif %}
 
 <h3>Django</h3>
 <ul>
