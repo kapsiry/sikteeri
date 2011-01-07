@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load comments %}
+
+{% block content %}
+<p>
+  {% trans "Deleting membership" %} <strong>{{ membership }} ({{ membership.id }})</strong>.
+</p>
+<p>
+  {% trans "This action is irreversible and data will be lost!" %}
+</p>
+<form method="POST">{% csrf_token %}
+{{ form.as_p }}
+<p>
+  <input id="submit_button" type="submit" value="{% trans "Delete member" %}" />
+</p>
+
+</form>
+{% endblock %}
