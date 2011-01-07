@@ -288,22 +288,28 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         def clean_status(self):
             return self.instance.status
 
-    def disable_fields(form):
-        for field in ['status', 'approved']:
-            form.fields[field].required = False
-            form.fields[field].widget.attrs['disabled'] = 'disabled'
+        def disable_fields(self):
+            self.fields['status'].required = False
+            self.fields['status'].widget.attrs['disabled'] = 'disabled' 
+            self.fields['approved'].required = False
+            self.fields['approved'].widget.attrs['disabled'] = 'disabled' 
+
+        def clean_status(self):
+            return membership.status
+        def clean_approved(self):
+            return membership.approved
 
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
-        disable_fields(form)
-        before = membership.__dict__.copy() # Otherwise save() will change the dict, since we have given form this instance
-        form.save()
-        after = membership.__dict__
+        before = membership.__dict__.copy()
+        form.disable_fields()
         if form.is_valid():
+            form.save()
+            after = membership.__dict__
             log_change(membership, request.user, before, after)
     else:
         form = Form(instance=membership)
-        disable_fields(form)
+        form.disable_fields()
     # Pretty print log entries for template
     logentries = bake_log_entries(membership.logs.all())
     return render_to_response(template_name, {'form': form,
@@ -340,8 +346,11 @@ def membership_detail_json(request, id):
     # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
 
+@login_required
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
+    print dir(request)
+    print
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,

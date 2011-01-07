@@ -142,11 +142,16 @@ class Membership(models.Model):
             "has an email address")
 
     def save(self, *args, **kwargs):
+        if self.type not in MEMBER_TYPES_DICT.keys():
+            raise Exception("Illegal member type '%s'" % self.type)
+        if self.status not in MEMBER_STATUS_DICT.keys():
+            raise Exception("Illegal member status '%s'" % self.status)
         if self.status != 'D':
             if self.type == 'O' and self.person:
                 raise Exception("Organization may not have a person contact.")
             if self.type != 'O' and self.organization:
                 raise Exception("Non-organization may not have an organization contact.")
+
             if self.person and self.organization:
                 raise Exception("Person-contact and organization-contact are mutually exclusive.")
             if not self.person and not self.organization:

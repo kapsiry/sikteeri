@@ -193,6 +193,74 @@ div.contentmenu {
     border-bottom: 1px solid #D8DBDB;
 }
 
+/* member list */
+ul#memberlist {
+    list-style-type: none;
+}
+
+ul#memberlist > li:nth-child(even) {
+    background: #e4e4e4;
+}
+ul#memberlist > li:nth-child(odd) {
+    background: #eeeeee;
+}
+
+li.memberlist_item:hover {
+    background: white;
+}
+
+li.memberlist_item {
+    padding: 0.5em;
+    margin: 0.1em;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+ul#memberlist > li:hover {
+    background: white;
+}
+
+li.memberlist_item span.name {
+    display: inline-block;
+    width: 12em;
+}
+
+li.memberlist_item span.status {
+    display: inline-block;
+    width: 8em;
+}
+
+li.memberlist_item a.cart_function {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+.membership_details {
+    margin-top: 1.5em;
+}
+
+.membership_details, .contact_details, .membership_events {
+    width: 95%;
+    background: #f1f1f1;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+    padding: 0.2em;
+    margin: 0.3em;
+}
+a.member_detail_title {
+    text-decoration: underline;
+}
+
+a.member_detail_title:hover {
+    text-decoration: none;
+    background: silver;
+}
+
+
 /* application list */
 .application_is_newFalse {
     color: #00bb00;
@@ -215,3 +283,4 @@ div.applicationdetails, div.memberdetails{
 div.applicationlist, div.memberlist {
     max-width: 60em;
 }
+

@@ -6,12 +6,12 @@ function enhanceMemberItem (item) {
     item.buttons = $("<div>");
     item.buttons.css("display", "inline");
     item.append(item.buttons);
-    
+
     // Container for member details
     item.memberDetails = $("<div>");
     item.append(item.memberDetails);
     item.memberDetails.hide();
-    
+
     return item;
 }
 
@@ -41,11 +41,11 @@ function makeMembershipDetailObject(id) {
     obj.title.click(function(){return function(){obj.table.slideToggle();}}());
     obj.append(obj.title);
     obj.append(obj.table);
-    
+
     obj.populate = function(obj) {
 	var data = $(memberDetailStore[id]);
 	obj.table.html("");
-	
+
 	function addRow (elem, title, key) {
 	    var rowElem = $("<tr>").addClass("table_row");
 	    rowElem.append($("<td>").html(title).addClass("key_column"));
@@ -83,11 +83,11 @@ function makeContactDetailObject (id, type) {
     var obj = $("<div>").addClass("contact_details").addClass(type + "_contact_details");
     obj.table = $("<table>").addClass("infobox");
     obj.title = $("<a>").html(translateContactType(type)).addClass("member_detail_title");
-    
+
     obj.title.click(function(){return function(){obj.table.slideToggle();}}());
     obj.append(obj.title);
     obj.append(obj.table);
-    
+
     obj.populate = function(obj, type) {
 	var data = $(memberDetailStore[id]["contacts"][type]);
 	obj.table.html("");
@@ -95,7 +95,7 @@ function makeContactDetailObject (id, type) {
 	if ($(data).attr("postal_code") === undefined) {
 	    return false;
 	}
-	
+
 	function addRow (elem, title, key) {
             if ($(data).attr(key) === undefined || $(data).attr(key) == "") {
 		return
@@ -129,11 +129,11 @@ function makeMembershipEventsObject (id) {
     var obj = $("<div>").addClass("membership_events");
     obj.table = $("<table>").addClass("infobox");
     obj.title = $("<a>").html(gettext("Events")).addClass("member_detail_title");
-    
+
     obj.title.click(function(){return function(){obj.table.slideToggle();}}());
     obj.append(obj.title);
     obj.append(obj.table);
-    
+
     obj.populate = function(obj) {
 	var data = $(memberDetailStore[id]["events"]);
 	obj.table.html("");
@@ -150,7 +150,7 @@ function makeMembershipEventsObject (id) {
 	    var item = data[i];
 	    addRow(obj.table, item["user_name"] + ": " + item["date"], item["text"]);
 	}
-	
+
 	return true;
     }
     return obj;
@@ -162,36 +162,36 @@ function makeMembershipEventsObject (id) {
 function addMemberDetails (item) {
     item.membershipDetails = makeMembershipDetailObject(item.attr("id"));
     item.memberDetails.append(item.membershipDetails);
-    
+
     item.personContactDetails = makeContactDetailObject(item.attr("id"), "person");
     item.memberDetails.append(item.personContactDetails);
-    
+
     item.billingContactDetails = makeContactDetailObject(item.attr("id"), "billing_contact");
     item.memberDetails.append(item.billingContactDetails);
-    
+
     item.techContactDetails = makeContactDetailObject(item.attr("id"), "tech_contact");
     item.memberDetails.append(item.techContactDetails);
-    
+
     item.organizationContactDetails = makeContactDetailObject(item.attr("id"), "organization");
     item.memberDetails.append(item.organizationContactDetails);
-    
+
     item.membershipEvents = makeMembershipEventsObject(item.attr("id"));
     item.memberDetails.append(item.membershipEvents);
-    
-    item.viewDetailsButton = $("<a>").html(gettext("show details")).addClass("cart_function");  
+
+    item.viewDetailsButton = $("<a>").html(gettext("show details")).addClass("cart_function");
     item.buttons.append(item.viewDetailsButton);
-    
-    item.hideDetailsButton = $("<a>").html(gettext("hide details")).addClass("cart_function");  
+
+    item.hideDetailsButton = $("<a>").html(gettext("hide details")).addClass("cart_function");
     item.buttons.append(item.hideDetailsButton);
     item.hideDetailsButton.hide();
-    
+
     item.hideDetailsButton.click(
 	function(){return function(){
 		       item.memberDetails.slideUp();
                        item.hideDetailsButton.hide();
                        item.viewDetailsButton.show();}
 		  }());
-    
+
     function callbackFactory() {
 	return function () {
 	    getMemberDetails(item.attr("id"),
@@ -219,7 +219,7 @@ function addMemberDetails (item) {
 	}
     }
     item.viewDetailsButton.click(callbackFactory());
-    
+
     return item;
 }
 
@@ -229,20 +229,20 @@ function addMemberDetails (item) {
  */
 function preapproveify (item) {
     var id = item.attr("id");
-    
+
     item.addButton = $("<a>").html(gettext("add to pre-approve cart")).addClass("cart_function");
     item.buttons.append(item.addButton);
-    
+
     item.removeButton = $("<a>").html(gettext("remove from pre-approve cart")).addClass("cart_function");
     item.buttons.append(item.removeButton);
     item.removeButton.hide();
-    
+
     item.addButton.click(function(){
 			     return function(){$("#preapprovable_cart").append(item);
                                                item.addButton.hide();
                                                item.removeButton.show();}}());
     item.removeButton.click(function(){
-				return function(){$("#member_list").append(item);
+				return function(){$("#memberlist").append(item);
 						  item.removeButton.hide();
 						  item.addButton.show();}}());
 }
@@ -253,20 +253,20 @@ function preapproveify (item) {
  */
 function approveify (item) {
     var id = item.attr("id");
-    
+
     item.addButton = $("<a>").html(gettext("add to approve cart")).addClass("cart_function");
     item.buttons.append(item.addButton);
-    
+
     item.removeButton = $("<a>").html(gettext("remove from approve cart")).addClass("cart_function");
     item.buttons.append(item.removeButton);
     item.removeButton.hide();
-    
+
     item.addButton.click(function(){
 			     return function(){$("#approvable_cart").append(item);
                                                item.addButton.hide();
                                                item.removeButton.show();}}());
     item.removeButton.click(function(){
-				return function(){$("#member_list").append(item);
+				return function(){$("#memberlist").append(item);
 						  item.removeButton.hide();
 						  item.addButton.show();}}());
 }
