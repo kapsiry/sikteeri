@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-07 16:02+0200\n"
+"POT-Creation-Date: 2011-01-07 16:39+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -271,7 +271,6 @@ msgid "Reference number"
 msgstr "Viitenumero"
 
 #: models.py:282 models.py:351
-#: templates/membership/membership_edit_inline.html:33
 msgid "Cycle"
 msgstr "Kausi"
 
@@ -355,161 +354,119 @@ msgstr "Ei tallennettu."
 msgid "Recipient e-mail address"
 msgstr "Vastaanottajan sähköpostiosoite"
 
-#: templates/membership/bill_list.html:9
 msgid "euros"
 msgstr "euroa"
 
-#: templates/membership/bill_list.html:9
 msgid "sent on"
 msgstr "lähetetty"
 
-#: templates/membership/bill_list.html:11
 msgid "overdue for"
 msgstr "myöhässä"
 
-#: templates/membership/bill_list.html:13
 msgid "due in"
 msgstr "erääntyy"
 
-#: templates/membership/bill_list.html:15
-#: templates/membership/membership_edit_inline.html:35
 msgid "paid"
 msgstr "maksettu"
 
-#: templates/membership/bill_list.html:19
 msgid "No bill matches this filter, try seeing the full list."
 msgstr "Laskuja ei löytynyt hakuehdoilla, kokeile täydellistä listaa."
 
-#: templates/membership/contact_edit.html:12
 msgid "Save contact changes"
 msgstr "Tallenna muutokset"
 
-#: templates/membership/membership_edit_inline.html:6
 msgid "Edit person contact"
 msgstr "Henkilön yhteystiedot"
 
-#: templates/membership/membership_edit_inline.html:9
 msgid "Edit billing contact"
 msgstr "Muokkaa laskutusyhteystietoja"
 
-#: templates/membership/membership_edit_inline.html:12
 msgid "Edit technical contact"
-msgstr "Tekninen yhteystieto"
+msgstr "Muokkaa teknistä yhteystietoa"
 
-#: templates/membership/membership_edit_inline.html:15
 msgid "Edit organization contact"
 msgstr "Muokkaa yhteisön yhteystietoja"
 
-#: templates/membership/membership_edit_inline.html:21
 msgid "Save membership changes"
-msgstr "Tallenna"
+msgstr "Tallenna muutokset jäsenyyteen"
 
-#: templates/membership/membership_edit_inline.html:26
 msgid "Actions"
-msgstr "Toimenpiteet"
+msgstr "Toiminnot"
 
-#: templates/membership/membership_edit_inline.html:28
 msgid "Delete"
 msgstr "Poista"
 
-#: templates/membership/membership_edit_inline.html:31
 msgid "Billing information"
 msgstr "Laskutustiedot"
 
-#: templates/membership/membership_edit_inline.html:35
 msgid "Bill sent"
 msgstr "Lasku lähetetty"
 
-#: templates/membership/membership_edit_inline.html:35
 msgid "due on"
 msgstr "erääntyy"
 
-#: templates/membership/membership_edit_inline.html:35
 msgid "not paid"
 msgstr "ei maksettu"
 
-#: templates/membership/membership_edit_inline.html:42
 msgid "Event log"
-msgstr "Tapahtumat"
+msgstr "Tapahtumaloki"
 
-#: templates/membership/membership_edit_inline.html:45
 msgid "Time"
 msgstr "Tapahtuma-aika"
 
-#: templates/membership/membership_edit_inline.html:46
 msgid "Event type"
 msgstr "Tapahtuman laji"
 
-#: templates/membership/membership_edit_inline.html:47
 msgid "User"
 msgstr "Käyttäjä"
 
-#: templates/membership/membership_edit_inline.html:48
 msgid "Summary"
-msgstr "Tapahtuma"
+msgstr "Yhteenveto"
 
-#: templates/membership/membership_edit_inline.html:61
 msgid "Comments"
 msgstr "Kommentit"
 
-#: templates/membership/membership_edit_inline.html:83
 msgid "Comment on membership"
-msgstr "Kommentoi jäsentä"
+msgstr "Kommentoi jäsenyyttä"
 
-#: templates/membership/membership_list.html:22
-#: templates/membership/membership_list_inline.html:15
 msgid "No membership matches this filter, try seeing the full list"
 msgstr "Jäsentietoja ei löytynyt hakuehdoilla, kokeile täydellistä listaa."
 
-#: templates/membership/membership_list.html:77
 msgid "Pre-approvable cart"
 msgstr "Esihyväksyntäkori"
 
-#: templates/membership/membership_list.html:79
 msgid "Preapprove these"
 msgstr "Esihyväksy nämä"
 
-#: templates/membership/membership_list.html:89
 msgid "Approvable cart"
-msgstr "Esihyväksyntäkori"
+msgstr "Hyväksyntäkori"
 
-#: templates/membership/membership_list.html:91
 msgid "Approve these"
 msgstr "Hyväksy nämä"
 
-#: templates/membership/new_organization_application.html:5
 msgid "Organization member's application form"
-msgstr "Yhteisön hakemuslomake"
+msgstr "Yhteisön jäsenhakemuslomake"
 
-#: templates/membership/new_organization_application.html:28
 msgid "Save and continue to next stage"
 msgstr "Tallenna ja jatka"
 
-#: templates/membership/new_organization_application_add_contact.html:14
 msgid "Save contact or skip to next stage"
 msgstr "Tallenna tai ohita ja jatka"
 
-#: templates/membership/new_organization_application_review.html:5
 msgid "Application review"
 msgstr "Hakemuksen tietojen tarkistus"
 
-#: templates/membership/new_organization_application_review.html:17
-#: templates/membership/new_person_application.html:18
 msgid "Send application"
 msgstr "Lähetä hakemus"
 
-#: templates/membership/paginating_snippet.html:6
 msgid "Previous"
 msgstr "Edellinen"
 
-#: templates/membership/paginating_snippet.html:18
 msgid "Next"
 msgstr "Seuraava"
 
-#: templates/membership/payment_list.html:10
 msgid "No payment matches this filter, try seeing the full list."
 msgstr "Maksuja ei löytynyt hakuehdoilla, kokeile täydellistä listaa."
 
-#: templates/membership/test_email.html:6
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
