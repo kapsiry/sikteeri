@@ -193,6 +193,46 @@ div.contentmenu {
     border-bottom: 1px solid #D8DBDB;
 }
 
+/* member list */
+ul#memberlist {
+    list-style-type: none;
+}
+
+ul#memberlist > li:nth-child(even) {
+    background: #e4e4e4;
+}
+ul#memberlist > li:nth-child(odd) {
+    background: #eeeeee;
+}
+
+li.memberlist_item:hover {
+    background: white;
+}
+
+li.memberlist_item {
+    padding: 0.5em;
+    margin: 0.1em;
+}
+
+li.memberlist_item span.name {
+    display: inline-block;
+    width: 12em;
+}
+
+li.memberlist_item span.status {
+    display: inline-block;
+    width: 8em;
+}
+
+li.memberlist_item a.cart_function {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+.membership_details {
+    margin-top: 1.5em;
+}
+
 /* application list */
 .application_is_newFalse {
     color: #00bb00;
@@ -215,3 +255,4 @@ div.applicationdetails, div.memberdetails{
 div.applicationlist, div.memberlist {
     max-width: 60em;
 }
+
