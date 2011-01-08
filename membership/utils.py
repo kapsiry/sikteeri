@@ -136,7 +136,7 @@ def serializable_membership_info(membership):
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
         d = { 'user_name': unicode(comment.user),
-              'text': comment.comment,
+              'text': escape(comment.comment),
               'date': comment.submit_date }
         comment_list.append(d)
         event_list.append(d)
@@ -144,7 +144,7 @@ def serializable_membership_info(membership):
     log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
         d = { 'user_name': unicode(entry.user),
-              'text': "%s %s" % (unicode(entry.action_flag_str), unicode(entry.change_message)),
+              'text': "%s %s" % (escape(unicode(entry.action_flag_str)), escape(unicode(entry.change_message))),
               'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)
