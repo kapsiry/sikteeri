@@ -7,11 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2011-01-06 17:37+0200\n"
-=======
-"POT-Creation-Date: 2011-01-07 17:00+0200\n"
->>>>>>> 4101cebcc78f29100a68f2c7520cea6dd3983d9d
+"POT-Creation-Date: 2011-01-08 10:09+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -46,63 +42,55 @@ msgstr "Etusivu"
 msgid "New application"
 msgstr "Uusi hakemus"
 
-#: templates/menu.html:17
+#: templates/menu.html:18
 msgid "Membership management"
 msgstr "Jäsenhallinta"
 
-#: templates/menu.html:19
+#: templates/menu.html:20
 msgid "Member applications"
 msgstr "Uudet hakemukset"
 
-#: templates/menu.html:20
+#: templates/menu.html:21
 msgid "Preapproved applications"
 msgstr "Esihyväksytyt hakemukset"
 
-#: templates/menu.html:21
+#: templates/menu.html:22
 msgid "Members"
 msgstr "Jäsenet"
 
-#: templates/menu.html:22
-<<<<<<< HEAD
-msgid "Disabled members"
-=======
+#: templates/menu.html:23
 msgid "Deleted members"
->>>>>>> 4101cebcc78f29100a68f2c7520cea6dd3983d9d
 msgstr "Poistetut jäsenet"
 
-#: templates/menu.html:23
+#: templates/menu.html:24
 msgid "All membership entities"
 msgstr "Kaikki jäsentietueet"
 
-#: templates/menu.html:27
+#: templates/menu.html:28
 msgid "Search memberships"
-<<<<<<< HEAD
-msgstr "Hae"
-=======
 msgstr "Hae jäsentietoja"
->>>>>>> 4101cebcc78f29100a68f2c7520cea6dd3983d9d
 
-#: templates/menu.html:30
+#: templates/menu.html:35
 msgid "List of unpaid bills"
 msgstr "Lista avoimista laskuista"
 
-#: templates/menu.html:31
+#: templates/menu.html:36
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:32
+#: templates/menu.html:37
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:33
+#: templates/menu.html:38
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:34
+#: templates/menu.html:39
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:39
+#: templates/menu.html:45
 msgid "Admin"
 msgstr "Ylläpito"
 

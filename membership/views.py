@@ -263,15 +263,9 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
             form.save()
             after = contact.__dict__
             log_change(contact, request.user, before, after)
-            messages.success(request, "%s %s %s" %
-                             (unicode(_("Changes to contact")),
-                              unicode(contact),
-                              unicode(_("saved."))))
+            messages.success(request, unicode(_("Changes to contact %s saved.") % contact))
         else:
-            messages.success(request, "%s %s %s" %
-                             (unicode(_("Changes to contact")),
-                              unicode(contact),
-                              unicode(_("not saved."))))
+            messages.success(request, unicode(_("Changes to contact %s not saved.") % contact))
     else:
         form =  Form(instance=contact)
         message = ""
@@ -343,9 +337,7 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
             f = form.cleaned_data
             membership_str = unicode(membership)
             membership.delete_membership(request.user)
-            messages.success(request, "%s %s %s" % (unicode(_('Member')),
-                                                    membership_str,
-                                                    unicode(_('successfully deleted.'))))
+            messages.success(request, unicode(_('Member %s successfully deleted.') % membership_str))
             logger.info("User %s deleted member %s." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -373,9 +365,7 @@ def membership_convert_to_organization(request, id, template_name='membership/me
             membership.organization = contact
             membership.save()
             log_change(membership, request.user, change_message="Converted to an organization")
-            messages.success(request, "%s %s %s" % (unicode(_('Member')),
-                                                    unicode(membership),
-                                                    unicode(_('successfully converted to an organization.'))))
+            messages.success(request, unicode(_('Member %s successfully converted to an organization.') % membership))
             logger.info("User %s converted member %s to an organization." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
