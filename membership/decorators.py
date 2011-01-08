@@ -11,6 +11,7 @@ from django.http import HttpResponse
 import base64
 
 def basic_auth_required(view_func):
+    # http://djangosnippets.org/snippets/448/
     """ decorator which performs basic http token authentication """
     def _auth(request, *args, **kwargs):
         if 'HTTP_AUTHORIZATION' in request.META:
