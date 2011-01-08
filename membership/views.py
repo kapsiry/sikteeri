@@ -10,13 +10,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-<<<<<<< HEAD
 from django.forms import ModelForm, Form, EmailField
 from django.contrib.auth.decorators import login_required, permission_required
-=======
-from django.forms import ModelForm, Form, EmailField, BooleanField
-from django.contrib.auth.decorators import login_required
->>>>>>> 5db7fe63b462760e4a517d3ce903e9b8c154a9fb
 from django.contrib.comments.models import Comment
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
