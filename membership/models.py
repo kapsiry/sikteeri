@@ -207,11 +207,15 @@ class Membership(models.Model):
         for contact in contacts:
             if contact != None:
                 contact.delete_if_no_references(user)
-
         for alias in self.alias_set.all():
             alias.expire()
-
         log_change(self, user, change_message="Deleted")
+
+    def valid_aliases(self):
+        '''Builds a queryset of all valid aliases'''
+        no_expire = Q(expiration_date=None)
+        not_expired = Q(expiration_date__lt=datetime.now())
+        return Alias.objects.filter(no_expire | not_expired).filter(owner=self)
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
@@ -241,6 +245,9 @@ class Alias(models.Model):
             time = datetime.now()
         self.expiration_date = time
         self.save()
+
+    def __unicode__(self):
+        return self.name
 
 
 class Fee(models.Model):
