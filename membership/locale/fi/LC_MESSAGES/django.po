@@ -168,7 +168,7 @@ msgstr "Yhteisön nimi"
 
 #: models.py:28 models.py:111
 msgid "Person"
-msgstr "Yksityishenkilö"
+msgstr "Henkilöjäsen"
 
 #: models.py:29
 msgid "Supporting"
