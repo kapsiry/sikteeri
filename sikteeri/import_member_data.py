@@ -20,7 +20,6 @@ logger = logging.getLogger("import_member_data")
 
 from membership.utils import log_change
 from django.contrib.auth.models import User
-from django.contrib.comments.models import Comment
 from membership.models import Contact, Membership, Bill, BillingCycle
 from membership.models import Fee, MEMBER_TYPES
 
@@ -63,13 +62,13 @@ def create_member(mdata):
 
     if not mdata['memberclass']:
         mtype = 'P'
-        print "Member type missing for member %d" % mdata['id']
+        print >> sys.stderr, "# Member type missing for member %d" % mdata['id']
     elif mdata['memberclass'] == 'member':
         mtype = 'P'
     elif mdata['memberclass'] == 'supporting':
         mtype = 'S'
     else:
-        print "Not importing, member class unknown for member %d" % mdata['id']
+        print >> sys.stderr, "! Not importing, member class unknown for member %d" % mdata['id']
         return False
     person = Contact(**d)
     person.save()
@@ -83,13 +82,6 @@ def create_member(mdata):
                             public_memberlist=bool(mdata['publicname']))
     logger.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
-    comment = Comment()
-    comment.content_object = membership
-    comment.user = user
-    comment.comment = "Approved"
-    comment.site_id = settings.SITE_ID
-    comment.submit_date = datetime.utcfromtimestamp(mdata['time'])
-    comment.save()
     billing_cycle = BillingCycle(membership=membership, is_paid=False,
         start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
         end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
@@ -98,23 +90,28 @@ def create_member(mdata):
     bill = Bill(billingcycle=billing_cycle,
         created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
     bill.save()
-    #bill.send_as_email()
-    log_change(membership, user, change_message="Imported from legacy")
+    log_change(membership, user, change_message="Imported into system")
     return True
-    
+
 
 def main(filename):
     import simplejson
     members = simplejson.load(open(filename, 'r'))
+    print >> sys.stderr, "# %i items, starting processing." % len(members)
+    processed = 0
     for mid, mdata in members.iteritems():
         assert mid == str(mdata['id'])
         create_member(mdata)
+        processed = processed + 1
+        if processed % 100 == 0:
+            print >> sys.stderr, "# %i items processed" % processed
+    print >> sys.stderr, "# %i items in total processed" % processed
+
 
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-f", "--file", dest="filename",
-                      help="read member data from FILE", metavar="FILE",
-                      default="jasendata.json")
+                      help="read member data from FILE", metavar="FILE")
     (options, args) = parser.parse_args()
 
     if not os.path.isfile(options.filename):
