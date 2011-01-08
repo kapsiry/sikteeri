@@ -3,7 +3,7 @@
 from __future__ import with_statement
 
 from django.db.models import Q, Sum
-from django.core.management.base import LabelCommand
+from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 
 import codecs
@@ -66,6 +66,7 @@ class UnicodeDictReader(UnicodeReader):
         return dict(zip(self.headers, row))
 
 class RequiredFieldNotFoundException(Exception): pass
+class DuplicateColumnException(Exception): pass
 
 class OpDictReader(UnicodeDictReader):
     '''Reader for Osuuspankki CSV file format
@@ -78,7 +79,9 @@ class OpDictReader(UnicodeDictReader):
     # Translation table from Osuuspankki CSV format to short names
     OP_CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
                           u'Arvopäivä'          : 'value_date',
+                          u'Tap.pv'             : 'date', # old format
                           u'Määrä EUROA'        : 'amount',
+                          u'Määrä EUROA'        : 'amount',
                           u'Tapahtumalajikoodi' : 'event_type_code',
                           u'Selitys'            : 'event_type_description',
                           u'Saaja/Maksaja'      : 'fromto',
@@ -97,7 +100,13 @@ class OpDictReader(UnicodeDictReader):
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
             if name not in self.headers:
-                raise RequiredFieldNotFoundException("CSV format is invalid")
+                error = "CSV format is invalid: missing field '%s'." % name
+                raise RequiredFieldNotFoundException(error)
+        # Check that each field is unique
+        for name in self.headers:
+            if self.headers.count(name) != 1:
+                error = "The field '%s' occurs multiple times in the header"
+                raise DuplicateColumnException(error)
 
     def next(self):
         row = UnicodeDictReader.next(self)
@@ -160,10 +169,18 @@ def process_csv(filename):
                 continue # Failed to find cycle for this reference number
 
 
-class Command(LabelCommand):
-    help = 'Find expiring billing cycles, send bills, send reminders'
+class Command(BaseCommand):
+    args = '<csvfile> [<csvfile> ...]'
+    help = 'Read a CSV list of payment transactions'
 
-    def handle_label(self, label, **options):
-        logger.info("Starting the processing of file %s." % os.path.abspath(label))
-        process_csv(label)
-        logger.info("Done processing file %s." % os.path.abspath(label))
+    def handle(self, *args, **options):
+        for csvfile in args:
+            logger.info("Starting the processing of file %s." %
+                os.path.abspath(csvfile))
+            try:
+                process_csv(csvfile)
+            except Exception, e:
+                print "Fatal error: %s" % unicode(e)
+                logger.error("process_csv failed: %s" % unicode(e))
+                break
+            logger.info("Done processing file %s." % os.path.abspath(csvfile))

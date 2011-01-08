@@ -96,6 +96,13 @@ class Contact(models.Model):
 
 
 class Membership(models.Model):
+    class Meta:
+        permissions = (
+            ("read_members", "Can read member details"),
+            ("manage_members", "Can change details, pre-/approve"),
+            ("delete_members", "Can delete members"),
+        )
+
     logs = property(_get_logs)
 
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Membership type'))
@@ -200,11 +207,15 @@ class Membership(models.Model):
         for contact in contacts:
             if contact != None:
                 contact.delete_if_no_references(user)
-
         for alias in self.alias_set.all():
             alias.expire()
-
         log_change(self, user, change_message="Deleted")
+
+    def valid_aliases(self):
+        '''Builds a queryset of all valid aliases'''
+        no_expire = Q(expiration_date=None)
+        not_expired = Q(expiration_date__lt=datetime.now())
+        return Alias.objects.filter(no_expire | not_expired).filter(owner=self)
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
@@ -235,6 +246,9 @@ class Alias(models.Model):
         self.expiration_date = time
         self.save()
 
+    def __unicode__(self):
+        return self.name
+
 
 class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
@@ -245,6 +259,12 @@ class Fee(models.Model):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
 
 class BillingCycle(models.Model):
+    class Meta:
+        permissions = (
+            ("read_bills", "Can read billing details"),
+            ("manage_bills", "Can manage billing"),
+        )
+
     membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
     start =  models.DateTimeField(default=datetime.now(), verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
@@ -348,6 +368,11 @@ class Bill(models.Model):
 
 
 class Payment(models.Model):
+    class Meta:
+        permissions = (
+            ("can_import", "Can import payment data"),
+        )
+
     """
     Payment object for billing
     """

@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm, Form, EmailField
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
@@ -243,9 +243,9 @@ def organization_application_save(request):
         return redirect('new_application_fail')
 
 def check_alias_availability(request):
-    pass
+    pass # FIXME: JSON output
 
-@login_required
+@permission_required('membership.manage_members')
 def contact_edit(request, id, template_name='membership/contact_edit.html'):
     contact = get_object_or_404(Contact, id=id)
 
@@ -275,7 +275,7 @@ def contact_edit(request, id, template_name='membership/contact_edit.html'):
         'logentries': logentries, 'message': message},
         context_instance=RequestContext(request))
 
-@login_required
+@permission_required('membership.manage_members')
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
 
@@ -316,10 +316,12 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
         'membership': membership, 'logentries': logentries},
         context_instance=RequestContext(request))
 
+@permission_required('membership.manage_members')
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     # XXX: Inline template name is hardcoded in template :/
     return membership_edit_inline(request, id, template_name)
 
+@permission_required('membership.delete_members')
 @transaction.commit_on_success
 def membership_delete(request, id):
     membership = get_object_or_404(Membership, id=id)
@@ -327,16 +329,19 @@ def membership_delete(request, id):
     membership.delete_membership(request.user)
     return redirect('membership_edit', id)
 
+@permission_required('membership.manage_members')
 @transaction.commit_on_success
 def membership_preapprove_json(request, id):
     get_object_or_404(Membership, id=id).preapprove(request.user)
     return HttpResponse(id, mimetype='text/plain')
 
+@permission_required('membership.manage_members')
 @transaction.commit_on_success
 def membership_approve_json(request, id):
     get_object_or_404(Membership, id=id).approve(request.user)
     return HttpResponse(id, mimetype='text/plain')
 
+@permission_required('membership.read_members')
 def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)

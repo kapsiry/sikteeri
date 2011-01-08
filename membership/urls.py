@@ -1,11 +1,13 @@
 from django.db.models import Q
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.conf.urls.defaults import *
 from django.shortcuts import redirect
 import django.views.generic.list_detail
 
 from membership.models import *
 from membership.forms import *
+
+ENTRIES_PER_PAGE=30
 
 urlpatterns = patterns('',
     (r'jsi18n/$', 'django.views.i18n.javascript_catalog', {'packages': ('membership')}),
@@ -38,12 +40,16 @@ urlpatterns = patterns('',
     url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
 )
 
-# FIXME: should require admin priviledge, too.
-@login_required
-def limited_object_list(*args, **kwargs):
+@permission_required('membership.read_members')
+def member_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
 
-@login_required
+@permission_required('membership.read_bills')
+def billing_object_list(*args, **kwargs):
+    return django.views.generic.list_detail.object_list(*args, **kwargs)
+
+
+@permission_required('membership.read_members')
 def search(request, query=None,
            template_name='membership/membership_list.html'):
     if not query:
@@ -80,64 +86,67 @@ def search(request, query=None,
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
+    qs = qs.order_by("organization__organization_name",
+                     "person__last_name",
+                     "person__first_name")
     return django.views.generic.list_detail.object_list(request, queryset=qs,
                                                         template_name=template_name,
                                                         template_object_name='member',
-                                                        paginate_by=100)
+                                                        paginate_by=ENTRIES_PER_PAGE)
 
 urlpatterns += patterns('django.views.generic',
 
-    url(r'memberships/new/$', limited_object_list,
+    url(r'memberships/new/$', member_object_list,
         {'queryset': Membership.objects.filter(status__exact='N'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
-         'paginate_by': 100}, name='new_memberships'),
-    url(r'memberships/preapproved/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='new_memberships'),
+    url(r'memberships/preapproved/$', member_object_list,
         {'queryset': Membership.objects.filter(status__exact='P'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
-         'paginate_by': 100}, name='preapproved_memberships'),
-    url(r'memberships/approved/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='preapproved_memberships'),
+    url(r'memberships/approved/$', member_object_list,
         {'queryset': Membership.objects.filter(status__exact='A'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
-         'paginate_by': 100}, name='approved_memberships'),
-    url(r'memberships/deleted/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='approved_memberships'),
+    url(r'memberships/deleted/$', member_object_list,
         {'queryset': Membership.objects.filter(status__exact='D'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
-         'paginate_by': 100}, name='deleted_memberships'),
-    url(r'memberships/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='deleted_memberships'),
+    url(r'memberships/$', member_object_list,
         {'queryset': Membership.objects.all(),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
-         'paginate_by': 100}, name='all_memberships'),
+         'paginate_by': ENTRIES_PER_PAGE}, name='all_memberships'),
 
     url(r'^memberships/inline/search/(?P<query>\w+)/$', search,
         {'template_name': 'membership/membership_list_inline.html'}),
     url(r'^memberships/search/((?P<query>\w+)/)?$', search, name="membership_search"),
 
-    url(r'bills/$', limited_object_list,
+    url(r'bills/$', billing_object_list,
         {'queryset': Bill.objects.all(),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'bill',
-         'paginate_by': 100}, name='bill_list'),
-    url(r'bills/unpaid/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='bill_list'),
+    url(r'bills/unpaid/$', billing_object_list,
         {'queryset': Bill.objects.filter(billingcycle__is_paid__exact=False),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'bill',
-         'paginate_by': 100}, name='unpaid_bill_list'),
+         'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_bill_list'),
 
-    url(r'payments/$', limited_object_list,
+    url(r'payments/$', billing_object_list,
         {'queryset': Payment.objects.all(),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
-         'paginate_by': 100}, name='payment_list'),
-    url(r'payments/unknown/$', limited_object_list,
+         'paginate_by': ENTRIES_PER_PAGE}, name='payment_list'),
+    url(r'payments/unknown/$', billing_object_list,
         {'queryset': Payment.objects.filter(billingcycle__exact=None),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
-         'paginate_by': 100}, name='unknown_payment_list'),
+         'paginate_by': ENTRIES_PER_PAGE}, name='unknown_payment_list'),
 
     url(r'memberships/new/success/$', 'simple.direct_to_template',
         {'template': 'membership/new_person_application_success.html'}, name='new_person_application_success'),
