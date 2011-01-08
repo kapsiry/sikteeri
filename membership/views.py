@@ -23,6 +23,7 @@ import simplejson
 from models import *
 from services.models import Alias, Service, ServiceType
 
+from decorators import basic_auth_required
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
 from utils import log_change, serializable_membership_info
 from utils import bake_log_entries
@@ -30,6 +31,7 @@ from utils import bake_log_entries
 from services.views import check_alias_availability
 
 from management.commands.csvbills import process_csv as payment_csv_import
+
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
@@ -780,7 +782,6 @@ def test_email(request, template_name='membership/test_email.html'):
                               context_instance=RequestContext(request))
 
 
-
 def membership_metrics(request):
     d = {'memberships':
          {'new': Membership.objects.filter(status='N').count(),
@@ -790,4 +791,11 @@ def membership_metrics(request):
           }
          }
     return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
+                        mimetype='application/json')
+
+@basic_auth_required
+def admtool_membership_detail_json(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    json_obj = serializable_membership_info(membership)
+    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')

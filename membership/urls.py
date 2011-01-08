@@ -49,6 +49,8 @@ urlpatterns = patterns('',
     url(r'memberships/handle_json/$', 'membership.views.handle_json', name='membership_handle_json'),
     url(r'handle_json/$', 'membership.views.handle_json', name='membership_handle_json'),
 
+    url(r'admtool/(\d+)$', 'membership.views.admtool_membership_detail_json', name='admtool'),
+
     url(r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '../membership/static/'}),
 )
 
