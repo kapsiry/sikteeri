@@ -19,6 +19,7 @@ class PersonMembershipForm(forms.Form):
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'))
+    email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
 
 class OrganizationMembershipForm(forms.Form):
@@ -82,6 +83,6 @@ class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
 
 class PersonApplicationForm(PersonContactForm, PersonMembershipForm):
     pass
-
+       
 class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):
     pass

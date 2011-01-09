@@ -40,9 +40,13 @@ def person_application(request, template_name='membership/new_person_application
             try:
                 d = {}
                 for k, v in f.items():
-                    if k not in ['nationality', 'municipality', 'public_memberlist', 'extra_info']:
+                    if k not in ['nationality', 'municipality', 'public_memberlist', 'email_forward', 'extra_info']:
                         d[k] = v
-                
+
+                # TODO:
+                #  - save e-mail forward as an alias
+                #  - also add field for login and save as an alias
+
                 person = Contact(**d)
                 person.save()
                 membership = Membership(type='P', status='N',
@@ -243,8 +247,16 @@ def organization_application_save(request):
         logger.error("Transaction rolled back.")
         return redirect('new_application_fail')
 
-def check_alias_availability(request):
-    pass # FIXME: JSON output
+# Here should probably be rate limiting, but it isn't simple.
+# Would this suffice? <http://djangosnippets.org/snippets/2276/>
+def check_alias_availability(request, alias):
+    print alias
+    if alias == 'atte.hinkka':
+        print 'foo'
+        return HttpResponse("false", mimetype='text/plain')
+    if Alias.objects.filter(name__iexact=alias).count() == 0:
+        return HttpResponse("true", mimetype='text/plain')
+    return HttpResponse("false", mimetype='text/plain')
 
 @permission_required('membership.manage_members')
 def contact_edit(request, id, template_name='membership/contact_edit.html'):
@@ -398,13 +410,13 @@ def membership_detail_json(request, id):
     # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
 
-@login_required
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
-             'MEMBERSHIP_DETAIL': membership_detail_json}
+             'MEMBERSHIP_DETAIL': membership_detail_json,
+             'ALIAS_AVAILABLE': check_alias_availability}
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],

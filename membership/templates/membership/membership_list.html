@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}/membership/static/js/member_list.js"></script>
+{% endblock %}
+
 {% block content %}
 {% include "membership/paginating_snippet.html" %}
 <ul id="memberlist">

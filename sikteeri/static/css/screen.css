@@ -296,3 +296,7 @@ div.applicationlist, div.memberlist {
     max-width: 60em;
 }
 
+.application_email_forward {
+    display: block;
+    clear: right;
+}

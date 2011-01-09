@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block extra_head %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}/membership/static/js/application.js"></script>
+{% endblock %}
+
 {% block content %}
 <h2>Yksityisjäsenen liittymislomake</h2>
 
@@ -130,6 +134,17 @@
   </p>
   </fieldset>
 
+  <fieldset class="wide"><legend>Sähköpostiohjaus</legend>
+
+  <p class="introduction">
+    Valitse käytettävä sähköpostiohjaus allaolevasta listasta
+  </p>
+    <select name="email_forward" id="email_forwards">
+      <option value="no">{% trans "No e-mail forward" %}</option>
+    </select>
+  </ul>
+  </fieldset>
+
   <fieldset class="wide"><legend>Tietojen julkaisu jäsenlistassa</legend>
 
   <p class="introduction">
@@ -162,4 +177,34 @@
   </p>
 </div>
 </form>
+
+<script type="text/javascript">
+$("#id_last_name").focusout(function() {
+  var permutations = generateEmailForwards($("#id_first_name").val(),
+                                           $("#id_given_names").val(),
+                                           $("#id_last_name").val());
+
+  $(".application_email_forward").remove();
+  $.each(permutations, function (idx, val) {
+    aliasAvailable(val, function (availability) {
+      console.log(val);
+      if (availability) {
+        console.log("should add " + val);
+        var opt = $("<option>").text(val);
+        opt.attr("value", val);
+        opt.addClass("application_email_forward");
+        $("#email_forwards").append(opt);
+      }
+    });
+  });
+});
+</script>
+
+<!-- <select> -->
+<!--   <option value="volvo">Volvo</option> -->
+<!--   <option value="saab">Saab</option> -->
+<!--   <option value="mercedes">Mercedes</option> -->
+<!--   <option value="audi">Audi</option> -->
+<!-- </select> -->
+
 {% endblock %}
