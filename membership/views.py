@@ -43,10 +43,6 @@ def person_application(request, template_name='membership/new_person_application
                     if k not in ['nationality', 'municipality', 'public_memberlist', 'email_forward', 'extra_info']:
                         d[k] = v
 
-                # TODO:
-                #  - save e-mail forward as an alias
-                #  - also add field for login and save as an alias
-
                 person = Contact(**d)
                 person.save()
                 membership = Membership(type='P', status='N',
@@ -56,6 +52,11 @@ def person_application(request, template_name='membership/new_person_application
                                         public_memberlist=f['public_memberlist'],
                                         extra_info=f['extra_info'])
                 membership.save()
+
+                if f['email_forward'] != 'no':
+                    forward_alias = Alias(owner=membership, name=f['email_forward'])
+                    forward_alias.save()
+
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
@@ -250,10 +251,6 @@ def organization_application_save(request):
 # Here should probably be rate limiting, but it isn't simple.
 # Would this suffice? <http://djangosnippets.org/snippets/2276/>
 def check_alias_availability(request, alias):
-    print alias
-    if alias == 'atte.hinkka':
-        print 'foo'
-        return HttpResponse("false", mimetype='text/plain')
     if Alias.objects.filter(name__iexact=alias).count() == 0:
         return HttpResponse("true", mimetype='text/plain')
     return HttpResponse("false", mimetype='text/plain')

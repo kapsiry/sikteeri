@@ -99,7 +99,6 @@ def serializable_membership_info(membership):
             json_obj[attr] = attr_val.ctime()
         else:
             json_obj[attr] = unicode(attr_val)
-    json_obj['str'] = unicode(membership)
 
     # Contacts
     contacts_json_obj = {}
@@ -127,8 +126,7 @@ def serializable_membership_info(membership):
     json_obj['events'] = event_list
 
     # Aliases
-    aliases = membership.valid_aliases().values('name')
-    json_obj['aliases'] = [x['name'] for x in list(aliases)]
+    json_obj['aliases'] = ", ".join([escape(alias.name) for alias in membership.valid_aliases()])
 
     # FIXME: This is broken. Should probably replace:
     # {% get_comment_list for [object] as [varname] %}
