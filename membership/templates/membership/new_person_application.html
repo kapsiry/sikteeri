@@ -187,9 +187,7 @@ $("#id_last_name").focusout(function() {
   $(".application_email_forward").remove();
   $.each(permutations, function (idx, val) {
     aliasAvailable(val, function (availability) {
-      console.log(val);
       if (availability) {
-        console.log("should add " + val);
         var opt = $("<option>").text(val);
         opt.attr("value", val);
         opt.addClass("application_email_forward");
@@ -199,12 +197,5 @@ $("#id_last_name").focusout(function() {
   });
 });
 </script>
-
-<!-- <select> -->
-<!--   <option value="volvo">Volvo</option> -->
-<!--   <option value="saab">Saab</option> -->
-<!--   <option value="mercedes">Mercedes</option> -->
-<!--   <option value="audi">Audi</option> -->
-<!-- </select> -->
 
 {% endblock %}

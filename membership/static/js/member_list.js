@@ -47,10 +47,6 @@ function makeMembershipDetailObject(id) {
 	obj.table.html("");
 
 	function addRow (elem, title, key) {
-	    if (key == 'aliases') {
-		console.log(typeof data.attr(key))
-		console.log(data.attr(key))
-	    }
 	    var rowElem = $("<tr>").addClass("table_row");
 	    rowElem.append($("<td>").html(title).addClass("key_column"));
 	    rowElem.append($("<td>").html(data.attr(key)).addClass("value_column"));
