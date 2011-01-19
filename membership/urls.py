@@ -25,7 +25,10 @@ urlpatterns = patterns('',
 
     url(r'testemail/$', 'membership.views.test_email', name='test_email'),
 
+    # Should we use this?
+    # <http://docs.djangoproject.com/en/dev/ref/generic-views/#django-views-generic-create-update-create-object>
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
+    url(r'aliases/edit/(\d+)/$', 'membership.views.alias_edit', name='alias_edit'),
 
     url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),

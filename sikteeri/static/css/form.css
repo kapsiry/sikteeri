@@ -96,7 +96,7 @@ ul.errorlist li {
     margin: 2em 0 0 .5em;
 }
 
-#new_application label, #login-form label, #contact_edit label {
+#new_application label, #login-form label, #entity_edit label {
     display: inline-block;
     clear: none;
     width: 200px;
@@ -107,7 +107,7 @@ ul.errorlist li {
     /* vertical-align: text-top; */
 }
 
-#new_application p, #login-form p, #contact_edit p {
+#new_application p, #login-form p, #entity_edit p {
     font-size: 80%;
     vertical-align: top;
     line-height: 19px;
@@ -121,7 +121,7 @@ ul.errorlist li {
     font-size: 100%;
 }
 
-#new_application input, #login-form input, #contact_edit input, textarea {
+#new_application input, #login-form input, #entity_edit input, textarea {
     margin: 0 0.4em;
     vertical-align: top;
     width: 200px;

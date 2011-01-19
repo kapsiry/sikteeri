@@ -239,6 +239,7 @@ class Alias(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     comment = models.CharField(max_length=128, blank=True, verbose_name=_('Comment'))
     expiration_date = models.DateTimeField(blank=True, null=True, verbose_name=_('Alias expiration date'))
+    logs = property(_get_logs)
 
     def expire(self, time=None):
         if time == None:

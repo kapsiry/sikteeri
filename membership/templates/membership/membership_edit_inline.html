@@ -31,7 +31,7 @@
 
 <h2>{% trans "Aliases" %}</h2>
 <ul>{% for alias in membership.alias_set.all %}
-    <li>{{ alias.name }}</li>
+    <li><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></li>
     {% endfor %}
 </ul>
 

@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField
+from django.forms import ModelForm, Form, EmailField, BooleanField
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -260,7 +260,7 @@ def check_alias_availability(request, alias):
     return HttpResponse("false", mimetype='text/plain')
 
 @permission_required('membership.manage_members')
-def contact_edit(request, id, template_name='membership/contact_edit.html'):
+def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
 
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
@@ -388,6 +388,41 @@ def membership_convert_to_organization(request, id, template_name='membership/me
                               {'form': form,
                                'membership': membership },
                               context_instance=RequestContext(request))
+
+@permission_required('membership.manage_aliases')
+def alias_edit(request, id, template_name='membership/entity_edit.html'):
+    alias = get_object_or_404(Alias, id=id)
+
+    class Form(ModelForm):
+        class Meta:
+            model = Alias
+            # exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+
+        def clean_name(self):
+            return self.instance.name
+
+        def disable_fields(self):
+            self.fields['name'].required = False
+            self.fields['name'].widget.attrs['disabled'] = 'disabled' 
+
+        def clean_name(self):
+            return alias.name
+
+    if request.method == 'POST':
+        form = Form(request.POST, instance=alias)
+        before = alias.__dict__.copy()
+        form.disable_fields()
+        if form.is_valid():
+            form.save()
+            after = alias.__dict__
+            log_change(alias, request.user, before, after)
+    else:
+        form = Form(instance=alias)
+        form.disable_fields()
+    logentries = bake_log_entries(alias.logs.all())
+    return render_to_response(template_name, {'form': form,
+        'alias': alias, 'logentries': logentries},
+        context_instance=RequestContext(request))
 
 @permission_required('membership.manage_members')
 @transaction.commit_on_success
