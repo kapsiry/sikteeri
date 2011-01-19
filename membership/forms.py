@@ -1,11 +1,31 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from utils import log_change
 from models import *
+
+class LoginField(forms.CharField):
+    def __init__(self, *args, **kwargs):
+        super(LoginField, self).__init__(min_length=2, max_length=16, *args, **kwargs)
+
+    def clean(self, value):
+        super(LoginField, self).clean(value)
+
+        errors = []
+        if re.match(r"^[a-z][a-z0-9._-]*$", value) == None:
+            errors.append(_('Login begins with an illegal character or contains an illegal character.'))
+        if Alias.objects.filter(name__iexact=value).count() > 0:
+            errors.append(_('Login already reserved.'))
+
+        if len(errors) > 0:
+            raise forms.ValidationError(errors)
+
+        return value
+
 
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -19,6 +39,7 @@ class PersonMembershipForm(forms.Form):
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'))
+    unix_login = LoginField()
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
 

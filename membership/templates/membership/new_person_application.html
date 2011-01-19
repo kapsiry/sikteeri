@@ -134,15 +134,31 @@
   </p>
   </fieldset>
 
-  <fieldset class="wide"><legend>Sähköpostiohjaus</legend>
+  <fieldset class="wide"><legend>Käyttäjätunnus</legend>
+    <p>
+      <label for="id_unix_login">{{ form.unix_login.label }}</label>
+      {{ form.unix_login }}{% if form.unix_login.help_text %}
+      <span class="help">{{ form.unix_login.help_text }}</span>{% endif %}
+      {% for error in form.unix_login.errors %}
+      <span class="error{% if form.unix_login.help_text %} newline{% endif %}">{{ error }}</span>
+      {% endfor %}
+      </p>
+  </fieldset>
+  
 
+  <fieldset class="wide"><legend>Sähköpostiohjaus</legend>
   <p class="introduction">
-    Valitse käytettävä sähköpostiohjaus allaolevasta listasta
+    Tässä kohdassa voit valita käyttöösi sähköpostiohjauksen, jolla saat
+    käyttöösi ohjaus@kapsi.fi-osoitteen.  Jos haluamaasi ohjausta ei löydy
+    listasta, voi olla että se on jo varattu tai sivu ei sitä vain osannut
+    luoda.  Voit pyytää ohjauksen myös myöhemmin.  Valitse käytettävä
+    sähköpostiohjaus allaolevasta listasta.
   </p>
+  <p>
     <select name="email_forward" id="email_forwards">
       <option value="no">{% trans "No e-mail forward" %}</option>
     </select>
-  </ul>
+  </p>
   </fieldset>
 
   <fieldset class="wide"><legend>Tietojen julkaisu jäsenlistassa</legend>

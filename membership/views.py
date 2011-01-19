@@ -40,7 +40,9 @@ def person_application(request, template_name='membership/new_person_application
             try:
                 d = {}
                 for k, v in f.items():
-                    if k not in ['nationality', 'municipality', 'public_memberlist', 'email_forward', 'extra_info']:
+                    if k not in ['nationality', 'municipality',
+                                 'public_memberlist', 'email_forward',
+                                 'unix_login', 'extra_info']:
                         d[k] = v
 
                 person = Contact(**d)
@@ -56,6 +58,8 @@ def person_application(request, template_name='membership/new_person_application
                 if f['email_forward'] != 'no':
                     forward_alias = Alias(owner=membership, name=f['email_forward'])
                     forward_alias.save()
+                login_alias = Alias(owner=membership, name=f['unix_login'], account=True)
+                login_alias.save()
 
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
