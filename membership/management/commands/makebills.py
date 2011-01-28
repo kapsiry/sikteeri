@@ -31,7 +31,7 @@ def membership_approved_time(membership):
 def create_billingcycle(membership):
     """
     Creates a new billing cycle for a membership.
-    
+
     If a previous billing cycle exists, the end date is used as the start
     date for the new one.  If a previous one doesn't exist, e.g. it is a new
     user, we use the time when they were last approved.
@@ -68,8 +68,8 @@ def can_send_reminder(last_due_date):
         if latest_recorded_payment > datetime.now():
             latest_recorded_payment = datetime.now()
         due_plus_margin = last_due_date + timedelta(days=14) # FIXME: hardcoded
-        if due_plus_margin < latest_recorded_payment:
-            can_send = True
+        if latest_recorded_payment < due_plus_margin:
+            can_send = False
 
     return can_send
 
@@ -98,7 +98,11 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
+<<<<<<< HEAD
                 if can_send_reminder(last_due_date):
+=======
+                if can_send_remainder(last_due_date):
+>>>>>>> 9abade5ff4d52cd1c4a81b6d0f60cd929a633305
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
