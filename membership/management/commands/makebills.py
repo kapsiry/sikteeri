@@ -96,9 +96,9 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
-                two_weeks_from_now = datetime.now() + timedelta(days=14)
+                two_weeks_ago = datetime.now() - timedelta(days=14)
                 can_send = can_send_reminder(last_due_date)
-                if last_due_date > two_weeks_from_now and can_send:
+                if last_due_date > two_weeks_ago and can_send:
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
