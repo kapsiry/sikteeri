@@ -433,6 +433,33 @@ def membership_convert_to_organization(request, id, template_name='membership/me
                                'membership': membership },
                               context_instance=RequestContext(request))
 
+@transaction.commit_on_success
+def membership_add_alias(request, id, template_name='membership/membership_add_alias.html'):
+    membership = get_object_or_404(Membership, id=id)
+    class Form(ModelForm):
+        class Meta:
+            model = Alias
+            exclude = ('owner', 'account', 'expiration_date')
+
+    if request.method == 'POST':
+        form = Form(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            name = f['name']
+            comment = f['comment']
+            alias = Alias(owner=membership, name=name, comment=comment)
+            alias.save()
+            messages.success(request, unicode(_('Alias %s successfully created for %s.') % (alias, membership)))
+            logger.info("Alias %s added by %s." % (alias, request.user.username))
+            return redirect('membership_edit', membership.id)
+    else:
+        form = Form()
+
+    return render_to_response(template_name,
+                              {'form': form,
+                               'membership': membership },
+                              context_instance=RequestContext(request))
+
 @permission_required('membership.manage_aliases')
 def alias_edit(request, id, template_name='membership/entity_edit.html'):
     alias = get_object_or_404(Alias, id=id)

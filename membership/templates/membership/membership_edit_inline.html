@@ -25,6 +25,7 @@
 
 <h2>{% trans "Actions" %}</h2>
 {% if membership.status != "D" %}
+<a href="{% url membership_add_alias membership.id %}">{% trans "Add an alias" %}</a>
 <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
 <a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>
 {% endif %}
