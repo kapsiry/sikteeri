@@ -62,6 +62,15 @@ def create_dummy_member(i):
     membership.save()
     transaction.commit()
 
+    forward_alias = Alias(owner=membership,
+                          name=Alias.email_forwards(membership)[0])
+    forward_alias.save()
+    transaction.commit()
+    login_alias = Alias(owner=membership, account=True,
+                        name=choice(Alias.email_forwards(membership)))
+    login_alias.save()
+    transaction.commit()
+
     logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
@@ -74,55 +83,16 @@ def main():
         membership.approve(user)
         transaction.commit()
 
-        forward_alias = Alias(owner=membership,
-                              name=Alias.email_forwards(membership)[0])
-        forward_alias.save()
-        transaction.commit()
-
-        try:
-            login_alias = Alias(owner=membership, account=True,
-                                name=choice(Alias.email_forwards(membership)).replace(".", ""))
-            login_alias.save()
-            transaction.commit()
-        except:
-            pass
-
     # Pre-approved members
     for i in xrange(2000,2100):
         membership = create_dummy_member(i)
         membership.preapprove(user)
         transaction.commit()
 
-        forward_alias = Alias(owner=membership,
-                              name=Alias.email_forwards(membership)[0])
-        forward_alias.save()
-        transaction.commit()
-
-        try:
-            login_alias = Alias(owner=membership, account=True,
-                                name=choice(Alias.email_forwards(membership)).replace(".", ""))
-            login_alias.save()
-            transaction.commit()
-        except:
-            pass
-
     # New applications
     for i in xrange(2100,2200):
         membership = create_dummy_member(i)
         transaction.commit()
-
-        forward_alias = Alias(owner=membership,
-                              name=Alias.email_forwards(membership)[0])
-        forward_alias.save()
-        transaction.commit()
-
-        try:
-            login_alias = Alias(owner=membership, account=True,
-                                name=choice(Alias.email_forwards(membership)).replace(".", ""))
-            login_alias.save()
-            transaction.commit()
-        except:
-            pass
 
 if __name__ == '__main__':
     main()
