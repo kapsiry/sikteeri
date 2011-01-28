@@ -124,7 +124,7 @@ def row_to_payment(row):
         p = Payment.objects.get(transaction_id__exact=row['transaction'])
         return p
     except Payment.DoesNotExist:
-        p = Payment(payment_day=row['date'],
+        p = Payment(payment_day=min(datetime.now(), row['date']),
                     amount=row['amount'],
                     type=row['event_type_description'],
                     payer_name=row['fromto'],
