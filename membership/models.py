@@ -364,11 +364,7 @@ class Bill(models.Model):
         super(Bill, self).save(*args, **kwargs)
 
     def is_reminder(self):
-        cycle = self.billingcycle
-        bills = cycle.bill_set.order_by('due_date')
-        if self.id != bills[0].id:
-            return True
-        return False
+        return self.reminder_count > 0
 
     # FIXME: different template based on class? should this code be here?
     def render_as_text(self):
