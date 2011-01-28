@@ -6,8 +6,9 @@
 
 <ul id="billlist">
   {% for bill in bill_list %}
+  {% with bill.billingcycle.membership as member %}
   <li class="list_item" {% if bill.is_due %}style="color: red"{% endif %}>
-    <span class="name">{{ bill.billingcycle.membership }}</span>
+    <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
     <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></span>
     <span class="sum">{{ bill.billingcycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created|date:"d.n. H:i" }}</span>
     <span class="due">
@@ -20,6 +21,7 @@
     </span>
     <ul>{% for payment in bill.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
   </li>
+  {% endwith %}
   {% empty %}
   {% trans "No bill matches this filter, try seeing the full list." %}
   {% endfor %}
