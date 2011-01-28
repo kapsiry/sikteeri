@@ -331,7 +331,7 @@ li.list_item span.due {
 
 li.list_item span.cycle {
     display: inline-block;
-    width: 8em;
+    padding-right: 1em;
 }
 
 li.list_item span.paid {
