@@ -573,13 +573,21 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
         class Meta:
             model = Alias
             # exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+        owner = ModelChoiceField(queryset=Membership.objects.filter(pk=alias.owner.id),
+                                 empty_label=None)
+
 
         def clean_name(self):
             return alias.name
 
+        def clean_owner(self):
+            return alias.owner
+
         def disable_fields(self):
             self.fields['name'].required = False
             self.fields['name'].widget.attrs['disabled'] = 'disabled'
+            self.fields['owner'].required = False
+            self.fields['owner'].widget.attrs['disabled'] = 'disabled'
 
     if request.method == 'POST':
         form = Form(request.POST, instance=alias)
