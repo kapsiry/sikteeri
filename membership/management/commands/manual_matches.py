@@ -59,7 +59,9 @@ def process_csv(filename):
             except Membership.DoesNotExist:
                 logger.warning("Membership %s not found. transaction id: %s" % (mid, transaction))   
             except BillingCycle.DoesNotExist:
-                logger.warning("No unpaid billingcycles for member %s found. transaction id: %s" % (mid, transaction))   
+                # Payment references a legacy billing cycle - ignore
+                payment.ignore = True
+                payment.save()
             num_notattached = num_notattached + 1
             sum_notattached = sum_notattached + payment.amount
 
