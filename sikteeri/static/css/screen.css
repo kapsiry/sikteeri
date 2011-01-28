@@ -329,6 +329,11 @@ li.list_item span.due {
     width: 12em;
 }
 
+li.list_item span.cycle {
+    display: inline-block;
+    width: 8em;
+}
+
 li.list_item span.paid {
     display: inline-block;
     width: 2em;
