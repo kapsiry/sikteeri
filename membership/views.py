@@ -277,6 +277,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
             after = contact.__dict__
             log_change(contact, request.user, before, after)
             messages.success(request, unicode(_("Changes to contact %s saved.") % contact))
+            return redirect('contact_edit', id) # form stays as POST otherwise if someone refreshes
         else:
             messages.success(request, unicode(_("Changes to contact %s not saved.") % contact))
     else:
@@ -287,30 +288,79 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         'logentries': logentries},
         context_instance=RequestContext(request))
 
+@permission_required('membership.manage_bills')
+def bill_edit(request, id, template_name='membership/entity_edit.html'):
+    bill = get_object_or_404(Bill, id=id)
+
+    class Form(ModelForm):
+        class Meta:
+            model = Bill
+            exclude = ('billingcycle', 'reminder_count')
+
+    before = bill.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    if request.method == 'POST':
+        form = Form(request.POST, instance=bill)
+        if form.is_valid():
+            form.save()
+            after = bill.__dict__
+            log_change(bill, request.user, before, after)
+            messages.success(request, unicode(_("Changes to bill %s saved.") % bill))
+            return redirect('bill_edit', id) # form stays as POST otherwise if someone refreshes
+        else:
+            messages.success(request, unicode(_("Changes to bill %s not saved.") % bill))
+    else:
+        form =  Form(instance=bill)
+    logentries = bake_log_entries(bill.logs.all())
+    return render_to_response(template_name, {'form': form, 'bill': bill,
+        'logentries': logentries},
+        context_instance=RequestContext(request))
+
+@permission_required('membership.manage_bills')
+def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
+    cycle = get_object_or_404(BillingCycle, id=id)
+
+    class Form(ModelForm):
+        class Meta:
+            model = BillingCycle
+            exclude = ('membership', 'start', 'end', 'sum', 'reference_number')
+
+    before = cycle.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    if request.method == 'POST':
+        form = Form(request.POST, instance=cycle)
+        if form.is_valid():
+            form.save()
+            after = cycle.__dict__
+            log_change(cycle, request.user, before, after)
+            messages.success(request, unicode(_("Changes to billing cycle %s saved.") % cycle))
+            return redirect('billingcycle_edit', id) # form stays as POST otherwise if someone refreshes
+        else:
+            messages.success(request, unicode(_("Changes to bill %s not saved.") % cycle))
+    else:
+        form =  Form(instance=cycle)
+    logentries = bake_log_entries(cycle.logs.all())
+    return render_to_response(template_name, {'form': form, 'cycle': cycle,
+        'logentries': logentries},
+        context_instance=RequestContext(request))
+
 @permission_required('membership.manage_members')
-def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
+def membership_edit(request, id, template_name='membership/membership_edit.html'):
     membership = get_object_or_404(Membership, id=id)
-    from random import random
 
     class Form(ModelForm):
         class Meta:
             model = Membership
             exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
-        def clean_approved(self):
-            return self.instance.approved
-        def clean_status(self):
-            return self.instance.status
-
-        def disable_fields(self):
-            self.fields['status'].required = False
-            self.fields['status'].widget.attrs['disabled'] = 'disabled' 
-            self.fields['approved'].required = False
-            self.fields['approved'].widget.attrs['disabled'] = 'disabled' 
 
         def clean_status(self):
             return membership.status
         def clean_approved(self):
             return membership.approved
+
+        def disable_fields(self):
+            self.fields['status'].required = False
+            self.fields['status'].widget.attrs['disabled'] = 'disabled'
+            self.fields['approved'].required = False
+            self.fields['approved'].widget.attrs['disabled'] = 'disabled'
 
     if request.method == 'POST':
         form = Form(request.POST, instance=membership)
@@ -320,6 +370,7 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
             form.save()
             after = membership.__dict__
             log_change(membership, request.user, before, after)
+            return redirect('membership_edit', id) # form stays as POST otherwise if someone refreshes
     else:
         form = Form(instance=membership)
         form.disable_fields()
@@ -328,11 +379,6 @@ def membership_edit_inline(request, id, template_name='membership/membership_edi
     return render_to_response(template_name, {'form': form,
         'membership': membership, 'logentries': logentries},
         context_instance=RequestContext(request))
-
-@permission_required('membership.manage_members')
-def membership_edit(request, id, template_name='membership/membership_edit.html'):
-    # XXX: Inline template name is hardcoded in template :/
-    return membership_edit_inline(request, id, template_name)
 
 @permission_required('membership.delete_members')
 @transaction.commit_on_success
@@ -397,14 +443,11 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
             # exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
 
         def clean_name(self):
-            return self.instance.name
+            return alias.name
 
         def disable_fields(self):
             self.fields['name'].required = False
-            self.fields['name'].widget.attrs['disabled'] = 'disabled' 
-
-        def clean_name(self):
-            return alias.name
+            self.fields['name'].widget.attrs['disabled'] = 'disabled'
 
     if request.method == 'POST':
         form = Form(request.POST, instance=alias)
@@ -414,6 +457,7 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
             form.save()
             after = alias.__dict__
             log_change(alias, request.user, before, after)
+            return redirect('alias_edit', id) # form stays as POST otherwise if someone refreshes
     else:
         form = Form(instance=alias)
         form.disable_fields()

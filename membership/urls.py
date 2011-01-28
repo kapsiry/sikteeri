@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf.urls.defaults import *
 from django.shortcuts import redirect
@@ -30,11 +30,13 @@ urlpatterns = patterns('',
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
     url(r'aliases/edit/(\d+)/$', 'membership.views.alias_edit', name='alias_edit'),
 
-    url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
 
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
+
+    url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
+    url(r'billing_cycles/edit/(\d+)/$', 'membership.views.billingcycle_edit', name='billingcycle_edit'),
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
@@ -52,6 +54,14 @@ def member_object_list(*args, **kwargs):
 def billing_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
 
+# This should list any bills/cycles that were forcefully set as paid even
+# though insufficient payments were paid.
+# @permission_required('membership.read_bills')
+# def forced_paid_cycles_list(*args, **kwargs):
+#     paid_q = Q(is_paid__exact=True)
+#     payments_sum_q = Q(payment_set.aggregate(Sum('amount'))__lt=sum)
+#     qs = BillingCycle.objects.filter(paid_q, payments_sum_q)
+#     return django.views.generic.list_detail.object_list(request, queryset=qs, *args, **kwargs)
 
 @permission_required('membership.read_members')
 def search(request, query=None,
@@ -136,18 +146,18 @@ urlpatterns += patterns('django.views.generic',
          'template_object_name': 'bill',
          'paginate_by': ENTRIES_PER_PAGE}, name='bill_list'),
     url(r'bills/unpaid/$', billing_object_list,
-        {'queryset': Bill.objects.filter(billingcycle__is_paid__exact=False),
+        {'queryset': Bill.objects.filter(billingcycle__is_paid__exact=False).order_by('-billingcycle__start'),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'bill',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_bill_list'),
 
     url(r'payments/$', billing_object_list,
-        {'queryset': Payment.objects.all(),
+        {'queryset': Payment.objects.all().order_by('-payment_day'),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='payment_list'),
     url(r'payments/unknown/$', billing_object_list,
-        {'queryset': Payment.objects.filter(billingcycle__exact=None),
+        {'queryset': Payment.objects.filter(billingcycle__exact=None).order_by('-payment_day'),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='unknown_payment_list'),

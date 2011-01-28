@@ -309,6 +309,7 @@ class BillingCycle(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
+    logs = property(_get_logs)
 
     def last_bill(self):
         try:
@@ -349,6 +350,7 @@ class Bill(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
+    logs = property(_get_logs)
 
     def is_due(self):
         return self.due_date < datetime.now()

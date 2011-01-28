@@ -3,7 +3,6 @@
 """
 generate_test_data.py
 
-Created by Joonas Kortesalmi on 2010-02-04.
 Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
 
