@@ -11,6 +11,10 @@
 <h2>{% trans "Bill for member" %} {{ bill.billingcycle.membership }}, {{ bill.billingcycle }}</h2>
 {% endif %}
 
+{% if payment %}
+<h2>{% trans "Payment by" %} {{ payment.payer_name }}</h2>
+{% endif %}
+
 <form method="POST">{% csrf_token %}
 <div id="entity_edit">
   {{ form.as_p }}
@@ -21,6 +25,11 @@
 </div>
 </form>
 <hr />
+
+{% if bill and not bill.paid %}
+<h2>Actions</h2>
+<a href="{% url bill_connect_payment bill.id %}">{% trans "Connect this bill to a payment" %}</a>
+{% endif %}
 
 {% if logentries %}
 <h2>{% trans "Event log" %}</h2>
