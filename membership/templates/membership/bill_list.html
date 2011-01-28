@@ -7,12 +7,12 @@
 <ul id="billlist">
   {% for bill in bill_list %}
   <li class="list_item" {% if bill.is_due %}style="color: red"{% endif %}>
-    <span class="name"><a href="{% url bill_edit bill.id %}">{{ bill.billingcycle.membership }}</a></span>
+    <span class="name">{{ bill.billingcycle.membership }}</span>
     <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></span>
     <span class="sum">{{ bill.billingcycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created|date:"d.n. H:i" }}</span>
     <span class="due">
-      {% if bill.is_due %}{% trans "overdue for" %} {{ bill.due_date|timesince }}
-      {% else %}{% trans "due in" %} {{ bill.due_date|timeuntil }}
+      {% if bill.is_due %}<a style="color:red; text-weigt: bold" href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n. H:i" }}</a>
+      {% else %}<a href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n. H:i" }}</a>
       {% endif %}
     </span>
     <span class="paid">
