@@ -423,7 +423,7 @@ class Payment(models.Model):
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
     transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
-    amount = models.DecimalField(max_digits=6, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999,99
+    amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
 

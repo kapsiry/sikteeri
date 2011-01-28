@@ -120,7 +120,6 @@ class OpDictReader(UnicodeDictReader):
         return row
 
 def row_to_payment(row):
-    # FIXME: should replace decodes with a decoding CSV 'dialect'
     try:
         p = Payment.objects.get(transaction_id__exact=row['transaction'])
         return p
@@ -137,6 +136,8 @@ def row_to_payment(row):
 def process_csv(filename):
     """Actual CSV file processing logic
     """
+    num_attached = num_notattached = 0
+    sum_attached = sum_notattached = 0
     with open(filename, 'r') as f:
         reader = OpDictReader(f)
         for row in reader:
@@ -146,7 +147,7 @@ def process_csv(filename):
                 continue
             payment = row_to_payment(row)
 
-            # Do nothing if this payment hasn't been assigned
+            # Do nothing if this payment has already been assigned
             if payment.billingcycle:
                 continue
 
@@ -164,9 +165,18 @@ def process_csv(filename):
                     cycle.save()
                     logger.info("Cycle %s marked as paid, total paid: %.2f." % (
                         repr(cycle), total_paid))
+                num_attached = num_attached + 1
+                sum_attached = sum_attached + payment.amount
             except BillingCycle.DoesNotExist:
+                payment.save()
                 logger.warning("No billing cycle found for %s" % payment.reference_number)
+                num_notattached = num_notattached + 1
+                sum_notattached = sum_notattached + payment.amount
                 continue # Failed to find cycle for this reference number
+
+    logger.info("Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" %
+                (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached,
+                 sum_notattached))
 
 
 class Command(BaseCommand):
