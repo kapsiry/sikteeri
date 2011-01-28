@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger("csvbills")
 
 from membership.models import Bill, BillingCycle, Payment
-from reference_numbers import add_checknumber
+from membership.reference_numbers import add_checknumber
 
 class UTF8Recoder:
     """
@@ -121,7 +121,7 @@ class OpDictReader(UnicodeDictReader):
         return row
 
 def normalize_reference_number(refnum):
-    if len(refnum) => 6 and refnum[-5:-1] in ('0902', '0903', '1002'. '1003'):
+    if len(refnum) >= 6 and refnum[-5:-1] in ('0902', '0903', '1002', '1003'):
         refnum = add_checknumber(refnum[:-2] + '1')
     return refnum
 
