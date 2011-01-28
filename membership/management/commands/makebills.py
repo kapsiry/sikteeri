@@ -76,6 +76,7 @@ def can_send_reminder(last_due_date):
 def send_reminder(membership):
     billing_cycle = membership.billingcycle_set.latest('end')
     bill = Bill(billingcycle=billing_cycle)
+    bill.reminder_count = billing_cycle.bill_set.count()
     bill.save()
     bill.send_as_email()
     return bill
