@@ -17,6 +17,7 @@ import logging
 logger = logging.getLogger("csvbills")
 
 from membership.models import Bill, BillingCycle, Payment
+from reference_numbers import add_checknumber
 
 class UTF8Recoder:
     """
@@ -119,6 +120,11 @@ class OpDictReader(UnicodeDictReader):
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
 
+def normalize_reference_number(refnum):
+    if len(refnum) => 6 and refnum[-5:-1] in ('0902', '0903', '1002'. '1003'):
+        refnum = add_checknumber(refnum[:-2] + '1')
+    return refnum
+
 def row_to_payment(row):
     try:
         p = Payment.objects.get(transaction_id__exact=row['transaction'])
@@ -153,6 +159,7 @@ def process_csv(filename):
 
             try:
                 reference = payment.reference_number
+                reference = normalize_reference_number(reference) # temporary for importing
                 cycle = BillingCycle.objects.get(reference_number=reference)
                 payment.billingcycle = cycle
                 payment.save()

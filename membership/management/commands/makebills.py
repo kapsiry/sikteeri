@@ -98,11 +98,7 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
-<<<<<<< HEAD
                 if can_send_reminder(last_due_date):
-=======
-                if can_send_remainder(last_due_date):
->>>>>>> 9abade5ff4d52cd1c4a81b6d0f60cd929a633305
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
