@@ -25,10 +25,6 @@ from membership.models import Fee, MEMBER_TYPES
 
 user = User.objects.get(id=1)
 
-# MEMBER_TYPES = (('P', _('Person')),
-#                 ('S', _('Supporting')),
-#                 ('O', _('Organization')))
-
 def create_member(mdata):
     # legacy fields
     # ['application_id', 'sendinfo', 'memberclass', 'applicationtime', 'sms',
@@ -114,6 +110,9 @@ if __name__ == '__main__':
                       help="read member data from FILE", metavar="FILE")
     (options, args) = parser.parse_args()
 
+    if not options.filename:
+        parser.print_help()
+        sys.exit(1)
     if not os.path.isfile(options.filename):
         parser.error("File '%s' not found." % options.filename)
     main(options.filename)
