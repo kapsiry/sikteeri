@@ -120,7 +120,6 @@ class OpDictReader(UnicodeDictReader):
         return row
 
 def row_to_payment(row):
-    # FIXME: should replace decodes with a decoding CSV 'dialect'
     try:
         p = Payment.objects.get(transaction_id__exact=row['transaction'])
         return p
@@ -146,7 +145,7 @@ def process_csv(filename):
                 continue
             payment = row_to_payment(row)
 
-            # Do nothing if this payment hasn't been assigned
+            # Do nothing if this payment has already been assigned
             if payment.billingcycle:
                 continue
 
@@ -165,6 +164,7 @@ def process_csv(filename):
                     logger.info("Cycle %s marked as paid, total paid: %.2f." % (
                         repr(cycle), total_paid))
             except BillingCycle.DoesNotExist:
+                payment.save()
                 logger.warning("No billing cycle found for %s" % payment.reference_number)
                 continue # Failed to find cycle for this reference number
 
