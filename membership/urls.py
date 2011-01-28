@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf.urls.defaults import *
 from django.shortcuts import redirect
@@ -54,6 +54,14 @@ def member_object_list(*args, **kwargs):
 def billing_object_list(*args, **kwargs):
     return django.views.generic.list_detail.object_list(*args, **kwargs)
 
+# This should list any bills/cycles that were forcefully set as paid even
+# though insufficient payments were paid.
+# @permission_required('membership.read_bills')
+# def forced_paid_cycles_list(*args, **kwargs):
+#     paid_q = Q(is_paid__exact=True)
+#     payments_sum_q = Q(payment_set.aggregate(Sum('amount'))__lt=sum)
+#     qs = BillingCycle.objects.filter(paid_q, payments_sum_q)
+#     return django.views.generic.list_detail.object_list(request, queryset=qs, *args, **kwargs)
 
 @permission_required('membership.read_members')
 def search(request, query=None,
