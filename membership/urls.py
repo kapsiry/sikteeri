@@ -109,6 +109,9 @@ def search(request, query=None,
                                                         template_object_name='member',
                                                         paginate_by=ENTRIES_PER_PAGE)
 
+# Shortcuts
+payments = Payment.objects.all().order_by('-payment_day')
+
 urlpatterns += patterns('django.views.generic',
 
     url(r'memberships/new/$', member_object_list,
@@ -153,12 +156,12 @@ urlpatterns += patterns('django.views.generic',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_bill_list'),
 
     url(r'payments/$', billing_object_list,
-        {'queryset': Payment.objects.all().order_by('-payment_day'),
+        {'queryset': payments,
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='payment_list'),
     url(r'payments/unknown/$', billing_object_list,
-        {'queryset': Payment.objects.filter(billingcycle__exact=None).order_by('-payment_day'),
+        {'queryset': payments.filter(billingcycle=None, ignore=False),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='unknown_payment_list'),
