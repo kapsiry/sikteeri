@@ -78,14 +78,17 @@ def create_member(mdata):
                             public_memberlist=bool(mdata['publicname']))
     logger.info("Member %s imported from legacy database." % (unicode(person)))
     membership.save()
-    billing_cycle = BillingCycle(membership=membership, is_paid=False,
-        start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
-        end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
-    # Creating an instance does not touch db and we need and id for the Bill
-    billing_cycle.save()
-    bill = Bill(billingcycle=billing_cycle,
-        created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
-    bill.save()
+
+    # Create a period only if there already is one previously. Else let
+    # makebills create one.
+    if mdata.has_key('period_start'):
+        billing_cycle = BillingCycle(membership=membership, is_paid=False,
+                                     start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
+                                     end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
+        billing_cycle.save()
+        bill = Bill(billingcycle=billing_cycle,
+                    created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
+        bill.save()
     log_change(membership, user, change_message="Imported into system")
     return True
 
