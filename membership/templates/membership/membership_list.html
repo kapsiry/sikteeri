@@ -10,12 +10,12 @@
 <ul id="memberlist">
 {% for member in member_list %}
   {% if member.status == "N" %}
-    <li class="memberlist_item preapprovable" id="{{ member.id }}">
+    <li class="list_item preapprovable" id="{{ member.id }}">
   {% else %}
   {% if member.status == "P" %}
-    <li class="memberlist_item approvable" id="{{ member.id }}">
+    <li class="list_item approvable" id="{{ member.id }}">
   {% else %}
-    <li class="memberlist_item" id="{{ member.id }}">
+    <li class="list_item" id="{{ member.id }}">
   {% endif %}
   {% endif %}
       <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>

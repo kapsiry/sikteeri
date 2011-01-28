@@ -193,6 +193,19 @@ div.contentmenu {
     border-bottom: 1px solid #D8DBDB;
 }
 
+/* bill list */
+ul#billlist {
+    list-style-type: none;
+}
+
+ul#billlist > li:nth-child(even) {
+    background: #e4e4e4;
+}
+ul#billlist > li:nth-child(odd) {
+    background: #eeeeee;
+}
+
+
 /* member list */
 ul#memberlist {
     list-style-type: none;
@@ -209,33 +222,11 @@ li.memberlist_item:hover {
     background: white;
 }
 
-li.memberlist_item {
-    padding: 0.5em;
-    margin: 0.1em;
-    border-left: 1px solid #eee;
-    border-top: 1px solid #eee;
-    border-right: 1px solid silver;
-    border-bottom: 1px solid silver;
-}
 
 ul#memberlist > li:hover {
     background: white;
 }
 
-li.memberlist_item span.name {
-    display: inline-block;
-    width: 12em;
-}
-
-li.memberlist_item span.status {
-    display: inline-block;
-    width: 8em;
-}
-
-li.memberlist_item a.cart_function {
-    display: inline-block;
-    margin-left: 1em;
-}
 
 .membership_details {
     margin-top: 1.5em;
@@ -299,4 +290,46 @@ div.applicationlist, div.memberlist {
 .application_email_forward {
     display: block;
     clear: right;
+}
+
+
+
+/* generic list items */
+li.list_item {
+    padding: 0.5em;
+    margin: 0.1em;
+    border-left: 1px solid #eee;
+    border-top: 1px solid #eee;
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+li.list_item span.name {
+    display: inline-block;
+    width: 12em;
+}
+
+li.list_item span.status {
+    display: inline-block;
+    width: 8em;
+}
+
+li.list_item a.cart_function {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+li.list_item span.sum {
+    display: inline-block;
+    width: 16em;
+}
+
+li.list_item span.due {
+    display: inline-block;
+    width: 12em;
+}
+
+li.list_item span.paid {
+    display: inline-block;
+    width: 2em;
 }

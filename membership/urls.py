@@ -30,11 +30,13 @@ urlpatterns = patterns('',
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
     url(r'aliases/edit/(\d+)/$', 'membership.views.alias_edit', name='alias_edit'),
 
-    url(r'memberships/edit_inline/(\d+)/$', 'membership.views.membership_edit_inline', name='membership_edit_inline'),
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
 
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
+
+    url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
+    url(r'billing_cycles/edit/(\d+)/$', 'membership.views.billingcycle_edit', name='billingcycle_edit'),
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
