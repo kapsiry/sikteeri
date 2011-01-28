@@ -3,6 +3,14 @@
 {% load comments %}
 
 {% block content %}
+{% if cycle %}
+<h2>{% trans "Billing cycle for member" %} {{ cycle.membership }}, {{ cycle }}</h2>
+{% endif %}
+
+{% if bill %}
+<h2>{% trans "Bill for member" %} {{ bill.billingcycle.membership }}, {{ bill.billingcycle }}</h2>
+{% endif %}
+
 <form method="POST">{% csrf_token %}
 <div id="entity_edit">
   {{ form.as_p }}
