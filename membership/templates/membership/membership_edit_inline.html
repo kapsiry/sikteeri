@@ -39,7 +39,7 @@
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
     <li>{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}
         <ul>{% for bill in billingcycle.bill_set.all %}
-            <li>{% trans "Bill sent" %} {{ bill.created|naturalday }}, {% trans "due on" %} {{ bill.due_date|naturalday }} ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})</li>
+            <li><a href="{% url bill_edit bill.id %}">{% trans "Bill" %}</a> {% trans "sent" %} {{ bill.created|naturalday }}, {% trans "due on" %} {{ bill.due_date|naturalday }} ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})</li>
             {% endfor %}
         </ul>
     </li>
