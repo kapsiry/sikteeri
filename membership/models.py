@@ -418,6 +418,7 @@ class Payment(models.Model):
     # recording payments that are not related to any billingcycle for future
     # extension
     billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
+    ignore = models.BooleanField(default=False, verbose_name=_('Ignored payment'))
 
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
