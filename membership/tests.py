@@ -162,7 +162,7 @@ class BillingTest(TestCase):
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
         makebills()
-        
+
         self.assertEqual(len(mail.outbox), 0)
         cycles = membership.billingcycle_set.all()
         self.assertEqual(len(cycles), 0)
@@ -251,7 +251,7 @@ class SingleMemberBillingTest(TestCase):
 
         criticals = handler.messages["critical"]
         self.assertTrue(len(criticals) > 0)
-        
+
         logged = False
         for critical in criticals:
             if "no new billing cycle created for" in critical:
@@ -279,7 +279,7 @@ class SingleMemberBillingTest(TestCase):
     def test_new_billing_cycle_with_previous_paid(self):
         "makebills: new billing cycle with previous already paid"
         m = self.membership
-        
+
         makebills()
         self.assertEqual(len(m.billingcycle_set.all()), 1)
         self.assertEqual(len(mail.outbox), 1)
@@ -388,11 +388,17 @@ class CSVNoMembersTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def test_file_reading(self):
-        "csvbills: process_csv ran with no members"
+        "csvbills: test data should have 3 payments, none of which match"
         process_csv("../membership/fixtures/csv-test.txt")
+
         payment_count = Payment.objects.count()
-        error = "No payments should match without any members"
-        self.assertEqual(payment_count, 0, error)
+        error = "There should be 3 non-negative payments in the testdata"
+        self.assertEqual(payment_count, 3, error)
+
+        no_cycle_q = Q(billingcycle=None)
+        nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
+        error = "No payments should match without any members in db"
+        self.assertEqual(nomatch_payments, 0, error)
 
 class CSVReadingTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -409,11 +415,13 @@ class CSVReadingTest(TestCase):
         self.bill.save()
 
     def test_import_data(self):
+        no_cycle_q = Q(billingcycle=None)
+
         process_csv("../membership/fixtures/csv-test.txt")
-        payment_count = Payment.objects.count()
+        payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_count, 1, error)
-        payment = Payment.objects.latest("payment_day")
+        payment = Payment.objects.filter(billingcycle=self.cycle).latest("payment_day")
         cycle = BillingCycle.objects.get(pk=self.cycle.pk)
         self.assertEqual(cycle.reference_number, payment.reference_number)
         self.assertTrue(cycle.is_paid)
