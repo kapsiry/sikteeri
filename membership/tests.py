@@ -477,7 +477,9 @@ class MemberApplicationTest(TestCase):
             "nationality": "Suomi",
             "country": "Suomi",
             "municipality": "Vaasa",
-            "extra_info": u"Mää oon testikäyttäjä."
+            "extra_info": u"Mää oon testikäyttäjä.",
+            "unix_login": "luser",
+            "email_forward": "y.aikas"
         }
 
     def test_do_application(self):
