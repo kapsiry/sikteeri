@@ -276,6 +276,10 @@ class SingleMemberBillingTest(TestCase):
         self.assertEqual(len(membership2.billingcycle_set.all()), 1)
         self.assertEqual(len(mail.outbox), 2)
 
+        c = membership2.billingcycle_set.all()[0]
+        self.assertEqual(c.bill_set.count(), 1)
+        self.assertEqual(c.last_bill().reminder_count, 0)
+
     def test_new_billing_cycle_with_previous_paid(self):
         "makebills: new billing cycle with previous already paid"
         m = self.membership
@@ -320,7 +324,9 @@ class SingleMemberBillingModelsTest(TestCase):
         "models.bill.is_reminder()"
         reminder_bill = send_reminder(self.membership)
         self.assertTrue(reminder_bill.is_reminder())
+        self.assertEqual(reminder_bill.reminder_count, 1)
         self.assertFalse(self.bill.is_reminder())
+        self.assertEqual(self.bill.reminder_count, 0)
         reminder_bill.delete()
 
     def test_billing_cycle_last_bill(self):
