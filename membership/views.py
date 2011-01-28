@@ -252,7 +252,7 @@ def organization_application_save(request):
         logger.error("Transaction rolled back.")
         return redirect('new_application_fail')
 
-# Here should probably be rate limiting, but it isn't simple.
+# FIXME: Here should probably be rate limiting, but it isn't simple.
 # Would this suffice? <http://djangosnippets.org/snippets/2276/>
 def check_alias_availability(request, alias):
     if Alias.objects.filter(name__iexact=alias).count() == 0:
@@ -291,8 +291,6 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 def membership_edit_inline(request, id, template_name='membership/membership_edit_inline.html'):
     membership = get_object_or_404(Membership, id=id)
     from random import random
-    if random() > 0.99:
-        messages.info(request, unicode(_('This is a message from God.')))
 
     class Form(ModelForm):
         class Meta:
