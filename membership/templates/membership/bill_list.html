@@ -8,7 +8,7 @@
   {% for bill in bill_list %}
   <li class="list_item" {% if bill.is_due %}style="color: red"{% endif %}>
     <span class="name"><a href="{% url bill_edit bill.id %}">{{ bill.billingcycle.membership }}</a></span>
-    <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{% trans "billing cycle" %}</a></span>
+    <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></span>
     <span class="sum">{{ bill.billingcycle.sum }} {% trans "euros" %} {% trans "sent on" %} {{ bill.created|date:"d.n. H:i" }}</span>
     <span class="due">
       {% if bill.is_due %}{% trans "overdue for" %} {{ bill.due_date|timesince }}
