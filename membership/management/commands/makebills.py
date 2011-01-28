@@ -68,8 +68,8 @@ def can_send_reminder(last_due_date):
         if latest_recorded_payment > datetime.now():
             latest_recorded_payment = datetime.now()
         due_plus_margin = last_due_date + timedelta(days=14) # FIXME: hardcoded
-        if due_plus_margin < latest_recorded_payment
-            can_send = True
+        if latest_recorded_payment < due_plus_margin:
+            can_send = False
 
     return can_send
 
@@ -98,7 +98,7 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
-                if can_send_remainder(last_due_date)
+                if can_send_remainder(last_due_date):
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))

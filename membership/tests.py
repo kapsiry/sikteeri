@@ -371,8 +371,8 @@ class CanSendReminderTest(TestCase):
         p = Payment(billingcycle=self.cycle, amount=5, payment_day=month_ago,
             transaction_id="test_can_send_reminder_1")
         p.save()
-        week_ago = datetime.now() - timedelta(days=7)
-        can_send = can_send_reminder(week_ago)
+        two_weeks_ago = datetime.now() - timedelta(days=14)
+        can_send = can_send_reminder(two_weeks_ago)
         self.assertFalse(can_send, "Should fail if payment is old")
         criticals = len(handler.messages['critical'])
         self.assertEqual(criticals, 0, "No critical log messages, got %d" % criticals)
