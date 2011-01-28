@@ -20,7 +20,7 @@ logger = logging.getLogger("import_member_data")
 
 from membership.utils import log_change
 from django.contrib.auth.models import User
-from membership.models import Contact, Membership, Bill, BillingCycle
+from membership.models import Contact, Membership, Bill, BillingCycle, Alias
 from membership.models import Fee, MEMBER_TYPES
 
 user = User.objects.get(id=1)
@@ -86,9 +86,16 @@ def create_member(mdata):
                                      start=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"),
                                      end=datetime.strptime(mdata['period_end'], "%Y-%m-%d %H:%M:%S")+timedelta(days=1))
         billing_cycle.save()
-        bill = Bill(billingcycle=billing_cycle,
-                    created=datetime.strptime(mdata['period_start'], "%Y-%m-%d %H:%M:%S"))
+        bill = Bill(billingcycle=billing_cycle)
         bill.save()
+        # Due to auto_now_add, need to save first before changing
+        bill.created=datetime.strptime(mdata['bill_creation'], "%Y-%m-%d %H:%M:%S")
+        bill.due_date=datetime.strptime(mdata['bill_dueday'], "%Y-%m-%d %H:%M:%S")
+        bill.save()
+    for alias in mdata['aliases']:
+        a = Alias(owner=membership, name=alias, account=False,
+            created=membership.created)
+        a.save()
     log_change(membership, user, change_message="Imported into system")
     return True
 
