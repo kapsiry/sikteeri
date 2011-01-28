@@ -9,6 +9,8 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
+from random import random, choice
+import traceback
 import logging
 logger = logging.getLogger("generate_test_data")
 
@@ -18,6 +20,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
 
 from django.conf import settings
+from django.db import transaction
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 
@@ -30,6 +33,7 @@ if Fee.objects.all().count() == 0:
 
 user = User.objects.get(id=1)
 
+@transaction.commit_manually
 def create_dummy_member(i):
     fname = random_first_name()
     d = {
@@ -47,29 +51,48 @@ def create_dummy_member(i):
     }
     person = Contact(**d)
     person.save()
+    transaction.commit()
     membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
                             municipality='Paska kaupunni',
                             extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logger.info("New application %s from %s:." % (str(person), '::1'))
+
     print unicode(person)
     membership.save()
+    transaction.commit()
+
+    forward_alias = Alias(owner=membership,
+                          name=Alias.email_forwards(membership)[0])
+    forward_alias.save()
+    transaction.commit()
+    login_alias = Alias(owner=membership, account=True,
+                        name=choice(Alias.email_forwards(membership)))
+    login_alias.save()
+    transaction.commit()
+
+    logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
+@transaction.commit_manually
 def main():
     # Approved members
     for i in xrange(1,2000):
         membership = create_dummy_member(i)
         membership.preapprove(user)
         membership.approve(user)
+        transaction.commit()
+
     # Pre-approved members
     for i in xrange(2000,2100):
         membership = create_dummy_member(i)
         membership.preapprove(user)
+        transaction.commit()
+
     # New applications
     for i in xrange(2100,2200):
         membership = create_dummy_member(i)
+        transaction.commit()
 
 if __name__ == '__main__':
     main()

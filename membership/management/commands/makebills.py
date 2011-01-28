@@ -31,7 +31,7 @@ def membership_approved_time(membership):
 def create_billingcycle(membership):
     """
     Creates a new billing cycle for a membership.
-    
+
     If a previous billing cycle exists, the end date is used as the start
     date for the new one.  If a previous one doesn't exist, e.g. it is a new
     user, we use the time when they were last approved.
