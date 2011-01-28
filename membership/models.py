@@ -247,6 +247,43 @@ class Alias(models.Model):
         self.expiration_date = time
         self.save()
 
+    @classmethod
+    def email_forwards(cls, membership=None, first_name=None, last_name=None,
+                       given_names=None):
+        "Returns a list of available email forward permutations."
+        if membership:
+            first_name = membership.person.first_name.lower()
+            last_name = membership.person.last_name.lower()
+            given_names = membership.person.given_names.lower()
+        else:
+            first_name = first_name.lower()
+            last_name = last_name.lower()
+            given_names = given_names.lower()
+
+        permutations = []
+
+        permutations.append(first_name + "." + last_name)
+        permutations.append(last_name + "." + first_name)
+
+        non_first_names = []
+        initials = []
+        for n in given_names.split(" "):
+            if n != first_name:
+                non_first_names.append(n)
+                initials.append(n)
+
+        all_initials_name = []
+        for i in initials:
+            permutations.append(first_name + "." + i + "." + last_name)
+            permutations.append(i + "." + first_name + "." + last_name)
+            all_initials_name.append(i)
+
+        all_initials_name.append(last_name)
+        permutations.append(".".join(all_initials_name))
+
+        return [perm for perm in permutations
+                if cls.objects.filter(name__iexact=perm).count() == 0]
+
     def __unicode__(self):
         return self.name
 

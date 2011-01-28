@@ -9,6 +9,7 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
+from random import random, choice
 import logging
 logger = logging.getLogger("generate_test_data")
 
@@ -52,9 +53,28 @@ def create_dummy_member(i):
                             nationality='Finnish',
                             municipality='Paska kaupunni',
                             extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logger.info("New application %s from %s:." % (str(person), '::1'))
+
     print unicode(person)
     membership.save()
+
+    forward_alias = Alias(owner=membership,
+                          name=Alias.email_forwards(membership)[0])
+    forward_alias.save()
+
+    try:
+        login_alias = Alias(owner=membership, account=True,
+                            name=choice(Alias.email_forwards(membership)).replace(".", ""))
+        login_alias.save()
+    except:
+        try:
+            login_alias = Alias(owner=membership, account=True,
+                                name=choice(Alias.email_forwards(membership)).replace(".", ""))
+            login_alias.save()
+        except:
+            pass
+
+
+    logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
 def main():
