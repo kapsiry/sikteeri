@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField
+from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -279,7 +279,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
             messages.success(request, unicode(_("Changes to contact %s saved.") % contact))
             return redirect('contact_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.success(request, unicode(_("Changes to contact %s not saved.") % contact))
+            messages.error(request, unicode(_("Changes to contact %s not saved.") % contact))
     else:
         form =  Form(instance=contact)
         message = ""
@@ -307,13 +307,47 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
             messages.success(request, unicode(_("Changes to bill %s saved.") % bill))
             return redirect('bill_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.success(request, unicode(_("Changes to bill %s not saved.") % bill))
+            messages.error(request, unicode(_("Changes to bill %s not saved.") % bill))
     else:
         form =  Form(instance=bill)
     logentries = bake_log_entries(bill.logs.all())
     return render_to_response(template_name, {'form': form, 'bill': bill,
         'logentries': logentries},
         context_instance=RequestContext(request))
+
+@permission_required('membership.manage_bills')
+def bill_connect_payment(request, id, template_name='membership/bill_connect_payment.html'):
+    bill = get_object_or_404(Bill, id=id)
+
+    class SpeciallyLabeledModelChoiceField(ModelChoiceField):
+        def label_from_instance(self, obj):
+            return u"%s, %s, %s, %s" % (obj.payer_name, obj.reference_number, obj.amount, obj.payment_day)
+
+    class PaymentForm(Form):
+        payment = SpeciallyLabeledModelChoiceField(queryset=Payment.objects.filter(billingcycle__exact=None).order_by("payer_name"),
+                                                   empty_label=_("None chosen"), required=False)
+
+
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            payment = Payment.objects.get(pk=f['payment'])
+            before = payment.__dict__.copy()
+            payment.billingcycle = bill.billingcycle
+            payment.save()
+            after = payment.__dict__
+            log_change(payment, request.user, before, after)
+            messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
+            redirect('unpaid_bill_list')
+        else:
+            messages.error(request, unicode(_("Changes to bill %s not saved.") % bill))
+    else:
+        form =  PaymentForm()
+    logentries = bake_log_entries(bill.logs.all())
+    return render_to_response(template_name, {'form': form, 'bill': bill,
+                                              'logentries': logentries},
+                              context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
 def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
@@ -334,11 +368,82 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
             messages.success(request, unicode(_("Changes to billing cycle %s saved.") % cycle))
             return redirect('billingcycle_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.success(request, unicode(_("Changes to bill %s not saved.") % cycle))
+            messages.error(request, unicode(_("Changes to bill %s not saved.") % cycle))
     else:
         form =  Form(instance=cycle)
     logentries = bake_log_entries(cycle.logs.all())
     return render_to_response(template_name, {'form': form, 'cycle': cycle,
+        'logentries': logentries},
+        context_instance=RequestContext(request))
+
+@permission_required('membership.manage_bills')
+def payment_edit(request, id, template_name='membership/entity_edit.html'):
+    payment = get_object_or_404(Payment, id=id)
+
+    class SpeciallyLabeledModelChoiceField(ModelChoiceField):
+        def label_from_instance(self, obj):
+            return u"%s, %s" % (obj.membership, unicode(obj))
+
+    class Form(ModelForm):
+        class Meta:
+            model = Payment
+            # exclude = ('billingcycle')
+
+        billingcycle = SpeciallyLabeledModelChoiceField(queryset=BillingCycle.objects.filter(is_paid__exact=False),
+                                                        empty_label=_("None chosen"), required=False)
+
+        def disable_fields(self):
+            self.fields['reference_number'].required = False
+            self.fields['reference_number'].widget.attrs['disabled'] = 'disabled'
+            self.fields['message'].required = False
+            self.fields['message'].widget.attrs['disabled'] = 'disabled'
+            self.fields['transaction_id'].required = False
+            self.fields['transaction_id'].widget.attrs['disabled'] = 'disabled'
+            self.fields['payment_day'].required = False
+            self.fields['payment_day'].widget.attrs['disabled'] = 'disabled'
+            self.fields['amount'].required = False
+            self.fields['amount'].widget.attrs['disabled'] = 'disabled'
+            self.fields['type'].required = False
+            self.fields['type'].widget.attrs['disabled'] = 'disabled'
+            self.fields['payer_name'].required = False
+            self.fields['payer_name'].widget.attrs['disabled'] = 'disabled'
+
+        def clean_reference_number(self):
+            return payment.reference_number
+        def clean_message(self):
+            return payment.message
+        def clean_transaction_id(self):
+            return payment.transaction_id
+        def clean_payment_day(self):
+            return payment.payment_day
+        def clean_amount(self):
+            return payment.amount
+        def clean_type(self):
+            return payment.type
+        def clean_payer_name(self):
+            return payment.payer_name
+
+
+
+    before = payment.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    if request.method == 'POST':
+        form = Form(request.POST, instance=payment)
+        form.disable_fields()
+        if form.is_valid():
+            form.save()
+            after = payment.__dict__
+            log_change(payment, request.user, before, after)
+            messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
+            return redirect('payment_edit', id) # form stays as POST otherwise if someone refreshes
+        else:
+            messages.error(request, unicode(_("Changes to payment %s not saved.") % payment))
+            return redirect('payment_edit', id) # form clears otherwise, this is a borderline acceptable hack
+    else:
+        form = Form(instance=payment)
+        form.disable_fields()
+
+    logentries = bake_log_entries(payment.logs.all())
+    return render_to_response(template_name, {'form': form, 'payment': payment,
         'logentries': logentries},
         context_instance=RequestContext(request))
 
@@ -427,6 +532,33 @@ def membership_convert_to_organization(request, id, template_name='membership/me
             return redirect('membership_edit', membership.id)
     else:
         form = ConfirmForm()
+
+    return render_to_response(template_name,
+                              {'form': form,
+                               'membership': membership },
+                              context_instance=RequestContext(request))
+
+@transaction.commit_on_success
+def membership_add_alias(request, id, template_name='membership/membership_add_alias.html'):
+    membership = get_object_or_404(Membership, id=id)
+    class Form(ModelForm):
+        class Meta:
+            model = Alias
+            exclude = ('owner', 'account', 'expiration_date')
+
+    if request.method == 'POST':
+        form = Form(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            name = f['name']
+            comment = f['comment']
+            alias = Alias(owner=membership, name=name, comment=comment)
+            alias.save()
+            messages.success(request, unicode(_('Alias %s successfully created for %s.') % (alias, membership)))
+            logger.info("Alias %s added by %s." % (alias, request.user.username))
+            return redirect('membership_edit', membership.id)
+    else:
+        form = Form()
 
     return render_to_response(template_name,
                               {'form': form,

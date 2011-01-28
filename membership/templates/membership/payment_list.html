@@ -7,7 +7,7 @@
 <ul id="paymentlist">
   {% for payment in payment_list %}
   <li class="list_item" {% if payment.is_due %}style="color: red"{% endif %}>
-    <span class="name"><a href="">{{ payment.payer_name }}</a></span>
+    <span class="name"><a href="{% url payment_edit payment.id %}">{{ payment.payer_name }}</a></span>
     <span class="payment"><a href="">{% trans "payment" %}</a></span>
     <span class="sum">{{ payment.amount }} {% trans "euros" %} {% trans "paid on" %} {{ payment.payment_day|date:"d.n.Y" }}</span>
     <span class="reference">{{ payment.reference_number }}</span>

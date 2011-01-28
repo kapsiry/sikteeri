@@ -425,6 +425,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
+    logs = property(_get_logs)
 
     def __unicode__(self):
         return "%.2f euros (reference '%s')" % (self.amount, self.reference_number)

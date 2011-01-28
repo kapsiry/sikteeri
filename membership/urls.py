@@ -34,9 +34,13 @@ urlpatterns = patterns('',
 
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
+    url(r'memberships/add_alias/(\d+)/$', 'membership.views.membership_add_alias', name='membership_add_alias'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
+    url(r'bills/connect_payment/(\d+)/$', 'membership.views.bill_connect_payment', name='bill_connect_payment'),
     url(r'billing_cycles/edit/(\d+)/$', 'membership.views.billingcycle_edit', name='billingcycle_edit'),
+
+    url(r'payments/edit/(\d+)/$', 'membership.views.payment_edit', name='payment_edit'),
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
@@ -108,6 +112,9 @@ def search(request, query=None,
                                                         template_object_name='member',
                                                         paginate_by=ENTRIES_PER_PAGE)
 
+# Shortcuts
+payments = Payment.objects.all().order_by('-payment_day')
+
 urlpatterns += patterns('django.views.generic',
 
     url(r'memberships/new/$', member_object_list,
@@ -152,12 +159,12 @@ urlpatterns += patterns('django.views.generic',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_bill_list'),
 
     url(r'payments/$', billing_object_list,
-        {'queryset': Payment.objects.all().order_by('-payment_day'),
+        {'queryset': payments,
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='payment_list'),
     url(r'payments/unknown/$', billing_object_list,
-        {'queryset': Payment.objects.filter(billingcycle__exact=None).order_by('-payment_day'),
+        {'queryset': payments.filter(billingcycle=None, ignore=False),
          'template_name': 'membership/payment_list.html',
          'template_object_name': 'payment',
          'paginate_by': ENTRIES_PER_PAGE}, name='unknown_payment_list'),
