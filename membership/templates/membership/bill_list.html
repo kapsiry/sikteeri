@@ -11,8 +11,8 @@
     <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></span>
     <span class="sum">{{ bill.billingcycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created|date:"d.n. H:i" }}</span>
     <span class="due">
-      {% if bill.is_due %}<a style="color:red; text-weigt: bold" href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n. H:i" }}</a>
-      {% else %}<a href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n. H:i" }}</a>
+      {% if bill.is_due %}<a style="color:red; text-weigt: bold" href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n.Y" }}</a>
+      {% else %}<a href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n.Y" }}</a>
       {% endif %}
     </span>
     <span class="paid">
