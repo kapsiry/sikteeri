@@ -13,10 +13,14 @@
 </div>
 </form>
 <hr />
+
+{% if logentries %}
+<h2>{% trans "Event log" %}</h2>
+{% endif %}
 <table class="event_log">
 {% for logentry in logentries %}
   <tr>
-    <td>{{ logentry.action_time }}</td>
+    <td>{{ logentry.action_time|date:"d.n.Y H:i" }}</td>
     <td>{{ logentry.action_flag_str}}</td>
     <td>{{ logentry.user }}</td>
     <td>{{ logentry.change_message }}</td>

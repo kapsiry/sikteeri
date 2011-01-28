@@ -64,11 +64,13 @@ def can_send_reminder(last_due_date):
         logger.critical("no payments in the database.")
         can_send = False
     else:
-        last_payment = payments.latest("payment_day")
-        week_after_due = last_due_date + timedelta(days=7)
-        if last_payment.payment_day < week_after_due:
-            can_send = False
-    
+        latest_recorded_payment = payments.latest("payment_day").payment_day
+        if latest_recorded_payment > datetime.now():
+            latest_recorded_payment = datetime.now()
+        due_plus_margin = last_due_date + timedelta(days=14) # FIXME: hardcoded
+        if due_plus_margin < latest_recorded_payment:
+            can_send = True
+
     return can_send
 
 def send_reminder(membership):
@@ -96,9 +98,7 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
-                two_weeks_ago = datetime.now() - timedelta(days=14)
-                can_send = can_send_reminder(last_due_date)
-                if last_due_date > two_weeks_ago and can_send:
+                if can_send_reminder(last_due_date):
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))
