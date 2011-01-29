@@ -34,7 +34,7 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 def person_application(request, template_name='membership/new_person_application.html'):
     if request.method == 'POST':
         application_form = PersonApplicationForm(request.POST)
-        
+
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
@@ -87,12 +87,12 @@ def organization_application(request, template_name='membership/new_organization
         
         if form.is_valid():
             f = form.cleaned_data
-            
+
             d = {}
             for k, v in f.items():
                 if k not in ['nationality', 'municipality', 'extra_info']:
                     d[k] = v
-            
+
             organization = Contact(**d)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
@@ -115,14 +115,14 @@ def organization_application_add_contact(request, contact_type, template_name='m
     forms = ['person', 'billing_contact', 'tech_contact']
     if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
-    
+
     if contact_type == 'person':
         type_text = 'Administrative contact'
     elif contact_type == 'billing_contact':
         type_text = 'Billing contact'
     elif contact_type == 'tech_contact':
         type_text = 'Technical contact'
-    
+
     if request.method == 'POST':
         form = PersonContactForm(request.POST)
         if form.is_valid() or len(form.changed_data) == 0:
@@ -324,7 +324,8 @@ def bill_connect_payment(request, id, template_name='membership/bill_connect_pay
             return u"%s, %s, %s, %s" % (obj.payer_name, obj.reference_number, obj.amount, obj.payment_day)
 
     class PaymentForm(Form):
-        payment = SpeciallyLabeledModelChoiceField(queryset=Payment.objects.filter(billingcycle__exact=None).order_by("payer_name"),
+        qs = Payment.objects.filter(billingcycle__exact=None, ignore=False).order_by("payer_name")
+        payment = SpeciallyLabeledModelChoiceField(queryset=qs,
                                                    empty_label=_("None chosen"), required=False)
 
 
@@ -654,7 +655,7 @@ def test_email(request, template_name='membership/test_email.html'):
         else:
             return render_to_response(template_name, {'form': form},
                                       context_instance=RequestContext(request))
-        
+
         body = render_to_string('membership/test_email.txt', { "user": request.user })
         send_mail(u"Testisähköposti", body,
                   settings.FROM_EMAIL,
