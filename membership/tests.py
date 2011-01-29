@@ -12,6 +12,7 @@ import simplejson
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
+from django.conf import settings
 
 from models import *
 from utils import *
@@ -238,7 +239,7 @@ class SingleMemberBillingTest(TestCase):
         self.assertFalse(cycle.last_bill().is_reminder())
 
     def test_no_cycle_created(self):
-        "makebills: no cycles after an expired membership, should log critical"
+        "makebills: no cycles after an expired membership, should log a warning"
         m = self.membership
         makebills()
 
@@ -251,12 +252,12 @@ class SingleMemberBillingTest(TestCase):
         makebills()
         makebills_logger.removeHandler(handler)
 
-        criticals = handler.messages["critical"]
-        self.assertTrue(len(criticals) > 0)
+        warnings = handler.messages["warning"]
+        self.assertTrue(len(warnings) > 0)
 
         logged = False
-        for critical in criticals:
-            if "no new billing cycle created for" in critical:
+        for warning in warnings:
+            if "no new billing cycle created for" in warning:
                 logged = True
                 break
 
@@ -316,6 +317,7 @@ class SingleMemberBillingModelsTest(TestCase):
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
+        settings.ENABLE_REMINDERS = True
 
     def tearDown(self):
         self.bill.delete()
@@ -381,6 +383,7 @@ class CanSendReminderTest(TestCase):
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
+        settings.ENABLE_REMINDERS = True
 
     def test_can_send_reminder(self):
         handler = MockLoggingHandler()

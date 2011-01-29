@@ -10,6 +10,12 @@ FROM_EMAIL = None           # Generic from e-mail
 BILL_SUBJECT = None         # Text to be used as bill subjects
 SYSTEM_NAME = None          # Membership management system should have a name
 
+# Billing options
+BILL_DAYS_BEFORE_CYCLE = 14 # Send bills 2 weeks before new cycle starts
+BILL_DAYS_TO_DUE = 14       # New bills will have a due date 2 weeks in the future
+REMINDER_GRACE_DAYS = 14    # Send reminders 2 weeks after previous due day
+ENABLE_REMINDERS = False    # Enable reminder sending
+
 # Uncomment the following lines to enable more verbose stdout logging.
 #import logging
 #logging.basicConfig(level=logging.DEBUG)

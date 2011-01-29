@@ -336,7 +336,7 @@ class Bill(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.due_date:
-            self.due_date = datetime.now() + timedelta(days=14) # FIXME: Hardcoded
+            self.due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
         super(Bill, self).save(*args, **kwargs)
 
     def is_reminder(self):

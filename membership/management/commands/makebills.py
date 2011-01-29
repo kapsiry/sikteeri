@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
+from django.conf import settings
 
 import logging
 logger = logging.getLogger("sikteeri.membership.management.commands.makebills")
@@ -46,6 +47,8 @@ def can_send_reminder(last_due_date):
     Determine if we have recent payments so that we can be sure
     recent payments have been imported into the system.
     """
+    if not settings.ENABLE_REMINDERS:
+        return False
     can_send = True
     payments = Payment.objects
     if payments.count() == 0:
@@ -55,7 +58,7 @@ def can_send_reminder(last_due_date):
         latest_recorded_payment = payments.latest("payment_day").payment_day
         if latest_recorded_payment > datetime.now():
             latest_recorded_payment = datetime.now()
-        due_plus_margin = last_due_date + timedelta(days=14) # FIXME: hardcoded
+        due_plus_margin = last_due_date + timedelta(days=settings.REMINDER_GRACE_DAYS)
         if latest_recorded_payment < due_plus_margin:
             can_send = False
 
@@ -78,8 +81,8 @@ def makebills():
         else:
             latest_cycle = cycles.latest("end")
             if latest_cycle.end < datetime.now():
-                logger.critical("no new billing cycle created for %s after an expired one!" % repr(member))
-            if latest_cycle.end < datetime.now() + timedelta(days=28):
+                logger.warning("no new billing cycle created for %s after an expired one!" % repr(member))
+            if latest_cycle.end < datetime.now() + timedelta(days=settings.BILL_DAYS_BEFORE_CYCLE):
                 create_billingcycle(member)
 
         # Reminders
