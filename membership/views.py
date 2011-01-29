@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea
+from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -365,13 +365,27 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
     cycle = get_object_or_404(BillingCycle, id=id)
 
     class Form(ModelForm):
+        is_paid_forced = False
         class Meta:
             model = BillingCycle
             exclude = ('membership', 'start', 'end', 'sum', 'reference_number')
 
+        def disable_fields(self):
+            self.fields['is_paid'].required = False
+            if cycle.amount_paid() >= cycle.sum and cycle.is_paid:
+                self.fields['is_paid'].widget.attrs['disabled'] = 'disabled'
+                self.is_paid_forced = True
+                
+        def clean_is_paid(self):
+            if self.is_paid_forced:
+                return cycle.is_paid
+            else:
+                return self.cleaned_data['is_paid']
+
     before = cycle.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         form = Form(request.POST, instance=cycle)
+        form.disable_fields()
         if form.is_valid():
             form.save()
             after = cycle.__dict__
@@ -382,6 +396,7 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
             messages.error(request, unicode(_("Changes to bill %s not saved.") % cycle))
     else:
         form =  Form(instance=cycle)
+        form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
     return render_to_response(template_name, {'form': form, 'cycle': cycle,
         'logentries': logentries},
@@ -400,16 +415,15 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
             model = Payment
             # exclude = ('billingcycle')
 
-        billingcycle = SpeciallyLabeledModelChoiceField(queryset=BillingCycle.objects.filter(is_paid__exact=False),
-                                                        empty_label=_("None chosen"), required=False)
+        billingcycle = CharField(widget=HiddenInput(), required=False)
         message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):
             if payment.billingcycle:
                 self.fields['ignore'].required = False
                 self.fields['ignore'].widget.attrs['disabled'] = 'disabled'
-                self.fields['billingcycle'].required = False
-                self.fields['billingcycle'].widget.attrs['disabled'] = 'disabled'
+            self.fields['billingcycle'].required = False
+            self.fields['billingcycle'].widget.attrs['disabled'] = 'disabled'
             self.fields['reference_number'].required = False
             self.fields['reference_number'].widget.attrs['disabled'] = 'disabled'
             self.fields['message'].required = False
@@ -425,8 +439,8 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
             self.fields['payer_name'].required = False
             self.fields['payer_name'].widget.attrs['disabled'] = 'disabled'
 
-        def clean_reference_number(self):
-            return payment.reference_number
+        def clean_billingcycle(self):
+            return payment.billingcycle
         def clean_message(self):
             return payment.message
         def clean_transaction_id(self):
