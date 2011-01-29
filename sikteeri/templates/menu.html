@@ -32,8 +32,8 @@
 {% endif %}
 {% if perms.membership.read_bills %}
 <ul>
-   <li><a href="{% url unpaid_bill_list %}">{% trans "List of unpaid bills" %}</a></li>
-   <li><a href="{% url bill_list %}">{% trans "All bills" %}</a></li>
+   <li><a href="{% url unpaid_cycle_list %}">{% trans "List of unpaid bills" %}</a></li>
+   <li><a href="{% url cycle_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
    <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>

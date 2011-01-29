@@ -5,22 +5,24 @@
 {% include "membership/paginating_snippet.html" %}
 
 <ul id="billlist">
-  {% for bill in bill_list %}
-  {% with bill.billingcycle.membership as member %}
-  <li class="list_item" {% if bill.is_due %}style="color: red"{% endif %}>
+  {% for cycle in cycle_list %}
+  {% with cycle.membership as member %}
+  {% with cycle.last_bill as last_bill %}
+  <li class="list_item" {% if cycle.is_first_bill_late %}style="color: red"{% endif %}>
     <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
-    <span class="cycle"><a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></span>
-    <span class="sum">{{ bill.billingcycle.sum }} {% trans "euros" %}, {% trans "sent on" %} {{ bill.created|date:"d.n. H:i" }}</span>
+    <span class="cycle"><a href="{% url billingcycle_edit cycle.id %}">{{ cycle }}</a></span>
+    <span class="sum">{{ cycle.sum }} {% trans "euros" %}, 
+		{% if not last_bill.is_reminder %} {% trans "bill" %} {% else %} {% trans "reminder" %} {% endif %}
+		{{ last_bill.created|date:"j.n.Y" }}</span>
     <span class="due">
-      {% if bill.is_due %}<a style="color:red; text-weigt: bold" href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n.Y" }}</a>
-      {% else %}<a href="{% url bill_edit bill.id %}">{{ bill.due_date|date:"d.n.Y" }}</a>
-      {% endif %}
+      <a{% if last_bill.is_due %} style="color:red; text-weigt: bold"{% endif %} href="{% url bill_edit last_bill.id %}">{{ last_bill.due_date|date:"j.n.Y" }}</a>
     </span>
     <span class="paid">
-      {% if bill.billingcycle.is_paid %} {% trans "paid" %} {% endif %}
+      {% if cycle.is_paid %} {% trans "paid" %} {% endif %}
     </span>
-    <ul>{% for payment in bill.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
+    <ul>{% for payment in cycle.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
   </li>
+  {% endwith %}
   {% endwith %}
   {% empty %}
   {% trans "No bill matches this filter, try seeing the full list." %}

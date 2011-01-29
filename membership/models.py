@@ -318,6 +318,18 @@ class BillingCycle(models.Model):
         except ObjectDoesNotExist:
             return None
 
+    def is_first_bill_late(self):
+        if self.is_paid:
+            return False
+        try:
+            first_due_date = self.bill_set.order_by('due_date')[0].due_date
+        except IndexError:
+            # No bills sent yet
+            return False
+        if datetime.now() > first_due_date:
+            return True
+        return False
+
     def is_last_bill_late(self):
         if self.is_paid or self.last_bill() == None:
             return False
