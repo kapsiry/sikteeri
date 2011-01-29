@@ -439,8 +439,15 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
             self.fields['payer_name'].required = False
             self.fields['payer_name'].widget.attrs['disabled'] = 'disabled'
 
+        def clean_ignore(self):
+            if payment.billingcycle:
+                return False
+            else:
+                return self.cleaned_data['ignore']
         def clean_billingcycle(self):
             return payment.billingcycle
+        def clean_reference_number(self):
+            return payment.reference_number
         def clean_message(self):
             return payment.message
         def clean_transaction_id(self):
