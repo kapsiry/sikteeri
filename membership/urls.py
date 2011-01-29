@@ -148,7 +148,7 @@ urlpatterns += patterns('django.views.generic',
     url(r'^memberships/search/((?P<query>\w+)/)?$', search, name="membership_search"),
 
     url(r'bills/$', billing_object_list,
-        {'queryset': BillingCycle.objects.all(),
+        {'queryset': BillingCycle.objects.all().order_by('-start'),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='cycle_list'),
