@@ -50,7 +50,7 @@
             {% endfor %}
 
             {% for payment in billingcycle.payment_set.all %}
-            <li>{% trans "Payment" %}</a> {% trans "paid on" %}
+            <li><a href="{% url payment_edit payment.id %}">{% trans "Payment" %}</a> {% trans "paid on" %}
                 {{ payment.payment_day|naturalday }}
                 ({{payment.amount}} &euro;,
                 <small>{{payment.reference_number}}</small>)
