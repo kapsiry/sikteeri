@@ -88,6 +88,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.comments',
     'membership',
+    'services',
 )
 
 SESSION_COOKIE_SECURE = True
