@@ -350,6 +350,25 @@ class SingleMemberBillingModelsTest(TestCase):
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.assertFalse(self.cycle.is_last_bill_late())
 
+    def test_billing_payment_attach(self):
+        "models.Payment.attach_to_cycle()"
+        self.assertFalse(self.cycle.is_paid)
+        p1 = Payment(billingcycle=None, amount=self.cycle.sum/2, payment_day=datetime.now(),
+             transaction_id="test_billing_payment_attach_1")
+        p1.save()
+        p2 = Payment(billingcycle=None, amount=self.cycle.sum/2+1, payment_day=datetime.now(),
+             transaction_id="test_billing_payment_attach_2")
+        p2.save()
+        p1.attach_to_cycle(self.cycle)
+        self.assertFalse(self.cycle.is_paid)
+        p2.attach_to_cycle(self.cycle)
+        self.assertTrue(self.cycle.is_paid)
+        self.assertRaises(PaymentAttachedError, p1.attach_to_cycle, self.cycle)
+        p2.detach_from_cycle()
+        self.assertFalse(self.cycle.is_paid)
+        p1.detach_from_cycle()
+        p1.detach_from_cycle() # Nop
+
 class CanSendReminderTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 

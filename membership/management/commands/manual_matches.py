@@ -35,22 +35,12 @@ def process_csv(filename):
             (mid, date, transaction) = row
             try:
                 payment = Payment.objects.get(transaction_id=transaction)
-                
+
                 if payment.billingcycle: # Already assigned, do nothing
                     continue
                 membership = Membership.objects.get(id=int(mid))
                 cycle = membership.billingcycle_set.filter(is_paid=False).latest('start')
-                payment.billingcycle = cycle
-                payment.save()
-                logger.info("Payment %s attached to cycle %s." % (repr(payment),
-                    repr(payment.billingcycle)))
-                data = payment.billingcycle.payment_set.aggregate(Sum('amount'))
-                total_paid = data['amount__sum']
-                if total_paid >= cycle.sum:
-                    cycle.is_paid = True
-                    cycle.save()
-                    logger.info("Cycle %s marked as paid, total paid: %.2f." % (
-                        repr(cycle), total_paid))
+                payment.attach_to_cycle(cycle)
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
                 continue
@@ -58,6 +48,9 @@ def process_csv(filename):
                 logger.warning("No transactinon found for id: %s, member :%s" % (transaction, mid))
             except Membership.DoesNotExist:
                 logger.warning("Membership %s not found. transaction id: %s" % (mid, transaction))   
+                # Payment references a billing cycle for a removed member - ignore
+                payment.ignore = True
+                payment.save()
             except BillingCycle.DoesNotExist:
                 # Payment references a legacy billing cycle - ignore
                 payment.ignore = True

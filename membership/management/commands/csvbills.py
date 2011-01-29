@@ -154,17 +154,7 @@ def process_csv(filename):
             try:
                 reference = payment.reference_number
                 cycle = BillingCycle.objects.get(reference_number=reference)
-                payment.billingcycle = cycle
-                payment.save()
-                logger.info("Payment %s attached to cycle %s." % (repr(payment),
-                    repr(payment.billingcycle)))
-                data = payment.billingcycle.payment_set.aggregate(Sum('amount'))
-                total_paid = data['amount__sum']
-                if total_paid >= cycle.sum:
-                    cycle.is_paid = True
-                    cycle.save()
-                    logger.info("Cycle %s marked as paid, total paid: %.2f." % (
-                        repr(cycle), total_paid))
+                payment.attach_to_cycle(cycle)
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
             except BillingCycle.DoesNotExist:

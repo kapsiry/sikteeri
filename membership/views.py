@@ -333,12 +333,22 @@ def bill_connect_payment(request, id, template_name='membership/bill_connect_pay
         form = PaymentForm(request.POST)
         if form.is_valid():
             f = form.cleaned_data
-            payment = Payment.objects.get(pk=f['payment'])
+            payment = f['payment']
             before = payment.__dict__.copy()
-            payment.billingcycle = bill.billingcycle
-            payment.save()
+            oldcycle = payment.billingcycle
+            if oldcycle:
+                oldcycle_before = oldcycle.__dict__.copy()
+                payment.detach_from_cycle()
+                oldcycle_after = oldcycle.__dict__.copy()
+                log_change(oldcycle, request.user, oldcycle_before, oldcycle_after)
+
+            newcycle = bill.billingcycle
+            newcycle_before = newcycle.__dict__.copy()
+            payment.attach_to_cycle(newcycle)
+            newcycle_after = newcycle.__dict__.copy()
             after = payment.__dict__
             log_change(payment, request.user, before, after)
+            log_change(newcycle, request.user, newcycle_before, newcycle_after)
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
             redirect('unpaid_bill_list')
         else:

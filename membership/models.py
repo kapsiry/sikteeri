@@ -6,7 +6,7 @@ logger = logging.getLogger("models")
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -24,6 +24,7 @@ from reference_numbers import generate_checknumber, add_checknumber
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
+class PaymentAttachedError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('S', _('Supporting')),
@@ -429,6 +430,38 @@ class Payment(models.Model):
 
     def __unicode__(self):
         return "%.2f euros (reference '%s')" % (self.amount, self.reference_number)
+
+    def attach_to_cycle(self, cycle):
+        if self.billingcycle:
+            raise PaymentAttachedError("Payment %s already attached to BillingCycle %s." % (repr(self), repr(cycle)))
+        self.billingcycle = cycle
+        self.save()
+        logger.info("Payment %s attached to cycle %s." % (repr(self),
+            repr(cycle)))
+        data = cycle.payment_set.aggregate(Sum('amount'))
+        total_paid = data['amount__sum']
+        if total_paid >= cycle.sum:
+            cycle.is_paid = True
+            cycle.save()
+            logger.info("Cycle %s marked as paid, total paid: %.2f." % (
+                repr(cycle), total_paid))
+
+    def detach_from_cycle(self):
+        if not self.billingcycle:
+            return
+        cycle = self.billingcycle
+        logger.info("Payment %s detached from cycle %s." % (repr(self),
+            repr(cycle)))
+        self.billingcycle = None
+        self.save()
+        if cycle.is_paid:
+            data = cycle.payment_set.aggregate(Sum('amount'))
+            total_paid = data['amount__sum']
+            if total_paid < cycle.sum:
+                cycle.is_paid = False
+                cycle.save()
+                logger.info("Cycle %s marked as unpaid, total paid: %.2f." % (
+                    repr(cycle), total_paid))
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
