@@ -325,10 +325,13 @@ class BillingCycle(models.Model):
             return True
         return False
 
+    def amount_paid(self):
+        data = self.payment_set.aggregate(Sum('amount'))
+        return data['amount__sum']
+        
     def update_is_paid(self):
         was_paid = self.is_paid
-        data = self.payment_set.aggregate(Sum('amount'))
-        total_paid = data['amount__sum']
+        total_paid = self.amount_paid()
         if not was_paid and total_paid >= self.sum:
             self.is_paid = True
             self.save()
