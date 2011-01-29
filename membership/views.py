@@ -316,8 +316,8 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
-def bill_connect_payment(request, id, template_name='membership/bill_connect_payment.html'):
-    bill = get_object_or_404(Bill, id=id)
+def billingcycle_connect_payment(request, id, template_name='membership/billingcycle_connect_payment.html'):
+    billingcycle = get_object_or_404(BillingCycle, id=id)
 
     class SpeciallyLabeledModelChoiceField(ModelChoiceField):
         def label_from_instance(self, obj):
@@ -342,7 +342,7 @@ def bill_connect_payment(request, id, template_name='membership/bill_connect_pay
                 oldcycle_after = oldcycle.__dict__.copy()
                 log_change(oldcycle, request.user, oldcycle_before, oldcycle_after)
 
-            newcycle = bill.billingcycle
+            newcycle = billingcycle
             newcycle_before = newcycle.__dict__.copy()
             payment.attach_to_cycle(newcycle)
             newcycle_after = newcycle.__dict__.copy()
@@ -352,11 +352,11 @@ def bill_connect_payment(request, id, template_name='membership/bill_connect_pay
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
             redirect('unpaid_bill_list')
         else:
-            messages.error(request, unicode(_("Changes to bill %s not saved.") % bill))
+            messages.error(request, unicode(_("Changes to BillingCycle %s not saved.") % billingcycle))
     else:
         form =  PaymentForm()
-    logentries = bake_log_entries(bill.logs.all())
-    return render_to_response(template_name, {'form': form, 'bill': bill,
+    logentries = bake_log_entries(billingcycle.logs.all())
+    return render_to_response(template_name, {'form': form, 'cycle': billingcycle,
                                               'logentries': logentries},
                               context_instance=RequestContext(request))
 
@@ -439,8 +439,6 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
             return payment.type
         def clean_payer_name(self):
             return payment.payer_name
-
-
 
     before = payment.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     oldcycle = payment.billingcycle

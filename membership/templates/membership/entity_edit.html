@@ -47,9 +47,9 @@
 </form>
 <hr />
 
-{% if bill and not bill.paid %}
+{% if cycle and not cycle.is_paid %}
 <h2>Actions</h2>
-<a href="{% url bill_connect_payment bill.id %}">{% trans "Connect this bill to a payment" %}</a>
+<a href="{% url billingcycle_connect_payment cycle.id %}">{% trans "Assign a payment to this billing cycle" %}</a>
 {% endif %}
 
 {% if logentries %}

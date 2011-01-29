@@ -37,7 +37,7 @@ urlpatterns = patterns('',
     url(r'memberships/add_alias/(\d+)/$', 'membership.views.membership_add_alias', name='membership_add_alias'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
-    url(r'bills/connect_payment/(\d+)/$', 'membership.views.bill_connect_payment', name='bill_connect_payment'),
+    url(r'billing_cycles/connect_payment/(\d+)/$', 'membership.views.billingcycle_connect_payment', name='billingcycle_connect_payment'),
     url(r'billing_cycles/edit/(\d+)/$', 'membership.views.billingcycle_edit', name='billingcycle_edit'),
 
     url(r'payments/edit/(\d+)/$', 'membership.views.payment_edit', name='payment_edit'),
