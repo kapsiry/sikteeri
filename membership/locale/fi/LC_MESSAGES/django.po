@@ -68,7 +68,7 @@ msgstr "Katuosoite vaaditaan."
 
 #: forms.py:40 models.py:64
 msgid "Street address"
-msgstr "Katuosoite."
+msgstr "Katuosoite"
 
 #: forms.py:42
 msgid "Postal code required."
