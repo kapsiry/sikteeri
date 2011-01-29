@@ -312,6 +312,14 @@ class BillingCycle(models.Model):
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
     logs = property(_get_logs)
 
+    def first_bill_sent_on(self):
+        try:
+            first_sent_date = self.bill_set.order_by('created')[0].created
+            return first_sent_date
+        except IndexError:
+            # No bills sent yet
+            return None
+
     def last_bill(self):
         try:
             return self.bill_set.latest("due_date")
@@ -459,15 +467,15 @@ class Payment(models.Model):
     logs = property(_get_logs)
 
     def __unicode__(self):
-        return "%.2f euros (reference '%s')" % (self.amount, self.reference_number)
+        return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
 
     def attach_to_cycle(self, cycle):
         if self.billingcycle:
             raise PaymentAttachedError("Payment %s already attached to BillingCycle %s." % (repr(self), repr(cycle)))
         self.billingcycle = cycle
         self.save()
-        logger.info("Payment %s attached to cycle %s." % (repr(self),
-            repr(cycle)))
+        logger.info("Payment %s attached to member %s cycle %s." % (repr(self),
+            cycle.membership.id, repr(cycle)))
         cycle.update_is_paid()
 
     def detach_from_cycle(self):
