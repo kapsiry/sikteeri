@@ -438,11 +438,18 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
 
 
     before = payment.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    oldcycle = payment.billingcycle
     if request.method == 'POST':
         form = Form(request.POST, instance=payment)
         form.disable_fields()
         if form.is_valid():
             form.save()
+            newcycle = payment.billingcycle
+            if oldcycle != newcycle:
+                if oldcycle:
+                    oldcycle.update_is_paid()
+            if newcycle:
+              newcycle.update_is_paid()
             after = payment.__dict__
             log_change(payment, request.user, before, after)
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))

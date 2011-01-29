@@ -325,6 +325,21 @@ class BillingCycle(models.Model):
             return True
         return False
 
+    def update_is_paid(self):
+        was_paid = self.is_paid
+        data = self.payment_set.aggregate(Sum('amount'))
+        total_paid = data['amount__sum']
+        if not was_paid and total_paid >= self.sum:
+            self.is_paid = True
+            self.save()
+            logger.info("BillingCycle %s marked as paid, total paid: %.2f." % (
+                repr(self), total_paid))
+        elif was_paid and total_paid < self.sum:
+            self.is_paid = False
+            self.save()
+            logger.info("BillingCycle %s marked as unpaid, total paid: %.2f." % (
+                repr(self), total_paid))
+
     def get_fee(self):
         for_this_type = Q(type=self.membership.type)
         not_before_start = Q(start__lte=self.start)
@@ -438,13 +453,7 @@ class Payment(models.Model):
         self.save()
         logger.info("Payment %s attached to cycle %s." % (repr(self),
             repr(cycle)))
-        data = cycle.payment_set.aggregate(Sum('amount'))
-        total_paid = data['amount__sum']
-        if total_paid >= cycle.sum:
-            cycle.is_paid = True
-            cycle.save()
-            logger.info("Cycle %s marked as paid, total paid: %.2f." % (
-                repr(cycle), total_paid))
+        cycle.update_is_paid()
 
     def detach_from_cycle(self):
         if not self.billingcycle:
@@ -454,14 +463,7 @@ class Payment(models.Model):
             repr(cycle)))
         self.billingcycle = None
         self.save()
-        if cycle.is_paid:
-            data = cycle.payment_set.aggregate(Sum('amount'))
-            total_paid = data['amount__sum']
-            if total_paid < cycle.sum:
-                cycle.is_paid = False
-                cycle.save()
-                logger.info("Cycle %s marked as unpaid, total paid: %.2f." % (
-                    repr(cycle), total_paid))
+        cycle.update_is_paid()
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
