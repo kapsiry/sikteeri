@@ -405,6 +405,11 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):
+            if payment.billingcycle:
+                self.fields['ignore'].required = False
+                self.fields['ignore'].widget.attrs['disabled'] = 'disabled'
+                self.fields['billingcycle'].required = False
+                self.fields['billingcycle'].widget.attrs['disabled'] = 'disabled'
             self.fields['reference_number'].required = False
             self.fields['reference_number'].widget.attrs['disabled'] = 'disabled'
             self.fields['message'].required = False

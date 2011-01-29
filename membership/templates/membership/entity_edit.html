@@ -1,14 +1,35 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load humanize %}
 {% load comments %}
 
 {% block content %}
 {% if cycle %}
-<h2>{% trans "Billing cycle for member" %} {{ cycle.membership }}, {{ cycle }}</h2>
+<h2>{% trans "Billing cycle for member" %} <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }}</a>,
+  {{ cycle }}, {{ cycle.sum }} EUR</h2>
+<ul>
+    {% for bill in cycle.bill_set.all %}
+    <li><a href="{% url bill_edit bill.id %}"
+      >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.reminder_count}}{% else %}{% trans "Bill" %}{% endif %}</a>
+     {% trans "sent" %} {{ bill.created|naturalday }},
+     {% trans "due on" %} {{ bill.due_date|naturalday }}
+     ({% if cycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
+    </li>
+    {% endfor %}
+
+    {% for payment in cycle.payment_set.all %}
+    <li><a href="{% url payment_edit payment.id %}">{% trans "Payment" %}</a> {% trans "paid on" %}
+        {{ payment.payment_day|naturalday }}
+        ({{payment.amount}} &euro;,
+        <small>{{payment.reference_number}}</small>)
+    </li>
+    {% endfor %}
+</ul>
 {% endif %}
 
 {% if bill %}
-<h2>{% trans "Bill for member" %} {{ bill.billingcycle.membership }}, {{ bill.billingcycle }}</h2>
+<h2>{% trans "Bill for member" %} <a href="{% url membership_edit bill.billingcycle.membership.id %}">{{ bill.billingcycle.membership }}</a>,
+   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></h2>
 {% endif %}
 
 {% if payment %}
