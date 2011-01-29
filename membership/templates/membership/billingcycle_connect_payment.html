@@ -3,7 +3,14 @@
 {% load comments %}
 
 {% block content %}
-<p>{% trans "Bill" %} {{ bill }}, {% trans "billing cycle" %} {{ bill.billingcycle }} {% trans "for membership" %} {{ bill.billingcycle.membership }}.</p>
+
+{% if cycle.is_paid %}
+<h2>{% trans "Billing cycle is paid" %}</h2>
+{% endif %}
+
+<p>{% trans "Billing Cycle" %} {{ cycle }} ({{ cycle.sum }} EUR), {% trans "for membership" %}
+  <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }} {{cycle.membership.id }}</a>.</p>
+
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}
 <p>

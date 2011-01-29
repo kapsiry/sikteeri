@@ -34,6 +34,9 @@
 
 {% if payment %}
 <h2>{% trans "Payment by" %} {{ payment.payer_name }}</h2>
+{% if payment.billingcycle %}
+<p>{% trans "Payment assigned to" %} {{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }} {{ payment.billingcycle }}</p>
+{% endif %}
 {% endif %}
 
 <form method="POST">{% csrf_token %}
@@ -47,9 +50,14 @@
 </form>
 <hr />
 
-{% if cycle and not cycle.is_paid %}
+{% if cycle and not cycle.is_paid and perms.membership.manage_bills %}
 <h2>Actions</h2>
 <a href="{% url billingcycle_connect_payment cycle.id %}">{% trans "Assign a payment to this billing cycle" %}</a>
+{% endif %}
+
+{% if payment and payment.billingcycle and perms.membership.manage_bills %}
+<h2>Actions</h2>
+{% trans "Unassign this payment from the current billing cycle" %}	
 {% endif %}
 
 {% if logentries %}

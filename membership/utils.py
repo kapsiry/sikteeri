@@ -60,6 +60,8 @@ def log_change(object, user, before=None, after=None, change_message=None):
             change_message  = diff_humanize(dict_diff(before, after))
         else:
             change_message = "Some changes were made"
+    if not change_message:
+        return
     from django.contrib.admin.models import LogEntry, CHANGE
     LogEntry.objects.log_action(
         user_id         = user.pk,
