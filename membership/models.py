@@ -212,12 +212,6 @@ class Membership(models.Model):
             alias.expire()
         log_change(self, user, change_message="Deleted")
 
-    def valid_aliases(self):
-        '''Builds a queryset of all valid aliases'''
-        no_expire = Q(expiration_date=None)
-        not_expired = Q(expiration_date__lt=datetime.now())
-        return Alias.objects.filter(no_expire | not_expired).filter(owner=self)
-
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
@@ -231,63 +225,6 @@ class Membership(models.Model):
                 return self.person.__unicode__()
             else:
                 return "#%d" % self.id
-
-
-class Alias(models.Model):
-    owner = models.ForeignKey('Membership', verbose_name=_('Alias owner'))
-    name = models.CharField(max_length=128, unique=True, verbose_name=_('Alias name'))
-    account = models.BooleanField(default=False, verbose_name=_('Is UNIX account'))
-    created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
-    comment = models.CharField(max_length=128, blank=True, verbose_name=_('Comment'))
-    expiration_date = models.DateTimeField(blank=True, null=True, verbose_name=_('Alias expiration date'))
-    logs = property(_get_logs)
-
-    def expire(self, time=None):
-        if time == None:
-            time = datetime.now()
-        self.expiration_date = time
-        self.save()
-
-    @classmethod
-    def email_forwards(cls, membership=None, first_name=None, last_name=None,
-                       given_names=None):
-        "Returns a list of available email forward permutations."
-        if membership:
-            first_name = membership.person.first_name.lower()
-            last_name = membership.person.last_name.lower()
-            given_names = membership.person.given_names.lower()
-        else:
-            first_name = first_name.lower()
-            last_name = last_name.lower()
-            given_names = given_names.lower()
-
-        permutations = []
-
-        permutations.append(first_name + "." + last_name)
-        permutations.append(last_name + "." + first_name)
-
-        non_first_names = []
-        initials = []
-        for n in given_names.split(" "):
-            if n != first_name:
-                non_first_names.append(n)
-                initials.append(n)
-
-        all_initials_name = []
-        for i in initials:
-            permutations.append(first_name + "." + i + "." + last_name)
-            permutations.append(i + "." + first_name + "." + last_name)
-            all_initials_name.append(i)
-
-        all_initials_name.append(last_name)
-        permutations.append(".".join(all_initials_name))
-
-        return [perm for perm in permutations
-                if cls.objects.filter(name__iexact=perm).count() == 0]
-
-    def __unicode__(self):
-        return self.name
-
 
 class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
@@ -467,7 +404,6 @@ class Payment(models.Model):
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
-models.signals.post_save.connect(logging_log_change, sender=Alias)
 models.signals.post_save.connect(logging_log_change, sender=BillingCycle)
 models.signals.post_save.connect(logging_log_change, sender=Bill)
 models.signals.post_save.connect(logging_log_change, sender=Payment)

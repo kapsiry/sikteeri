@@ -25,14 +25,21 @@
 
 <h2>{% trans "Actions" %}</h2>
 {% if membership.status != "D" %}
-<a href="{% url membership_add_alias membership.id %}">{% trans "Add an alias" %}</a>
+<a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
 <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
 <a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>
 {% endif %}
 
 <h2>{% trans "Aliases" %}</h2>
 <ul>{% for alias in membership.alias_set.all %}
-    <li><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></li>
+    <li>
+    {% if alias.is_valid %}
+    <a href="{% url alias_edit alias.id %}">{{ alias.name }}</a>
+    {% else %}
+    <s><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></s>
+    {% endif %}
+    <span class="expiration_date">{{alias.expiration_date|date:"d.n.Y"}}</span>
+    </li>
     {% endfor %}
 </ul>
 

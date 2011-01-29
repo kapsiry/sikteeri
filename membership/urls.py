@@ -28,13 +28,11 @@ urlpatterns = patterns('',
     # Should we use this?
     # <http://docs.djangoproject.com/en/dev/ref/generic-views/#django-views-generic-create-update-create-object>
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
-    url(r'aliases/edit/(\d+)/$', 'membership.views.alias_edit', name='alias_edit'),
 
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
 
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
-    url(r'memberships/add_alias/(\d+)/$', 'membership.views.membership_add_alias', name='membership_add_alias'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
     url(r'billing_cycles/connect_payment/(\d+)/$', 'membership.views.billingcycle_connect_payment', name='billingcycle_connect_payment'),

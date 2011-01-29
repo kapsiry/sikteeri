@@ -84,6 +84,7 @@ def serializable_membership_info(membership):
     but Django's serialization seems to take such a tedious route that this
     seems simpler.
     """
+    from services.models import valid_aliases
     json_obj = {}
     # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
@@ -126,7 +127,7 @@ def serializable_membership_info(membership):
     json_obj['events'] = event_list
 
     # Aliases
-    json_obj['aliases'] = ", ".join([escape(alias.name) for alias in membership.valid_aliases()])
+    json_obj['aliases'] = ", ".join([escape(alias.name) for alias in valid_aliases(membership)])
 
     # FIXME: This is broken. Should probably replace:
     # {% get_comment_list for [object] as [varname] %}

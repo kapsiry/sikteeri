@@ -4,7 +4,6 @@ from models import *
 
 admin.site.register(Membership)
 admin.site.register(Contact)
-admin.site.register(Alias)
 admin.site.register(Fee)
 admin.site.register(BillingCycle)
 admin.site.register(Bill)

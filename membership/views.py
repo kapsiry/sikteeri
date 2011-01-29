@@ -21,10 +21,13 @@ from django.contrib import messages
 import simplejson
 
 from models import *
+from services.models import Alias
+
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change, serializable_membership_info
 from utils import bake_log_entries
 
+from services.views import check_alias_availability
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
@@ -251,13 +254,6 @@ def organization_application_save(request):
         logger.error("%s" % traceback.format_exc())
         logger.error("Transaction rolled back.")
         return redirect('new_application_fail')
-
-# FIXME: Here should probably be rate limiting, but it isn't simple.
-# Would this suffice? <http://djangosnippets.org/snippets/2276/>
-def check_alias_availability(request, alias):
-    if Alias.objects.filter(name__iexact=alias).count() == 0:
-        return HttpResponse("true", mimetype='text/plain')
-    return HttpResponse("false", mimetype='text/plain')
 
 @permission_required('membership.manage_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
@@ -559,74 +555,6 @@ def membership_convert_to_organization(request, id, template_name='membership/me
                               {'form': form,
                                'membership': membership },
                               context_instance=RequestContext(request))
-
-@transaction.commit_on_success
-def membership_add_alias(request, id, template_name='membership/membership_add_alias.html'):
-    membership = get_object_or_404(Membership, id=id)
-    class Form(ModelForm):
-        class Meta:
-            model = Alias
-            exclude = ('owner', 'account', 'expiration_date')
-
-    if request.method == 'POST':
-        form = Form(request.POST)
-        if form.is_valid():
-            f = form.cleaned_data
-            name = f['name']
-            comment = f['comment']
-            alias = Alias(owner=membership, name=name, comment=comment)
-            alias.save()
-            messages.success(request, unicode(_('Alias %s successfully created for %s.') % (alias, membership)))
-            logger.info("Alias %s added by %s." % (alias, request.user.username))
-            return redirect('membership_edit', membership.id)
-    else:
-        form = Form()
-
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
-
-@permission_required('membership.manage_aliases')
-def alias_edit(request, id, template_name='membership/entity_edit.html'):
-    alias = get_object_or_404(Alias, id=id)
-
-    class Form(ModelForm):
-        class Meta:
-            model = Alias
-            # exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
-        owner = ModelChoiceField(queryset=Membership.objects.filter(pk=alias.owner.id),
-                                 empty_label=None)
-
-
-        def clean_name(self):
-            return alias.name
-
-        def clean_owner(self):
-            return alias.owner
-
-        def disable_fields(self):
-            self.fields['name'].required = False
-            self.fields['name'].widget.attrs['disabled'] = 'disabled'
-            self.fields['owner'].required = False
-            self.fields['owner'].widget.attrs['disabled'] = 'disabled'
-
-    if request.method == 'POST':
-        form = Form(request.POST, instance=alias)
-        before = alias.__dict__.copy()
-        form.disable_fields()
-        if form.is_valid():
-            form.save()
-            after = alias.__dict__
-            log_change(alias, request.user, before, after)
-            return redirect('alias_edit', id) # form stays as POST otherwise if someone refreshes
-    else:
-        form = Form(instance=alias)
-        form.disable_fields()
-    logentries = bake_log_entries(alias.logs.all())
-    return render_to_response(template_name, {'form': form,
-        'alias': alias, 'logentries': logentries},
-        context_instance=RequestContext(request))
 
 @permission_required('membership.manage_members')
 @transaction.commit_on_success
