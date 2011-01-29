@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField
+from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -391,6 +391,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
 
         billingcycle = SpeciallyLabeledModelChoiceField(queryset=BillingCycle.objects.filter(is_paid__exact=False),
                                                         empty_label=_("None chosen"), required=False)
+        message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):
             self.fields['reference_number'].required = False
