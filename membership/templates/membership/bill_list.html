@@ -12,11 +12,16 @@
     <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
     <span class="cycle"><a href="{% url billingcycle_edit cycle.id %}">{{ cycle }}</a></span>
     <span class="sum">{{ cycle.sum }} {% trans "euros" %}, 
-		{% if not last_bill.is_reminder %} {% trans "bill" %} {% else %} {% trans "reminder" %} {% endif %}
-		{{ last_bill.created|date:"j.n.Y" }}</span>
+{% if not last_bill.is_reminder %}
+{% trans "bill" %} {% else %}
+{{ last_bill.reminder_count }}{% trans "th" %} {% trans "reminder" %}
+{% endif %} {{ last_bill.created|date:"j.n.Y" }}
+	</span>
+	{% if not cycle.is_paid %}
     <span class="due">
       <a{% if last_bill.is_due %} style="color:red; text-weigt: bold"{% endif %} href="{% url bill_edit last_bill.id %}">{{ last_bill.due_date|date:"j.n.Y" }}</a>
     </span>
+	{% endif %}
     <span class="paid">
       {% if cycle.is_paid %} {% trans "paid" %} {% endif %}
     </span>
