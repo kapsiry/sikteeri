@@ -22,11 +22,10 @@ from reference_numbers import generate_checknumber, add_checknumber
 
 from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
-from management.commands.makebills import membership_approved_time
 from management.commands.makebills import create_billingcycle
 from management.commands.makebills import send_reminder
 from management.commands.makebills import can_send_reminder
-from management.commands.makebills import NoApprovedLogEntry
+from management.commands.makebills import MembershipNotApproved
 
 from management.commands.csvbills import process_csv
 
@@ -168,7 +167,7 @@ class BillingTest(TestCase):
         self.assertEqual(len(cycles), 0)
         membership.delete()
 
-    def test_membership_approved_time_no_entries(self):
+    def test_membership_no_approved_time(self):
         "makebills: approved_time with no entries"
         membership = create_dummy_member('N')
         membership.status = 'A'
@@ -176,12 +175,14 @@ class BillingTest(TestCase):
 
         handler = MockLoggingHandler()
         makebills_logger.addHandler(handler)
-        self.assertRaises(NoApprovedLogEntry, membership_approved_time, membership)
+        self.assertRaises(MembershipNotApproved, create_billingcycle, membership)
 
         criticals = handler.messages["critical"]
+        self.assertTrue(len(criticals) > 0)
+
         logged = False
         for critical in criticals:
-            if "doesn't have Approved log entry" in critical:
+            if "is missing the approved timestamp. Cannot send bill" in critical:
                 logged = True
                 break
         self.assertTrue(logged)
@@ -196,8 +197,8 @@ class BillingTest(TestCase):
         log_change(membership, self.user, change_message="Approved")
         approve_entries = membership.logs.filter(change_message="Approved")
 
-        t = membership_approved_time(membership)
-        self.assertEquals(t, approve_entries.latest("action_time").action_time)
+        t = membership.approved
+        self.assertTrue(t != None)
 
 
 class SingleMemberBillingTest(TestCase):
@@ -234,6 +235,7 @@ class SingleMemberBillingTest(TestCase):
         makebills()
 
         self.assertEquals(len(mail.outbox), 1)
+        self.assertFalse(cycle.last_bill().is_reminder())
 
     def test_no_cycle_created(self):
         "makebills: no cycles after an expired membership, should log critical"

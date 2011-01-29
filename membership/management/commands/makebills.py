@@ -8,25 +8,7 @@ from datetime import datetime, timedelta
 from membership.models import *
 from membership.utils import *
 
-class NoApprovedLogEntry(Exception): pass
-
-def membership_approved_time(membership):
-    """
-    Fetches the newest 'Approved' entry and returns its time.
-    """
-    approve_entries = membership.logs.filter(change_message="Approved")
-    approve_entry_count = approve_entries.count()
-    if approve_entry_count == 0:
-        logger.critical("%s doesn't have Approved log entry"
-                         % repr(membership))
-        raise NoApprovedLogEntry("%s doesn't have an Approved log entry,"
-                                 % repr(membership)
-                                 + " start time for billing cycle can't be determined.")
-    newest = approve_entries.latest("action_time")
-    if approve_entry_count > 1:
-        logger.warning('more than one Approved-entry for %s, choosing %s'
-                        % (repr(membership), newest.action_time.strftime("%Y-%m-%d %H:%M")))
-    return newest.action_time
+class MembershipNotApproved(Exception): pass
 
 def create_billingcycle(membership):
     """
@@ -34,8 +16,11 @@ def create_billingcycle(membership):
 
     If a previous billing cycle exists, the end date is used as the start
     date for the new one.  If a previous one doesn't exist, e.g. it is a new
-    user, we use the time when they were last approved.
+    user, we use the time when they were approved.
     """
+    if membership.status != 'A':
+        logger.critical("%s not Approved. Cannot send bill" % repr(membership))
+        raise MembershipNotApproved("%s not Approved. Cannot send bill" % repr(membership))
     try:
         newest_existing_billing_cycle = membership.billingcycle_set.latest('end')
     except ObjectDoesNotExist:
@@ -43,8 +28,11 @@ def create_billingcycle(membership):
 
     if newest_existing_billing_cycle != None:
         cycle_start = newest_existing_billing_cycle.end
+    elif membership.approved != None:
+        cycle_start = membership.approved
     else:
-        cycle_start = membership_approved_time(membership)
+        logger.critical("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
+        raise MembershipNotApproved("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
 
     billing_cycle = BillingCycle(membership=membership, start=cycle_start)
     billing_cycle.save()
