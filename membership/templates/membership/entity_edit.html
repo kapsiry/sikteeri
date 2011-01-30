@@ -22,6 +22,7 @@
         {{ payment.payment_day|naturalday }}
         ({{payment.amount}} &euro;,
         <small>{{payment.reference_number}}</small>)
+		{% if payment.comment %} - {{ payment.comment }}{% endif %}
     </li>
     {% endfor %}
 </ul>
