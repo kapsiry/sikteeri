@@ -7,13 +7,14 @@
 <ul id="paymentlist">
   {% for payment in payment_list %}
   <li class="list_item" {% if payment.is_due %}style="color: red"{% endif %}>
+	{% if payment.ignore %}<s>{% endif %}
     <span class="name"><a href="{% url payment_edit payment.id %}">{{ payment.payer_name }}</a></span>
     <span class="payment"><a href="">{% trans "payment" %}</a></span>
     <span class="sum">{{ payment.amount }} {% trans "euros" %} {% trans "paid on" %} {{ payment.payment_day|date:"d.n.Y" }}</span>
     <span class="reference">{{ payment.reference_number }}</span>
     <span class="paid">
       {% if payment.billingcycle.is_paid %} {% trans "paid" %} {% endif %}
-    </span>
+    </span>{% if payment.ignore %}</s>{% endif %}
   </li>
   {% empty %}
   {% trans "No payment matches this filter, try seeing the full list." %}

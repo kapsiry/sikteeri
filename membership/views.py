@@ -322,7 +322,7 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
     class PaymentForm(Form):
         qs = Payment.objects.filter(billingcycle__exact=None, ignore=False).order_by("payer_name")
         payment = SpeciallyLabeledModelChoiceField(queryset=qs,
-                                                   empty_label=_("None chosen"), required=False)
+                                                   empty_label=_("None chosen"), required=True)
 
 
     if request.method == 'POST':
@@ -346,7 +346,7 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
             log_change(payment, request.user, before, after)
             log_change(newcycle, request.user, newcycle_before, newcycle_after)
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
-            redirect('unpaid_bill_list')
+            return redirect('billingcycle_edit', id)
         else:
             messages.error(request, unicode(_("Changes to BillingCycle %s not saved.") % billingcycle))
     else:
@@ -409,9 +409,10 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Payment
-            # exclude = ('billingcycle')
+            #exclude = ('billingcycle')
 
         billingcycle = CharField(widget=HiddenInput(), required=False)
+        #billingcycle = CharField(required=False)
         message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):

@@ -393,6 +393,7 @@ class Payment(models.Model):
     # extension
     billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
     ignore = models.BooleanField(default=False, verbose_name=_('Ignored payment'))
+    comment = models.CharField(max_length=64, verbose_name=_('Comment'), null=True)
 
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
