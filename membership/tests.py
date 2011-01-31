@@ -209,6 +209,7 @@ class SingleMemberBillingTest(TestCase):
     # http://docs.djangoproject.com/en/dev/topics/testing/#django.core.mail.django.core.mail.outbox
 
     def setUp(self):
+        settings.BILLING_CC_EMAIL = None
         self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
@@ -221,6 +222,11 @@ class SingleMemberBillingTest(TestCase):
     def test_sending_no_cycle(self):
         makebills()
         self.assertEquals(len(mail.outbox), 1)
+
+    def test_sending_with_cc(self):
+        settings.BILLING_CC_EMAIL = "test@example.com"
+        makebills()
+        self.assertEquals(len(mail.outbox), 2)
 
     def test_email_address_correct(self):
         makebills()
