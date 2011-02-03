@@ -644,7 +644,10 @@ def handle_json(request):
         raise NotImplementedError()
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
                                                  unicode(msg['payload'])))
-    return funcs[msg['requestType']](request, msg['payload'])
+    try:
+        return funcs[msg['requestType']](request, msg['payload'])
+    except Exception, e:
+        logger.critical("%s" % traceback.format_exc())
 
 @login_required
 def test_email(request, template_name='membership/test_email.html'):

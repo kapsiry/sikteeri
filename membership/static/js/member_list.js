@@ -60,6 +60,7 @@ function makeMembershipDetailObject(id) {
 	addRow(obj.table, gettext("Nationality"), "nationality");
 	addRow(obj.table, gettext("Visible in the public memberlist"), "public_memberlist");
 	addRow(obj.table, gettext("Aliases"), "aliases");
+	addRow(obj.table, gettext("Services"), "services");
 	addRow(obj.table, gettext("Additional information"), "extra_info");
     }
     return obj;
