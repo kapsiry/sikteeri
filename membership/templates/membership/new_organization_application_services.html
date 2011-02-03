@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Choose services" %}</h2>
+<p>Osa 5/6.</p>
+<p>Valitse halutut palvelut.</p>
+<form method="POST">{% csrf_token %}
+<div id="new_application">
+  {{ form.as_p }}
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Save services" %}" />
+</p>
+</div>
+</form>
+
+{% endblock %}

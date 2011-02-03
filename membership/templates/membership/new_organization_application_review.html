@@ -3,19 +3,24 @@
 
 {% block content %}
 <h2>{% trans "Application review" %}</h2>
-<p>Osa 5/5.</p>
-<p>Foobar.</p>
+<p>Osa 6/6.</p>
 <form method="POST" action="{% url organization_application_save %}">{% csrf_token %}
 <div id="new_application">
   {% for form in forms %}
     <h3>{{ form.name }}</h3>
     {{ form.as_p }}
   {% endfor %}
-
-<p>
-  <label for="submit_button"></label>
-  <input id="submit_button" type="submit" value="{% trans "Send application" %}" />
-</p>
+    <h3>{% trans "Services" %}</h3>
+    <ul>
+      <li>Käyttäjätunnus {{ services.unix_login }}</li>
+      {% if services.mysql_database %}<li>MySQL-tietokanta {{ services.mysql_database }}</li>{% endif %}
+      {% if services.postgresql_database %}<li>PostgreSQL-tietokanta {{ services.postgresql_database }}</li>{% endif %}
+      {% if services.login_vhost %}<li>{{ services.login_vhost }}.kapsi.fi-kotisivut</li>{% endif %}
+    </ul>
+  <p>
+    <label for="submit_button"></label>
+    <input id="submit_button" type="submit" value="{% trans "Send application" %}" />
+  </p>
 </div>
 </form>
 
