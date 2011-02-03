@@ -18,10 +18,13 @@ from django.conf import settings
 import logging
 logger = logging.getLogger("import_member_data")
 
-from membership.utils import log_change
 from django.contrib.auth.models import User
-from membership.models import Contact, Membership, Bill, BillingCycle, Alias
+
+from membership.utils import log_change
+from membership.models import Contact, Membership, Bill, BillingCycle
 from membership.models import Fee, MEMBER_TYPES
+
+from services.models import Alias
 
 user = User.objects.get(id=1)
 

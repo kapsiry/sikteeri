@@ -26,6 +26,8 @@ from django.contrib.comments.models import Comment
 from membership.models import Contact, Membership, Bill, BillingCycle, Fee
 from membership.test_utils import *
 
+from services.models import Alias
+
 if Fee.objects.all().count() == 0:
     sys.exit("No fees in the database. Did you load fixtures into the " +
 	     "database first?\n (./manage.py loaddata test_data.json)")
