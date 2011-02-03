@@ -89,6 +89,14 @@ class BaseContactForm(forms.Form):
                               label=_('Homepage'),
                               help_text=_('Homepage for the public member list'))
 
+    def clean(self):
+        if self.cleaned_data.has_key('postal_code') and (self.cleaned_data['country'] == 'Finland' or
+                                                         self.cleaned_data['country'] == 'Suomi'):
+            if re.match(r"^[\d]{5}$", self.cleaned_data['postal_code']) == None:
+                self._errors["postal_code"] = self.error_class([_("Postal codes in Finland must consist of 5 numbers.")])
+                del self.cleaned_data["postal_code"]
+        return self.cleaned_data
+
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
                                  error_messages={'required': _('First name required.')},
