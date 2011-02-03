@@ -129,3 +129,4 @@ def valid_aliases(owner):
 
 
 models.signals.post_save.connect(logging_log_change, sender=Alias)
+models.signals.post_save.connect(logging_log_change, sender=Service)

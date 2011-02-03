@@ -495,7 +495,7 @@ class LoginRequiredTest(TestCase):
         self.assertEqual(response.context['user'].username, 'admin')
 
 class MemberApplicationTest(TestCase):
-    fixtures = ['membpership_fees.json', 'test_user.json']
+    fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
         self.user = User.objects.get(id=1)
@@ -515,7 +515,10 @@ class MemberApplicationTest(TestCase):
             "municipality": "Vaasa",
             "extra_info": u"Mää oon testikäyttäjä.",
             "unix_login": "luser",
-            "email_forward": "y.aikas"
+            "email_forward": "y.aikas",
+            "mysql_database": "yes",
+            "postgresql_database": "yes",
+            "login_vhost": "yes",
         }
 
     def test_do_application(self):

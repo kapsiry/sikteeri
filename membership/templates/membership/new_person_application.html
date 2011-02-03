@@ -142,7 +142,7 @@
       {% for error in form.unix_login.errors %}
       <span class="error{% if form.unix_login.help_text %} newline{% endif %}">{{ error }}</span>
       {% endfor %}
-      </p>
+    </p>
   </fieldset>
   
 
@@ -159,6 +159,33 @@
       <option value="no">{% trans "No e-mail forward" %}</option>
     </select>
   </p>
+  </fieldset>
+
+  <fieldset class="wide"><legend>Palvelut</legend>
+    <p class="checkbox{% if form.mysql_database.errors %} error{% endif %}">
+      {{ form.mysql_database }}
+      <label for="id_mysql_database">{{ form.mysql_database.label }}</label>
+      <span class="help">{{ form.mysql_database.help_text }}</span>
+      {% for error in form.mysql_database.errors %}
+      <span class="error{% if form.mysql_database.help_text%} newline{% endif %}">{{ error }}</span>
+      {% endfor %}
+    </p>
+    <p class="checkbox{% if form.postgresql_database.errors %} error{% endif %}">
+      {{ form.postgresql_database }}
+      <label for="id_postgresql_database">{{ form.postgresql_database.label }}</label>
+      <span class="help">{{ form.postgresql_database.help_text }}</span>
+      {% for error in form.postgresql_database.errors %}
+      <span class="error{% if form.postgresql_database.help_text%} newline{% endif %}">{{ error }}</span>
+      {% endfor %}
+    </p>
+    <p class="checkbox{% if form.login_vhost.errors %} error{% endif %}">
+      {{ form.login_vhost }}
+      <label for="id_login_vhost">{{ form.login_vhost.label }}</label>
+      <span class="help">{{ form.login_vhost.help_text }}</span>
+      {% for error in form.login_vhost.errors %}
+      <span class="error{% if form.login_vhost.help_text%} newline{% endif %}">{{ error }}</span>
+      {% endfor %}
+    </p>
   </fieldset>
 
   <fieldset class="wide"><legend>Tietojen julkaisu jäsenlistassa</legend>

@@ -40,6 +40,12 @@ class PersonMembershipForm(forms.Form):
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'))
+
+    # Services
+    mysql_database = forms.BooleanField(label=_('I want a MySQL database'), required=False)
+    postgresql_database = forms.BooleanField(label=_('I want a PostgreSQL database'), required=False)
+    login_vhost = forms.BooleanField(label=_('I want a login.kapsi.fi website'), required=False)
+    
     unix_login = LoginField()
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)

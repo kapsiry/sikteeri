@@ -26,7 +26,7 @@ from django.contrib.comments.models import Comment
 from membership.models import Contact, Membership, Bill, BillingCycle, Fee
 from membership.test_utils import *
 
-from services.models import Alias
+from services.models import Alias, Service, ServiceType
 
 if Fee.objects.all().count() == 0:
     sys.exit("No fees in the database. Did you load fixtures into the " +
@@ -66,11 +66,32 @@ def create_dummy_member(i):
     forward_alias = Alias(owner=membership,
                           name=Alias.email_forwards(membership)[0])
     forward_alias.save()
+
     transaction.commit()
     login_alias = Alias(owner=membership, account=True,
                         name=choice(Alias.email_forwards(membership)))
     login_alias.save()
     transaction.commit()
+
+    # Services
+    forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                                    alias=forward_alias, owner=membership, data=forward_alias.name)
+    forward_alias_service.save()
+
+    unix_account_service = Service(servicetype=ServiceType.objects.get(servicetype='UNIX account'),
+                                   alias=login_alias, owner=membership, data=login_alias.name)
+    unix_account_service.save()
+
+    if random() < 0.6:
+        mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
+                                alias=login_alias, owner=membership, data=login_alias.name.replace('-', '_'))
+        mysql_service.save()
+    if random() < 0.6:
+        postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
+                                     alias=login_alias, owner=membership, data=login_alias.name)
+        postgresql_service.save()
+    transaction.commit()
+    # End of services
 
     logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
