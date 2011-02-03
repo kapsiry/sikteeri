@@ -197,7 +197,6 @@ def organization_application_services(request, template_name='membership/new_org
         if form.is_valid():
             f = form.cleaned_data
 
-            print f
             services = {'unix_login': f['unix_login']}
 
             if f['mysql_database'] != False:
