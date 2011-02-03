@@ -21,7 +21,7 @@ from django.contrib import messages
 import simplejson
 
 from models import *
-from services.models import Alias
+from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
 from utils import log_change, serializable_membership_info
@@ -41,14 +41,17 @@ def person_application(request, template_name='membership/new_person_application
         if application_form.is_valid():
             f = application_form.cleaned_data
             try:
-                d = {}
+                # Separate a contact dict from the other fields
+                contact_dict = {}
                 for k, v in f.items():
                     if k not in ['nationality', 'municipality',
                                  'public_memberlist', 'email_forward',
-                                 'unix_login', 'extra_info']:
-                        d[k] = v
+                                 'unix_login', 'extra_info',
+                                 'mysql_database', 'postgresql_database',
+                                 'login_vhost']:
+                        contact_dict[k] = v
 
-                person = Contact(**d)
+                person = Contact(**contact_dict)
                 person.save()
                 membership = Membership(type='P', status='N',
                                         person=person,
@@ -58,11 +61,41 @@ def person_application(request, template_name='membership/new_person_application
                                         extra_info=f['extra_info'])
                 membership.save()
 
+                # Service handling
+                services = []
                 if f['email_forward'] != 'no':
                     forward_alias = Alias(owner=membership, name=f['email_forward'])
                     forward_alias.save()
+                    forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                                                    alias=forward_alias, owner=membership, data=f['unix_login'])
+                    forward_alias_service.save()
+                    services.append(forward_alias_service)
+
                 login_alias = Alias(owner=membership, name=f['unix_login'], account=True)
                 login_alias.save()
+                unix_account_service = Service(servicetype=ServiceType.objects.get(servicetype='UNIX account'),
+                                               alias=login_alias, owner=membership, data=f['unix_login'])
+                unix_account_service.save()
+                services.append(unix_account_service)
+
+                if f['mysql_database'] != 'no':
+                    mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
+                                            alias=login_alias, owner=membership, data=f['unix_login'].replace('-', '_'))
+                    mysql_service.save()
+                    services.append(mysql_service)
+                if f['postgresql_database'] != 'no':
+                    postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
+                                                 alias=login_alias, owner=membership, data=f['unix_login'])
+                    postgresql_service.save()
+                    services.append(postgresql_service)
+                if f['login_vhost'] != 'no':
+                    login_vhost_service = Service(servicetype=ServiceType.objects.get(servicetype='WWW vhost'),
+                                                  alias=login_alias, owner=membership, data=f['unix_login'])
+                    login_vhost_service.save()
+                    services.append(login_vhost_service)
+
+                logger.debug("Attempting to save with the following services: %s." % ", ".join((str(service) for service in services)))
+                # End of services
 
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
