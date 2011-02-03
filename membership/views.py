@@ -127,14 +127,15 @@ def organization_application(request, template_name='membership/new_organization
 
             d = {}
             for k, v in f.items():
-                if k not in ['nationality', 'municipality', 'extra_info']:
+                if k not in ['nationality', 'municipality', 'extra_info', 'public_memberlist']:
                     d[k] = v
 
             organization = Contact(**d)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
-                                    extra_info=f['extra_info'])
+                                    extra_info=f['extra_info'],
+                                    public_memberlist=f['public_memberlist'])
 
             request.session.set_expiry(0) # make this expire when the browser exits
             request.session['membership'] = membership.__dict__.copy()

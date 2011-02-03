@@ -39,7 +39,8 @@ class PersonMembershipForm(forms.Form):
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
-                                 help_text=_('You can write additional questions or details here'))
+                                 help_text=_('You can write additional questions or details here'),
+                                 max_length=1000)
 
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
@@ -61,15 +62,16 @@ class OrganizationMembershipForm(forms.Form):
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
-                                 help_text=_('You can write additional questions or details here'))
+                                 help_text=_('You can write additional questions or details here'),
+                                 max_length=1000)
+    public_memberlist = forms.BooleanField(label=_('Organization information (name and homepage) can be shown in the public memberlist'), required=False)
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
                                      error_messages={'required': _('Street address required.')},
                                      label=_('Street address'))
-    postal_code = forms.RegexField(regex='^\d{5}$',
-                                   error_messages={'required': _('Postal code required.'),
-                                                   'invalid': _('Postal code invalid.')},
+    postal_code = forms.RegexField(regex='^[a-z0-9-]{2,10}$',
+                                   error_messages={'required': _('Postal code required.')},
                                    label=_('Postal code'))
     
     post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
