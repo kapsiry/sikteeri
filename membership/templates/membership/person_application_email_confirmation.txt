@@ -15,6 +15,9 @@ Sms-numero          {{ person.sms }}
 Sähköpostiosoite    {{ person.email }}
 Kotisivu            {{ person.homepage }}
 
+Palvelut:{% for service in services %}
+ - {{ service }}
+{% endfor %}
 
 Jos tämä hakemus on aiheeton, pyydämme että ilmoittaisitte siitä mitä
 pikimmiten.  Hakemus on jätettiin IP-osoitteesta {{ ip }}.

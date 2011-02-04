@@ -39,16 +39,17 @@ class PersonMembershipForm(forms.Form):
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
-                                 help_text=_('You can write additional questions or details here'))
+                                 help_text=_('You can write additional questions or details here'),
+                                 max_length=1000)
 
-    # Services
+    email_forward = forms.CharField(min_length=2)
+    public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
+
+class ServiceForm(forms.Form):
     mysql_database = forms.BooleanField(label=_('I want a MySQL database'), required=False)
     postgresql_database = forms.BooleanField(label=_('I want a PostgreSQL database'), required=False)
     login_vhost = forms.BooleanField(label=_('I want a login.kapsi.fi website'), required=False)
-    
     unix_login = LoginField()
-    email_forward = forms.CharField(min_length=2)
-    public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
 
 class OrganizationMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -61,15 +62,16 @@ class OrganizationMembershipForm(forms.Form):
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
-                                 help_text=_('You can write additional questions or details here'))
+                                 help_text=_('You can write additional questions or details here'),
+                                 max_length=1000)
+    public_memberlist = forms.BooleanField(label=_('Organization information (name and homepage) can be shown in the public memberlist'), required=False)
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
                                      error_messages={'required': _('Street address required.')},
                                      label=_('Street address'))
-    postal_code = forms.RegexField(regex='^\d{5}$',
-                                   error_messages={'required': _('Postal code required.'),
-                                                   'invalid': _('Postal code invalid.')},
+    postal_code = forms.RegexField(regex='^[a-z0-9-]{2,10}$',
+                                   error_messages={'required': _('Postal code required.')},
                                    label=_('Postal code'))
     
     post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
@@ -86,6 +88,14 @@ class BaseContactForm(forms.Form):
     homepage = forms.URLField(required=False,
                               label=_('Homepage'),
                               help_text=_('Homepage for the public member list'))
+
+    def clean(self):
+        if self.cleaned_data.has_key('postal_code') and (self.cleaned_data['country'] == 'Finland' or
+                                                         self.cleaned_data['country'] == 'Suomi'):
+            if re.match(r"^[\d]{5}$", self.cleaned_data['postal_code']) == None:
+                self._errors["postal_code"] = self.error_class([_("Postal codes in Finland must consist of 5 numbers.")])
+                del self.cleaned_data["postal_code"]
+        return self.cleaned_data
 
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
@@ -109,7 +119,7 @@ class PersonContactForm(PersonBaseContactForm, BaseContactForm):
 class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
     pass
 
-class PersonApplicationForm(PersonContactForm, PersonMembershipForm):
+class PersonApplicationForm(PersonContactForm, PersonMembershipForm, ServiceForm):
     pass
        
 class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):

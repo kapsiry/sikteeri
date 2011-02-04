@@ -18,6 +18,9 @@ Kotisivu            {{ organization.homepage }}
 
 {% if billing_contact %}
 Laskutusyhteystiedot
+Etunimi             {{ billing_contact.first_name }}
+Kaikki etunimet     {{ billing_contact.given_names }}
+Sukunimi            {{ billing_contact.last_name }}
 Katuosoite          {{ billing_contact.street_address }}
 Postinumero         {{ billing_contact.postal_code }}
 Postitoimipaikka    {{ billing_contact.post_office }}
@@ -30,6 +33,9 @@ Kotisivu            {{ billing_contact.homepage }}
 
 {% if tech_contact %}
 Tekniset yhteystiedot
+Etunimi             {{ tech_contact.first_name }}
+Kaikki etunimet     {{ tech_contact.given_names }}
+Sukunimi            {{ tech_contact.last_name }}
 Katuosoite          {{ tech_contact.street_address }}
 Postinumero         {{ tech_contact.postal_code }}
 Postitoimipaikka    {{ tech_contact.post_office }}
@@ -39,6 +45,9 @@ Sms-numero          {{ tech_contact.sms }}
 Sähköpostiosoite    {{ tech_contact.email }}
 Kotisivu            {{ tech_contact.homepage }}
 {% endif %}
+
+Palvelut:{% for service in services %}
+ - {{ service }}{% endfor %}
 
 Jos tämä hakemus on aiheeton, pyydämme että ilmoittaisitte siitä mitä
 pikimmiten.  Hakemus on jätettiin IP-osoitteesta {{ ip }}.

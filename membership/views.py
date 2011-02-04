@@ -23,7 +23,7 @@ import simplejson
 from models import *
 from services.models import Alias, Service, ServiceType
 
-from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm
+from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
 from utils import log_change, serializable_membership_info
 from utils import bake_log_entries
 
@@ -103,7 +103,8 @@ def person_application(request, template_name='membership/new_person_application
                           render_to_string('membership/person_application_email_confirmation.txt',
                                            { 'membership': membership,
                                              'person': membership.person,
-                                             'ip': request.META['REMOTE_ADDR']}),
+                                             'ip': request.META['REMOTE_ADDR'],
+                                             'services': services}),
                           settings.FROM_EMAIL,
                           [membership.email()], fail_silently=False)
                 return redirect('new_person_application_success')
@@ -126,21 +127,22 @@ def organization_application(request, template_name='membership/new_organization
 
             d = {}
             for k, v in f.items():
-                if k not in ['nationality', 'municipality', 'extra_info']:
+                if k not in ['nationality', 'municipality', 'extra_info', 'public_memberlist']:
                     d[k] = v
 
             organization = Contact(**d)
             membership = Membership(type='O', status='N',
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
-                                    extra_info=f['extra_info'])
+                                    extra_info=f['extra_info'],
+                                    public_memberlist=f['public_memberlist'])
 
             request.session.set_expiry(0) # make this expire when the browser exits
             request.session['membership'] = membership.__dict__.copy()
             organization_dict = organization.__dict__.copy()
             del organization_dict['_state']
             request.session['organization'] = organization_dict
-            return redirect('organization_application_add_contact', 'person')
+            return redirect('organization_application_add_contact', 'billing_contact')
     else:
         form = OrganizationApplicationForm()
     return render_to_response(template_name, {"form": form,
@@ -148,13 +150,11 @@ def organization_application(request, template_name='membership/new_organization
                               context_instance=RequestContext(request))
 
 def organization_application_add_contact(request, contact_type, template_name='membership/new_organization_application_add_contact.html'):
-    forms = ['person', 'billing_contact', 'tech_contact']
+    forms = ['billing_contact', 'tech_contact']
     if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
 
-    if contact_type == 'person':
-        type_text = 'Administrative contact'
-    elif contact_type == 'billing_contact':
+    if contact_type == 'billing_contact':
         type_text = 'Billing contact'
     elif contact_type == 'tech_contact':
         type_text = 'Technical contact'
@@ -172,16 +172,55 @@ def organization_application_add_contact(request, contact_type, template_name='m
                 request.session[contact_type] = None
             next_idx = forms.index(contact_type) + 1
             if next_idx == len(forms):
-                return redirect('organization_application_review')
+                return redirect('organization_application_services')
             return redirect('organization_application_add_contact', forms[next_idx])
     else:
         if request.session.has_key(contact_type):
-            form = PersonApplicationForm(request.session[contact_type])
+            form = PersonContactForm(request.session[contact_type])
         else:
-            form = PersonApplicationForm()
+            form = PersonContactForm()
     return render_to_response(template_name, {"form": form, "contact_type": type_text,
                                               "step_number": forms.index(contact_type) + 2,
                                               "title": _('Organization application') + ' - ' + type_text},
+                              context_instance=RequestContext(request))
+
+def organization_application_services(request, template_name='membership/new_organization_application_services.html'):
+    if request.session.has_key('services'):
+        form = ServiceForm({'mysql_database': request.session.get('mysql', ''),
+                            'postgresql_database': request.session.get('postgresql', ''),
+                            'login_vhost': request.session.get('login_vhost', ''),
+                            'unix_login': request.session.get('unix_login', '')})
+    else:
+        form = ServiceForm()
+
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+
+            services = {'unix_login': f['unix_login']}
+
+            if f['mysql_database'] != False:
+                services['mysql_database'] = f['unix_login']
+            elif services.has_key('mysql_database'):
+                del services['mysql_database']
+            if f['postgresql_database'] != False:
+                services['postgresql_database'] = f['unix_login']
+            elif services.has_key('postgresql'):
+                del services['postgresql']
+            if f['login_vhost'] != False:
+                services['login_vhost'] = f['unix_login']
+            elif services.has_key('login_vhost'):
+                del services['login_vhost']
+
+            request.session['services'] = services
+            return redirect('organization_application_review')
+        else:
+            if request.session.has_key('services'):
+                del request.session['services']
+
+    return render_to_response(template_name, {"form": form,
+                                              "title": unicode(_('Choose services'))},
                               context_instance=RequestContext(request))
 
 def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
@@ -190,11 +229,6 @@ def organization_application_review(request, template_name='membership/new_organ
                             municipality=request.session['membership']['municipality'],
                             extra_info=request.session['membership']['extra_info'])
     organization = Contact(**request.session.get('organization'))
-
-    try:
-        person = Contact(**request.session['person'])
-    except:
-        person = None
 
     try:
         billing_contact = Contact(**request.session['billing_contact'])
@@ -211,16 +245,13 @@ def organization_application_review(request, template_name='membership/new_organ
     for k, v in request.session['organization'].items():
         combo_dict[k] = v
     forms.append(OrganizationApplicationForm(combo_dict))
-    if person:
-        forms.append(PersonContactForm(request.session['person']))
-        forms[-1].name = _("Administrative contact")
     if billing_contact:
         forms.append(PersonContactForm(request.session['billing_contact']))
         forms[-1].name = _("Billing contact")
     if tech_contact:
         forms.append(PersonContactForm(request.session['tech_contact']))
         forms[-1].name = _("Technical contact")
-    return render_to_response(template_name, {"forms": forms,
+    return render_to_response(template_name, {"forms": forms, "services": request.session['services'],
                                               "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))},
                               context_instance=RequestContext(request))
 
@@ -235,11 +266,6 @@ def organization_application_save(request):
         organization = Contact(**request.session['organization'])
 
         try:
-            person = Contact(**request.session['person'])
-        except:
-            person = None
-
-        try:
             billing_contact = Contact(**request.session['billing_contact'])
         except:
             billing_contact = None
@@ -251,9 +277,6 @@ def organization_application_save(request):
 
         organization.save()
         membership.organization = organization
-        if person:
-            person.save()
-            membership.person = person
         if billing_contact:
             billing_contact.save()
             membership.billing_contact = billing_contact
@@ -262,21 +285,50 @@ def organization_application_save(request):
             membership.tech_contact = tech_contact
 
         membership.save()
+
+        services = []
+        session = request.session
+        login_alias = Alias(owner=membership, name=session['services']['unix_login'], account=True)
+        login_alias.save()
+        unix_account_service = Service(servicetype=ServiceType.objects.get(servicetype='UNIX account'),
+                                       alias=login_alias, owner=membership, data=session['services']['unix_login'])
+        unix_account_service.save()
+        services.append(unix_account_service)
+        if session['services'].has_key('mysql_database'):
+            mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
+                                    alias=login_alias, owner=membership,
+                                    data=session['services']['mysql_database'].replace('-', '_'))
+            mysql_service.save()
+            services.append(mysql_service)
+        if session['services'].has_key('postgresql_database'):
+            postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
+                                         alias=login_alias, owner=membership,
+                                         data=session['services']['postgresql_database'])
+            postgresql_service.save()
+            services.append(postgresql_service)
+        if session['services'].has_key('login_vhost'):
+            login_vhost_service = Service(servicetype=ServiceType.objects.get(servicetype='WWW vhost'),
+                                          alias=login_alias, owner=membership,
+                                          data=session['services']['login_vhost'])
+            login_vhost_service.save()
+            services.append(login_vhost_service)
+
         transaction.commit()
 
         send_mail(_('Membership application received'),
-                  render_to_string('membership/person_application_email_confirmation.txt',
+                  render_to_string('membership/organization_application_email_confirmation.txt',
                                    { 'membership': membership,
                                      'organization': membership.organization,
                                      'billing_contact': membership.billing_contact,
                                      'tech_contact': membership.tech_contact,
-                                     'ip': request.META['REMOTE_ADDR']}),
+                                     'ip': request.META['REMOTE_ADDR'],
+                                     'services': services}),
                   settings.FROM_EMAIL,
                   [membership.email()], fail_silently=False)
 
         logger.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
-        for i in ['membership', 'person', 'billing_contact', 'tech_contact']:
+        for i in ['membership', 'billing_contact', 'tech_contact', 'services']:
             try:
                 del request.session[i]
             except:
@@ -648,6 +700,7 @@ def handle_json(request):
         return funcs[msg['requestType']](request, msg['payload'])
     except Exception, e:
         logger.critical("%s" % traceback.format_exc())
+        raise e
 
 @login_required
 def test_email(request, template_name='membership/test_email.html'):

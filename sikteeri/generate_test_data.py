@@ -67,9 +67,10 @@ def create_dummy_member(i):
                           name=Alias.email_forwards(membership)[0])
     forward_alias.save()
 
+
     transaction.commit()
     login_alias = Alias(owner=membership, account=True,
-                        name=choice(Alias.email_forwards(membership)))
+                        name=choice(Alias.unix_logins(membership)))
     login_alias.save()
     transaction.commit()
 

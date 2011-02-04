@@ -2,12 +2,19 @@ import logging
 logger = logging.getLogger("models")
 
 from datetime import datetime, timedelta
+import unicodedata
+
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import Q
 
 from membership.models import Membership
+
+def remove_accents(str):
+    '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
+    nkfd_form = unicodedata.normalize('NFKD', unicode(str))
+    return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
@@ -86,13 +93,13 @@ class Alias(models.Model):
                        given_names=None):
         "Returns a list of available email forward permutations."
         if membership:
-            first_name = membership.person.first_name.lower()
-            last_name = membership.person.last_name.lower()
-            given_names = membership.person.given_names.lower()
+            first_name = remove_accents(membership.person.first_name.lower())
+            last_name = remove_accents(membership.person.last_name.lower())
+            given_names = remove_accents(membership.person.given_names.lower())
         else:
-            first_name = first_name.lower()
-            last_name = last_name.lower()
-            given_names = given_names.lower()
+            first_name = remove_accents(first_name.lower())
+            last_name = remove_accents(last_name.lower())
+            given_names = remove_accents(given_names.lower())
 
         permutations = []
 
@@ -114,6 +121,42 @@ class Alias(models.Model):
 
         all_initials_name.append(last_name)
         permutations.append(".".join(all_initials_name))
+
+        return [perm for perm in permutations
+                if cls.objects.filter(name__iexact=perm).count() == 0]
+
+    @classmethod
+    def unix_logins(cls, membership=None, first_name=None, last_name=None,
+                    given_names=None):
+        "Returns a list of available user login names."
+        if membership:
+            first_name = remove_accents(membership.person.first_name.lower())
+            last_name = remove_accents(membership.person.last_name.lower())
+            given_names = remove_accents(membership.person.given_names.lower())
+        else:
+            first_name = remove_accents(first_name.lower())
+            last_name = remove_accents(last_name.lower())
+            given_names = remove_accents(given_names.lower())
+
+        permutations = []
+
+        permutations.append(last_name)
+        permutations.append(first_name)
+        permutations.append(first_name + last_name)
+        permutations.append(last_name + first_name)
+
+        non_first_names = []
+        initials = []
+        for n in given_names.split(" "):
+            if n != first_name:
+                non_first_names.append(n)
+                initials.append(n)
+
+        permutations.append("".join(initials) + last_name[0])
+        permutations.append("".join(initials) + last_name)
+
+        for initial in initials:
+            permutations.append(initial + last_name)
 
         return [perm for perm in permutations
                 if cls.objects.filter(name__iexact=perm).count() == 0]
