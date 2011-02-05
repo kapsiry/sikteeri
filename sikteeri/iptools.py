@@ -51,7 +51,14 @@ class IpRangeList:
     def __init__(self, *args):
         self._masks = []
         for cidr in args:
-            (ip, prefixlen) = cidr.split("/")
+            if not '/' in cidr:
+                ip = cidr
+                if ':' in ip:
+                    prefixlen = 128
+                else:
+                    prefixlen = 32
+            else:
+                (ip, prefixlen) = cidr.split("/")
             prefixlen = int(prefixlen)
             network = cidr_to_network(ip, prefixlen)
             self._masks.append((network, prefixlen))
@@ -75,12 +82,17 @@ def main():
     print ip_long, "=", ip
     print "IPv4/24 = " + hex(ipv4_mask_to_long(24))
     print "IPv6/32 = " + hex(ipv6_mask_to_long(32))
-    ranges = IpRangeList("10.0.0.0/24", "2001:db8::1/64")
+    ranges = IpRangeList("10.0.0.0/24", "2001:db8::1/64", "2001:db8:f00::1")
     print ranges._masks
     print "2001:db8:1::1 in ranges:", "2001:db8:1::1" in ranges
+    print "2001:db8:f00::1 in ranges:", "2001:db8:f00::1" in ranges
+    print "2001:db8:f00::0 in ranges:", "2001:db8:f00::0" in ranges
     print "2001:db8::1 in ranges:", "2001:db8::1" in ranges
     print "10.0.0.255 in ranges:", "10.0.0.255" in ranges
     print "10.0.1.0 in ranges:", "10.0.1.0" in ranges
+    print "Iteration:"
+    for i in ranges:
+        print i
 
 if __name__ == '__main__':
     main()
