@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 logger = logging.getLogger("models")
+import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -180,6 +181,21 @@ class Membership(models.Model):
         self.status = 'P'
         self.save()
         log_change(self, user, change_message="Preapproved")
+        from services.models import Service
+        # imported here since on top-level it would lead into a circular import
+        try:
+            email_body = render_to_string('membership/preapprove_mail.txt', {
+                'membership': self,
+                'services': Service.objects.filter(owner=self),
+                'user': user
+                })
+        except Exception, e:
+            logger.critical("%s" % traceback.format_exc())
+            raise e
+
+        send_mail(_('Kapsi member application %i') % self.id, email_body,
+                  settings.BILLING_FROM_EMAIL,
+                  [self.email()], fail_silently=False)
 
     def approve(self, user):
         if self.status != 'P':

@@ -1,0 +1,70 @@
+Hei!
+
+Tämä viesti liittyy Kapsi Internet-käyttäjät ry:n jäsenhakemukseen
+numero {{ membership.id }}. Mikäli et ole itse lähettänyt jäsenhakemusta, pyytäisin
+ottamaan yhteyttä väärinkäsityksen korjaamiseksi.
+
+Jäsenhakemus käsitellään virallisesti seuraavassa hallituksen
+kokouksessa. Hakemuksessa ei näyttänyt olevan mitään epäselvää.
+Ohjeet jäsenmaksun maksamiseen tulevat hallituksen kokouksen
+jälkeen tässä hakemuksessa määriteltyyn sähköpostiosoitteeseen.
+
+Tarkista hakemuksen tiedot:
+  ID:            {{ membership.id }}
+  Lähetetty:     {{ membership.created|date:"SHORT_DATE_FORMAT" }}
+  Ryhmä:         {{ membership.type }}
+{% if membership.person %}
+  Etunimi:       {{ membership.person.first_name }}
+  Etunimet:      {{ membership.person.given_names }}
+  Sukunimi:      {{ membership.person.last_name }}
+  Kotipaikka:    {{ membership.municipality }}
+  Kansalaisuus:  {{ membership.nationality }}
+  Katuosoite:    {{ membership.person.street_address }}
+  Postinumero ja
+  -toimipaikka:  {{ membership.person.postal_code }} {{ membership.person.post_office }}
+  Puhelin:       {{ membership.person.phone }}
+  Matkapuhelin:  {{ membership.person.sms }}
+  Sähköposti:    {{ membership.person.email }}
+  Kotisivut:     {{ membership.person.homepage }}
+{% endif %}{% if membership.organization %}
+  Yhteisön nimi: {{ membership.organization.organization_name }}
+  Kotipaikka:    {{ membership.municipality }}
+  Maa:           {{ membership.nationality }}
+  Katuosoite:    {{ membership.organization.street_address }}
+  Postinumero ja
+  -toimipaikka:  {{ membership.organization.postal_code }} {{ membership.organization.post_office }}
+  Puhelin:       {{ membership.organization.phone }}
+  Matkapuhelin:  {{ membership.organization.sms }}
+  Sähköposti:    {{ membership.organization.email }}
+  Kotisivut:     {{ membership.organization.homepage }}
+{% endif %}
+
+Tämä viesti on lähetetty myös ylläpidolle, joka lisää seuraavat 
+jäsenpalvelut:
+
+{% for service in services %}
+  {{ service }}
+{% endfor %}
+
+Ylläpito lähettää tunnuksia ja muita palveluita koskevat
+yksityiskohdat 
+sähköpostilla palveluiden kytkemisen jälkeen.
+
+Tutustu myös:
+
+- Tekniset tiedotteet: http://list.kapsi.fi/kapsi-techinfo
+- Kysymykset laskutukselle: laskutus@tuki.kapsi.fi
+- Kysymykset palveluiden käytöstä: helpdesk@tuki.kapsi.fi
+- Pyynnöt ylläpitotöistä: yllapito@tuki.kapsi.fi
+- Postituslistoja jäsenille: http://list.kapsi.fi/
+- Kapsin foorumi: http://forum.kapsi.fi/
+- Jäsenten IRC-kanava: http://www.kapsi.fi/irc/
+- Facebook -sivu: http://www.facebook.com/kapsi.fi
+
+Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
+osoitteeseen.
+
+-- 
+{{ user }}
+Kapsi Internet-käyttäjät ry
+http://www.kapsi.fi/
