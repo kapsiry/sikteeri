@@ -98,14 +98,15 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 from local_settings import *
 
 # Is this the right way to do this?
-IBAN_ACCOUNT_NUMBER
-BIC_CODE
-BILLING_FROM_EMAIL
-FROM_EMAIL
-SECRET_KEY
-BILL_SUBJECT
-SYSTEM_NAME
-ENABLE_REMINDERS
-REMINDER_GRACE_DAYS
-BILL_DAYS_BEFORE_CYCLE
-BILL_DAYS_TO_DUE
+assert(IBAN_ACCOUNT_NUMBER != None)
+assert(BIC_CODE != None)
+assert(BILLING_FROM_EMAIL != None)
+assert(FROM_EMAIL != None)
+assert(SYSADMIN_EMAIL != None)
+assert(SECRET_KEY != None)
+assert(BILL_SUBJECT != None)
+assert(SYSTEM_NAME != None)
+assert(ENABLE_REMINDERS != None)
+assert(REMINDER_GRACE_DAYS != None)
+assert(BILL_DAYS_BEFORE_CYCLE != None)
+assert(BILL_DAYS_TO_DUE != None)

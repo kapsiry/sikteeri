@@ -12,7 +12,7 @@ jälkeen tässä hakemuksessa määriteltyyn sähköpostiosoitteeseen.
 Tarkista hakemuksen tiedot:
   ID:            {{ membership.id }}
   Lähetetty:     {{ membership.created|date:"SHORT_DATE_FORMAT" }}
-  Ryhmä:         {{ membership.type }}
+  Ryhmä:         {{ membership_type }}
 {% if membership.person %}
   Etunimi:       {{ membership.person.first_name }}
   Etunimet:      {{ membership.person.given_names }}
@@ -42,8 +42,7 @@ Tarkista hakemuksen tiedot:
 Tämä viesti on lähetetty myös ylläpidolle, joka lisää seuraavat 
 jäsenpalvelut:
 
-{% for service in services %}
-  {{ service }}
+{% for service in services %}- {{ service }}
 {% endfor %}
 
 Ylläpito lähettää tunnuksia ja muita palveluita koskevat
@@ -65,6 +64,6 @@ Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
 osoitteeseen.
 
 -- 
-{{ user }}
+{{ user.get_full_name }}
 Kapsi Internet-käyttäjät ry
 http://www.kapsi.fi/
