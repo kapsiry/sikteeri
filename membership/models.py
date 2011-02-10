@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import logging
 logger = logging.getLogger("models")
+import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -11,7 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.template import Context
-from django.core.mail import send_mail
+from django.core import mail
+from django.core.mail import send_mail, EmailMessage
 
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
@@ -180,6 +182,28 @@ class Membership(models.Model):
         self.status = 'P'
         self.save()
         log_change(self, user, change_message="Preapproved")
+        from services.models import Service
+        # imported here since on top-level it would lead into a circular import
+        email_body = render_to_string('membership/preapprove_mail.txt', {
+            'membership': self,
+            'membership_type': MEMBER_TYPES_DICT[self.type],
+            'services': Service.objects.filter(owner=self),
+            'user': user
+            })
+
+        user_email = EmailMessage(_('Kapsi member application %i') % self.id,
+                                  email_body,
+                                  u'%s <%s>' % (settings.SYSTEM_NAME, settings.FROM_EMAIL),
+                                  [self.email()],
+                                  headers = {'Reply-To': settings.FROM_EMAIL})
+        sysadmin_email = EmailMessage(_('Kapsi member application %i') % self.id,
+                                      email_body,
+                                      u'%s <%s>' % (settings.SYSTEM_NAME, settings.FROM_EMAIL),
+                                      [settings.SYSADMIN_EMAIL],
+                                      headers = {'Reply-To': self.email()})
+        connection = mail.get_connection()
+        connection.send_messages([user_email, sysadmin_email])
+        logger.info("Membership %s preapproved." % self)
 
     def approve(self, user):
         if self.status != 'P':

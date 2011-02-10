@@ -9,6 +9,7 @@ BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see
 BILLING_CC_EMAIL = None     # E-mail address (or None) for sending copies of the bills
 
 FROM_EMAIL = None           # Generic from e-mail
+SYSADMIN_EMAIL = None       # Sysadmin email to send preapprove e-mails to
 BILL_SUBJECT = None         # Text to be used as bill subjects
 SYSTEM_NAME = None          # Membership management system should have a name
 
