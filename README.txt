@@ -54,6 +54,7 @@ Checklist:
  [ ] Update member types
  [ ] Import payment data (csvbills)
  [ ] Import manual matches
+ [ ] Make sure bill IDs start from where old system left off
  [ ] Dump database - restore point for bill test
   [ ] Makebills - send bills (TEST EMAIL BACKEND!!!)
   [ ] Verify that the "sent" bills are correct
