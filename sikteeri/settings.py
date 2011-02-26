@@ -101,7 +101,7 @@ from local_settings import *
 assert(IBAN_ACCOUNT_NUMBER != None)
 assert(BIC_CODE != None)
 assert(BILLING_FROM_EMAIL != None)
-assert(BILLING_CC_EMAIL != None)
+BILLING_CC_EMAIL
 assert(FROM_EMAIL != None)
 assert(SYSADMIN_EMAIL != None)
 assert(SECRET_KEY != None)
