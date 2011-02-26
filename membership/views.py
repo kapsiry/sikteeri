@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput
+from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput, FileField
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
@@ -28,6 +28,8 @@ from utils import log_change, serializable_membership_info
 from utils import bake_log_entries
 
 from services.views import check_alias_availability
+
+from management.commands.csvbills import process_csv as payment_csv_import
 
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
@@ -440,6 +442,37 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
     return render_to_response(template_name, {'form': form, 'cycle': billingcycle,
                                               'logentries': logentries},
                               context_instance=RequestContext(request))
+
+# TODO: permissions!
+@permission_required('membership.manage_payments')
+def import_payments(request, template_name='membership/import_payments.html'):
+    import_messages = []
+    class PaymentCSVForm(Form):
+        csv = FileField(label=_('CSV File'),
+                         help_text=_('Choose CSV file to upload'))
+
+    if request.method == 'POST':
+        form = PaymentCSVForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                in_memory_file = request.FILES['csv']
+                logger.info("Beginning payment import.")
+                import_messages = payment_csv_import(in_memory_file)
+                messages.success(request, unicode(_("Payment import succeeded!")))
+            except:
+                  logger.error("%s" % traceback.format_exc())
+                  logger.error("Payment CSV import failed.")
+                  messages.error(request, unicode(_("Payment import failed.")))
+        else:
+            messages.error(request, unicode(_("Payment import failed.")))
+    else:
+        form = PaymentCSVForm()
+
+    return render_to_response(template_name, {'title': _("Import payments"),
+                                              'form': form,
+                                              'import_messages': import_messages},
+                              context_instance=RequestContext(request))
+
 
 @permission_required('membership.manage_bills')
 def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):

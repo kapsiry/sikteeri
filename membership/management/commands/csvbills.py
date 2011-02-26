@@ -5,6 +5,7 @@ from __future__ import with_statement
 from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import ugettext_lazy as _
 
 import codecs
 import csv
@@ -133,41 +134,46 @@ def row_to_payment(row):
                     transaction_id=row['transaction'])
     return p
 
-def process_csv(filename):
+def process_csv(file_handle):
     """Actual CSV file processing logic
     """
+    return_messages = []
     num_attached = num_notattached = 0
     sum_attached = sum_notattached = 0
-    with open(filename, 'r') as f:
-        reader = OpDictReader(f)
-        for row in reader:
-            if row == None:
-                continue
-            if row['amount'] < 0: # Transaction is paid by us, ignored
-                continue
-            payment = row_to_payment(row)
+    reader = OpDictReader(file_handle)
+    for row in reader:
+        if row == None:
+            continue
+        if row['amount'] < 0: # Transaction is paid by us, ignored
+            continue
+        payment = row_to_payment(row)
 
-            # Do nothing if this payment has already been assigned
-            if payment.billingcycle:
-                continue
+        # Do nothing if this payment has already been assigned
+        if payment.billingcycle:
+            continue
 
-            try:
-                reference = payment.reference_number
-                cycle = BillingCycle.objects.get(reference_number=reference)
-                payment.attach_to_cycle(cycle)
-                num_attached = num_attached + 1
-                sum_attached = sum_attached + payment.amount
-            except BillingCycle.DoesNotExist:
-                # Failed to find cycle for this reference number
-                if not payment.id:
-                    payment.save() # Only save if object not in database yet
-                    logger.warning("No billing cycle found for %s" % payment.reference_number)
-                    num_notattached = num_notattached + 1
-                    sum_notattached = sum_notattached + payment.amount
+        try:
+            reference = payment.reference_number
+            cycle = BillingCycle.objects.get(reference_number=reference)
+            payment.attach_to_cycle(cycle)
+            return_messages.append(_("Attached payment %s to cycle %s") % (payment, cycle))
+            num_attached = num_attached + 1
+            sum_attached = sum_attached + payment.amount
+        except BillingCycle.DoesNotExist:
+            # Failed to find cycle for this reference number
+            if not payment.id:
+                payment.save() # Only save if object not in database yet
+                logger.warning("No billing cycle found for %s" % payment.reference_number)
+                return_messages.append(_("No billing cycle found for %s") % payment)
+                num_notattached = num_notattached + 1
+                sum_notattached = sum_notattached + payment.amount
 
-    logger.info("Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" %
-                (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached,
-                 sum_notattached))
+    log_message ="Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" % \
+                  (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached, \
+                   sum_notattached)
+    logger.info(log_message)
+    return_messages.append(log_message)
+    return return_messages
 
 
 class Command(BaseCommand):
@@ -179,7 +185,8 @@ class Command(BaseCommand):
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
             try:
-                process_csv(csvfile)
+                with open(csvfile, 'r') as file_handle:
+                    process_csv(file_handle)
             except Exception, e:
                 print "Fatal error: %s" % unicode(e)
                 logger.error("process_csv failed: %s" % unicode(e))
