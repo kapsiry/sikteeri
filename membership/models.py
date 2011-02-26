@@ -394,6 +394,12 @@ class Bill(models.Model):
             send_mail(settings.BILL_SUBJECT, self.render_as_text(),
                 settings.BILLING_FROM_EMAIL,
                 [membership.billing_email()], fail_silently=False)
+            if settings.BILLING_CC_EMAIL:
+                # Send a copy
+                send_mail(settings.BILL_SUBJECT, self.render_as_text(),
+                    settings.BILLING_CC_EMAIL,
+                    [membership.billing_email()], fail_silently=False)
+
             logger.info('A bill sent as email to %s: %s' % (membership.email,
                 repr(Bill)))
         else:

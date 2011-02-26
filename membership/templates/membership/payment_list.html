@@ -15,6 +15,11 @@
     <span class="paid">
       {% if payment.billingcycle.is_paid %} {% trans "paid" %} {% endif %}
     </span>{% if payment.ignore %}</s>{% endif %}
+	{% if payment.comment %}
+    <span class="comment">
+      {{ payment.comment }}
+    </span>
+	{% endif %}
   </li>
   {% empty %}
   {% trans "No payment matches this filter, try seeing the full list." %}

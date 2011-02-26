@@ -19,10 +19,10 @@ import logging
 logger = logging.getLogger("import_member_data")
 
 from django.contrib.auth.models import User
-
-from membership.utils import log_change
 from membership.models import Contact, Membership, Bill, BillingCycle
 from membership.models import Fee, MEMBER_TYPES
+from services.models import Alias
+from membership.utils import log_change
 
 from services.models import Alias
 

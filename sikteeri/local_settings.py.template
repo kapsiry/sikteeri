@@ -6,6 +6,8 @@ IBAN_ACCOUNT_NUMBER = None  # Pan-European new standard bank account number
 BIC_CODE = None             # Bank account's bank code in the BIC format
 BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see
                             # the setting EMAIL_BACKEND.
+BILLING_CC_EMAIL = None     # E-mail address (or None) for sending copies of the bills
+
 FROM_EMAIL = None           # Generic from e-mail
 SYSADMIN_EMAIL = None       # Sysadmin email to send preapprove e-mails to
 BILL_SUBJECT = None         # Text to be used as bill subjects
