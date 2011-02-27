@@ -80,17 +80,17 @@ def person_application(request, template_name='membership/new_person_application
                 unix_account_service.save()
                 services.append(unix_account_service)
 
-                if f['mysql_database'] != 'no':
+                if f['mysql_database'] == True:
                     mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
                                             alias=login_alias, owner=membership, data=f['unix_login'].replace('-', '_'))
                     mysql_service.save()
                     services.append(mysql_service)
-                if f['postgresql_database'] != 'no':
+                if f['postgresql_database'] == True:
                     postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                                  alias=login_alias, owner=membership, data=f['unix_login'])
                     postgresql_service.save()
                     services.append(postgresql_service)
-                if f['login_vhost'] != 'no':
+                if f['login_vhost'] == True:
                     login_vhost_service = Service(servicetype=ServiceType.objects.get(servicetype='WWW vhost'),
                                                   alias=login_alias, owner=membership, data=f['unix_login'])
                     login_vhost_service.save()
