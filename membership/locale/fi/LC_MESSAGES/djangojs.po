@@ -141,4 +141,4 @@ msgstr "lisää esihyväksyntäkoriin"
 #: static/js/member_list.js:259
 #, fuzzy
 msgid "remove from approve cart"
-msgstr "poista esihyväksyntäkorista"
+msgstr "poista hyväksyntäkorista"
