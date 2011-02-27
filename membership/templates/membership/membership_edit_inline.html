@@ -45,7 +45,7 @@
 
 <h2>{% trans "Services" %}</h2>
 <ul>{% for service in membership.service_set.all %}
-    <li><a href="">{{ service }}</a></li>
+    <li>{{ service }}</li>
     {% endfor %}
 </ul>
 
