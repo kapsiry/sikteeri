@@ -20,7 +20,7 @@ Palvelut:{% for service in services %}
 {% endfor %}
 
 Jos tämä hakemus on aiheeton, pyydämme että ilmoittaisitte siitä mitä
-pikimmiten.  Hakemus on jätettiin IP-osoitteesta {{ ip }}.
+pikimmiten.  Hakemus jätettiin IP-osoitteesta {{ ip }}.
 
 -- 
 Kapsin jäsentietojärjestelmä <yllapito@tuki.kapsi.fi>
