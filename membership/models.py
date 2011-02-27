@@ -190,19 +190,13 @@ class Membership(models.Model):
             'services': Service.objects.filter(owner=self),
             'user': user
             })
-
-        user_email = EmailMessage(_('Kapsi member application %i') % self.id,
-                                  email_body,
-                                  u'%s <%s>' % (settings.SYSTEM_NAME, settings.FROM_EMAIL),
-                                  [self.email()],
-                                  headers = {'Reply-To': settings.FROM_EMAIL})
         sysadmin_email = EmailMessage(_('Kapsi member application %i') % self.id,
                                       email_body,
                                       u'%s <%s>' % (settings.SYSTEM_NAME, settings.FROM_EMAIL),
                                       [settings.SYSADMIN_EMAIL],
                                       headers = {'Reply-To': self.email()})
         connection = mail.get_connection()
-        connection.send_messages([user_email, sysadmin_email])
+        connection.send_messages([sysadmin_email])
         logger.info("Membership %s preapproved." % self)
 
     def approve(self, user):
@@ -391,17 +385,25 @@ class Bill(models.Model):
     def send_as_email(self):
         membership = self.billingcycle.membership
         if self.billingcycle.sum > 0:
-            send_mail(settings.BILL_SUBJECT, self.render_as_text(),
-                settings.BILLING_FROM_EMAIL,
-                [membership.billing_email()], fail_silently=False)
+            emails = []
+            user_email = EmailMessage(settings.BILL_SUBJECT,
+                                      self.render_as_text(),
+                                      settings.BILLING_FROM_EMAIL,
+                                      [membership.billing_email()])
+            emails.append(user_email)
             if settings.BILLING_CC_EMAIL:
                 # Send a copy
-                send_mail(settings.BILL_SUBJECT, self.render_as_text(),
-                    settings.BILLING_CC_EMAIL,
-                    [membership.billing_email()], fail_silently=False)
+                billing_email = EmailMessage(settings.BILL_SUBJECT,
+                                             self.render_as_text(),
+                                             settings.BILLING_FROM_EMAIL,
+                                             [settings.BILLING_CC_EMAIL],
+                                             headers={'Reply-To': membership.billing_email()})
+                emails.append(billing_email)
 
+            connection = mail.get_connection()
+            connection.send_messages(emails)
             logger.info('A bill sent as email to %s: %s' % (membership.email,
-                repr(Bill)))
+                                                            repr(Bill)))
         else:
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
