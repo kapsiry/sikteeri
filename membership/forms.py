@@ -49,7 +49,7 @@ class ServiceForm(forms.Form):
     mysql_database = forms.BooleanField(label=_('I want a MySQL database'), required=False)
     postgresql_database = forms.BooleanField(label=_('I want a PostgreSQL database'), required=False)
     login_vhost = forms.BooleanField(label=_('I want a login.kapsi.fi website'), required=False)
-    unix_login = LoginField()
+    unix_login = LoginField(label=_('UNIX Login'))
 
 class OrganizationMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,

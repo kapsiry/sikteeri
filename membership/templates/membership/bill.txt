@@ -14,7 +14,7 @@ PL 11
 
 Laskun erittely
 ----------------------------------------------------------------------
-Jäsenmaksu {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}                             {{ sum|rjust:"5"}} e
+Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}             {{ sum|rjust:"5"}} e
 ----------------------------------------------------------------------
 Loppusumma yhteensä                                            {{ sum|rjust:"5"}} e
 
