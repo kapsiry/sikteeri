@@ -15,11 +15,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: forms.py:21
-msgid ""
-"Login begins with an illegal character or contains an illegal character."
-msgstr ""
-"Käyttäjätunnus alkaa merkillä, joka ei käy käyttäjätunnuksen ensimmäiseksi "
-"merkiksi, tai käyttäjätunnus sisältää merkin, jota se ei voi sisältää."
+msgid "Login begins with an illegal character or contains an illegal character."
+msgstr "Käyttäjätunnus alkaa merkillä, joka ei käy käyttäjätunnuksen ensimmäiseksi merkiksi, tai käyttäjätunnus sisältää merkin, jota se ei voi sisältää."
 
 #: forms.py:23
 msgid "Login already reserved."
@@ -42,12 +39,8 @@ msgid "Home municipality"
 msgstr "Kotipaikka"
 
 #: forms.py:38
-msgid ""
-"Home municipality in the population information system. If it's abroad, "
-"write it in the form of “Municipality, country”."
-msgstr ""
-"Kotikunta väestötietojärjestelmässä. Jos ulkomailla, kirjoita se muodossa "
-"”Kunta, maa”."
+msgid "Home municipality in the population information system. If it's abroad, write it in the form of “Municipality, country”."
+msgstr "Kotikunta väestötietojärjestelmässä. Jos ulkomailla, kirjoita se muodossa ”Kunta, maa”."
 
 #: forms.py:39 forms.py:62 models.py:126
 msgid "Additional information"
@@ -58,12 +51,8 @@ msgid "You can write additional questions or details here"
 msgstr "Lisätietoja tai kysymyksiä"
 
 #: forms.py:46
-msgid ""
-"My name (first and last name) and homepage can be shown in the public "
-"memberlist"
-msgstr ""
-"Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
-"jäsenluettelossa"
+msgid "My name (first and last name) and homepage can be shown in the public memberlist"
+msgstr "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa jäsenluettelossa"
 
 #: forms.py:49
 msgid "I want a MySQL database"
@@ -90,13 +79,8 @@ msgid "Place where your organization is registered to"
 msgstr "Kotipaikka (säännöissä)"
 
 #: forms.py:67
-#, fuzzy
-msgid ""
-"Organization information (name and homepage) can be shown in the public "
-"memberlist"
-msgstr ""
-"Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
-"jäsenluettelossa"
+msgid "Organization information (name and homepage) can be shown in the public memberlist"
+msgstr "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa jäsenluettelossa"
 
 #: forms.py:71
 msgid "Street address required."
