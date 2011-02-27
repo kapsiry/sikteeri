@@ -130,6 +130,13 @@ def main(filename, login_filename):
         processed = processed + 1
         if processed % 100 == 0:
             print >> sys.stderr, "# %i items processed" % processed
+
+    if 'postgresql' in settings.DATABASES['default']['ENGINE']:
+        from django.db import connection, transaction
+        cursor = connection.cursor()
+        cursor.execute("SELECT setval('membership_membership_id_seq', max(id)) FROM membership_membership;")
+        transaction.commit_unless_managed()
+
     print >> sys.stderr, "# %i items in total processed" % processed
 
 
