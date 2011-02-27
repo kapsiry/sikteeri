@@ -23,5 +23,12 @@ $("#id_phone").focusout(function() {
     $("#id_sms").val($("#id_phone").val());
   }
 });
+
+// Auto-populate given names
+$("#id_first_name").focusout(function() {
+  if ($("#id_given_names").val().length == 0) {
+    $("#id_given_names").val($("#id_first_name").val());
+  }
+});
 </script>
 {% endblock %}
