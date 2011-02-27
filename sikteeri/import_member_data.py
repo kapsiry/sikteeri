@@ -141,7 +141,7 @@ if __name__ == '__main__':
                       help="read logins ($ getent passwd|cut -d':' -f 1 > file) from FILE to set unix_account for aliases", metavar="FILE")
     (options, args) = parser.parse_args()
 
-    if not options.filename or options.login_filename:
+    if not options.filename or not options.login_filename:
         parser.print_help()
         sys.exit(1)
     if not os.path.isfile(options.filename):
