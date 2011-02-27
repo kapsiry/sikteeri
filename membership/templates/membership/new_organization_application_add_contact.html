@@ -16,4 +16,12 @@ yhteystietoa.</p>
 </div>
 </form>
 
+<script type="text/javascript">
+// Auto-populate SMS number
+$("#id_phone").focusout(function() {
+  if ($("#id_sms").val().length == 0) {
+    $("#id_sms").val($("#id_phone").val());
+  }
+});
+</script>
 {% endblock %}
