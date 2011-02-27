@@ -95,8 +95,6 @@ SESSION_COOKIE_SECURE = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-import site_logging
-
 from local_settings import *
 
 # Is this the right way to do this?
