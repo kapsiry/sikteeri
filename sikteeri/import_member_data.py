@@ -5,6 +5,7 @@ import_member_data.py
 
 Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
+from __future__ import with_statement
 
 import sys
 import os
@@ -28,7 +29,7 @@ from services.models import Alias
 
 user = User.objects.get(id=1)
 
-def create_member(mdata):
+def create_member(mdata, logins):
     # legacy fields
     # ['application_id', 'sendinfo', 'memberclass', 'applicationtime', 'sms',
     # 'id', 'email', 'website', 'publicwebsite', 'lastname', 'phone',
@@ -96,21 +97,36 @@ def create_member(mdata):
         bill.due_date=datetime.strptime(mdata['bill_dueday'], "%Y-%m-%d %H:%M:%S")
         bill.save()
     for alias in mdata['aliases']:
-        a = Alias(owner=membership, name=alias, account=False,
-            created=membership.created)
+        if alias in logins:
+            a = Alias(owner=membership, name=alias, account=True,
+                      created=membership.created)
+        else:
+            a = Alias(owner=membership, name=alias, account=False,
+                      created=membership.created)
         a.save()
+
+        account_alias_count = Alias.objects.filter(owner=a.owner, account=True).count()
+        if account_alias_count > 1:
+            logger.warning("%i account aliases for %s" % (account_alias_count, a.owner))
+
     log_change(membership, user, change_message="Imported into system")
     return True
 
 
-def main(filename):
+def main(filename, login_filename):
+    logins = set()
+    with open(login_filename, 'r') as f:
+        for line in f:
+            logins.add(line.replace('\n', ''))
+    logger.info('Read %i logins' % len(logins))
+
     import simplejson
     members = simplejson.load(open(filename, 'r'))
     print >> sys.stderr, "# %i items, starting processing." % len(members)
     processed = 0
     for mid, mdata in members.iteritems():
         assert mid == str(mdata['id'])
-        create_member(mdata)
+        create_member(mdata, logins)
         processed = processed + 1
         if processed % 100 == 0:
             print >> sys.stderr, "# %i items processed" % processed
@@ -121,11 +137,13 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-f", "--file", dest="filename",
                       help="read member data from FILE", metavar="FILE")
+    parser.add_option("-l", "--login-file", dest="login_filename",
+                      help="read logins ($ getent passwd|cut -d':' -f 1 > file) from FILE to set unix_account for aliases", metavar="FILE")
     (options, args) = parser.parse_args()
 
-    if not options.filename:
+    if not options.filename or options.login_filename:
         parser.print_help()
         sys.exit(1)
     if not os.path.isfile(options.filename):
         parser.error("File '%s' not found." % options.filename)
-    main(options.filename)
+    main(options.filename, options.login_filename)
