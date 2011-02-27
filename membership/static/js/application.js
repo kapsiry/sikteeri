@@ -54,7 +54,7 @@ function generateEmailForwards (firstName, givenNames, lastName) {
     var nonFirstNames = [];
     var initials = [];
     $.each(givenNames, function (idx, val) {
-	if (val != firstName) {
+	if (val !== undefined && val != firstName) {
 	    nonFirstNames.push(val);
 	    initials.push(val[0]);
 	}
