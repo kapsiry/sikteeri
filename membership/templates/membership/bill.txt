@@ -3,7 +3,11 @@ Hei!
 Tämä on Kapsi Internet-käyttäjät ry:n jäsenmaksulasku. Jos laskussa on
 virheitä tai muuta kysyttävää, voit ottaa yhteyttä vastaamalla tähän
 viestiin.
-
+{% if membership_type_raw == 'S' %}
+Huomio: Kannatusjäsenten jäsenmaksu on noussut. Yhteisöille on tullut
+mahdolliseksi valita uusi jäsenluokka, yhteisöjäsenyys, jonka jäsenmaksu
+on pienempi. Halutessanne vaihtaa jäsenryhmää, vastatkaa tähän viestiin.
+{% endif %}
 Kapsi Internet-käyttäjät ry             LASKU
 PL 11                                   
 90571 OULU                              {{ today|date:"SHORT_DATE_FORMAT" }}
