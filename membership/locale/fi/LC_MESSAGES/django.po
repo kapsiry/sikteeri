@@ -263,9 +263,8 @@ msgid "Technical contact"
 msgstr "Tekninen yhteystieto"
 
 #: models.py:194 models.py:199
-#, fuzzy, python-format
 msgid "Kapsi member application %i"
-msgstr "Yhteisön jäsenhakemuslomake"
+msgstr "Kapsin jäsenhakemus %i"
 
 #: models.py:254
 msgid "Fee type"
@@ -396,28 +395,24 @@ msgid "Changes to contact %s not saved."
 msgstr "Yhteystiedon %s muutoksia ei tallennettu."
 
 #: views.py:390
-#, fuzzy, python-format
 msgid "Changes to bill %s saved."
-msgstr "Yhteystiedon %s muutokset tallennettu."
+msgstr "Laskun %s muutokset tallennettu."
 
 #: views.py:393 views.py:510
-#, fuzzy, python-format
 msgid "Changes to bill %s not saved."
-msgstr "Yhteystiedon %s muutoksia ei tallennettu."
+msgstr "Laskun %s muutoksia ei tallennettu."
 
 #: views.py:412
 msgid "None chosen"
 msgstr "Ei valittu"
 
 #: views.py:435 views.py:594
-#, fuzzy, python-format
 msgid "Changes to payment %s saved."
-msgstr "Yhteystiedon %s muutokset tallennettu."
+msgstr "Maksun %s muutokset tallennettu."
 
 #: views.py:438
-#, fuzzy, python-format
 msgid "Changes to BillingCycle %s not saved."
-msgstr "Yhteystiedon %s muutoksia ei tallennettu."
+msgstr "Laskutuskauden %s muutoksia ei tallennettu."
 
 #: views.py:451
 msgid "CSV File"
@@ -440,14 +435,12 @@ msgid "Import payments"
 msgstr "Tuo maksuja"
 
 #: views.py:507
-#, fuzzy, python-format
 msgid "Changes to billing cycle %s saved."
-msgstr "Yhteystiedon %s muutokset tallennettu."
+msgstr "Laskutuskauden %s muutokset tallennettu."
 
 #: views.py:597
-#, fuzzy, python-format
 msgid "Changes to payment %s not saved."
-msgstr "Yhteystiedon %s muutoksia ei tallennettu."
+msgstr "Maksun %s muutoksia ei tallennettu."
 
 #: views.py:651
 msgid "To confirm deletion, you must check this box:"
