@@ -8,30 +8,26 @@ jälkeen tässä hakemuksessa määriteltyyn sähköpostiosoitteeseen.
 Hakemuksen tiedot:
   ID:            {{ membership.id }}
   Lähetetty:     {{ membership.created|date:"SHORT_DATE_FORMAT" }}
-  Ryhmä:         {{ membership_type }}
-{% if membership.person %}
+  Ryhmä:         {{ membership_type }}{% if membership.person %}
   Etunimi:       {{ membership.person.first_name }}
   Etunimet:      {{ membership.person.given_names }}
   Sukunimi:      {{ membership.person.last_name }}
   Puhelin:       {{ membership.person.phone }}
   SMS-numero:    {{ membership.person.sms }}
   Sähköposti:    {{ membership.person.email }}
-{% endif %}{% if membership.organization %}
+	{% endif %}{% if membership.organization %}
   Yhteisön nimi: {{ membership.organization.organization_name }}
   Puhelin:       {{ membership.organization.phone }}
   SMS-numero:    {{ membership.organization.sms }}
   Sähköposti:    {{ membership.organization.email }}
 {% endif %}
-
 Pyydetyt jäsenpalvelut:
 {% for service in services %}- {{ service }}
 {% endfor %}
-
 {% if membership.extra_info %}Lisätietoja:
 {{ membership.extra_info|safe }}
-{% endif %}
 
-Tutustu myös:
+{% endif %}Tutustu myös:
 
 - Tekniset tiedotteet: http://list.kapsi.fi/kapsi-techinfo
 - Kysymykset laskutukselle: laskutus@tuki.kapsi.fi

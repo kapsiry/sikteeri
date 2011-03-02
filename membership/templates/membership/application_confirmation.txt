@@ -67,9 +67,9 @@ Tarkista hakemuksen tiedot:
   Kotisivu:         {{ tech_contact.homepage }}
 {% endif %}
 Pyydetyt jäsenpalvelut:
-{% for service in services %}- {{ service }}
-{% endfor %}
-{% if membership.extra_info %}Lisätietoja:
+{% for service in services %} - {{ service }}
+{% endfor %}{% if membership.extra_info %}
+Lisätietoja:
 {{ membership.extra_info|safe }}
 {% endif %}
 Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan

@@ -91,6 +91,17 @@ class Contact(models.Model):
             self.logs.delete()
             self.delete()
 
+    def email_to(self):
+        if self.email:
+            return '%s <%s>' % (self.name(), self.email)
+        return None
+
+    def name(self):
+        if self.organization_name:
+            return self.organization_name
+        else:
+            return u'%s %s' % (self.first_name, self.last_name)
+
     def __unicode__(self):
         if self.organization_name:
             return self.organization_name
@@ -131,6 +142,12 @@ class Membership(models.Model):
         else:
             return self.person.email
 
+    def email_to(self):
+        if self.organization:
+            return self.organization.email_to()
+        else:
+            return self.person.email_to()
+
     def get_billing_contact(self):
         '''Resolves the actual billing contact. Useful for billing details.'''
         if self.billing_contact:
@@ -147,7 +164,7 @@ class Membership(models.Model):
         for contact in contact_priority_list:
             if contact:
                 if contact.email:
-                    return unicode(contact.email)
+                    return unicode(contact.email_to())
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
 
@@ -194,7 +211,7 @@ class Membership(models.Model):
                                       email_body,
                                       settings.FROM_EMAIL,
                                       [settings.SYSADMIN_EMAIL],
-                                      headers = {'Reply-To': self.email()})
+                                      headers = {'Reply-To': self.email_to()})
         connection = mail.get_connection()
         connection.send_messages([sysadmin_email])
         logger.info("Membership %s preapproved." % self)
@@ -386,14 +403,14 @@ class Bill(models.Model):
         membership = self.billingcycle.membership
         if self.billingcycle.sum > 0:
             emails = []
-            user_email = EmailMessage(settings.BILL_SUBJECT,
+            user_email = EmailMessage(self.bill_subject(),
                                       self.render_as_text(),
                                       settings.BILLING_FROM_EMAIL,
                                       [membership.billing_email()])
             emails.append(user_email)
             if settings.BILLING_CC_EMAIL:
                 # Send a copy
-                billing_email = EmailMessage(settings.BILL_SUBJECT,
+                billing_email = EmailMessage(self.bill_subject(),
                                              self.render_as_text(),
                                              settings.BILLING_FROM_EMAIL,
                                              [settings.BILLING_CC_EMAIL],
@@ -402,7 +419,7 @@ class Bill(models.Model):
 
             connection = mail.get_connection()
             connection.send_messages(emails)
-            logger.info('A bill sent as email to %s: %s' % (membership.email,
+            logger.info('A bill sent as email to %s: %s' % (membership.billing_email(),
                                                             repr(Bill)))
         else:
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
@@ -410,6 +427,11 @@ class Bill(models.Model):
         self.billingcycle.bill_sent = True
         self.billingcycle.save()
 
+    def bill_subject(self):
+        subject = settings.BILL_SUBJECT
+        if '%i' in subject:
+            subject = subject % self.id
+        return subject
 
 class Payment(models.Model):
     class Meta:

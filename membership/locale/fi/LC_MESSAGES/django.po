@@ -196,7 +196,7 @@ msgstr "Kannatusjäsen"
 
 #: models.py:33 models.py:124
 msgid "Organization"
-msgstr "Yhteisö"
+msgstr "Yhteisöjäsen"
 
 #: models.py:34
 msgid "Honorary"
