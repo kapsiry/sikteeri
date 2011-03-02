@@ -50,6 +50,7 @@ Checklist:
     * aliasdb.list
     * member-application id mapping
  [ ] Member data export from legacy to JSON
+ [ ] Import membership fees (loaddata or initial run-sikteeri)
  [ ] Member data import from JSON to sikteeri
  [ ] Update member types
  [ ] Import payment data (csvbills)
