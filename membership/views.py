@@ -111,7 +111,7 @@ def person_application(request, template_name='membership/new_person_application
                                              'ip': request.META['REMOTE_ADDR'],
                                              'services': services}),
                           settings.FROM_EMAIL,
-                          [membership.email()], fail_silently=False)
+                          [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
             except Exception, e:
                 transaction.rollback()
@@ -330,7 +330,7 @@ def organization_application_save(request):
                                      'ip': request.META['REMOTE_ADDR'],
                                      'services': services}),
                   settings.FROM_EMAIL,
-                  [membership.email()], fail_silently=False)
+                  [membership.email_to()], fail_silently=False)
 
         logger.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
