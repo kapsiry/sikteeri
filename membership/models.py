@@ -192,7 +192,7 @@ class Membership(models.Model):
             })
         sysadmin_email = EmailMessage(_('Kapsi member application %i') % self.id,
                                       email_body,
-                                      u'%s <%s>' % (settings.SYSTEM_NAME, settings.FROM_EMAIL),
+                                      settings.FROM_EMAIL,
                                       [settings.SYSADMIN_EMAIL],
                                       headers = {'Reply-To': self.email()})
         connection = mail.get_connection()
