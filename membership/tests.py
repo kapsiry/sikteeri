@@ -161,6 +161,7 @@ class BillingTest(TestCase):
         "makebills: preapproved membership no-op"
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
+        mail.outbox = []
         makebills()
 
         self.assertEqual(len(mail.outbox), 0)
@@ -215,6 +216,7 @@ class SingleMemberBillingTest(TestCase):
         membership.preapprove(self.user)
         membership.approve(self.user)
         self.membership = membership
+        mail.outbox = []
 
     def tearDown(self):
         self.membership.delete()
@@ -279,11 +281,11 @@ class SingleMemberBillingTest(TestCase):
         membership2 = create_dummy_member('N')
         membership2.preapprove(self.user)
         membership2.approve(self.user)
-
+        mail.outbox = []
         makebills()
 
         self.assertEqual(len(membership2.billingcycle_set.all()), 1)
-        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(len(mail.outbox), 1)
 
         c = membership2.billingcycle_set.all()[0]
         self.assertEqual(c.bill_set.count(), 1)
