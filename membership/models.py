@@ -403,14 +403,14 @@ class Bill(models.Model):
         membership = self.billingcycle.membership
         if self.billingcycle.sum > 0:
             emails = []
-            user_email = EmailMessage(settings.BILL_SUBJECT,
+            user_email = EmailMessage(self.bill_subject(),
                                       self.render_as_text(),
                                       settings.BILLING_FROM_EMAIL,
                                       [membership.billing_email()])
             emails.append(user_email)
             if settings.BILLING_CC_EMAIL:
                 # Send a copy
-                billing_email = EmailMessage(settings.BILL_SUBJECT,
+                billing_email = EmailMessage(self.bill_subject(),
                                              self.render_as_text(),
                                              settings.BILLING_FROM_EMAIL,
                                              [settings.BILLING_CC_EMAIL],
@@ -427,6 +427,11 @@ class Bill(models.Model):
         self.billingcycle.bill_sent = True
         self.billingcycle.save()
 
+    def bill_subject(self):
+        subject = settings.BILL_SUBJECT
+        if '%i' in subject:
+            subject = subject % self.id
+        return subject
 
 class Payment(models.Model):
     class Meta:
