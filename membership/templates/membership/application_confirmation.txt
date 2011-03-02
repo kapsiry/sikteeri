@@ -13,8 +13,7 @@ määriteltyyn sähköpostiosoitteeseen.
 Tarkista hakemuksen tiedot:
   ID:            {{ membership.id }}
   Lähetetty:     {{ membership.created|date:"SHORT_DATE_FORMAT" }}
-  Ryhmä:         {{ membership_type }}
-{% if membership.person %}
+  Ryhmä:         {{ membership_type }}{% if membership.person %}
   Etunimi:       {{ membership.person.first_name }}
   Etunimet:      {{ membership.person.given_names }}
   Sukunimi:      {{ membership.person.last_name }}
@@ -40,8 +39,7 @@ Tarkista hakemuksen tiedot:
   SMS-numero:    {{ organization.sms }}
   Sähköposti:    {{ organization.email }}
   Kotisivut:     {{ organization.homepage }}
-{% endif %}
-{% if billing_contact %}
+{% endif %}{% if billing_contact %}
   Laskutusyhteystiedot
   Etunimi:          {{ billing_contact.first_name }}
   Kaikki etunimet:  {{ billing_contact.given_names }}
@@ -54,8 +52,7 @@ Tarkista hakemuksen tiedot:
   SMS-numero:       {{ billing_contact.sms }}
   Sähköpostiosoite: {{ billing_contact.email }}
   Kotisivu:         {{ billing_contact.homepage }}
-{% endif %}
-{% if tech_contact %}
+{% endif %}{% if tech_contact %}
   Tekniset yhteystiedot
   Etunimi:          {{ tech_contact.first_name }}
   Kaikki etunimet:  {{ tech_contact.given_names }}
@@ -69,15 +66,12 @@ Tarkista hakemuksen tiedot:
   Sähköpostiosoite: {{ tech_contact.email }}
   Kotisivu:         {{ tech_contact.homepage }}
 {% endif %}
-
 Pyydetyt jäsenpalvelut:
 {% for service in services %}- {{ service }}
 {% endfor %}
-
 {% if membership.extra_info %}Lisätietoja:
 {{ membership.extra_info|safe }}
 {% endif %}
-
 Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
 osoitteeseen.
 
