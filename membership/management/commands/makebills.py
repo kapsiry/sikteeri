@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
+from django.utils import translation
 from django.conf import settings
 
 import logging
@@ -99,4 +100,5 @@ class Command(NoArgsCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'
 
     def handle_noargs(self, **options):
+        translation.activate(settings.LANGUAGE_CODE)
         makebills()
