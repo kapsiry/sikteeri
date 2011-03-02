@@ -102,9 +102,12 @@ def person_application(request, template_name='membership/new_person_application
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
-                          render_to_string('membership/person_application_email_confirmation.txt',
+                          render_to_string('membership/application_confirmation.txt',
                                            { 'membership': membership,
+                                             'membership_type': MEMBER_TYPES_DICT[membership.type],
                                              'person': membership.person,
+                                             'billing_contact': membership.billing_contact,
+                                             'tech_contact': membership.tech_contact,
                                              'ip': request.META['REMOTE_ADDR'],
                                              'services': services}),
                           settings.FROM_EMAIL,
@@ -318,8 +321,9 @@ def organization_application_save(request):
         transaction.commit()
 
         send_mail(_('Membership application received'),
-                  render_to_string('membership/organization_application_email_confirmation.txt',
+                  render_to_string('membership/application_confirmation.txt',
                                    { 'membership': membership,
+                                     'membership_type': MEMBER_TYPES_DICT[membership.type],
                                      'organization': membership.organization,
                                      'billing_contact': membership.billing_contact,
                                      'tech_contact': membership.tech_contact,

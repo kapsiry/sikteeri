@@ -1,13 +1,14 @@
 Hei!
 
 Tämä viesti liittyy Kapsi Internet-käyttäjät ry:n jäsenhakemukseen
-numero {{ membership.id }}. Mikäli et ole itse lähettänyt jäsenhakemusta, pyytäisin
-ottamaan yhteyttä väärinkäsityksen korjaamiseksi.
+numero {{ membership.id }}. Mikäli et ole itse lähettänyt
+jäsenhakemusta, otathan yhteyttä väärinkäsityksen korjaamiseksi.
 
 Jäsenhakemus käsitellään virallisesti seuraavassa hallituksen
-kokouksessa. Hakemuksessa ei näyttänyt olevan mitään epäselvää.
-Ohjeet jäsenmaksun maksamiseen tulevat hallituksen kokouksen
-jälkeen tässä hakemuksessa määriteltyyn sähköpostiosoitteeseen.
+kokouksessa. Jos hakemuksessa ei ilmene mitään epäselvää, palvelut voi
+olla mahdollista saada käyttöön jo aiemmin. Ohjeet jäsenmaksun
+maksamiseen tulevat hallituksen kokouksen jälkeen tässä hakemuksessa
+määriteltyyn sähköpostiosoitteeseen.
 
 Tarkista hakemuksen tiedot:
   ID:            {{ membership.id }}
@@ -18,52 +19,70 @@ Tarkista hakemuksen tiedot:
   Etunimet:      {{ membership.person.given_names }}
   Sukunimi:      {{ membership.person.last_name }}
   Kotipaikka:    {{ membership.municipality }}
-  Kansalaisuus:  {{ membership.nationality }}
+  Kansallisuus:  {{ membership.nationality }}
   Katuosoite:    {{ membership.person.street_address }}
   Postinumero ja
   -toimipaikka:  {{ membership.person.postal_code }} {{ membership.person.post_office }}
+  Maa:           {{ membership.person.country }}
   Puhelin:       {{ membership.person.phone }}
-  Matkapuhelin:  {{ membership.person.sms }}
+  SMS-numero:    {{ membership.person.sms }}
   Sähköposti:    {{ membership.person.email }}
   Kotisivut:     {{ membership.person.homepage }}
 {% endif %}{% if membership.organization %}
   Yhteisön nimi: {{ membership.organization.organization_name }}
   Kotipaikka:    {{ membership.municipality }}
-  Maa:           {{ membership.nationality }}
-  Katuosoite:    {{ membership.organization.street_address }}
+  Kansallisuus:  {{ membership.nationality }}
+  Katuosoite:    {{ organization.street_address }}
   Postinumero ja
-  -toimipaikka:  {{ membership.organization.postal_code }} {{ membership.organization.post_office }}
-  Puhelin:       {{ membership.organization.phone }}
-  Matkapuhelin:  {{ membership.organization.sms }}
-  Sähköposti:    {{ membership.organization.email }}
-  Kotisivut:     {{ membership.organization.homepage }}
+  -toimipaikka:  {{ organization.postal_code }} {{ membership.organization.post_office }}
+  Maa:           {{ organization.country }}
+  Puhelin:       {{ organization.phone }}
+  SMS-numero:    {{ organization.sms }}
+  Sähköposti:    {{ organization.email }}
+  Kotisivut:     {{ organization.homepage }}
+{% endif %}
+{% if billing_contact %}
+  Laskutusyhteystiedot
+  Etunimi:          {{ billing_contact.first_name }}
+  Kaikki etunimet:  {{ billing_contact.given_names }}
+  Sukunimi:         {{ billing_contact.last_name }}
+  Katuosoite:       {{ billing_contact.street_address }}
+  Postinumero ja
+  -toimipaikka:     {{ billing_contact.postal_code }} {{ billing_contact.post_office }}
+  Maa:              {{ billing_contact.country }}
+  Puhelinnumero:    {{ billing_contact.phone }}
+  SMS-numero:       {{ billing_contact.sms }}
+  Sähköpostiosoite: {{ billing_contact.email }}
+  Kotisivu:         {{ billing_contact.homepage }}
+{% endif %}
+{% if tech_contact %}
+  Tekniset yhteystiedot
+  Etunimi:          {{ tech_contact.first_name }}
+  Kaikki etunimet:  {{ tech_contact.given_names }}
+  Sukunimi:         {{ tech_contact.last_name }}
+  Katuosoite:       {{ tech_contact.street_address }}
+  Postinumero ja
+  -toimipaikka:     {{ tech_contact.postal_code }} {{ tech_contact.post_office }}
+  Maa:              {{ tech_contact.country }}
+  Puhelinnumero:    {{ tech_contact.phone }}
+  SMS-numero:       {{ tech_contact.sms }}
+  Sähköpostiosoite: {{ tech_contact.email }}
+  Kotisivu:         {{ tech_contact.homepage }}
 {% endif %}
 
-Tämä viesti on lähetetty myös ylläpidolle, joka lisää seuraavat 
-jäsenpalvelut:
-
+Pyydetyt jäsenpalvelut:
 {% for service in services %}- {{ service }}
 {% endfor %}
 
-Ylläpito lähettää tunnuksia ja muita palveluita koskevat
-yksityiskohdat 
-sähköpostilla palveluiden kytkemisen jälkeen.
-
-Tutustu myös:
-
-- Tekniset tiedotteet: http://list.kapsi.fi/kapsi-techinfo
-- Kysymykset laskutukselle: laskutus@tuki.kapsi.fi
-- Kysymykset palveluiden käytöstä: helpdesk@tuki.kapsi.fi
-- Pyynnöt ylläpitotöistä: yllapito@tuki.kapsi.fi
-- Postituslistoja jäsenille: http://list.kapsi.fi/
-- Kapsin foorumi: http://forum.kapsi.fi/
-- Jäsenten IRC-kanava: http://www.kapsi.fi/irc/
-- Facebook -sivu: http://www.facebook.com/kapsi.fi
+{% if membership.extra_info %}Lisätietoja:
+{{ membership.extra_info|safe }}
+{% endif %}
 
 Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
 osoitteeseen.
 
 -- 
-{{ user.get_full_name }}
 Kapsi Internet-käyttäjät ry
 http://www.kapsi.fi/
+
+Hakemus jätettiin IP-osoitteesta {{ ip }}.
