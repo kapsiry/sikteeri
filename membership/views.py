@@ -106,7 +106,6 @@ def person_application(request, template_name='membership/new_person_application
 
                 logger.debug("Attempting to save with the following services: %s." % ", ".join((str(service) for service in services)))
                 # End of services
-
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
@@ -125,7 +124,7 @@ def person_application(request, template_name='membership/new_person_application
                 transaction.rollback()
                 logger.critical("%s" % traceback.format_exc())
                 logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
-                return redirect('new_application_fail')
+                return redirect('new_application_error')
 
     return render_to_response(template_name, {"form": application_form,
                                               "chosen_email_forward": chosen_email_forward,
@@ -353,7 +352,7 @@ def organization_application_save(request):
         transaction.rollback()
         logger.error("%s" % traceback.format_exc())
         logger.error("Transaction rolled back.")
-        return redirect('new_application_fail')
+        return redirect('new_application_error')
 
 @permission_required('membership.manage_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):

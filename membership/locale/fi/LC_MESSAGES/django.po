@@ -487,9 +487,8 @@ msgid "th"
 msgstr "."
 
 #: templates/membership/bill_list.html:17
-#, fuzzy
 msgid "reminder"
-msgstr "muistutusten määrä"
+msgstr "muistutus"
 
 #: templates/membership/bill_list.html:26
 #: templates/membership/entity_edit.html:16
@@ -507,14 +506,12 @@ msgid "Billing cycle is paid"
 msgstr "Laskutuskausi on maksettu"
 
 #: templates/membership/billingcycle_connect_payment.html:11
-#, fuzzy
 msgid "Billing Cycle"
-msgstr "Laskutusyhteystieto"
+msgstr "Laskutuskausi"
 
 #: templates/membership/billingcycle_connect_payment.html:11
-#, fuzzy
 msgid "for membership"
-msgstr "Jäsenyys"
+msgstr "jäsenyydelle"
 
 #: templates/membership/billingcycle_connect_payment.html:17
 msgid "Connect"
@@ -526,19 +523,16 @@ msgstr "Laskutuskausi jäsenelle"
 
 #: templates/membership/entity_edit.html:13
 #: templates/membership/membership_edit_inline.html:58
-#, fuzzy
 msgid "Reminder"
-msgstr "muistutusten määrä"
+msgstr "muistutus"
 
 #: templates/membership/entity_edit.html:13
 #: templates/membership/membership_edit_inline.html:58
-#, fuzzy
 msgid "Bill"
-msgstr "Lasku lähetetty"
+msgstr "Lasku"
 
 #: templates/membership/entity_edit.html:14
 #: templates/membership/membership_edit_inline.html:59
-#, fuzzy
 msgid "sent"
 msgstr "lähetetty"
 
@@ -554,34 +548,28 @@ msgstr "ei maksettu"
 
 #: templates/membership/entity_edit.html:21
 #: templates/membership/membership_edit_inline.html:66
-#, fuzzy
 msgid "Payment"
-msgstr "Maksupäivä"
+msgstr "Maksu"
 
 #: templates/membership/entity_edit.html:21
 #: templates/membership/membership_edit_inline.html:66
 #: templates/membership/payment_list.html:13
-#, fuzzy
 msgid "paid on"
 msgstr "maksettu"
 
 #: templates/membership/entity_edit.html:32
-#, fuzzy
 msgid "Bill for member"
-msgstr "Muunna jäsen"
+msgstr "Lasku jäsenelle"
 
 #: templates/membership/entity_edit.html:37
-#, fuzzy
 msgid "Payment by"
 msgstr "Maksupäivä"
 
 #: templates/membership/entity_edit.html:39
-#, fuzzy
 msgid "Payment assigned to"
-msgstr "Maksupäivä"
+msgstr "Maksu jäsenelle"
 
 #: templates/membership/entity_edit.html:48
-#, fuzzy
 msgid "Save changes"
 msgstr "Tallenna muutokset"
 
@@ -667,9 +655,8 @@ msgid "Convert to an organization"
 msgstr "Muunna yhteisöksi"
 
 #: templates/membership/membership_edit_inline.html:33
-#, fuzzy
 msgid "Aliases"
-msgstr "Aliaksen nimi"
+msgstr "Aliakset"
 
 #: templates/membership/membership_edit_inline.html:46
 #: templates/membership/new_organization_application_review.html:13
@@ -747,9 +734,8 @@ msgid "Send application"
 msgstr "Lähetä hakemus"
 
 #: templates/membership/new_organization_application_services.html:13
-#, fuzzy
 msgid "Save services"
-msgstr "Tallenna muutokset jäsenyyteen"
+msgstr "Tallenna palvelut"
 
 #: templates/membership/new_person_application.html:159
 msgid "No e-mail forward"
@@ -764,9 +750,8 @@ msgid "Next"
 msgstr "Seuraava"
 
 #: templates/membership/payment_list.html:12
-#, fuzzy
 msgid "payment"
-msgstr "Maksupäivä"
+msgstr "maksu"
 
 #: templates/membership/payment_list.html:25
 msgid "No payment matches this filter, try seeing the full list."

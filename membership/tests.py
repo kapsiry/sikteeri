@@ -527,8 +527,8 @@ class MemberApplicationTest(TestCase):
         }
 
     def test_do_application(self):
-        response = self.client.post('/membership/persons/application/', self.post_data)
-        self.assertRedirects(response, '/membership/memberships/new/success/')
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
 
@@ -536,14 +536,14 @@ class MemberApplicationTest(TestCase):
         post_data = self.post_data.copy()
         post_data['first_name'] = u'<b>Yrjö</b>'
         post_data['extra_info'] = '<iframe src="http://www.kapsi.fi" width=200 height=100></iframe>'
-        response = self.client.post('/membership/persons/application/', post_data)
-        self.assertRedirects(response, '/membership/memberships/new/success/')
+        response = self.client.post('/membership/application/person/', post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"<b>Yrjö</b>")
 
         login = self.client.login(username='admin', password='dhtn')
         self.failUnless(login, 'Could not log in')
-        json_response = self.client.post('/membership/memberships/handle_json/',
+        json_response = self.client.post('/membership/application/handle_json/',
                                              simplejson.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
                                              content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
