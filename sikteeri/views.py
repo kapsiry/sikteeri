@@ -12,7 +12,12 @@ from django.http import HttpResponse, HttpResponseForbidden
 
 def frontpage(request):
     if settings.MAINTENANCE_MESSAGE == None:
-        return redirect('membership.views.new_application')
+        if not request.user.is_authenticated():
+            return redirect('membership.views.new_application')
+        return render_to_response('frontpage.html',
+                                {"title": _('Django and the jazz cigarette')},
+                                  context_instance=RequestContext(request))
+        
     else:
         return render_to_response('maintenance_message.html',
                                   {"title": _('Under maintenance'),
