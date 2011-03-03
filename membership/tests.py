@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import with_statement
 
 import os
 import tempfile
@@ -427,7 +428,8 @@ class CSVNoMembersTest(TestCase):
 
     def test_file_reading(self):
         "csvbills: test data should have 3 payments, none of which match"
-        process_csv("../membership/fixtures/csv-test.txt")
+        with open("../membership/fixtures/csv-test.txt", 'r') as f:
+            process_csv(f)
 
         payment_count = Payment.objects.count()
         error = "There should be 3 non-negative payments in the testdata"
@@ -455,7 +457,8 @@ class CSVReadingTest(TestCase):
     def test_import_data(self):
         no_cycle_q = Q(billingcycle=None)
 
-        process_csv("../membership/fixtures/csv-test.txt")
+        with open("../membership/fixtures/csv-test.txt", 'r') as f:
+            process_csv(f)
         payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_count, 1, error)

@@ -30,7 +30,7 @@ function cleanAccents (s) {
     r = r.replace(new RegExp("ç", 'g'),"c");
     r = r.replace(new RegExp("[èéêë]", 'g'),"e");
     r = r.replace(new RegExp("[ìíîï]", 'g'),"i");
-    r = r.replace(new RegExp("ñ", 'g'),"n");                            
+    r = r.replace(new RegExp("ñ", 'g'),"n");
     r = r.replace(new RegExp("[òóôõö]", 'g'),"o");
     r = r.replace(new RegExp("œ", 'g'),"oe");
     r = r.replace(new RegExp("[ùúûü]", 'g'),"u");
@@ -40,17 +40,23 @@ function cleanAccents (s) {
 };
 
 function generateEmailForwards (firstName, givenNames, lastName) {
+    var permutations = [];
+
     var firstName = cleanAccents(firstName);
     var givenNames = givenNames.split(" ");
+
+    if (firstName == "" || lastName == "") {
+        return permutations;
+    }
+
     for (var i=0; i<givenNames.length; i++) {
 	givenNames[i] = cleanAccents(givenNames[i]);
     }
     var lastName = cleanAccents(lastName);
 
-    var permutations = [];
     permutations.push(firstName + "." + lastName);
     permutations.push(lastName + "." + firstName);
-    
+
     var nonFirstNames = [];
     var initials = [];
     $.each(givenNames, function (idx, val) {
