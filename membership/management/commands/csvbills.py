@@ -156,7 +156,8 @@ def process_csv(file_handle):
             reference = payment.reference_number
             cycle = BillingCycle.objects.get(reference_number=reference)
             payment.attach_to_cycle(cycle)
-            return_messages.append(_("Attached payment {payment} to cycle {cycle}").format(payment=payment, cycle=cycle))
+            return_messages.append(_("Attached payment {payment} to cycle {cycle}").
+                replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
             num_attached = num_attached + 1
             sum_attached = sum_attached + payment.amount
         except BillingCycle.DoesNotExist:
@@ -184,11 +185,7 @@ class Command(BaseCommand):
         for csvfile in args:
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
-            try:
-                with open(csvfile, 'r') as file_handle:
-                    process_csv(file_handle)
-            except Exception, e:
-                print "Fatal error: %s" % unicode(e)
-                logger.error("process_csv failed: %s" % unicode(e))
-                break
+            # Exceptions of process_csv are fatal in command line run
+            with open(csvfile, 'r') as file_handle:
+                process_csv(file_handle)
             logger.info("Done processing file %s." % os.path.abspath(csvfile))
