@@ -67,6 +67,8 @@ def create_member(mdata, logins):
         mtype = 'P'
     elif mdata['memberclass'] == 'supporting':
         mtype = 'S'
+    elif mdata['memberclass'] == 'organization':
+        mtype = 'O'
     else:
         print >> sys.stderr, "! Not importing, member class unknown for member %d" % mdata['id']
         return False
