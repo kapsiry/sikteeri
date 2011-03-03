@@ -134,6 +134,8 @@ def person_application(request, template_name='membership/new_person_application
                               context_instance=RequestContext(request))
 
 def organization_application(request, template_name='membership/new_organization_application.html'):
+    if settings.MAINTENANCE_MESSAGE != None:
+        return redirect('frontpage')
     if request.method == 'POST':
         form = OrganizationApplicationForm(request.POST)
         
