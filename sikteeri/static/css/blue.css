@@ -1,0 +1,42 @@
+.logo {
+    background-image: url("../images/logo_blue.png");
+}	
+span.kapsi {
+    color: #284b5c;
+}
+
+span.ikry {
+    color: #35637a;
+}
+
+body {
+    background-color: #E4E4E4;
+}
+
+div.mainarea {
+    border: 1px solid #777878;
+    background-color: #e0e4e9; /* valikon taustaväri */
+}
+
+div.right {
+    border-left: 1px solid #cdcdca; /* valikon ja sisallon valissa */
+    background-color: #F7F7F7;
+}
+
+div.footer {
+    background-color: #E6E6E6;
+}
+
+div.menu a, div.menu a:visited, div.contentmenu a, div.contentmenu a:visited {
+    color: #35637A;
+}
+
+div.menu a:hover, div.contentmenu a:hover {
+    color: #549dc1;
+}
+
+div.contentmenu {
+    background-color: #E6E9ED;
+    border-left: 1px solid #D8DBDB;
+    border-bottom: 1px solid #D8DBDB;
+}
