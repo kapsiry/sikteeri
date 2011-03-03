@@ -185,11 +185,7 @@ class Command(BaseCommand):
         for csvfile in args:
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
-            try:
-                with open(csvfile, 'r') as file_handle:
-                    process_csv(file_handle)
-            except Exception, e:
-                print "Fatal error: %s" % unicode(e)
-                logger.error("process_csv failed: %s" % unicode(e))
-                break
+            # Exceptions of process_csv are fatal in command line run
+            with open(csvfile, 'r') as file_handle:
+                process_csv(file_handle)
             logger.info("Done processing file %s." % os.path.abspath(csvfile))
