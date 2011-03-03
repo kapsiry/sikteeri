@@ -36,10 +36,14 @@
    <li><a href="{% url cycle_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
+   {% if perms.membership.can_import %}
    <li><a href="{% url import_payments %}">{% trans "Import payments" %}</a></li>
-   <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
+   {% endif %}
 </ul>
 {% endif %}
+<ul>
+   <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
+</ul>
 
 <h3>Django</h3>
 <ul>
