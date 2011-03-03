@@ -436,7 +436,7 @@ class Bill(models.Model):
 class Payment(models.Model):
     class Meta:
         permissions = (
-            ("can_import", "Can import payment data"),
+            ("can_import_payments", "Can import payment data"),
         )
 
     """
@@ -465,6 +465,7 @@ class Payment(models.Model):
         if self.billingcycle:
             raise PaymentAttachedError("Payment %s already attached to BillingCycle %s." % (repr(self), repr(cycle)))
         self.billingcycle = cycle
+        self.ignore = False
         self.save()
         logger.info("Payment %s attached to member %s cycle %s." % (repr(self),
             cycle.membership.id, repr(cycle)))

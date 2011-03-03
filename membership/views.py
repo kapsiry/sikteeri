@@ -37,6 +37,8 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 
 @transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
+    if settings.MAINTENANCE_MESSAGE != None:
+        return redirect('frontpage')
     chosen_email_forward = None
     if request.method != 'POST':
         application_form = PersonApplicationForm()
@@ -354,7 +356,7 @@ def organization_application_save(request):
         logger.error("Transaction rolled back.")
         return redirect('new_application_error')
 
-@permission_required('membership.manage_members')
+@permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
 
@@ -365,6 +367,10 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 
     before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
+        if not user.has_perm('membership.manage_members'):
+            messages.error(request, unicode(_("You are not authorized to modify memberships.")))
+            return redirect('contact_edit', id)
+
         form = Form(request.POST, instance=contact)
 
         if form.is_valid():
@@ -769,3 +775,16 @@ def test_email(request, template_name='membership/test_email.html'):
 
     return render_to_response(template_name, {'form': RecipientForm()},
                               context_instance=RequestContext(request))
+
+
+
+def membership_metrics(request):
+    d = {'memberships':
+         {'new': Membership.objects.filter(status='N').count(),
+          'preapproved': Membership.objects.filter(status='P').count(),
+          'approved': Membership.objects.filter(status='A').count(),
+          'deleted': Membership.objects.filter(status='D').count(),
+          }
+         }
+    return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
+                        mimetype='application/json')
