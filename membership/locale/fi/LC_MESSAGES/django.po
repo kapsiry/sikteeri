@@ -567,7 +567,7 @@ msgstr "Maksupäivä"
 
 #: templates/membership/entity_edit.html:39
 msgid "Payment assigned to"
-msgstr "Maksu jäsenelle"
+msgstr "Kohdistus"
 
 #: templates/membership/entity_edit.html:48
 msgid "Save changes"
