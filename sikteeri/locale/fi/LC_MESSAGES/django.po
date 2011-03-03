@@ -7,12 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-27 13:24+0200\n"
+"POT-Creation-Date: 2011-03-03 18:19+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: views.py:21
+msgid "Under maintenance"
+msgstr "Tilapäisesti poissa käytöstä"
 
 #: templates/frontpage.html:5
 msgid "Presenting the new jazzy Sikteeri"
@@ -87,9 +91,8 @@ msgid "All payments"
 msgstr "Kaikki maksut"
 
 #: templates/menu.html:39
-#, fuzzy
 msgid "Import payments"
-msgstr "Kaikki maksut"
+msgstr "Tuo maksut"
 
 #: templates/menu.html:40
 msgid "Send test e-mail"
