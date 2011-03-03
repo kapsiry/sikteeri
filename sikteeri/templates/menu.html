@@ -36,13 +36,15 @@
    <li><a href="{% url cycle_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
+{% if perms.membership.can_import_payments %}
    <li><a href="{% url import_payments %}">{% trans "Import payments" %}</a></li>
+{% endif %}
    <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
 </ul>
 {% endif %}
 
 <h3>Django</h3>
 <ul>
-   <li><a href="/admin/">{% trans "Admin" %}</a></li>
+   <li><a href="{% url admin:index %}">{% trans "Admin" %}</a></li>
 </ul>
 {% endif %}
