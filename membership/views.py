@@ -37,10 +37,18 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 
 @transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
-    if request.method == 'POST':
+    chosen_email_forward = None
+    if request.method != 'POST':
+        application_form = PersonApplicationForm()
+    elif request.method == 'POST':
         application_form = PersonApplicationForm(request.POST)
 
-        if application_form.is_valid():
+        if not application_form.is_valid():
+            try:
+                chosen_email_forward = application_form.fields['email_forward'].clean(application_form.data['email_forward'])
+            except:
+                pass
+        else:
             f = application_form.cleaned_data
             try:
                 # Separate a contact dict from the other fields
@@ -118,9 +126,10 @@ def person_application(request, template_name='membership/new_person_application
                 logger.critical("%s" % traceback.format_exc())
                 logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_fail')
-    else:
-        application_form = PersonApplicationForm()
-    return render_to_response(template_name, {"form": application_form},
+
+    return render_to_response(template_name, {"form": application_form,
+                                              "chosen_email_forward": chosen_email_forward,
+                                              "title": _("Person member application")},
                               context_instance=RequestContext(request))
 
 def organization_application(request, template_name='membership/new_organization_application.html'):

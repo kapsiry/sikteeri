@@ -222,23 +222,36 @@
 </form>
 
 <script type="text/javascript">
-$("#id_last_name").focusout(function() {
+{% if chosen_email_forward %}
+var chosenEmailForward = "{{ chosen_email_forward}}";
+{% else %}
+var chosenEmailForward = undefined;
+{% endif %}
+
+function populateEmailForwards () {
   var permutations = generateEmailForwards($("#id_first_name").val(),
                                            $("#id_given_names").val(),
                                            $("#id_last_name").val());
 
   $(".application_email_forward").remove();
+
   $.each(permutations, function (idx, val) {
     aliasAvailable(val, function (availability) {
       if (availability) {
         var opt = $("<option>").text(val);
         opt.attr("value", val);
         opt.addClass("application_email_forward");
+        if (val === chosenEmailForward) {
+          opt.attr("selected", "selected");
+        }
         $("#email_forwards").append(opt);
       }
     });
   });
-});
+}
+
+$("#id_last_name").focusout(function() { populateEmailForwards() });
+$(document).ready(function() { populateEmailForwards() });
 
 // Auto-populate SMS number
 $("#id_phone").focusout(function() {
