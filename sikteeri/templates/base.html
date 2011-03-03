@@ -25,13 +25,16 @@
     </h1> 
     </div>
     <div class="mainarea">
-{% if user.is_authenticated %}
      <div class="menu">
-       {% block menu %}
-       {% include "menu.html" %}
+       {% block menu %}{% if user.is_authenticated %}
+       {% include "menu.html" %}{% else %}
+       <ul>
+         <li><span class="currentpageitem">Jäsenhallinta</span></li>
+         <li><hr></li>
+         <li><a href="http://www.kapsi.fi/">www.kapsi.fi</a></li>
+       </ul>{% endif %}
        {% endblock %}
      </div>
-{% endif %}
      <div class="right">
       <div class="content"> 
        <div class="logo"></div> <!-- Logo tässä jotta hiirellä valinta toimii oikein -->
