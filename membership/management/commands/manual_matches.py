@@ -76,7 +76,7 @@ def find_cycle(membership, year):
 def ignore_payment(transaction, log_user, reason):
     try:
         payment = Payment.objects.get(transaction_id=transaction)
-        if not payment.ignore:
+        if not payment.ignore and not payment.billingcycle:
             payment.ignore = True
             payment.save()
             log_change(payment, log_user, change_message="Ignored by manual_matches: %s" % reason)
