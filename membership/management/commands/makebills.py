@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
 from django.utils import translation
 from django.conf import settings
+from django.db import transaction
 
 import logging
 logger = logging.getLogger("sikteeri.membership.management.commands.makebills")
@@ -12,6 +13,7 @@ from membership.utils import *
 
 class MembershipNotApproved(Exception): pass
 
+@transaction.commit_manually
 def create_billingcycle(membership):
     """
     Creates a new billing cycle for a membership.
@@ -20,27 +22,35 @@ def create_billingcycle(membership):
     date for the new one.  If a previous one doesn't exist, e.g. it is a new
     user, we use the time when they were approved.
     """
-    if membership.status != 'A':
-        logger.critical("%s not Approved. Cannot send bill" % repr(membership))
-        raise MembershipNotApproved("%s not Approved. Cannot send bill" % repr(membership))
+    billing_cycle = None
     try:
-        newest_existing_billing_cycle = membership.billingcycle_set.latest('end')
-    except ObjectDoesNotExist:
-        newest_existing_billing_cycle = None
+        if membership.status != 'A':
+            logger.critical("%s not Approved. Cannot send bill" % repr(membership))
+            raise MembershipNotApproved("%s not Approved. Cannot send bill" % repr(membership))
+        try:
+            newest_existing_billing_cycle = membership.billingcycle_set.latest('end')
+        except ObjectDoesNotExist:
+            newest_existing_billing_cycle = None
 
-    if newest_existing_billing_cycle != None:
-        cycle_start = newest_existing_billing_cycle.end
-    elif membership.approved != None:
-        cycle_start = membership.approved
-    else:
-        logger.critical("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
-        raise MembershipNotApproved("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
+        if newest_existing_billing_cycle != None:
+            cycle_start = newest_existing_billing_cycle.end
+        elif membership.approved != None:
+            cycle_start = membership.approved
+        else:
+            logger.critical("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
+            raise MembershipNotApproved("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
 
-    billing_cycle = BillingCycle(membership=membership, start=cycle_start)
-    billing_cycle.save()
-    bill = Bill(billingcycle=billing_cycle)
-    bill.save()
-    bill.send_as_email()
+        billing_cycle = BillingCycle(membership=membership, start=cycle_start)
+        billing_cycle.save()
+        bill = Bill(billingcycle=billing_cycle)
+        bill.save()
+        bill.send_as_email()
+        transaction.commit()
+    except Exception, e:
+        transaction.rollback()
+        logger.critical("%s" % traceback.format_exc())
+        logger.critical("Transaction rolled back, billing cycle not created!")
+        raise e
     return billing_cycle
 
 def can_send_reminder(last_due_date):
