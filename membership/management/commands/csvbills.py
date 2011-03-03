@@ -156,7 +156,8 @@ def process_csv(file_handle):
             reference = payment.reference_number
             cycle = BillingCycle.objects.get(reference_number=reference)
             payment.attach_to_cycle(cycle)
-            return_messages.append(_("Attached payment {payment} to cycle {cycle}").format(payment=payment, cycle=cycle))
+            return_messages.append(_("Attached payment {payment} to cycle {cycle}").
+                replace("{payment}", payment).replace("{cycle}", cycle))
             num_attached = num_attached + 1
             sum_attached = sum_attached + payment.amount
         except BillingCycle.DoesNotExist:
