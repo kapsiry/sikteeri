@@ -59,8 +59,9 @@ def process_csv(filename):
                 ignore_payment(transaction, log_user, "legacy payment")
                 num_nocycle += 1
             except Payment.DoesNotExist:
-                logger.warning("No transaction found for id: %s, member: %s year: %s. Marking as paid anyway" % (transaction, mid, year))
-                mark_cycle_paid(cycle, log_user, "Paid by a legacy payment (before 2010)")
+                if not cycle.is_paid:
+                    logger.warning("No transaction found for id: %s, member: %s year: %s. Marking as paid anyway" % (transaction, mid, year))
+                    mark_cycle_paid(cycle, log_user, "Paid by a legacy payment (before 2010)")
                 num_nopayment += 1
             num_notattached = num_notattached + 1
 
