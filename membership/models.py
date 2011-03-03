@@ -406,17 +406,10 @@ class Bill(models.Model):
             user_email = EmailMessage(self.bill_subject(),
                                       self.render_as_text(),
                                       settings.BILLING_FROM_EMAIL,
-                                      [membership.billing_email()])
+                                      [membership.billing_email()],
+                                      [settings.BILLING_CC_EMAIL],
+                                      headers={'CC': settings.BILLING_CC_EMAIL})
             emails.append(user_email)
-            if settings.BILLING_CC_EMAIL:
-                # Send a copy
-                billing_email = EmailMessage(self.bill_subject(),
-                                             self.render_as_text(),
-                                             settings.BILLING_FROM_EMAIL,
-                                             [settings.BILLING_CC_EMAIL],
-                                             headers={'Reply-To': membership.billing_email()})
-                emails.append(billing_email)
-
             connection = mail.get_connection()
             connection.send_messages(emails)
             logger.info('A bill sent as email to %s: %s' % (membership.billing_email(),
