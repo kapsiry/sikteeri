@@ -72,17 +72,28 @@ def create_member(mdata, logins):
     else:
         print >> sys.stderr, "! Not importing, member class unknown for member %d" % mdata['id']
         return False
-    person = Contact(**d)
-    person.save()
-    membership = Membership(id=mdata['id'], type=mtype, status='A',
-                            created=datetime.utcfromtimestamp(mdata['time']),
-                            approved=datetime.utcfromtimestamp(mdata['time']),
-                            person=person,
-                            nationality=mdata['nationality'],
-                            municipality=mdata['residence'],
-                            extra_info='Imported from legacy',
-                            public_memberlist=bool(mdata['publicname']))
-    logger.info("Member %s imported from legacy database." % (unicode(person)))
+
+    contact = Contact(**d)
+    contact.save()
+    if mtype == 'O':
+        membership = Membership(id=mdata['id'], type=mtype, status='A',
+                                created=datetime.utcfromtimestamp(mdata['time']),
+                                approved=datetime.utcfromtimestamp(mdata['time']),
+                                organization=contact,
+                                nationality=mdata['nationality'],
+                                municipality=mdata['residence'],
+                                extra_info='Imported from legacy',
+                                public_memberlist=bool(mdata['publicname']))
+    else:
+        membership = Membership(id=mdata['id'], type=mtype, status='A',
+                                created=datetime.utcfromtimestamp(mdata['time']),
+                                approved=datetime.utcfromtimestamp(mdata['time']),
+                                person=contact,
+                                nationality=mdata['nationality'],
+                                municipality=mdata['residence'],
+                                extra_info='Imported from legacy',
+                                public_memberlist=bool(mdata['publicname']))
+    logger.info("Member %s imported from legacy database." % (unicode(contact)))
     membership.save()
 
     # Create a period only if there already is one previously. Else let
