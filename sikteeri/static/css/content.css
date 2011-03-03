@@ -283,3 +283,13 @@ table.infobox {
 .member_detail_title:hover {
     cursor: pointer;
 }
+
+/* Payment list */
+.due {
+    font-color: red;
+}
+
+.ignored {
+    text-decoration: line-through;
+}
+
