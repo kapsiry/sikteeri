@@ -436,7 +436,7 @@ class Bill(models.Model):
 class Payment(models.Model):
     class Meta:
         permissions = (
-            ("can_import", "Can import payment data"),
+            ("can_import_payments", "Can import payment data"),
         )
 
     """
