@@ -24,6 +24,8 @@
     {% else %}
       <span class="id">{{ member.id }}</span>
     {% endif %}
+      <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
+      <span class="status">{{ member.get_status_display }}</span>
     </li>
 
 {% empty %}

@@ -373,6 +373,12 @@ li.list_item {
     border-bottom: 1px solid silver;
 }
 
+li.list_item span.member_id {
+    display: inline-block;
+    width: 3.5em;
+    font-weight: bold;
+}
+
 li.list_item span.name {
     display: inline-block;
     width: 12em;
