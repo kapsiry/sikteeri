@@ -11,7 +11,7 @@ ENTRIES_PER_PAGE=30
 
 urlpatterns = patterns('',
     (r'jsi18n/$', 'django.views.i18n.javascript_catalog', {'packages': ('membership')}),
-    
+
     url(r'application/person/$', 'membership.views.person_application', name='person_application'),
     url(r'application/organization/$', 'membership.views.organization_application',
         name='organization_application'),

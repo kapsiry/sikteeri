@@ -53,7 +53,7 @@ def diff_humanize(diff):
         else:
             txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
     return txt
-    
+
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:

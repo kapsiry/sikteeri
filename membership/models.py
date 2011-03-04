@@ -320,7 +320,7 @@ class BillingCycle(models.Model):
     def amount_paid(self):
         data = self.payment_set.aggregate(Sum('amount'))
         return data['amount__sum']
-        
+
     def update_is_paid(self):
         was_paid = self.is_paid
         total_paid = self.amount_paid()

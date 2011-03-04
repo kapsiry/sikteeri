@@ -138,7 +138,7 @@ def organization_application(request, template_name='membership/new_organization
         return redirect('frontpage')
     if request.method == 'POST':
         form = OrganizationApplicationForm(request.POST)
-        
+
         if form.is_valid():
             f = form.cleaned_data
 
@@ -509,7 +509,7 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
             if cycle.amount_paid() >= cycle.sum and cycle.is_paid:
                 self.fields['is_paid'].widget.attrs['disabled'] = 'disabled'
                 self.is_paid_forced = True
-                
+
         def clean_is_paid(self):
             if self.is_paid_forced:
                 return cycle.is_paid

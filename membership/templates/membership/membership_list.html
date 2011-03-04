@@ -74,7 +74,7 @@ var approveCartCreated = false;
 $("#memberlist").children().each(function (idx, object) {
   var item = enhanceMemberItem($(object));
   addMemberDetails(item);
-  
+
   if ($(object).hasClass("preapprovable")) {
     if (!preApproveCartCreated) {
       var cart = $("<div>").addClass("cart");

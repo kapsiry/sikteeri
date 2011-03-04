@@ -13,7 +13,7 @@ from django.core.mail.backends.base import BaseEmailBackend
 def file_lock(file_handle):
     '''
     Lock function for with-statement.
-    
+
     See http://bugs.python.org/issue6194 to find out why
     http://docs.python.org/library/os.html#os.O_SHLOCK cannot be used.
     '''
