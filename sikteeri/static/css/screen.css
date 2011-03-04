@@ -2,11 +2,11 @@
 h1.otsikko {
     text-transform: uppercase;
     font-variant: normal;
-    
+
     margin-left: 2em;
     font-weight: lighter;
     display: inline;
-    
+
     white-space: nowrap;
 }
 
@@ -60,10 +60,10 @@ div.mainarea {
     margin-left: 15px;
     margin-right: 15px;
     padding: 0px;
-    
+
     max-width: 1280px;
     min-width: 450px;
-    
+
     border: 1px solid #787877;
     background-color: #edf4d9; /* valikon taustaväri */
 }
@@ -71,7 +71,7 @@ div.mainarea {
 div.right {
     margin-left: 150px;
     min-height: 41em;
-    
+
     border-left: 1px solid #c3cdac; /* valikon ja sisallon valissa */
     background-color: #FFFFFF;
 }
@@ -90,7 +90,7 @@ div.alternative_formats {
 div.footer {
     clear: both;
     padding: 5px;
-    
+
     border-top: 1px solid #DBDBD8;
     background-color: #eff4e0;
     color: #777;
@@ -115,12 +115,12 @@ div.footer a:hover {
 
 div.menu {
     float: left;
-    
+
     padding: 5px;
     padding-right: 5px;
     padding-top: 95px;
     margin: 0px;
-    
+
     width: 135px;
 
     color: #111;
@@ -254,7 +254,7 @@ div.contentmenu {
     margin: 0px;
     padding: 5px;
     padding-left: 15px;
-    
+
     background-color: #f4fae3;
     border-left: 1px solid #dee4cf;
     border-bottom: 1px solid #ccc;

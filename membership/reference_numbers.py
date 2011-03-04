@@ -5,7 +5,7 @@ def generate_membership_bill_reference_number(membership_id, bill_year):
     # jossa yy=vuosi kahdella numerolla, xx=maksutapahtumakoodi ja z tarkistenumero
     # 01 on ollut perinteisesti jäsenmaksun maksutapahtumakoodi
     bill_type_suffix = "01"
-    
+
     return add_checknumber("%i%s%s" % \
                            (membership_id,
                             str(bill_year)[-2:],

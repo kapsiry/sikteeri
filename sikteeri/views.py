@@ -17,7 +17,7 @@ def frontpage(request):
         return render_to_response('frontpage.html',
                                 {"title": _('Django and the jazz cigarette')},
                                   context_instance=RequestContext(request))
-        
+
     else:
         return render_to_response('maintenance_message.html',
                                   {"title": _('Under maintenance'),

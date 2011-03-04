@@ -11,7 +11,7 @@
   <li class="list_item" {% if cycle.is_first_bill_late %}style="color: red"{% endif %}>
     <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
     <span class="cycle"><a href="{% url billingcycle_edit cycle.id %}">{{ cycle }}</a></span>
-    <span class="sum">{{ cycle.sum }} {% trans "euros" %}, 
+    <span class="sum">{{ cycle.sum }} {% trans "euros" %},
 {% if not last_bill.is_reminder %}
 {% trans "bill" %} {% else %}
 {{ last_bill.reminder_count }}{% trans "th" %} {% trans "reminder" %}

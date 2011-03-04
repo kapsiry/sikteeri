@@ -73,7 +73,6 @@ class BaseContactForm(forms.Form):
     postal_code = forms.RegexField(regex='^[a-z0-9-]{2,10}$',
                                    error_messages={'required': _('Postal code required.')},
                                    label=_('Postal code'))
-    
     post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
     country = forms.CharField(max_length=128, label=_('Country'), initial=_('Finland'))
     phone = forms.RegexField(regex='[\d\+-]{5,20}',
@@ -121,6 +120,6 @@ class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
 
 class PersonApplicationForm(PersonContactForm, PersonMembershipForm, ServiceForm):
     pass
-       
+
 class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):
     pass
