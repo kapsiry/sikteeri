@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys
 
 # path is the parent directory of this script ('/var/www' in this case)
