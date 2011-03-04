@@ -2,41 +2,61 @@
 h1.otsikko {
     text-transform: uppercase;
     font-variant: normal;
+    
+    margin-left: 2em;
+    font-weight: lighter;
     display: inline;
     
+    white-space: nowrap;
+}
+
+.otsikko_wrapper h1.otsikko {
+    /* Jotkin vanhat sivut käyttävät samaa CSS:ää, niissä on erilainen
+    HTML-markup. Siksi tämä koodi on käytössä vain jos wrapperi on paikallaan. */
     margin: 0px;
-    font-weight: lighter;
+    display: block;
+    position: absolute;
+    bottom: 0px;
+}
+
+.otsikko_wrapper {
+    position: absolute;
+    left: 202px;
+    top: 0px;
+    height: 99px;
 }
 
 span.kapsi {
-    color: #284b5c;
+    color: #7e8c26;
     font-size: 30pt;
     margin-right: 0.1em;
 }
 
 span.ikry {
-    color: #35637a;
+    color: #97aa1f;
     font-size: 20pt;
 }
 
-.logo { /* pngfix korvaa img:n span:lla */
-    vertical-align: baseline;
-    position: relative;
-    top: 110px;
-    margin-top: -110px;
+.logo {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    background-image: url("../images/logo.png");
+    width: 190px;
+    height: 190px;
 }
-
 
 /* Muuta */
 
-body {
-    background-color: #E4E4E4;
+html, body {
+    background-color: #EEE;
     font-size: 14px;
     font-family: "Bitstream Vera Sans", "Helvetica", "Arial", sans-serif;
+    color: black;
 }
 
-
 div.mainarea {
+    margin-top: 99px;
     margin-left: 15px;
     margin-right: 15px;
     padding: 0px;
@@ -44,22 +64,22 @@ div.mainarea {
     max-width: 1280px;
     min-width: 450px;
     
-    border: 1px solid #777878;
-    background-color: #e0e4e9; /* valikon taustaväri */
+    border: 1px solid #787877;
+    background-color: #edf4d9; /* valikon taustaväri */
 }
 
 div.right {
     margin-left: 150px;
-    min-height: 40em;
+    min-height: 41em;
     
-    border-left: 1px solid #cdcdca; /* valikon ja sisallon valissa */
-    background-color: #F7F7F7;
+    border-left: 1px solid #c3cdac; /* valikon ja sisallon valissa */
+    background-color: #FFFFFF;
 }
 
 div.content {
     padding: 15px;
     padding-top: 20px;
-    border-left: 1px solid #e1e4e4;
+/*     border-left: 1px solid #dee4cf; */
 }
 
 div.alternative_formats {
@@ -71,10 +91,23 @@ div.footer {
     clear: both;
     padding: 5px;
     
-    border-top: 1px solid #D8DBDB;
-    background-color: #E6E6E6;
-    color: #999;
+    border-top: 1px solid #DBDBD8;
+    background-color: #eff4e0;
+    color: #777;
     font-size: 15px;
+}
+
+div.footer .additional_copyrights {
+    display: inline;
+    margin-left: 5em;
+}
+
+div.footer a, div.footer a:visited {
+    color: #777;
+}
+
+div.footer a:hover {
+    color: #555;
 }
 
 
@@ -90,7 +123,7 @@ div.menu {
     
     width: 135px;
 
-    color: #444;
+    color: #111;
     overflow: auto;
 }
 
@@ -143,7 +176,7 @@ div.menu a:hover.external {
 }
 
 .currentpageitem {
-    color: #444;
+    color: #111;
 }
 
 div.menu a, div.menu span {
@@ -161,7 +194,7 @@ div.menu h3{
 }
 
 div.menu a, div.menu a:visited, div.contentmenu a, div.contentmenu a:visited {
-    color: #35637A;
+    color: #56632b;
 }
 
 div.menu a, div.menu a:visited {
@@ -169,12 +202,46 @@ div.menu a, div.menu a:visited {
 }
 
 div.menu a:hover, div.contentmenu a:hover {
-    color: #549dc1;
+    color: #859942;
+}
+
+div.menu hr {
+    border-bottom: 1px solid #c2c9ab;
+}
+
+li.contentmenu_category {
+    list-style-type: none;
+    display: inline-block;
+    vertical-align: top;
+    padding-right: 1em;
+    padding-bottom: 1em;
+}
+
+
+span.contentmenu_category {
+    display: block;
+    font-size: 20px;
+    font-family: "Arial", "Helvetica", sans-serif;
+    font-weight: bold;
+    margin-bottom: 2px;
+    margin-left: 10px;
+}
+
+.contentmenu li {
+    list-style-type: none;
 }
 
 div.toplistitems {
     margin-left: 2em;
-    margin-bottom: 0.5em;
+    margin-top: 2px;
+}
+
+.contentmenu a {
+    text-decoration: none;
+}
+
+.currentpageitem, span.active {
+    text-decoration: underline;
 }
 
 li.spacebefore {
@@ -188,10 +255,12 @@ div.contentmenu {
     padding: 5px;
     padding-left: 15px;
     
-    background-color: #E6E9ED;
-    border-left: 1px solid #D8DBDB;
-    border-bottom: 1px solid #D8DBDB;
+    background-color: #f4fae3;
+    border-left: 1px solid #dee4cf;
+    border-bottom: 1px solid #ccc;
 }
+
+/* SIKTEERI */
 
 /* bill list */
 ul#billlist {
@@ -337,4 +406,11 @@ li.list_item span.cycle {
 li.list_item span.paid {
     display: inline-block;
     width: 2em;
+}
+
+#pageLogin
+{
+    font-size: 10px;
+    font-family: verdana;
+    text-align: right;
 }

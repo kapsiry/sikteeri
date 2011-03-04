@@ -17,8 +17,13 @@
 <hr />
 
 <form method="POST">{% csrf_token %}
-{{ form.as_p }}
-{% if perms.membership.manage_members %}<input type="submit" value="{% trans "Save membership changes" %}" />{% endif %}
+<div id="entity_edit">
+{{ form.as_p }}{% if perms.membership.manage_members %}
+  <p>
+    <label for="submit_button"></label>
+    <input id="submit_button" type="submit" value="{% trans "Save membership changes" %}" />
+  </p>{% endif %}
+</div>
 </form>
 
 <hr />

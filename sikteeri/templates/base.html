@@ -1,41 +1,43 @@
 {% load i18n %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-<head>
+  <head>
     <title>Kapsin jäsentietojärjestelmä :: {{ title }}</title>
-    <style type="text/css">
-        #pageLogin
-        {
-            font-size: 10px;
-            font-family: verdana;
-            text-align: right;
-        }
-    </style>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-type"> 
+    <meta content="Kapsi Internet-käyttäjät ry" name="Author">
+    <link href="http://www.kapsi.fi/favicon.ico" type="image/x-icon" rel="shortcut icon">
     <style media="screen" type="text/css">
         @import "{{ MEDIA_URL }}/static/css/screen.css";
         @import "{{ MEDIA_URL }}/static/css/content.css";
-        @import "{{ MEDIA_URL }}/static/css/form.css";
+        @import "{{ MEDIA_URL }}/static/css/form.css";{% if user.is_authenticated %}
+        @import "{{ MEDIA_URL }}/static/css/blue.css";{% endif %}
     </style>
     <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/django-csrf.js"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     {% block extra_head %}{% endblock %}
-</head>
-<body>
-    <img class="logo" src="{{ MEDIA_URL }}/static/images/logo.png" alt="Kapsin logo">
-    <h1 class="otsikko">
-    <span class="kapsi">Kapsi</span> <span class="ikry">Internet-käyttäjät ry</span>
-    </h1>
+  </head>
+  <body>
+    <img src="{{ MEDIA_URL }}/static/images/logo.png" alt="Kapsin logo" style="display: none" /> 
+    <div class="otsikko_wrapper"> 
+    <h1 class="otsikko"> 
+      <span class="kapsi">Kapsi</span> <span class="ikry">Internet-käyttäjät ry</span> 
+    </h1> 
+    </div>
     <div class="mainarea">
-{% if user.is_authenticated %}
      <div class="menu">
-       {% block menu %}
-       {% include "menu.html" %}
+       {% block menu %}{% if user.is_authenticated %}
+       {% include "menu.html" %}{% else %}
+       <ul>
+         <li><span class="currentpageitem">Jäsenhallinta</span></li>
+         <li><hr></li>
+         <li><a href="http://www.kapsi.fi/">www.kapsi.fi</a></li>
+       </ul>{% endif %}
        {% endblock %}
      </div>
-{% endif %}
      <div class="right">
-      <div class="content">
+      <div class="content"> 
+       <div class="logo"></div> <!-- Logo tässä jotta hiirellä valinta toimii oikein -->
 	{% if messages %}
 	<ul class="messages">
 	  {% for message in messages %}
@@ -51,5 +53,5 @@
      <div class="footer">Copyright © Kapsi Internet-käyttäjät ry 2006–2011 ☕</div>
      </div>
      {% endblock %}
-</body>
+  </body>
 </html>
