@@ -219,7 +219,7 @@ class BillingTest(TestCase):
         models_logger.addHandler(handler)
 
         bill.send_as_email()
-
+        self.assertTrue(bill.billingcycle.is_paid)
         models_logger.removeHandler(handler)
         infos = handler.messages["info"]
         properly_logged = False
