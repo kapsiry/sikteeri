@@ -136,17 +136,23 @@ class Membership(models.Model):
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
-    def email(self):
+    def primary_contact(self):
         if self.organization:
-            return self.organization.email
+            return self.organization
         else:
-            return self.person.email
+            return self.person
+
+    def name(self):
+        if self.primary_contact():
+            return self.primary_contact().name()
+        else:
+            return unicode(self)
+
+    def email(self):
+        return self.primary_contact().email
 
     def email_to(self):
-        if self.organization:
-            return self.organization.email_to()
-        else:
-            return self.person.email_to()
+        return self.primary_contact().email_to()
 
     def get_billing_contact(self):
         '''Resolves the actual billing contact. Useful for billing details.'''
