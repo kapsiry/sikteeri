@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-05 00:59+0200\n"
+"POT-Creation-Date: 2011-03-05 01:53+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -21,6 +21,32 @@ msgstr "Django ja jazztupakka"
 #: views.py:23
 msgid "Under maintenance"
 msgstr "Tilapäisesti poissa käytöstä"
+
+#: templates/403.html:6
+msgid "403 Not authorized"
+msgstr "403 Ei sallittu"
+
+#: templates/403.html:8
+msgid "You have no right to access this content."
+msgstr "Sinulla ei ole oikeutta päästä tänne."
+
+#: templates/404.html:6
+msgid "404. Not found."
+msgstr "404. Ei löytynyt."
+
+#: templates/404.html:8
+msgid "We could not find what you requested. Why? Because it's not there."
+msgstr "Saako olla valkosipulia? Ei ole. Hnmm."
+
+#: templates/500.html:6
+msgid "Internal server error"
+msgstr "Sisäinen palvelinvirhe"
+
+#: templates/500.html:8
+msgid ""
+"Something went seriously wrong. Technical support monkeys are being "
+"dispatched."
+msgstr "Jokin meni mönkään. Tukipalvelun apinat ryntäävät tutkimaan."
 
 #: templates/frontpage.html:5
 msgid "Presenting the new jazzy Sikteeri"

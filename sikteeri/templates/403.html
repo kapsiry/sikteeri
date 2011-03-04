@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="notfound404">
+<h1>{% trans "403 Not authorized" %}</h1>
+
+<p>{% trans "You have no right to access this content." %}</p>
+</div>
+
+{% endblock %}
