@@ -427,6 +427,7 @@ class Bill(models.Model):
             logger.info('A bill sent as email to %s: %s' % (membership.billing_email(),
                                                             repr(Bill)))
         else:
+            self.billingcycle.is_paid = True
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.bill_sent = True
