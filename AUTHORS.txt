@@ -5,3 +5,4 @@ The following people have contributed significantly towards this project:
 * Joonas Kuorilehto
 * Ilkka Mattila
 * Tomi Pieviläinen
+* Henri Strand
