@@ -14,9 +14,11 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from django.conf import settings
+from django.forms import ValidationError
 
 from models import *
 from utils import *
+from forms import *
 from test_utils import *
 
 from reference_numbers import generate_membership_bill_reference_number
@@ -222,18 +224,23 @@ class SingleMemberBillingTest(TestCase):
     def tearDown(self):
         self.membership.delete()
 
-    def test_sending_no_cycle(self):
+    def test_sending(self):
+        settings.BILLING_CC_EMAIL = None
         makebills()
         self.assertEquals(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEquals(m.to[0], self.membership.billing_email())
+        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
 
     def test_sending_with_cc(self):
         settings.BILLING_CC_EMAIL = "test@example.com"
         makebills()
-        self.assertEquals(len(mail.outbox), 2)
-
-    def test_email_address_correct(self):
-        makebills()
-        self.assertEquals(self.membership.billing_email(), mail.outbox[0].to[0])
+        self.assertEquals(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEquals(m.to[0], self.membership.billing_email())
+        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
+        self.assertEquals(m.extra_headers['CC'], settings.BILLING_CC_EMAIL)
+        self.assertTrue(settings.BILLING_CC_EMAIL in m.bcc)
 
     def test_expired_cycle(self):
         "makebills: before a cycle expires, a new one is created"
@@ -553,3 +560,36 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;http://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
+class PhoneNumberFieldTest(TestCase):
+    def setUp(self):
+        self.field = PhoneNumberField()
+
+    def test_too_short(self):
+        self.assertRaises(ValidationError, self.field.clean, "012")
+
+    def test_too_long(self):
+        self.assertRaises(ValidationError, self.field.clean, "012345678901234567890")
+
+    def test_begins_with_bad_char(self):
+        self.assertRaises(ValidationError, self.field.clean, "12345")
+
+    def test_number(self):
+        self.assertEquals(u"0123456", self.field.clean(u"0123456"))
+
+    def test_parens(self):
+        self.assertEquals(u"0400123123", self.field.clean(u"(0400) 123123"))
+
+    def test_dash_delimiter(self):
+        self.assertEquals(u"0400-123123", self.field.clean(u"0400-123123"))
+
+    def test_space_delimiter(self):
+        self.assertEquals(u"0400123123", self.field.clean(u"0400 123123"))
+
+    def test_strippable_spaces(self):
+        self.assertEquals(u"0400123123", self.field.clean(u" 0400 123123  "))
+
+    def test_begins_with_plus(self):
+        self.assertEquals(u"+358401231111", self.field.clean(u"+358 40 123 1111"))
+
+    def test_dash_delimiter_begins_with_plus(self):
+        self.assertEquals(u"+358-400-123123", self.field.clean(u"+358-400-123123 "))

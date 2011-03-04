@@ -403,12 +403,18 @@ class Bill(models.Model):
         membership = self.billingcycle.membership
         if self.billingcycle.sum > 0:
             emails = []
-            user_email = EmailMessage(self.bill_subject(),
-                                      self.render_as_text(),
-                                      settings.BILLING_FROM_EMAIL,
-                                      [membership.billing_email()],
-                                      [settings.BILLING_CC_EMAIL],
-                                      headers={'CC': settings.BILLING_CC_EMAIL})
+            if settings.BILLING_CC_EMAIL != None:
+                user_email = EmailMessage(self.bill_subject(),
+                                          self.render_as_text(),
+                                          settings.BILLING_FROM_EMAIL,
+                                          [membership.billing_email()],
+                                          [settings.BILLING_CC_EMAIL],
+                                          headers={'CC': settings.BILLING_CC_EMAIL})
+            else:
+                user_email = EmailMessage(self.bill_subject(),
+                                          self.render_as_text(),
+                                          settings.BILLING_FROM_EMAIL,
+                                          [membership.billing_email()])
             emails.append(user_email)
             connection = mail.get_connection()
             connection.send_messages(emails)

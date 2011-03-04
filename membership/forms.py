@@ -27,6 +27,13 @@ class LoginField(forms.CharField):
 
         return value
 
+class PhoneNumberField(forms.RegexField):
+    def __init__(self, *args, **kwargs):
+        super(PhoneNumberField, self).__init__(regex=r"^ *[+0(][-+\d ()]{5,20} *$",
+                                               min_length=4, max_length=20, *args, **kwargs)
+
+    def clean(self, value):
+        return super(PhoneNumberField, self).clean(value).replace("(", "").replace(")", "").replace(" ", "")
 
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -75,13 +82,11 @@ class BaseContactForm(forms.Form):
                                    label=_('Postal code'))
     post_office = forms.CharField(max_length=30, min_length=2, label=_('Post office'))
     country = forms.CharField(max_length=128, label=_('Country'), initial=_('Finland'))
-    phone = forms.RegexField(regex='[\d\+-]{5,20}',
-                             error_messages={'invalid': _('Phone invalid.')},
-                             min_length=5, max_length=20, label=_('Phone number'),
+    phone = PhoneNumberField(error_messages={'invalid': _('Phone invalid.')},
+                             label=_('Phone number'),
                              help_text=_('Phone number that accepts calls'))
-    sms = forms.RegexField(regex='[\d\+-]{5,20}',
-                           error_messages={'invalid': _('SMS number invalid.')},
-                           min_length=5, max_length=20, label=_('SMS number'),
+    sms = PhoneNumberField(error_messages={'invalid': _('SMS number invalid.')},
+                           label=_('SMS number'),
                            help_text=_('Phone number that accepts text messages'))
     email = forms.EmailField(label=_('E-mail'))
     homepage = forms.URLField(required=False,
