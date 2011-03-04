@@ -625,6 +625,8 @@ class MemberListTest(TestCase):
         self.m1.preapprove(self.user)
         self.m1.approve(self.user)
         self.m2 = create_dummy_member('N')
+        self.m2.preapprove(self.user)
+        self.m3 = create_dummy_member('N')
 
     def tearDown(self):
         pass
@@ -637,6 +639,10 @@ class MemberListTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
 
-        response = self.client.get('/membership/memberships/new/')
+        response = self.client.get('/membership/memberships/preapproved/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content)
+
+        response = self.client.get('/membership/memberships/new/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)

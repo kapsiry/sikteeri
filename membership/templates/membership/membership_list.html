@@ -18,14 +18,12 @@
     <li class="list_item" id="{{ member.id }}">
   {% endif %}
   {% endif %}
-      <span class="name"><a href="{% url membership_edit member.id %}">{{ member.name }}</a></span>
     {% if member.status == "N" %}
-      <span class="date">{{ member.created }}</span>
+      <span class="date">{{ member.created|date:"j.n.Y H:i" }}</span>
     {% else %}
-      <span class="id">{{ member.id }}</span>
+      <span class="member_id">#{{ member.id }}</span>
     {% endif %}
-      <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
-      <span class="status">{{ member.get_status_display }}</span>
+      <span class="name"><a href="{% url membership_edit member.id %}">{{ member.name }}</a></span>
     </li>
 
 {% empty %}
