@@ -6,6 +6,7 @@ import tempfile
 import logging
 logger = logging.getLogger("tests")
 
+from decimal import Decimal
 from datetime import datetime, timedelta
 from random import randint
 import simplejson
@@ -204,6 +205,30 @@ class BillingTest(TestCase):
 
         t = membership.approved
         self.assertTrue(t != None)
+
+    def test_no_email_if_membership_fee_zero(self):
+        membership = create_dummy_member('N')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        makebills()
+        bill = Bill.objects.latest('id')
+        bill.billingcycle.sum = Decimal("0")
+        bill.billingcycle.save()
+        self.assertEquals(bill.billingcycle.sum, Decimal('0'))
+
+        from models import logger as models_logger
+        handler = MockLoggingHandler()
+        models_logger.addHandler(handler)
+
+        bill.send_as_email()
+
+        models_logger.removeHandler(handler)
+        infos = handler.messages["info"]
+        properly_logged = False
+        for info in infos:
+            if "Bill not sent:" in info:
+                properly_logged = True
+        self.assertTrue(properly_logged)
 
 
 class SingleMemberBillingTest(TestCase):
