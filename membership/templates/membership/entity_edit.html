@@ -69,7 +69,7 @@
 <table class="event_log">
 {% for logentry in logentries %}
   <tr>
-    <td>{{ logentry.action_time|date:"d.n.Y H:i" }}</td>
+    <td>{{ logentry.action_time|date:"j.n.Y H:i" }}</td>
     <td>{{ logentry.action_flag_str}}</td>
     <td>{{ logentry.user }}</td>
     <td>{{ logentry.change_message }}</td>

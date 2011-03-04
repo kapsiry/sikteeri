@@ -43,7 +43,7 @@
     {% else %}
     <s><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></s>
     {% endif %}
-    <span class="expiration_date">{{alias.expiration_date|date:"d.n.Y"}}</span>
+    <span class="expiration_date">{{alias.expiration_date|date:"j.n.Y"}}</span>
     </li>
     {% endfor %}
 </ul>
@@ -89,7 +89,7 @@
   </tr>
 {% for logentry in logentries %}
   <tr>
-    <td>{{ logentry.action_time|date:"d.n.Y H:i" }}</td>
+    <td>{{ logentry.action_time|date:"j.n.Y H:i" }}</td>
     <td>{{ logentry.action_flag_str}}</td>
     <td>{{ logentry.user }}</td>
     <td>{{ logentry.change_message }}</td>
@@ -101,7 +101,7 @@
 <h2>{% trans "Comments" %}</h2>
 {% get_comment_list for membership as comment_list %}
 {% for comment in comment_list %}
-    <p>{{ comment.submit_date|date:"d.n.Y" }} {{ comment }}</p>
+    <p>{{ comment.submit_date|date:"j.n.Y" }} {{ comment }}</p>
 {% endfor %}
 
 {% get_comment_form for membership as commentform %}
