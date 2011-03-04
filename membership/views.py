@@ -369,7 +369,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 
     before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
-        if not user.has_perm('membership.manage_members'):
+        if not request.user.has_perm('membership.manage_members'):
             messages.error(request, unicode(_("You are not authorized to modify memberships.")))
             return redirect('contact_edit', id)
 
