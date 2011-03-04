@@ -222,18 +222,23 @@ class SingleMemberBillingTest(TestCase):
     def tearDown(self):
         self.membership.delete()
 
-    def test_sending_no_cycle(self):
+    def test_sending(self):
+        settings.BILLING_CC_EMAIL = None
         makebills()
         self.assertEquals(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEquals(m.to[0], self.membership.billing_email())
+        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
 
     def test_sending_with_cc(self):
         settings.BILLING_CC_EMAIL = "test@example.com"
         makebills()
-        self.assertEquals(len(mail.outbox), 2)
-
-    def test_email_address_correct(self):
-        makebills()
-        self.assertEquals(self.membership.billing_email(), mail.outbox[0].to[0])
+        self.assertEquals(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEquals(m.to[0], self.membership.billing_email())
+        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
+        self.assertEquals(m.extra_headers['CC'], settings.BILLING_CC_EMAIL)
+        self.assertTrue(settings.BILLING_CC_EMAIL in m.bcc)
 
     def test_expired_cycle(self):
         "makebills: before a cycle expires, a new one is created"
