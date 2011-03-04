@@ -1,0 +1,4 @@
+<jasenlista>
+    <total>{{ count }}</total>{% for member in member_list %}
+    <person><name>{{ member }}</name><url>{{ member.homepage }}</url></person>{% endfor %}
+</jasenlista>
