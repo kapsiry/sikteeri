@@ -40,3 +40,26 @@ div.contentmenu {
     border-left: 1px solid #D8DBDB;
     border-bottom: 1px solid #D8DBDB;
 }
+
+/* Linkit */
+
+a {
+    color: #114e6d;
+}
+
+a:visited {
+    color: #072331;
+}
+
+a:visited:hover {
+    color: #0d405a;
+}
+
+a:hover {
+    color: #277ca7;
+}
+
+fieldset legend {
+    color: #284b5c;
+    border-bottom: 1px solid #35637a;
+}
