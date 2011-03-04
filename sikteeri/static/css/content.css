@@ -195,19 +195,19 @@ div.poytakirja ol.otsikot p {
 /* Linkit */
 
 a {
-    color: #114e6d;
+    color: #566d11;
 }
 
 a:visited {
-    color: #072331;
+    color: #273107;
 }
 
 a:visited:hover {
-    color: #0d405a;
+    color: #475a0d;
 }
 
 a:hover {
-    color: #277ca7;
+    color: #87a727;
 }
 
 a.external {
