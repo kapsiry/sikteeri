@@ -18,6 +18,7 @@
     <li class="list_item" id="{{ member.id }}">
   {% endif %}
   {% endif %}
+      <span class="member_id">#{{ member.id }}</span>
       <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
       <span class="status">{{ member.get_status_display }}</span>
     </li>

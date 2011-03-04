@@ -6,6 +6,7 @@ import tempfile
 import logging
 logger = logging.getLogger("tests")
 
+from decimal import Decimal
 from datetime import datetime, timedelta
 from random import randint
 import simplejson
@@ -204,6 +205,30 @@ class BillingTest(TestCase):
 
         t = membership.approved
         self.assertTrue(t != None)
+
+    def test_no_email_if_membership_fee_zero(self):
+        membership = create_dummy_member('N')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        makebills()
+        bill = Bill.objects.latest('id')
+        bill.billingcycle.sum = Decimal("0")
+        bill.billingcycle.save()
+        self.assertEquals(bill.billingcycle.sum, Decimal('0'))
+
+        from models import logger as models_logger
+        handler = MockLoggingHandler()
+        models_logger.addHandler(handler)
+
+        bill.send_as_email()
+
+        models_logger.removeHandler(handler)
+        infos = handler.messages["info"]
+        properly_logged = False
+        for info in infos:
+            if "Bill not sent:" in info:
+                properly_logged = True
+        self.assertTrue(properly_logged)
 
 
 class SingleMemberBillingTest(TestCase):
@@ -593,3 +618,27 @@ class PhoneNumberFieldTest(TestCase):
 
     def test_dash_delimiter_begins_with_plus(self):
         self.assertEquals(u"+358-400-123123", self.field.clean(u"+358-400-123123 "))
+
+class MemberListTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        self.m1 = create_dummy_member('N')
+        self.m1.preapprove(self.user)
+        self.m1.approve(self.user)
+        self.m2 = create_dummy_member('N')
+
+    def tearDown(self):
+        pass
+
+    def test_renders_member_id(self):
+        login = self.client.login(username='admin', password='dhtn')
+        self.failUnless(login, 'Could not log in')
+
+        response = self.client.get('/membership/memberships/approved/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+
+        response = self.client.get('/membership/memberships/new/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content)
