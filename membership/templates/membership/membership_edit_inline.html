@@ -32,7 +32,7 @@
 {% if membership.status != "D" %}
 <a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
 <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
-<a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>
+{% if not membership.organization %}<a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>{% endif %}
 {% endif %}
 
 <h2>{% trans "Aliases" %}</h2>
