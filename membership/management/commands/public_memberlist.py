@@ -12,9 +12,9 @@ class Command(NoArgsCommand):
         mship = Membership.objects.filter(status__exact='A')
         count = mship.count()
         mship = mship.filter(public_memberlist__exact="True")
-        mship = mship.order_by("person__last_name", "person__first_name")
         person_q = Q(person_set__in=mship)
         person_contacts = Contact.objects.filter(person_q)
+        person_contacts = person_contacts.order_by("last_name", "first_name")
         return render_to_string('membership/public_memberlist.xml', {
                                   'count': count,
 		                          'member_list': person_contacts

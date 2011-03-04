@@ -207,13 +207,11 @@ class BillingTest(TestCase):
         self.assertTrue(t != None)
 
     def test_no_email_if_membership_fee_zero(self):
-        membership = create_dummy_member('N')
+        membership = create_dummy_member('N', type='H')
         membership.preapprove(self.user)
         membership.approve(self.user)
         makebills()
         bill = Bill.objects.latest('id')
-        bill.billingcycle.sum = Decimal("0")
-        bill.billingcycle.save()
         self.assertEquals(bill.billingcycle.sum, Decimal('0'))
 
         from models import logger as models_logger
@@ -221,7 +219,7 @@ class BillingTest(TestCase):
         models_logger.addHandler(handler)
 
         bill.send_as_email()
-
+        self.assertTrue(bill.billingcycle.is_paid)
         models_logger.removeHandler(handler)
         infos = handler.messages["info"]
         properly_logged = False
