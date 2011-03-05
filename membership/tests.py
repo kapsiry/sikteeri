@@ -696,11 +696,11 @@ class DecoratorTest(TestCase):
 
     def test_require_host(self):
         request = HttpRequest()
-        request.META['REMOTE_HOST'] = '127.0.0.1'
+        request.META['REMOTE_ADDR'] = '127.0.0.1'
         response1 = dummyView(request)
         self.assertEqual(response1.status_code, 200)
 
-        request.META['REMOTE_HOST'] = '99.99.99.99'
+        request.META['REMOTE_ADDR'] = '99.99.99.99'
         response2 = dummyView(request)
         self.assertEqual(response2.status_code, 403)
 
