@@ -23,7 +23,11 @@
     {% else %}
       <span class="member_id">#{{ member.id }}</span>
     {% endif %}
+    {% if member.status != "D" %}
       <span class="name"><a href="{% url membership_edit member.id %}">{{ member.name }}</a></span>
+    {% else %}
+      <span class="name"><a href="{% url membership_edit member.id %}">{% trans "&lt; membership deleted &gt;" %}</a></span>
+    {% endif %}
     </li>
 
 {% empty %}
