@@ -175,6 +175,103 @@ def serializable_membership_info(membership):
 
     return json_obj
 
+
+
+def admtool_membership_details(membership):
+    from services.models import valid_aliases, Service
+    json_obj = {}
+    # Membership details
+    for attr in ['id', 'type', 'status', 'created', 'last_changed', 'municipality',
+                 'nationality', 'public_memberlist', 'extra_info']:
+        # Get the translated value for choice fields, not database field values
+        attr_val = escape(getattr(membership, attr, u''))
+        if isinstance(attr_val, basestring):
+            json_obj[attr] = attr_val
+        elif isinstance(attr_val, datetime):
+            json_obj[attr] = attr_val.ctime()
+        else:
+            json_obj[attr] = unicode(attr_val)
+
+    # Contacts
+    contacts_json_obj = {}
+    json_obj['contacts'] = contacts_json_obj
+    for attr in ['person', 'billing_contact', 'tech_contact', 'organization']:
+        attr_val = getattr(membership, attr, None)
+        if not attr_val:
+            continue
+
+        contact_json_obj = {}
+        for c_attr in ['first_name', 'given_names', 'last_name',
+                       'organization_name', 'street_address', 'postal_code',
+                       'post_office', 'country', 'phone', 'sms', 'email',
+                       'homepage']:
+            c_attr_val = escape(getattr(attr_val, c_attr, u''))
+            contact_json_obj[c_attr] = c_attr_val
+            contacts_json_obj[attr] = contact_json_obj
+
+    # Events (comments + log entries)
+    comment_list = []
+    log_entry_list = []
+    event_list = []
+    json_obj['comments'] = comment_list
+    json_obj['log_entries'] = log_entry_list
+    json_obj['events'] = event_list
+
+    # Aliases
+    json_obj['aliases'] = [unicode(alias) for alias in valid_aliases(membership)]
+
+#    json_obj['services'] = ", ".join((escape(str(service))
+#                                      for service in Service.objects.filter(owner=membership)))
+    json_obj['services'] = services_json_obj = []
+    for service in Service.objects.filter(owner=membership):
+        service_obj = {}
+        service_obj['type'] = escape(unicode(service.servicetype))
+        if service.alias:
+            service_obj['alias'] = escape(unicode(service.alias))
+        if service.data:
+            service_obj['data'] = escape(unicode(service.data))
+        services_json_obj.append(service_obj)
+
+    # FIXME: This is broken. Should probably replace:
+    # {% get_comment_list for [object] as [varname] %}
+    # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
+    comments = Comment.objects.filter(object_pk=membership.pk)
+    for comment in comments:
+        d = { 'user_name': unicode(comment.user),
+              'text': escape(comment.comment),
+              'date': comment.submit_date }
+        comment_list.append(d)
+        event_list.append(d)
+
+    log_entries = bake_log_entries(membership.logs.all())
+    for entry in log_entries:
+        d = { 'user_name': unicode(entry.user),
+              'text': "%s %s" % (escape(unicode(entry.action_flag_str)), escape(unicode(entry.change_message))),
+              'date': entry.action_time }
+        log_entry_list.append(d)
+        event_list.append(d)
+
+    def cmp_fun(x, y):
+        if x['date'] > y['date']:
+            return 1
+        if x['date'] == y['date']:
+            return 0
+        return -1
+
+    comment_list.sort(cmp_fun)
+    log_entry_list.sort(cmp_fun)
+    event_list.sort(cmp_fun)
+
+    def ctimeify(lst):
+        for item in lst:
+            if isinstance(item['date'], basestring):
+                continue # some are already in ctime format since they are part of multiple lists
+            item['date'] = item['date'].ctime()
+    ctimeify(comment_list)
+    ctimeify(log_entry_list)
+    ctimeify(event_list)
+
+    return json_obj
 def tupletuple_to_dict(tupletuple):
     '''Convert a tuple of tuples to dict
 

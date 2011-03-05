@@ -24,7 +24,7 @@ from models import *
 from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
-from utils import log_change, serializable_membership_info
+from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
 
 from services.views import check_alias_availability
@@ -740,6 +740,7 @@ def membership_detail_json(request, id):
     # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
     #                    mimetype='text/plain')
 
+# Public access
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
     msg = simplejson.loads(request.raw_post_data)
@@ -795,6 +796,15 @@ def membership_metrics(request):
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
-    json_obj = serializable_membership_info(membership)
+    json_obj = admtool_membership_details(membership)
     return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
+
+@trusted_host_required
+def admtool_lookup_alias_json(request, alias):
+    aliases = Alias.objects.filter(name__iexact=alias)
+    if len(aliases) == 1:
+        return HttpResponse(aliases[0].owner.id, mimetype='text/plain')
+    elif not aliases:
+        return HttpResponse("No match", mimetype='text/plain')
+    return HttpResponse("Too many matches", mimetype='text/plain')
