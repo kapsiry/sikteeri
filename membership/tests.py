@@ -65,6 +65,7 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(group_right('1111122222'), '11111 22222')
         self.assertEqual(group_right('1112222233333'), '111 22222 33333')
         self.assertEqual(group_right('15222333', group_size=3), '15 222 333')
+        self.assertEqual(group_right(u'äkstestÖ'), u'äks testÖ')
 
 
 def create_dummy_member(status, type='P', mid=None):
