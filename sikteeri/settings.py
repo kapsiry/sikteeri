@@ -110,4 +110,5 @@ assert(ENABLE_REMINDERS != None)
 assert(REMINDER_GRACE_DAYS != None)
 assert(BILL_DAYS_BEFORE_CYCLE != None)
 assert(BILL_DAYS_TO_DUE != None)
+assert(TRUSTED_HOSTS != None)
 MAINTENANCE_MESSAGE
