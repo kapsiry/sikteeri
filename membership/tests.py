@@ -23,7 +23,7 @@ from utils import *
 from forms import *
 from test_utils import *
 from decorators import trusted_host_required
-from iptools import IpRangeList
+from sikteeri.iptools import IpRangeList
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, group_right

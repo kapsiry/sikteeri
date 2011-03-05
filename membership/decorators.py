@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 
-from iptools import IpRangeList
+from sikteeri.iptools import IpRangeList
 
 import base64
 
