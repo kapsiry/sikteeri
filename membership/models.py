@@ -347,6 +347,9 @@ class BillingCycle(models.Model):
     def save(self, *args, **kwargs):
         if not self.end:
             self.end = self.start + timedelta(days=365)
+            if (self.end.day != self.start.day):
+                # Leap day
+                self.end += timedelta(days=1)
         if not self.reference_number:
             self.reference_number = generate_membership_bill_reference_number(self.membership.id, self.start.year)
         if not self.sum:

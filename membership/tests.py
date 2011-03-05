@@ -381,6 +381,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
         settings.ENABLE_REMINDERS = True
+        settings.BILL_DAYS_TO_DUE = 5
 
     def tearDown(self):
         self.bill.delete()
