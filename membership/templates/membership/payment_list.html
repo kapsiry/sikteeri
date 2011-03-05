@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load reference_number %}
 
 {% block content %}
 {% include "membership/paginating_snippet.html" %}
@@ -9,7 +10,7 @@
   <li class="list_item{% if payment.is_due %} due{% endif %}{% if payment.ignore %} ignored{% endif %}">
     <span class="name"><a href="{% url payment_edit payment.id %}">{{ payment.payer_name }}</a></span>
     <span class="sum">{{ payment.amount }} {% trans "euros" %} {% trans "paid on" %} {{ payment.payment_day|date:"j.n.Y" }}</span>
-    <span class="reference">{{ payment.reference_number }}</span>
+    <span class="reference">{{ payment.reference_number|fref:"14" }}</span>
     <span class="paid">
       {% if payment.billingcycle %} {% trans "Attached" %} {% endif %}
     </span>
