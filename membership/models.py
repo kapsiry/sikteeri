@@ -24,7 +24,7 @@ from email_utils import send_as_email, send_preapprove_email
 from email_utils import bill_sender, preapprove_email_sender
 
 from reference_numbers import generate_membership_bill_reference_number
-from reference_numbers import generate_checknumber, add_checknumber
+from reference_numbers import generate_checknumber, add_checknumber, group_right
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -393,7 +393,7 @@ class Bill(models.Model):
             'bic_code': settings.BIC_CODE,
             'due_date': self.due_date,
             'today': datetime.now(),
-            'reference_number': self.billingcycle.reference_number,
+            'reference_number': group_right(self.billingcycle.reference_number),
             'sum': self.billingcycle.sum
             })
 
@@ -410,7 +410,6 @@ class Bill(models.Model):
             self.billingcycle.is_paid = True
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
-        self.billingcycle.bill_sent = True
         self.billingcycle.save()
 
     def bill_subject(self):
