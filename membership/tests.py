@@ -23,7 +23,7 @@ from forms import *
 from test_utils import *
 
 from reference_numbers import generate_membership_bill_reference_number
-from reference_numbers import generate_checknumber, add_checknumber
+from reference_numbers import generate_checknumber, add_checknumber, group_right
 
 from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
@@ -53,6 +53,18 @@ class ReferenceNumberTest(TestCase):
                 number = generate_membership_bill_reference_number(i, j)
                 self.assertFalse(number in numbers)
                 numbers.add(number)
+
+    def test_grouping(self):
+        self.assertEqual(group_right('1'), '1')
+        self.assertEqual(group_right('12'), '12')
+        self.assertEqual(group_right('123'), '123')
+        self.assertEqual(group_right('12345'), '12345')
+        self.assertEqual(group_right('123456'), '1 23456')
+        self.assertEqual(group_right('123456789'), '1234 56789')
+        self.assertEqual(group_right('12345 333'), '123 45333')
+        self.assertEqual(group_right('1111122222'), '11111 22222')
+        self.assertEqual(group_right('1112222233333'), '111 22222 33333')
+        self.assertEqual(group_right('15222333', group_size=3), '15 222 333')
 
 
 def create_dummy_member(status, type='P', mid=None):
@@ -157,6 +169,7 @@ class BillingTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(id=1)
+        mail.outbox = []
 
     def tearDown(self):
         pass
@@ -208,7 +221,11 @@ class BillingTest(TestCase):
 
     def test_no_email_if_membership_fee_zero(self):
         membership = create_dummy_member('N', type='H')
+        self.assertEqual(len(mail.outbox), 0)
         membership.preapprove(self.user)
+        self.assertEqual(len(mail.outbox), 1)
+        mail.outbox = []
+
         membership.approve(self.user)
         makebills()
         bill = Bill.objects.latest('id')
@@ -221,6 +238,8 @@ class BillingTest(TestCase):
 
         bill.send_as_email()
         self.assertTrue(bill.billingcycle.is_paid)
+        self.assertEqual(len(mail.outbox), 0)
+
         models_logger.removeHandler(handler)
         infos = handler.messages["info"]
         properly_logged = False

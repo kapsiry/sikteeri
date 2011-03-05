@@ -20,3 +20,11 @@ def generate_checknumber(number):
 
 def add_checknumber(number):
     return number + str(generate_checknumber(number))
+
+def group_right(number, group_size = 5):
+    number = number.replace(" ", "")
+    groups = []
+    while number:
+        groups.insert(0, number[-group_size:])
+        number = number[:-group_size]
+    return " ".join(groups)

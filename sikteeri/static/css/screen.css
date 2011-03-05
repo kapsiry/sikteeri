@@ -399,6 +399,10 @@ li.list_item span.sum {
     width: 16em;
 }
 
+li.list_item span.reference {
+    font-family: monospace;
+}
+
 li.list_item span.due {
     display: inline-block;
     width: 12em;
