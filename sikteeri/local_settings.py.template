@@ -38,3 +38,4 @@ EMAIL_SUBJECT_PREFIX = '[sikteeri] '
 #EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
 
 MEDIA_URL = 'http://localhost:12765'
+TRUSTED_HOSTS = ['127.0.0.1']

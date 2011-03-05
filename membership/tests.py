@@ -16,11 +16,14 @@ from django.core import mail
 from django.test import TestCase
 from django.conf import settings
 from django.forms import ValidationError
+from django.http import HttpResponse, HttpRequest
 
 from models import *
 from utils import *
 from forms import *
 from test_utils import *
+from decorators import trusted_host_required
+from iptools import IpRangeList
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, group_right
@@ -667,3 +670,36 @@ class MemberListTest(TestCase):
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+
+class IpRangeListTest(TestCase):
+    def test_rangelist(self):
+        list1 = IpRangeList('127.0.0.1', '10.0.0.0/8', '127.0.0.2')
+        self.assertTrue('127.0.0.1' in list1)
+        self.assertTrue('10.0.0.0' in list1)
+        self.assertTrue('10.0.0.1' in list1)
+        self.assertTrue('10.1.232.255' in list1)
+        self.assertFalse('11.0.0.0' in list1)
+        self.assertTrue('127.0.0.2' in list1)
+        self.assertFalse('127.0.0.3' in list1)
+        iplist = ['127.0.0.1', '1.2.3.4']
+        self.assertFalse('11.0.0.0' in IpRangeList(*iplist))
+        self.assertTrue('1.2.3.4' in IpRangeList(*iplist))
+
+@trusted_host_required
+def dummyView(request, *args, **kwargs):
+    return HttpResponse('OK', mimetype='text/plain')
+
+class DecoratorTest(TestCase):
+    def setUp(self):
+        settings.TRUSTED_HOSTS = ['127.0.0.1', '10.0.0.0/8']
+
+    def test_require_host(self):
+        request = HttpRequest()
+        request.META['REMOTE_HOST'] = '127.0.0.1'
+        response1 = dummyView(request)
+        self.assertEqual(response1.status_code, 200)
+
+        request.META['REMOTE_HOST'] = '99.99.99.99'
+        response2 = dummyView(request)
+        self.assertEqual(response2.status_code, 403)
+

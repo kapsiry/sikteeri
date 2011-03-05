@@ -6,9 +6,27 @@ decorators.py
 """
 
 from django.contrib.auth import authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
+from django.conf import settings
+
+from iptools import IpRangeList
 
 import base64
+
+def trusted_host_required(view_func):
+    """ decorator which checks remote address """
+    def decorator(request, *args, **kwargs):
+        if not hasattr(settings, 'TRUSTED_HOSTS') or not settings.TRUSTED_HOSTS:
+            settings.TRUSTED_HOSTS = []            
+        if 'REMOTE_ADDR' in request.META:
+            ip = request.META['REMOTE_ADDR']
+            print "Trusted host?: ip: %s" % ip
+            allowed = IpRangeList(*settings.TRUSTED_HOSTS)
+            if ip in allowed:
+                return view_func(request, *args, **kwargs)
+        response = HttpResponseForbidden("Access denied")
+        return response
+    return decorator
 
 def basic_auth_required(view_func):
     # http://djangosnippets.org/snippets/448/
