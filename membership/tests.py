@@ -215,6 +215,7 @@ class BillingTest(TestCase):
         self.assertEquals(bill.billingcycle.sum, Decimal('0'))
 
         from models import logger as models_logger
+        models_logger.setLevel(level=logging.INFO)
         handler = MockLoggingHandler()
         models_logger.addHandler(handler)
 
