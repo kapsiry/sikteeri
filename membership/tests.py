@@ -157,6 +157,7 @@ class BillingTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(id=1)
+        mail.outbox = []
 
     def tearDown(self):
         pass
@@ -208,7 +209,11 @@ class BillingTest(TestCase):
 
     def test_no_email_if_membership_fee_zero(self):
         membership = create_dummy_member('N', type='H')
+        self.assertEqual(len(mail.outbox), 0)
         membership.preapprove(self.user)
+        self.assertEqual(len(mail.outbox), 1)
+        mail.outbox = []
+
         membership.approve(self.user)
         makebills()
         bill = Bill.objects.latest('id')
@@ -221,6 +226,8 @@ class BillingTest(TestCase):
 
         bill.send_as_email()
         self.assertTrue(bill.billingcycle.is_paid)
+        self.assertEqual(len(mail.outbox), 0)
+
         models_logger.removeHandler(handler)
         infos = handler.messages["info"]
         properly_logged = False

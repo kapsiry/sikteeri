@@ -10,16 +10,18 @@ from django.db import models
 from django.db.models import Q, F, Sum
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.template.loader import render_to_string
 from django.template import Context
 from django.core import mail
-from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.generic import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
+
+from email_utils import send_as_email, send_preapprove_email
+from email_utils import bill_sender, preapprove_email_sender
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber
@@ -205,21 +207,12 @@ class Membership(models.Model):
         self.status = 'P'
         self.save()
         log_change(self, user, change_message="Preapproved")
-        from services.models import Service
-        # imported here since on top-level it would lead into a circular import
-        email_body = render_to_string('membership/preapprove_mail.txt', {
-            'membership': self,
-            'membership_type': MEMBER_TYPES_DICT[self.type],
-            'services': Service.objects.filter(owner=self),
-            'user': user
-            })
-        sysadmin_email = EmailMessage(_('Kapsi member application %i') % self.id,
-                                      email_body,
-                                      settings.FROM_EMAIL,
-                                      [settings.SYSADMIN_EMAIL],
-                                      headers = {'Reply-To': self.email_to()})
-        connection = mail.get_connection()
-        connection.send_messages([sysadmin_email])
+
+        ret_items = send_preapprove_email.send_robust(self.__class__, instance=self, user=user)
+        for item in ret_items:
+            sender, error = item
+            if error != None:
+                raise error
         logger.info("Membership %s preapproved." % self)
 
     def approve(self, user):
@@ -408,24 +401,11 @@ class Bill(models.Model):
     def send_as_email(self):
         membership = self.billingcycle.membership
         if self.billingcycle.sum > 0:
-            emails = []
-            if settings.BILLING_CC_EMAIL != None:
-                user_email = EmailMessage(self.bill_subject(),
-                                          self.render_as_text(),
-                                          settings.BILLING_FROM_EMAIL,
-                                          [membership.billing_email()],
-                                          [settings.BILLING_CC_EMAIL],
-                                          headers={'CC': settings.BILLING_CC_EMAIL})
-            else:
-                user_email = EmailMessage(self.bill_subject(),
-                                          self.render_as_text(),
-                                          settings.BILLING_FROM_EMAIL,
-                                          [membership.billing_email()])
-            emails.append(user_email)
-            connection = mail.get_connection()
-            connection.send_messages(emails)
-            logger.info('A bill sent as email to %s: %s' % (membership.billing_email(),
-                                                            repr(Bill)))
+            ret_items = send_as_email.send_robust(self.__class__, instance=self)
+            for item in ret_items:
+                sender, error = item
+                if error != None:
+                    raise error
         else:
             self.billingcycle.is_paid = True
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
@@ -493,3 +473,8 @@ models.signals.post_save.connect(logging_log_change, sender=BillingCycle)
 models.signals.post_save.connect(logging_log_change, sender=Bill)
 models.signals.post_save.connect(logging_log_change, sender=Fee)
 models.signals.post_save.connect(logging_log_change, sender=Payment)
+
+# These are registered here due to import madness and general clarity
+send_as_email.connect(bill_sender, sender=Bill, dispatch_uid="email_bill")
+send_preapprove_email.connect(preapprove_email_sender, sender=Membership,
+                              dispatch_uid="preapprove_email")
