@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-05 00:59+0200\n"
+"POT-Creation-Date: 2011-03-05 02:28+0200\n"
 "PO-Revision-Date: 2009-12-21 09:24+0200\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -720,24 +720,28 @@ msgstr "Kommentit"
 msgid "Comment on membership"
 msgstr "Kommentoi jäsenyyttä"
 
-#: templates/membership/membership_list.html:30
+#: templates/membership/membership_list.html:29
+msgid "&lt; membership deleted &gt;"
+msgstr "&lt; jäsenyys poistettu &gt;"
+
+#: templates/membership/membership_list.html:34
 #: templates/membership/membership_list_inline.html:15
 msgid "No membership matches this filter, try seeing the full list"
 msgstr "Jäsentietoja ei löytynyt hakuehdoilla, kokeile täydellistä listaa."
 
-#: templates/membership/membership_list.html:85
+#: templates/membership/membership_list.html:89
 msgid "Pre-approve cart"
 msgstr "Esihyväksyntäkori"
 
-#: templates/membership/membership_list.html:87
+#: templates/membership/membership_list.html:91
 msgid "Preapprove these"
 msgstr "Esihyväksy nämä"
 
-#: templates/membership/membership_list.html:97
+#: templates/membership/membership_list.html:101
 msgid "Approve cart"
 msgstr "Hyväksyntäkori"
 
-#: templates/membership/membership_list.html:99
+#: templates/membership/membership_list.html:103
 msgid "Approve these"
 msgstr "Hyväksy nämä"
 
