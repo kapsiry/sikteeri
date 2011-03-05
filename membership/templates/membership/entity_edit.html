@@ -10,7 +10,7 @@
 <ul>
     {% for bill in cycle.bill_set.all %}
     <li><a href="{% url bill_edit bill.id %}"
-      >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.reminder_count}}{% else %}{% trans "Bill" %}{% endif %}</a>
+      >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}}){% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
      {% trans "sent" %} {{ bill.created|naturalday }},
      {% trans "due on" %} {{ bill.due_date|naturalday }}
      ({% if cycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
