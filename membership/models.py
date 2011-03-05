@@ -430,7 +430,6 @@ class Bill(models.Model):
             self.billingcycle.is_paid = True
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
-        self.billingcycle.bill_sent = True
         self.billingcycle.save()
 
     def bill_subject(self):
