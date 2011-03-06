@@ -76,6 +76,9 @@ class Alias(models.Model):
     logs = property(_get_logs)
 
     class Meta:
+        permissions = (
+            ("manage_aliases", "Can manage aliases"),
+        )
         ordering = ["name"]
 
     def expire(self, time=None):
