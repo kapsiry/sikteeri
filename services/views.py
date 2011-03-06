@@ -87,6 +87,7 @@ def alias_add_for_member(request, id, template_name='membership/membership_add_a
 # FIXME: Here should probably be rate limiting, but it isn't simple.
 # Would this suffice? <http://djangosnippets.org/snippets/2276/>
 # This is called from membership.views.handle_json!
+# Public access
 def check_alias_availability(request, alias):
     if Alias.objects.filter(name__iexact=alias).count() == 0:
         return HttpResponse("true", mimetype='text/plain')

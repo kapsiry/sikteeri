@@ -32,10 +32,12 @@ from services.views import check_alias_availability
 from management.commands.csvbills import process_csv as payment_csv_import
 from decorators import trusted_host_required
 
+# Public access
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
                               context_instance=RequestContext(request))
 
+# Public access
 @transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
     if settings.MAINTENANCE_MESSAGE != None:
@@ -134,6 +136,7 @@ def person_application(request, template_name='membership/new_person_application
                                               "title": _("Person member application")},
                               context_instance=RequestContext(request))
 
+# Public access
 def organization_application(request, template_name='membership/new_organization_application.html'):
     if settings.MAINTENANCE_MESSAGE != None:
         return redirect('frontpage')
@@ -167,6 +170,7 @@ def organization_application(request, template_name='membership/new_organization
                                               "title": _('Organization application')},
                               context_instance=RequestContext(request))
 
+# Public access
 def organization_application_add_contact(request, contact_type, template_name='membership/new_organization_application_add_contact.html'):
     forms = ['billing_contact', 'tech_contact']
     if contact_type not in forms:
@@ -202,6 +206,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
                                               "title": _('Organization application') + ' - ' + type_text},
                               context_instance=RequestContext(request))
 
+# Public access
 def organization_application_services(request, template_name='membership/new_organization_application_services.html'):
     if request.session.has_key('services'):
         form = ServiceForm({'mysql_database': request.session.get('mysql', ''),
@@ -241,6 +246,7 @@ def organization_application_services(request, template_name='membership/new_org
                                               "title": unicode(_('Choose services'))},
                               context_instance=RequestContext(request))
 
+# Public access
 def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
     membership = Membership(type='O', status='N',
                             nationality=request.session['membership']['nationality'],
@@ -273,6 +279,7 @@ def organization_application_review(request, template_name='membership/new_organ
                                               "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))},
                               context_instance=RequestContext(request))
 
+# Public access
 @transaction.commit_manually
 def organization_application_save(request):
     try:
@@ -690,6 +697,7 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
                                'membership': membership },
                               context_instance=RequestContext(request))
 
+@permission_required('membership.manage_members')
 @transaction.commit_on_success
 def membership_convert_to_organization(request, id, template_name='membership/membership_convert_to_organization.html'):
     membership = get_object_or_404(Membership, id=id)
