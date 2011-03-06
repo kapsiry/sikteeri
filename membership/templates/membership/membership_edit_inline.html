@@ -43,6 +43,7 @@
     {% else %}
     <s><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></s>
     {% endif %}
+    <span class="comment">{{ alias.comment }}</span>
     <span class="expiration_date">{{alias.expiration_date|date:"j.n.Y"}}</span>
     </li>
     {% endfor %}

@@ -75,6 +75,9 @@ class Alias(models.Model):
     expiration_date = models.DateTimeField(blank=True, null=True, verbose_name=_('Alias expiration date'))
     logs = property(_get_logs)
 
+    class Meta:
+        ordering = ["name"]
+
     def expire(self, time=None):
         if time == None:
             time = datetime.now()
