@@ -781,7 +781,7 @@ def test_email(request, template_name='membership/test_email.html'):
     return render_to_response(template_name, {'form': RecipientForm()},
                               context_instance=RequestContext(request))
 
-
+@trusted_host_required
 def membership_metrics(request):
     d = {'memberships':
          {'new': Membership.objects.filter(status='N').count(),
