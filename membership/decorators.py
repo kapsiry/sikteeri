@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 
-from iptools import IpRangeList
+from sikteeri.iptools import IpRangeList
 
 import base64
 
@@ -20,7 +20,6 @@ def trusted_host_required(view_func):
             settings.TRUSTED_HOSTS = []            
         if 'REMOTE_ADDR' in request.META:
             ip = request.META['REMOTE_ADDR']
-            print "Trusted host?: ip: %s" % ip
             allowed = IpRangeList(*settings.TRUSTED_HOSTS)
             if ip in allowed:
                 return view_func(request, *args, **kwargs)
