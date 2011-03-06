@@ -557,11 +557,10 @@ class LoginRequiredTest(TestCase):
         self.assertEqual(response.context['user'].username, 'admin')
 
 class TrustedHostTest(TestCase):
-    fixtures = ['membpership_fees.json', 'test_user.json']
-
     def setUp(self):
         self.urls = ['/membership/admtool/1',
                      '/membership/admtool/lookup/alias/test',
+                     '/membership/metrics/',
                      ]
         self.oldhosts = settings.TRUSTED_HOSTS
 
