@@ -530,12 +530,14 @@ class LoginRequiredTest(TestCase):
                      '/membership/memberships/preapproved/',
                      '/membership/memberships/approved/',
                      '/membership/memberships/deleted/',
+                     '/membership/memberships/convert_to_an_organization/1/'
                      '/membership/memberships/',
                      '/membership/bills/unpaid/',
                      '/membership/bills/',
                      '/membership/payments/unknown/',
                      '/membership/payments/',
-                     '/membership/testemail/',]
+                     '/membership/testemail/',
+                     ]
 
     def test_views_with_login(self):
         "Request a page that is protected with @login_required"
@@ -553,6 +555,36 @@ class LoginRequiredTest(TestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['user'].username, 'admin')
+
+class TrustedHostTest(TestCase):
+    fixtures = ['membpership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.urls = ['/membership/admtool/1',
+                     '/membership/admtool/lookup/alias/test',
+                     ]
+        self.oldhosts = settings.TRUSTED_HOSTS
+
+    def tearDown(self):
+        settings.TRUSTED_HOSTS = self.oldhosts
+
+    def test_views_with_ipaddr(self):
+        "Request a page that is protected with @login_required"
+
+        # Get the page with an untrusted address 403.
+        settings.TRUSTED_HOSTS = ['13.13.13.13']
+        for url in self.urls:
+            response = self.client.get(url)
+            self.assertEquals(response.status_code, 403)
+
+        settings.TRUSTED_HOSTS = ['127.0.0.1']
+        # Request a page that requires a trusted client address
+        for url in self.urls:
+            response = self.client.get(url)
+            # Code should be 404 or 200
+            if response.status_code == 404:
+                continue
+            self.assertEqual(response.status_code, 200)
 
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -685,6 +717,7 @@ class IpRangeListTest(TestCase):
         iplist = ['127.0.0.1', '1.2.3.4']
         self.assertFalse('11.0.0.0' in IpRangeList(*iplist))
         self.assertTrue('1.2.3.4' in IpRangeList(*iplist))
+        self.assertFalse('127.0.0.1' in IpRangeList())
 
 @trusted_host_required
 def dummyView(request, *args, **kwargs):
