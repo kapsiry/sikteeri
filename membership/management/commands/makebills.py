@@ -84,7 +84,7 @@ def send_reminder(membership):
     return bill
 
 def makebills():
-    for member in Membership.objects.filter(status='A'):
+    for member in Membership.objects.filter(status='A').filter(id__gt=0):
         # Billing cycles and bills
         cycles = member.billingcycle_set
         if cycles.count() == 0:
