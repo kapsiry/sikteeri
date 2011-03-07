@@ -36,7 +36,7 @@ Pyydetyt jäsenpalvelut:
 - Postituslistoja jäsenille: http://list.kapsi.fi/
 - Kapsin foorumi: http://forum.kapsi.fi/
 - Jäsenten IRC-kanava: http://www.kapsi.fi/irc/
-- Facebook -sivu: http://www.facebook.com/kapsi.fi
+- Facebook-sivu: http://www.facebook.com/kapsi.fi
 
 Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
 osoitteeseen.
