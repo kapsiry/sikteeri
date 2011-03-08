@@ -21,11 +21,12 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
 
 from django.conf import settings
+from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 
-from membership.models import Contact, Membership, Bill, BillingCycle, Fee
+from membership.models import Contact, Membership, Bill, BillingCycle, Fee, Payment
 from membership.test_utils import *
 
 from membership.management.commands.csvbills import attach_payment_to_cycle
@@ -142,6 +143,15 @@ def main():
     for i in xrange(1100,1200):
         membership = create_dummy_member(i)
         transaction.commit()
+
+    management.call_command('makebills')
+    transaction.commit()
+    for payment in Payment.objects.all():
+        try:
+            attach_payment_to_cycle(payment)
+            transaction.commit()
+        except:
+            pass
 
 if __name__ == '__main__':
     main()

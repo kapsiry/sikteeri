@@ -135,6 +135,12 @@ def row_to_payment(row):
     return p
 
 def attach_payment_to_cycle(payment):
+    """
+    Outside of this module, this function is mainly used by
+    generate_test_data.py.
+    """
+    if payment.ignore == True or payment.billingcycle != None:
+        raise Exception("Unexpected function call. This shouldn't happen.")
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
     payment.attach_to_cycle(cycle)
@@ -186,12 +192,6 @@ class Command(BaseCommand):
     help = 'Read a CSV list of payment transactions'
 
     def handle(self, *args, **options):
-        if len(args) == 0:
-            for payment in Payment.objects.all():
-                try:
-                    attach_payment_to_cycle(payment)
-                except:
-                    pass
         for csvfile in args:
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
