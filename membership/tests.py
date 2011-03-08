@@ -742,6 +742,22 @@ class MemberDeletionTest(TestCase):
         self.assertFalse(Alias.objects.all()[0].is_valid())
 
 
+class MetricsInterfaceTest(TestCase):
+    def setUp(self):
+        self.orig_trusted = settings.TRUSTED_HOSTS
+        settings.TRUSTED_HOSTS = ['127.0.0.1']
+
+    def tearDown(self):
+        settings.TRUSTED_HOSTS = self.orig_trusted
+
+    def test_membership_statuses(self):
+        response = self.client.get('/membership/metrics/')
+        self.assertEqual(response.status_code, 200)
+        d = simplejson.loads(response.content)
+        self.assertTrue(d.has_key(u'memberships'))
+        for key in [u'new', u'preapproved', u'approved', u'deleted']:
+            self.assertTrue(d[u'memberships'].has_key(key))
+
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
         list1 = IpRangeList('127.0.0.1', '10.0.0.0/8', '127.0.0.2')
