@@ -262,37 +262,32 @@ div.contentmenu {
 
 /* SIKTEERI */
 
-/* bill list */
-ul#billlist {
+/* Lists */
+ul#memberlist, ul#paymentlist, ul#billlist {
     list-style-type: none;
 }
 
+ul#memberlist > li:nth-child(even),
+ul#paymentlist > li:nth-child(even),
 ul#billlist > li:nth-child(even) {
     background: #e4e4e4;
 }
+ul#memberlist > li:nth-child(odd),
+ul#paymentlist > li:nth-child(odd),
 ul#billlist > li:nth-child(odd) {
     background: #eeeeee;
 }
 
-
-/* member list */
-ul#memberlist {
-    list-style-type: none;
-}
-
-ul#memberlist > li:nth-child(even) {
-    background: #e4e4e4;
-}
-ul#memberlist > li:nth-child(odd) {
-    background: #eeeeee;
-}
-
-li.memberlist_item:hover {
+li.memberlist_item:hover,
+li.paymentlist_item:hover,
+li.billlist_item:hover {
     background: white;
 }
 
 
-ul#memberlist > li:hover {
+ul#memberlist > li:hover,
+ul#paymentlist > li:hover,
+ul#billlist > li:hover {
     background: white;
 }
 
