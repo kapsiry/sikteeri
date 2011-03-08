@@ -722,8 +722,7 @@ class MemberDeletionTest(TestCase):
 
         m.delete_membership(self.user)
         self.assertEquals(Service.objects.all().count(), 0)
-        self.assertEquals(Alias.objects.all().count(), 1)
-        self.assertFalse(Alias.objects.all()[0].is_valid())
+        self.assertEquals(Alias.objects.all().count(), 0)
 
     def test_preapproved_deletion(self):
         m = create_dummy_member('N')
