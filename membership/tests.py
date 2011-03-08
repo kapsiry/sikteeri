@@ -24,6 +24,7 @@ from forms import *
 from test_utils import *
 from decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
+from services.models import *
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, group_right
@@ -702,6 +703,44 @@ class MemberListTest(TestCase):
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+
+class MemberDeletionTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_deletion(self):
+        m = create_dummy_member('N')
+        a = Alias(owner=m, name=Alias.email_forwards(m)[0])
+        a.save()
+        self.assertEquals(Alias.objects.all().count(), 1)
+
+        s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                    alias=a, owner=m, data=a.name)
+        s.save()
+        self.assertEquals(Service.objects.all().count(), 1)
+
+        m.delete_membership(self.user)
+        self.assertEquals(Service.objects.all().count(), 0)
+        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertFalse(Alias.objects.all()[0].is_valid())
+
+    def test_preapproved_deletion(self):
+        m = create_dummy_member('N')
+        a = Alias(owner=m, name=Alias.email_forwards(m)[0])
+        a.save()
+        s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                    alias=a, owner=m, data=a.name)
+        s.save()
+        self.assertEquals(Service.objects.all().count(), 1)
+        self.assertEquals(Alias.objects.all().count(), 1)
+        m.preapprove(self.user)
+
+        m.delete_membership(self.user)
+        self.assertEquals(Service.objects.all().count(), 1)
+        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertFalse(Alias.objects.all()[0].is_valid())
+
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
