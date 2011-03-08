@@ -756,6 +756,9 @@ class MetricsInterfaceTest(TestCase):
         self.assertTrue(d.has_key(u'memberships'))
         for key in [u'new', u'preapproved', u'approved', u'deleted']:
             self.assertTrue(d[u'memberships'].has_key(key))
+        self.assertTrue(d.has_key(u'bills'))
+        for key in [u'unpaid_count', u'unpaid_sum']:
+            self.assertTrue(d[u'bills'].has_key(key))
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
