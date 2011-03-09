@@ -24,6 +24,7 @@ from forms import *
 from test_utils import *
 from decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
+from services.models import *
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, group_right
@@ -702,6 +703,62 @@ class MemberListTest(TestCase):
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+
+class MemberDeletionTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_deletion(self):
+        m = create_dummy_member('N')
+        a = Alias(owner=m, name=Alias.email_forwards(m)[0])
+        a.save()
+        self.assertEquals(Alias.objects.all().count(), 1)
+
+        s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                    alias=a, owner=m, data=a.name)
+        s.save()
+        self.assertEquals(Service.objects.all().count(), 1)
+
+        m.delete_membership(self.user)
+        self.assertEquals(Service.objects.all().count(), 0)
+        self.assertEquals(Alias.objects.all().count(), 0)
+
+    def test_preapproved_deletion(self):
+        m = create_dummy_member('N')
+        a = Alias(owner=m, name=Alias.email_forwards(m)[0])
+        a.save()
+        s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                    alias=a, owner=m, data=a.name)
+        s.save()
+        self.assertEquals(Service.objects.all().count(), 1)
+        self.assertEquals(Alias.objects.all().count(), 1)
+        m.preapprove(self.user)
+
+        m.delete_membership(self.user)
+        self.assertEquals(Service.objects.all().count(), 1)
+        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertFalse(Alias.objects.all()[0].is_valid())
+
+
+class MetricsInterfaceTest(TestCase):
+    def setUp(self):
+        self.orig_trusted = settings.TRUSTED_HOSTS
+        settings.TRUSTED_HOSTS = ['127.0.0.1']
+
+    def tearDown(self):
+        settings.TRUSTED_HOSTS = self.orig_trusted
+
+    def test_membership_statuses(self):
+        response = self.client.get('/membership/metrics/')
+        self.assertEqual(response.status_code, 200)
+        d = simplejson.loads(response.content)
+        self.assertTrue(d.has_key(u'memberships'))
+        for key in [u'new', u'preapproved', u'approved', u'deleted']:
+            self.assertTrue(d[u'memberships'].has_key(key))
+        self.assertTrue(d.has_key(u'bills'))
+        for key in [u'unpaid_count', u'unpaid_sum']:
+            self.assertTrue(d[u'bills'].has_key(key))
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):

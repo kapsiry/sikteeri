@@ -8,7 +8,9 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
-from random import random, choice
+from random import random, choice, randint
+from uuid import uuid4
+from decimal import Decimal
 import traceback
 import logging
 logger = logging.getLogger("generate_test_data")
@@ -19,12 +21,17 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
 
 from django.conf import settings
+from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.contrib.comments.models import Comment
 
-from membership.models import Contact, Membership, Bill, BillingCycle, Fee
+from membership.models import Contact, Membership, Bill, BillingCycle, Fee, Payment
 from membership.test_utils import *
+
+from membership.management.commands.csvbills import attach_payment_to_cycle
+
+from membership.reference_numbers import generate_membership_bill_reference_number
 
 from services.models import Alias, Service, ServiceType
 
@@ -97,25 +104,54 @@ def create_dummy_member(i):
     logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
+def create_payment(membership):
+    if random() < 0.7:
+        amount = "35.0"
+        if random() < 0.2:
+            amount = "30.0"
+            
+        ref = generate_membership_bill_reference_number(membership.id, datetime.now().year)
+        if random() < 0.2:
+            ref = str(randint(1000, 1000000))
+        p = Payment(reference_number=ref,
+                    transaction_id=str(uuid4()),
+                    payment_day=datetime.now(),
+                    amount=Decimal(amount),
+                    type="XYZ",
+                    payer_name=membership.name())
+        p.save()
+        return p
+
+
 @transaction.commit_manually
 def main():
     # Approved members
-    for i in xrange(1,2000):
+    for i in xrange(1,1000):
         membership = create_dummy_member(i)
         membership.preapprove(user)
         membership.approve(user)
+        create_payment(membership)
         transaction.commit()
 
     # Pre-approved members
-    for i in xrange(2000,2100):
+    for i in xrange(1000,1100):
         membership = create_dummy_member(i)
         membership.preapprove(user)
         transaction.commit()
 
     # New applications
-    for i in xrange(2100,2200):
+    for i in xrange(1100,1200):
         membership = create_dummy_member(i)
         transaction.commit()
+
+    management.call_command('makebills')
+    transaction.commit()
+    for payment in Payment.objects.all():
+        try:
+            attach_payment_to_cycle(payment)
+            transaction.commit()
+        except:
+            pass
 
 if __name__ == '__main__':
     main()

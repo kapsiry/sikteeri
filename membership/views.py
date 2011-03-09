@@ -14,6 +14,7 @@ from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceF
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.comments.models import Comment
 from django.db import transaction
+from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
@@ -791,12 +792,20 @@ def test_email(request, template_name='membership/test_email.html'):
 
 @trusted_host_required
 def membership_metrics(request):
+    unpaid_bills = Bill.objects.filter(billingcycle__is_paid=False)
+    unpaid_sum = unpaid_bills.aggregate(Sum("billingcycle__sum"))['billingcycle__sum__sum']
+    if unpaid_sum == None:
+        unpaid_sum = "0.0"
     d = {'memberships':
          {'new': Membership.objects.filter(status='N').count(),
           'preapproved': Membership.objects.filter(status='P').count(),
           'approved': Membership.objects.filter(status='A').count(),
           'deleted': Membership.objects.filter(status='D').count(),
-          }
+          },
+         'bills':
+         {'unpaid_count': unpaid_bills.count(),
+          'unpaid_sum': float(unpaid_sum),
+          },
          }
     return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
                         mimetype='application/json')

@@ -231,9 +231,24 @@ class Membership(models.Model):
     def delete_membership(self, user):
         if self.status == 'D':
             raise MembershipOperationError("A deleted membership can't be deleted.")
+        elif self.status == 'N':
+            # must be imported here due to cyclic imports
+            from services.models import Service
+            logger.info("Deleting services of the membership application %s." % repr(self))
+            for service in Service.objects.filter(owner=self):
+                service.delete()
+            logger.info("Deleting aliases of the membership application %s." % repr(self))
+            for alias in self.alias_set.all():
+                alias.delete()
+        else:
+            logger.info("Not deleting services of membership %s." % repr(self))
+            logger.info("Expiring aliases of membership %s." % repr(self))
+            for alias in self.alias_set.all():
+                alias.expire()
+
         self.status = 'D'
         contacts = [self.person, self.billing_contact, self.tech_contact,
-            self.organization]
+                    self.organization]
         self.person = None
         self.billing_contact = None
         self.tech_contact = None
@@ -242,8 +257,6 @@ class Membership(models.Model):
         for contact in contacts:
             if contact != None:
                 contact.delete_if_no_references(user)
-        for alias in self.alias_set.all():
-            alias.expire()
         log_change(self, user, change_message="Deleted")
 
     def __repr__(self):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-def generate_membership_bill_reference_number(membership_id, bill_year): 
+def generate_membership_bill_reference_number(membership_id, bill_year):
     # [jäsennumero] yyxxz
     # jossa yy=vuosi kahdella numerolla, xx=maksutapahtumakoodi ja z tarkistenumero
     # 01 on ollut perinteisesti jäsenmaksun maksutapahtumakoodi
