@@ -28,6 +28,9 @@
     {% else %}
       <span class="name"><a href="{% url membership_edit member.id %}">{% trans "&lt; membership deleted &gt;" %}</a></span>
     {% endif %}
+    {% if member.comment %}
+      <span class="comment">{{ member.comment }}</span>
+    {% endif %}
     </li>
 
 {% empty %}
