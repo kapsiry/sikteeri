@@ -125,6 +125,9 @@ def create_payment(membership):
 
 @transaction.commit_manually
 def main():
+    if Membership.objects.count() > 0 or Payment.objects.count() > 0:
+        print "Database not empty, refusing to generate test data"
+        sys.exit(1)
     # Approved members
     for i in xrange(1,1000):
         membership = create_dummy_member(i)
