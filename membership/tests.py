@@ -373,6 +373,8 @@ class SingleMemberBillingModelsTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
+        settings.ENABLE_REMINDERS = True
+        settings.BILL_DAYS_TO_DUE = 5
         self.user = User.objects.get(id=1)
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
@@ -381,8 +383,6 @@ class SingleMemberBillingModelsTest(TestCase):
         makebills()
         self.cycle = BillingCycle.objects.get(membership=self.membership)
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
-        settings.ENABLE_REMINDERS = True
-        settings.BILL_DAYS_TO_DUE = 5
 
     def tearDown(self):
         self.bill.delete()
