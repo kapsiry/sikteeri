@@ -27,7 +27,8 @@ from sikteeri.iptools import IpRangeList
 from services.models import *
 
 from reference_numbers import generate_membership_bill_reference_number
-from reference_numbers import generate_checknumber, add_checknumber, group_right
+from reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
+from reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
 
 from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
@@ -50,6 +51,13 @@ class ReferenceNumberTest(TestCase):
     def test_666666_add(self):
         self.assertEqual(add_checknumber("666666"), "6666668")
 
+    def test_check_refnum(self):
+        self.assertTrue(check_checknumber("6666668"))
+        self.assertTrue(check_checknumber("42"))
+        self.assertFalse(check_checknumber("43"))
+        self.assertTrue(check_checknumber("7758474790647489"))
+        self.assertFalse(check_checknumber("7758474790647480"))
+
     def test_uniqueness_of_reference_numbers(self):
         numbers = set([])
         for i in xrange(1, 100):
@@ -71,6 +79,74 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(group_right('15222333', group_size=3), '15 222 333')
         self.assertEqual(group_right(u'äkstestÖ'), u'äks testÖ')
 
+    def test_canonize_iban(self):
+        self.assertEqual(canonize_iban('FI79 4405 2020 0360 82'), '7944052020036082')
+        self.assertEqual(canonize_iban('FI16 5741 3620 4069 56'), '1657413620406956')
+        self.assertEqual(canonize_iban(' 16 5741 3620 4069 56 '), '1657413620406956')
+        self.assertEqual(canonize_iban('1657413620406956'),       '1657413620406956')
+        self.assertEqual(canonize_iban('31231231657413620406956'),'XXXXXXXXXXXXXXXX')
+        self.assertEqual(canonize_iban('SE16 5741 3620 4069 56'), 'XXXXXXXXXXXXXXXX')
+        self.assertEqual(canonize_iban('foobar?'),                'XXXXXXXXXXXXXXXX')
+
+    def test_canonize_refnum(self):
+        self.assertEqual(canonize_refnum('42'),                   '00000000000000000042')
+        self.assertEqual(canonize_refnum('32287 22205 1'),        '00000000032287222051')
+        self.assertEqual(canonize_refnum('32287 22205 0'),        '00000000000000000000')
+        self.assertEqual(canonize_refnum('86851 62596 19897'),    '00000868516259619897')
+        self.assertEqual(canonize_refnum('559582243294671'),      '00000559582243294671')
+        self.assertEqual(canonize_refnum('69 87567 20834 35364'), '00069875672083435364')
+        self.assertEqual(canonize_refnum('7 75847 47906 47489'),  '00007758474790647489')
+        self.assertEqual(canonize_refnum('78 77767 96566 28687'), '00078777679656628687')
+        self.assertEqual(canonize_refnum('000000000078777679656628687'), '00078777679656628687')
+        self.assertEqual(canonize_refnum('8 68624'),              '00000000000000868624')
+        self.assertEqual(canonize_refnum('not a ref num'),        '00000000000000000000')
+
+    def test_canonize_sum(self):
+        self.assertEquals(canonize_sum(euros=35, cents=00), '00003500')
+        self.assertEquals(canonize_sum(euros=35, cents=15), '00003515')
+        self.assertEquals(canonize_sum(30), '00003000')
+        self.assertEquals(canonize_sum(123456), '12345600')
+        self.assertEquals(canonize_sum(123456, 101), '00000000')
+        self.assertEquals(canonize_sum(1000000),     '00000000')
+        self.assertEquals(canonize_sum("35"), '00003500')
+        self.assertEquals(canonize_sum("250", "99"), '00025099')
+        self.assertEquals(canonize_sum(-1), '00000000')
+        self.assertEquals(canonize_sum("2.10"), '00000210')
+        self.assertEquals(canonize_sum(Decimal("150.99")), '00015099')
+
+    def test_canonize_duedate(self):
+        self.assertEquals(canonize_duedate(datetime(2011, 03 ,20)), '110320')
+        self.assertEquals(canonize_duedate(datetime(2011, 03, 31)), '110331')
+        self.assertEquals(canonize_duedate(datetime(2021, 12, 31)), '211231')
+        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 16, 52, 30)), '101010')
+        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 23, 59, 59)), '101010')
+        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 0, 1, 0)),    '101010')
+        self.assertEquals(canonize_duedate(None), '000000')
+        self.assertEquals(canonize_duedate('HETI'), '000000')
+
+    # http://www.fkl.fi/www/page/fk_www_1293
+    def test_barcode_4(self):
+        code = barcode_4('FI79 4405 2020 0360 82', '86851 62596 19897', datetime(2010,6,12), 4883, 15)
+        self.assertEqual(code, '479440520200360820048831500000000868516259619897100612')
+        code = barcode_4('5810171000000122', '559582243294671', datetime(2012,1,31), 482, 99)
+        self.assertEqual(code, '458101710000001220004829900000000559582243294671120131')
+        code = barcode_4('FI0250004640001302', '69 87567 20834 35364', datetime(2011,7,24), 693, 80)
+        self.assertEqual(code, '402500046400013020006938000000069875672083435364110724')
+        code = barcode_4('FI15 6601 0001 5306 41', '7 75847 47906 47489', datetime(2019,12,19), 7444, 54)
+        self.assertEqual(code, '415660100015306410074445400000007758474790647489191219')
+        code = barcode_4('FI16 8000 1400 0502 67', '78 77767 96566 28687', None, 935, 85)
+        self.assertEqual(code, '416800014000502670009358500000078777679656628687000000')
+        code = barcode_4('FI73 3131 3001 0000 58', '8 68624', datetime(2013,8,9), 0)
+        self.assertEqual(code, '473313130010000580000000000000000000000000868624130809')
+
+        iban = 'FI16 5741 3620 4069 56'
+        refnum = '32287 22205 1'
+        euros = 35
+        cents = 0
+        duedate = datetime(2011, 3, 12)
+        code = barcode_4(iban, refnum, duedate, euros, cents)
+        self.assertEqual(code, '416574136204069560000350000000000000032287222051110312')
+        self.assertEqual(len(code), 54)
 
 def create_dummy_member(status, type='P', mid=None):
     if status not in ['N', 'P', 'A']:

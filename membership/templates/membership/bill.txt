@@ -29,6 +29,8 @@ BIC                 {{ bic_code }}
 Eräpäivä            {{ due_date|date:"SHORT_DATE_FORMAT" }}
 Viitenumero         {{ reference_number }}
 
+Virtuaaliviivakoodi: {{ barcode }}
+
 Viitenumeroa on ehdottomasti käytettävä maksaessa jotta maksu
 kohdistuisi oikein!
 

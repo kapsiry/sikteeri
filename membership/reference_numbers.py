@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
+
 def generate_membership_bill_reference_number(membership_id, bill_year):
     # [jäsennumero] yyxxz
     # jossa yy=vuosi kahdella numerolla, xx=maksutapahtumakoodi ja z tarkistenumero
@@ -21,6 +23,9 @@ def generate_checknumber(number):
 def add_checknumber(number):
     return number + str(generate_checknumber(number))
 
+def check_checknumber(number):
+    return number[-1] == str(generate_checknumber(number[:-1]))
+
 def group_right(number, group_size = 5):
     number = number.replace(" ", "")
     groups = []
@@ -28,3 +33,64 @@ def group_right(number, group_size = 5):
         groups.insert(0, number[-group_size:])
         number = number[:-group_size]
     return " ".join(groups)
+
+def barcode_4(iban, refnum, duedate, euros, cents=0):
+    """
+    Return a virtual barcode string with IBAN bank account number
+    and a national format reference number according to the barcode
+    version 4 specification. Barcode length is always 54 numbers
+    http://www.fkl.fi/www/page/fk_www_1293
+    """
+    ver = "4"
+    iban = canonize_iban(iban)
+    refnum = canonize_refnum(refnum)
+    amount = canonize_sum(euros, cents)
+    duedate = canonize_duedate(duedate)
+    reserved = "000"
+    code = "".join((ver, iban, amount, reserved, refnum, duedate))
+    return code
+
+def canonize_iban(iban):
+    """Removes any leading letters and makes sure the number is 16 digits long"""
+    iban = iban.replace(' ', '')
+    if iban.startswith('FI'):
+        iban = iban[2:]
+    if iban.isdigit() and len(iban) == 16:
+        return iban
+    # TODO: Raise exception instead
+    return 'X' * 16
+
+def canonize_refnum(refnum, digits = 20):
+    """Removes any whitespace makes sure the number is 20 digits long"""
+    refnum = refnum.replace(' ', '')
+    if len(refnum) < digits:
+        # zero pad to enough digits
+        refnum = ("0" * digits) + refnum
+        refnum = refnum [-digits:]
+    if refnum.isdigit() and len(refnum) == digits and check_checknumber(refnum):
+        return refnum
+    # TODO: Raise exception instead
+    return '0' * 20
+
+def canonize_sum(euros, cents=0):
+    if cents == 0:
+        d = Decimal(euros)
+        euros = int(d)
+        cents = int(d * 100) % 100
+    else:
+        euros = int(euros)
+        cents = int(cents)
+    if euros > 999999:
+        # Amount too big, return 0
+        return '000000' + '00'
+    if cents > 99 or euros < 0 or cents < 0:
+        # Invalid amount
+        # TODO: Raise exception instead
+        return '000000' + '00'
+    return '%06u%02u' % (euros, cents)
+
+def canonize_duedate(duedate):
+    if hasattr(duedate, 'strftime'):
+        return duedate.strftime('%y%m%d')
+    # TODO: Raise exception instead
+    return '000000'

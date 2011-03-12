@@ -25,6 +25,7 @@ from email_utils import bill_sender, preapprove_email_sender
 
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, group_right
+from reference_numbers import barcode_4
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -411,7 +412,11 @@ class Bill(models.Model):
             'due_date': self.due_date,
             'today': datetime.now(),
             'reference_number': group_right(self.billingcycle.reference_number),
-            'sum': self.billingcycle.sum
+            'sum': self.billingcycle.sum,
+            'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
+                                 refnum = self.billingcycle.reference_number,
+                                 duedate = self.due_date,
+                                 euros = self.billingcycle.sum)
             })
 
     # FIXME: Should save sending date
