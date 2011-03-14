@@ -13,7 +13,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
 
-@permission_required('membership.manage_aliases')
+@permission_required('services.manage_aliases')
 def alias_edit(request, id, template_name='membership/entity_edit.html'):
     alias = get_object_or_404(Alias, id=id)
 
@@ -55,7 +55,7 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
         context_instance=RequestContext(request))
 
 
-@permission_required('membership.manage_aliases')
+@permission_required('services.manage_aliases')
 @transaction.commit_on_success
 def alias_add_for_member(request, id, template_name='membership/membership_add_alias.html'):
     membership = get_object_or_404(Membership, id=id)
