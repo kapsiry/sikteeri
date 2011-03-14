@@ -635,7 +635,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         'logentries': logentries},
         context_instance=RequestContext(request))
 
-@permission_required('membership.manage_members')
+@permission_required('membership.read_members')
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     membership = get_object_or_404(Membership, id=id)
 
@@ -656,6 +656,8 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['approved'].widget.attrs['disabled'] = 'disabled'
 
     if request.method == 'POST':
+        if not request.user.has_perm('membership.manage_members'):
+            return HttpResponseForbidden(_("Permission manage required"))
         form = Form(request.POST, instance=membership)
         before = membership.__dict__.copy()
         form.disable_fields()
