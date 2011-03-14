@@ -29,6 +29,10 @@ from services.models import *
 from reference_numbers import generate_membership_bill_reference_number
 from reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
+from reference_numbers import ReferenceNumberException
+from reference_numbers import ReferenceNumberFormatException
+from reference_numbers import IBANFormatException, InvalidAmountException
+from reference_numbers import DueDateFormatException
 
 from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
@@ -84,35 +88,36 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(canonize_iban('FI16 5741 3620 4069 56'), '1657413620406956')
         self.assertEqual(canonize_iban(' 16 5741 3620 4069 56 '), '1657413620406956')
         self.assertEqual(canonize_iban('1657413620406956'),       '1657413620406956')
-        self.assertEqual(canonize_iban('31231231657413620406956'),'XXXXXXXXXXXXXXXX')
-        self.assertEqual(canonize_iban('SE16 5741 3620 4069 56'), 'XXXXXXXXXXXXXXXX')
-        self.assertEqual(canonize_iban('foobar?'),                'XXXXXXXXXXXXXXXX')
+        self.assertRaises(IBANFormatException, canonize_iban, '31231231657413620406956')
+        self.assertRaises(IBANFormatException, canonize_iban, 'SE16 5741 3620 4069 56')
+        self.assertRaises(IBANFormatException, canonize_iban, 'foobar?')
 
     def test_canonize_refnum(self):
         self.assertEqual(canonize_refnum('42'),                   '00000000000000000042')
         self.assertEqual(canonize_refnum('32287 22205 1'),        '00000000032287222051')
-        self.assertEqual(canonize_refnum('32287 22205 0'),        '00000000000000000000')
         self.assertEqual(canonize_refnum('86851 62596 19897'),    '00000868516259619897')
         self.assertEqual(canonize_refnum('559582243294671'),      '00000559582243294671')
         self.assertEqual(canonize_refnum('69 87567 20834 35364'), '00069875672083435364')
         self.assertEqual(canonize_refnum('7 75847 47906 47489'),  '00007758474790647489')
         self.assertEqual(canonize_refnum('78 77767 96566 28687'), '00078777679656628687')
-        self.assertEqual(canonize_refnum('000000000078777679656628687'), '00078777679656628687')
         self.assertEqual(canonize_refnum('8 68624'),              '00000000000000868624')
-        self.assertEqual(canonize_refnum('not a ref num'),        '00000000000000000000')
+        self.assertEqual(canonize_refnum(None),                   '00000000000000000000')
+        self.assertRaises(ReferenceNumberException, canonize_refnum, '32287 22205 0')
+        self.assertRaises(ReferenceNumberFormatException, canonize_refnum, '000000000078777679656628687')
+        self.assertRaises(ReferenceNumberFormatException, canonize_refnum, 'not refnum')
 
     def test_canonize_sum(self):
         self.assertEquals(canonize_sum(euros=35, cents=00), '00003500')
         self.assertEquals(canonize_sum(euros=35, cents=15), '00003515')
         self.assertEquals(canonize_sum(30), '00003000')
         self.assertEquals(canonize_sum(123456), '12345600')
-        self.assertEquals(canonize_sum(123456, 101), '00000000')
         self.assertEquals(canonize_sum(1000000),     '00000000')
         self.assertEquals(canonize_sum("35"), '00003500')
         self.assertEquals(canonize_sum("250", "99"), '00025099')
-        self.assertEquals(canonize_sum(-1), '00000000')
         self.assertEquals(canonize_sum("2.10"), '00000210')
         self.assertEquals(canonize_sum(Decimal("150.99")), '00015099')
+        self.assertRaises(InvalidAmountException, canonize_sum, -1)
+        self.assertRaises(InvalidAmountException, canonize_sum, 123456, 101)
 
     def test_canonize_duedate(self):
         self.assertEquals(canonize_duedate(datetime(2011, 03 ,20)), '110320')
@@ -122,7 +127,7 @@ class ReferenceNumberTest(TestCase):
         self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 23, 59, 59)), '101010')
         self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 0, 1, 0)),    '101010')
         self.assertEquals(canonize_duedate(None), '000000')
-        self.assertEquals(canonize_duedate('HETI'), '000000')
+        self.assertRaises(ReferenceNumberException, canonize_duedate, ('HETI'))
 
     # http://www.fkl.fi/www/page/fk_www_1293
     def test_barcode_4(self):

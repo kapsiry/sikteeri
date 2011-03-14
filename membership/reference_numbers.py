@@ -2,6 +2,12 @@
 
 from decimal import Decimal
 
+class ReferenceNumberException(Exception): pass
+class ReferenceNumberFormatException(ReferenceNumberException): pass
+class IBANFormatException(ReferenceNumberException): pass
+class InvalidAmountException(ReferenceNumberException): pass
+class DueDateFormatException(ReferenceNumberException): pass
+
 def generate_membership_bill_reference_number(membership_id, bill_year):
     # [jäsennumero] yyxxz
     # jossa yy=vuosi kahdella numerolla, xx=maksutapahtumakoodi ja z tarkistenumero
@@ -57,20 +63,20 @@ def canonize_iban(iban):
         iban = iban[2:]
     if iban.isdigit() and len(iban) == 16:
         return iban
-    # TODO: Raise exception instead
-    return 'X' * 16
+    raise IBANFormatException("IBAN format is invalid")
 
 def canonize_refnum(refnum, digits = 20):
     """Removes any whitespace makes sure the number is 20 digits long"""
+    if refnum == None:
+        return '0' * digits
     refnum = refnum.replace(' ', '')
     if len(refnum) < digits:
-        # zero pad to enough digits
-        refnum = ("0" * digits) + refnum
-        refnum = refnum [-digits:]
+        refnum = refnum.zfill(digits) # zero pad
     if refnum.isdigit() and len(refnum) == digits and check_checknumber(refnum):
         return refnum
-    # TODO: Raise exception instead
-    return '0' * 20
+    else:
+        raise ReferenceNumberFormatException("Reference number '%s' invalid" %
+            refnum)
 
 def canonize_sum(euros, cents=0):
     if cents == 0:
@@ -84,13 +90,15 @@ def canonize_sum(euros, cents=0):
         # Amount too big, return 0
         return '000000' + '00'
     if cents > 99 or euros < 0 or cents < 0:
-        # Invalid amount
-        # TODO: Raise exception instead
-        return '000000' + '00'
+        raise InvalidAmountException("Amount %s euros %s cents invalid" % (
+            euros, cents))
     return '%06u%02u' % (euros, cents)
 
 def canonize_duedate(duedate):
-    if hasattr(duedate, 'strftime'):
-        return duedate.strftime('%y%m%d')
-    # TODO: Raise exception instead
-    return '000000'
+    if duedate == None:
+        return '000000'
+    else:
+        try:
+            return duedate.strftime('%y%m%d')
+        except AttributeError:
+            raise DueDateFormatException("Invalid type for canonize_duedate")
