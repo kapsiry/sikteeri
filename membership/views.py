@@ -79,13 +79,6 @@ def person_application(request, template_name='membership/new_person_application
 
                 # Service handling
                 services = []
-                if f['email_forward'] != 'no':
-                    forward_alias = Alias(owner=membership, name=f['email_forward'])
-                    forward_alias.save()
-                    forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
-                                                    alias=forward_alias, owner=membership, data=f['unix_login'])
-                    forward_alias_service.save()
-                    services.append(forward_alias_service)
 
                 login_alias = Alias(owner=membership, name=f['unix_login'], account=True)
                 login_alias.save()
@@ -93,6 +86,14 @@ def person_application(request, template_name='membership/new_person_application
                                                alias=login_alias, owner=membership, data=f['unix_login'])
                 unix_account_service.save()
                 services.append(unix_account_service)
+
+                if f['email_forward'] != 'no' and f['email_forward'] != f['unix_login']:
+                    forward_alias = Alias(owner=membership, name=f['email_forward'])
+                    forward_alias.save()
+                    forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
+                                                    alias=forward_alias, owner=membership, data=f['unix_login'])
+                    forward_alias_service.save()
+                    services.append(forward_alias_service)
 
                 if f['mysql_database'] == True:
                     mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),

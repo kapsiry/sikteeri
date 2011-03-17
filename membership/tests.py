@@ -700,6 +700,15 @@ class MemberApplicationTest(TestCase):
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
 
+
+    def test_redundant_email_alias(self):
+        self.post_data['unix_login'] = 'fname.lname'
+        self.post_data['email_forward'] = 'fname.lname'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.first_name, u"Yrjö")
+
     def test_clean_ajax_output(self):
         post_data = self.post_data.copy()
         post_data['first_name'] = u'<b>Yrjö</b>'
