@@ -604,6 +604,20 @@ class CSVReadingTest(TestCase):
         self.assertEqual(cycle.reference_number, payment.reference_number)
         self.assertTrue(cycle.is_paid)
 
+    def test_duplicate_payment(self):
+        no_cycle_q = Q(billingcycle=None)
+
+        with open("../membership/fixtures/csv-test-duplicate.txt", 'r') as f:
+            process_csv(f)
+        payment_match_count = Payment.objects.filter(~no_cycle_q).count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_match_count, 1, error)
+        self.assertEqual(Payment.objects.count(), 2)
+        payment = Payment.objects.filter(billingcycle=self.cycle).latest("payment_day")
+        cycle = BillingCycle.objects.get(pk=self.cycle.pk)
+        self.assertEqual(cycle.reference_number, payment.reference_number)
+        self.assertTrue(cycle.is_paid)
+
 class LoginRequiredTest(TestCase):
     fixtures = ['membpership_fees.json', 'test_user.json']
 

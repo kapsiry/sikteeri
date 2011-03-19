@@ -5,7 +5,8 @@ from __future__ import with_statement
 from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 import codecs
 import csv
@@ -18,6 +19,7 @@ import logging
 logger = logging.getLogger("csvbills")
 
 from membership.models import Bill, BillingCycle, Payment
+from membership.utils import log_change
 
 class UTF8Recoder:
     """
@@ -148,6 +150,7 @@ def attach_payment_to_cycle(payment):
     else:
         # Don't attach a payment to a cycle with enough payments
         payment.comment = _('duplicate payment')
+        log_user = User.objects.get(id=1)
         log_change(payment, log_user, change_message="Payment not attached due to duplicate payment")
         payment.save()
         return None

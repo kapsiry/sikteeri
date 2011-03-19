@@ -1,0 +1,4 @@
+Kirjauspäivä;Arvopäivä;Määrä EUROA;Tapahtumalajikoodi;Selitys;Saaja/Maksaja;Saajan tilinumero;Viite;Viesti;Arkistotunnus;
+26.02.2010;26.02.2010;30,00;588;VIITESIIRTO;MEIKÄLÄINEN MATTI JOHANNES;;00000000000001110012;SEPA-MAKSU                         SAAJA/MOTTAG./BEN: Kapsi Internet-kKULUKOODI: SLEV                    ALKUP.MÄÄRÄ EUR              30.00+            EUR              30.00+;201001255UTZ00002151;
+27.03.2010;27.03.2010;30,00;588;VIITESIIRTO;MEIKÄLÄINEN DOUBLEPAYMENT;;00000000000001110012;SEPA-MAKSU                         SAAJA/MOTTAG./BEN: Kapsi Internet-kKULUKOODI: SLEV                    ALKUP.MÄÄRÄ EUR              30.00+            EUR              30.00+;201001255UTZ00002152;
+
