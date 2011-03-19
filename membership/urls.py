@@ -139,7 +139,7 @@ urlpatterns += patterns('django.views.generic',
          name='preapproved_memberships_plain'),
     url(r'memberships/approved/$', member_object_list,
         {'queryset': Membership.objects.filter(status__exact='A').
-            order_by('person__last_name', 'person__first_name', 'person__id'),
+            order_by('person__last_name', 'person__first_name', 'id'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': ENTRIES_PER_PAGE}, name='approved_memberships'),
