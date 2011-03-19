@@ -624,6 +624,7 @@ class LoginRequiredTest(TestCase):
     def setUp(self):
         self.urls = ['/membership/memberships/new/',
                      '/membership/memberships/preapproved/',
+                     '/membership/memberships/preapproved-plain/',
                      '/membership/memberships/approved/',
                      '/membership/memberships/deleted/',
                      '/membership/memberships/convert_to_an_organization/1/'
