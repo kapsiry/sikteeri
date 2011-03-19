@@ -145,7 +145,7 @@ def attach_payment_to_cycle(payment):
         raise Exception("Unexpected function call. This shouldn't happen.")
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
-    if not cycle.is_paid or cycle.amount_paid() < cycle.sum:
+    if cycle.is_paid == False or cycle.amount_paid() < cycle.sum:
         payment.attach_to_cycle(cycle)
     else:
         # Don't attach a payment to a cycle with enough payments
@@ -170,8 +170,8 @@ def process_csv(file_handle):
             continue
         payment = row_to_payment(row)
 
-        # Do nothing if this payment has already been assigned
-        if payment.billingcycle:
+        # Do nothing if this payment has already been assigned or ignored
+        if payment.billingcycle or payment.ignore:
             continue
 
         try:
