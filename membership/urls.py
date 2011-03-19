@@ -118,7 +118,7 @@ def search(request, query=None,
                                                         paginate_by=ENTRIES_PER_PAGE)
 
 # Shortcuts
-payments = Payment.objects.all().order_by('-payment_day')
+payments = Payment.objects.all().order_by('-payment_day', '-id')
 
 urlpatterns += patterns('django.views.generic',
 
@@ -138,7 +138,8 @@ urlpatterns += patterns('django.views.generic',
          'template_object_name': 'member'},
          name='preapproved_memberships_plain'),
     url(r'memberships/approved/$', member_object_list,
-        {'queryset': Membership.objects.filter(status__exact='A').order_by('person__last_name', 'person__first_name'),
+        {'queryset': Membership.objects.filter(status__exact='A').
+            order_by('person__last_name', 'person__first_name', 'person__id'),
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': ENTRIES_PER_PAGE}, name='approved_memberships'),
@@ -159,13 +160,13 @@ urlpatterns += patterns('django.views.generic',
 
     url(r'bills/$', billing_object_list,
         {'queryset': BillingCycle.objects.filter(
-            membership__status='A').order_by('-start'),
+            membership__status='A').order_by('-start', '-id'),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='cycle_list'),
     url(r'bills/unpaid/$', billing_object_list,
         {'queryset': BillingCycle.objects.filter(is_paid__exact=False,
-            membership__status='A').order_by('start'),
+            membership__status='A').order_by('start', 'id'),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_cycle_list'),
