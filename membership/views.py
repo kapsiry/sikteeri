@@ -473,8 +473,7 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
                                               'logentries': logentries},
                               context_instance=RequestContext(request))
 
-# TODO: permissions!
-@permission_required('membership.manage_payments')
+@permission_required('membership.can_import_payments')
 def import_payments(request, template_name='membership/import_payments.html'):
     import_messages = []
     class PaymentCSVForm(Form):
