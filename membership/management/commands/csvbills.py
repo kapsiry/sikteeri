@@ -143,7 +143,14 @@ def attach_payment_to_cycle(payment):
         raise Exception("Unexpected function call. This shouldn't happen.")
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
-    payment.attach_to_cycle(cycle)
+    if not cycle.is_paid or cycle.amount_paid() < cycle.sum:
+        payment.attach_to_cycle(cycle)
+    else:
+        # Don't attach a payment to a cycle with enough payments
+        payment.comment = _('duplicate payment')
+        log_change(payment, log_user, change_message="Payment not attached due to duplicate payment")
+        payment.save()
+        return None
     return cycle
 
 def process_csv(file_handle):
@@ -166,10 +173,16 @@ def process_csv(file_handle):
 
         try:
             cycle = attach_payment_to_cycle(payment)
-            return_messages.append(_("Attached payment {payment} to cycle {cycle}").
-                replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
-            num_attached = num_attached + 1
-            sum_attached = sum_attached + payment.amount
+            if cycle:
+                return_messages.append(_("Attached payment {payment} to cycle {cycle}").
+                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
+                num_attached = num_attached + 1
+                sum_attached = sum_attached + payment.amount
+            else:
+                # Payment not attached to cycle because enough payments were attached
+                return_messages.append(_("Billing cycle already paid for %s. Payment not attached.") % payment)
+                num_notattached = num_notattached + 1
+                sum_notattached = sum_notattached + payment.amount
         except BillingCycle.DoesNotExist:
             # Failed to find cycle for this reference number
             if not payment.id:
