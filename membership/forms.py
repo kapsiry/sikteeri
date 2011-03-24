@@ -42,7 +42,7 @@ class PersonMembershipForm(forms.Form):
                                   help_text=_('Your nationality'))
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
-                                   help_text=_(u'Home municipality in the population information system. If it\'s abroad, write it in the form of “Municipality, country”.'))
+                                   help_text=_(u'Finnish municipality'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
