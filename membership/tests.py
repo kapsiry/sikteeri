@@ -789,6 +789,8 @@ class LoginFieldTest(TestCase):
         self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
         self.assertEquals(u"user.name", self.field.clean(u"user.name"))
         self.assertEquals(u"user-name", self.field.clean(u"user-name"))
+    def test_uppercase(self):
+        self.assertEquals(u"testuser", self.field.clean(u"TestUser"))
 
     def test_too_short(self):
         self.assertRaises(ValidationError, self.field.clean, "a")

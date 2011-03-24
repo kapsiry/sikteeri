@@ -15,6 +15,7 @@ class LoginField(forms.CharField):
 
     def clean(self, value):
         super(LoginField, self).clean(value)
+        value = value.lower()
 
         errors = []
         if re.match(r"^[a-z][a-z0-9._-]*[a-z0-9]$", value) == None:
