@@ -765,7 +765,7 @@ class PhoneNumberFieldTest(TestCase):
         self.assertEquals(u"0400123123", self.field.clean(u"(0400) 123123"))
 
     def test_dash_delimiter(self):
-        self.assertEquals(u"0400-123123", self.field.clean(u"0400-123123"))
+        self.assertEquals(u"0400123123", self.field.clean(u"0400-123123"))
 
     def test_space_delimiter(self):
         self.assertEquals(u"0400123123", self.field.clean(u"0400 123123"))
@@ -777,7 +777,7 @@ class PhoneNumberFieldTest(TestCase):
         self.assertEquals(u"+358401231111", self.field.clean(u"+358 40 123 1111"))
 
     def test_dash_delimiter_begins_with_plus(self):
-        self.assertEquals(u"+358-400-123123", self.field.clean(u"+358-400-123123 "))
+        self.assertEquals(u"+358400123123", self.field.clean(u"+358-400-123123 "))
 
 class LoginFieldTest(TestCase):
     def setUp(self):

@@ -33,7 +33,7 @@ class PhoneNumberField(forms.RegexField):
                                                min_length=4, max_length=20, *args, **kwargs)
 
     def clean(self, value):
-        return super(PhoneNumberField, self).clean(value).replace("(", "").replace(")", "").replace(" ", "")
+        return super(PhoneNumberField, self).clean(value).replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
 
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
