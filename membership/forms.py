@@ -87,7 +87,7 @@ class BaseContactForm(forms.Form):
                              help_text=_('Phone number that accepts calls'))
     sms = PhoneNumberField(error_messages={'invalid': _('SMS number invalid.')},
                            label=_('SMS number'),
-                           help_text=_('Phone number that accepts text messages'))
+                           help_text=_('Phone number that accepts text messages. Used for sending the password.'))
     email = forms.EmailField(label=_('E-mail'))
     homepage = forms.URLField(required=False,
                               label=_('Homepage'),
@@ -104,8 +104,7 @@ class BaseContactForm(forms.Form):
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
                                  error_messages={'required': _('First name required.')},
-                                 label=_('First name'),
-                                 help_text=_('First name or preferred given name'))
+                                 label=_('First name'))
     given_names = forms.CharField(max_length=30, min_length=2,
                                   error_messages={'required': _('Given names required.')},
                                   label=_('Given names'),
