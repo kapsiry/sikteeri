@@ -17,7 +17,7 @@ class LoginField(forms.CharField):
         super(LoginField, self).clean(value)
 
         errors = []
-        if re.match(r"^[a-z][a-z0-9._-]*$", value) == None:
+        if re.match(r"^[a-z][a-z0-9._-]*[a-z0-9]$", value) == None:
             errors.append(_('Login begins with an illegal character or contains an illegal character.'))
         if Alias.objects.filter(name__iexact=value).count() > 0:
             errors.append(_('Login already reserved.'))

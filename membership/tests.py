@@ -779,6 +779,44 @@ class PhoneNumberFieldTest(TestCase):
     def test_dash_delimiter_begins_with_plus(self):
         self.assertEquals(u"+358-400-123123", self.field.clean(u"+358-400-123123 "))
 
+class LoginFieldTest(TestCase):
+    def setUp(self):
+        self.field = LoginField()
+
+    def test_valid(self):
+        self.assertEquals(u"testuser", self.field.clean(u"testuser"))
+        self.assertEquals(u"testuser2", self.field.clean(u"testuser2"))
+        self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
+        self.assertEquals(u"user.name", self.field.clean(u"user.name"))
+        self.assertEquals(u"user-name", self.field.clean(u"user-name"))
+
+    def test_too_short(self):
+        self.assertRaises(ValidationError, self.field.clean, "a")
+
+    def test_too_long(self):
+        self.assertRaises(ValidationError, self.field.clean, "abcdabcdabcdabbafoobar")
+
+    def test_begins_with_bad_char(self):
+        self.assertRaises(ValidationError, self.field.clean, "_foo")
+        self.assertRaises(ValidationError, self.field.clean, " foo")
+
+    def test_ends_with_bad_char(self):
+        self.assertRaises(ValidationError, self.field.clean, "user!")
+        self.assertRaises(ValidationError, self.field.clean, "user-")
+        self.assertRaises(ValidationError, self.field.clean, "user.")
+        self.assertRaises(ValidationError, self.field.clean, "user_")
+
+    def test_number(self):
+        self.assertRaises(ValidationError, self.field.clean, "1234")
+        self.assertRaises(ValidationError, self.field.clean, "1foobar")
+
+    def test_parens(self):
+        self.assertRaises(ValidationError, self.field.clean, "abcd(foo)")
+
+    def test_space(self):
+        self.assertRaises(ValidationError, self.field.clean, "test user")
+
+
 class MemberListTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
     def setUp(self):
