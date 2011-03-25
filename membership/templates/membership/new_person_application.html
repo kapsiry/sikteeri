@@ -130,15 +130,6 @@
     <span class="error{% if form.email.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
-
-  <p{% if form.homepage.errors %} class="error"{% endif %}>
-    <label for="id_homepage">{{ form.homepage.label }}</label>
-    {{ form.homepage }}{% if form.homepage.help_text %}
-    <span class="help">{{ form.homepage.help_text }}</span>{% endif %}
-    {% for error in form.homepage.errors %}
-    <span class="error{% if form.homepage.help_text %} newline{% endif %}">{{ error }}</span>
-    {% endfor %}
-  </p>
   </fieldset>
 
   <fieldset class="wide"><legend>Käyttäjätunnus</legend>
@@ -216,6 +207,16 @@
     <span class="error{% if form.public_memberlist.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
+
+  <p{% if form.homepage.errors %} class="error"{% endif %}>
+    <label for="id_homepage">{{ form.homepage.label }}</label>
+    {{ form.homepage }}{% if form.homepage.help_text %}
+    <span class="help">{{ form.homepage.help_text }}</span>{% endif %}
+    {% for error in form.homepage.errors %}
+    <span class="error{% if form.homepage.help_text %} newline{% endif %}">{{ error }}</span>
+    {% endfor %}
+  </p>
+
   </fieldset>
   <fieldset class="wide"><legend>Lisätiedot</legend>
   <p>
