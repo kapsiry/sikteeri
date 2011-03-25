@@ -632,6 +632,7 @@ class LoginRequiredTest(TestCase):
                      '/membership/bills/unpaid/',
                      '/membership/bills/',
                      '/membership/payments/unknown/',
+                     '/membership/payments/ignored/',
                      '/membership/payments/',
                      '/membership/testemail/',
                      ]
