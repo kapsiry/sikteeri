@@ -9,6 +9,9 @@ from utils import log_change
 from models import *
 from services.models import Alias
 
+# User login format validation regex
+VALID_USERNAME_RE = r"^[a-z][a-z0-9._-]*[a-z0-9]$"
+
 class LoginField(forms.CharField):
     def __init__(self, *args, **kwargs):
         super(LoginField, self).__init__(min_length=2, max_length=16, *args, **kwargs)
@@ -18,7 +21,7 @@ class LoginField(forms.CharField):
         value = value.lower()
 
         errors = []
-        if re.match(r"^[a-z][a-z0-9._-]*[a-z0-9]$", value) == None:
+        if re.match(VALID_USERNAME_RE, value) == None:
             errors.append(_('Login begins with an illegal character or contains an illegal character.'))
         if Alias.objects.filter(name__iexact=value).count() > 0:
             errors.append(_('Login already reserved.'))

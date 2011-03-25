@@ -745,6 +745,29 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;http://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
+
+    def _validate_alias(self, alias):
+        json_response = self.client.post('/membership/application/handle_json/',
+            simplejson.dumps({"requestType": "VALIDATE_ALIAS", "payload": alias}),
+                             content_type="application/json")
+        self.assertEqual(json_response.status_code, 200)
+        json_dict = simplejson.loads(json_response.content)
+        return json_dict
+
+    def test_validate_alias_ajax(self):
+        alias = Alias(name='validalias', owner_id=1)
+        alias.save()
+        result = self._validate_alias('usernotfound')
+        self.assertEqual(result['exists'], False)
+        self.assertEqual(result['valid'], True)
+        result = self._validate_alias('user-')
+        self.assertEqual(result['exists'], False)
+        self.assertEqual(result['valid'], False)
+        result = self._validate_alias('validalias')
+        self.assertEqual(result['exists'], True)
+        self.assertEqual(result['valid'], True)
+        alias.delete()
+
 class PhoneNumberFieldTest(TestCase):
     def setUp(self):
         self.field = PhoneNumberField()

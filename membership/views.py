@@ -28,7 +28,7 @@ from forms import PersonApplicationForm, OrganizationApplicationForm, PersonCont
 from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
 
-from services.views import check_alias_availability
+from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
 from decorators import trusted_host_required
@@ -758,7 +758,8 @@ def handle_json(request):
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
              'MEMBERSHIP_DETAIL': membership_detail_json,
-             'ALIAS_AVAILABLE': check_alias_availability}
+             'ALIAS_AVAILABLE': check_alias_availability,
+             'VALIDATE_ALIAS': validate_alias}
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],

@@ -138,9 +138,16 @@
       shell-käyttäjätunnus, sähköpostiosoite tunnus@kapsi.fi ja
       kotisivutila http://kapsi.fi/~tunnus/.
     </p>
+    <p class="introduction">Tunnuksen on oltava seuraavaa muotoa:
+      <ul>
+        <li>Sallittuja merkkejä ovat kirjaimet a-z ja numerot</li>
+        <li>Ensimmäisen merkin on oltava kirjain</li>
+        <li>Pistettä tai viivaa ei suositella</li>
+      </ul>
+    </p>
     <p>
       <label for="id_unix_login">{{ form.unix_login.label }}</label>
-      {{ form.unix_login }}{% if form.unix_login.help_text %}
+      {{ form.unix_login }}<span id="unix_account_availability"></span>{% if form.unix_login.help_text %}
       <span class="help"><span class="required">*</span> {{ form.unix_login.help_text }}</span>{% endif %}
       {% for error in form.unix_login.errors %}
       <span class="error{% if form.unix_login.help_text %} newline{% endif %}">{{ error }}</span>
@@ -279,5 +286,40 @@ $("#id_first_name").focusout(function() {
     $("#id_given_names").val($("#id_first_name").val());
   }
 });
+
+// Validate user name
+// http://jqueryfordesigners.com/using-ajax-to-validate-forms/
+$(document).ready(function () {
+  var validateUsername = $('#unix_account_availability');
+  $('#id_unix_login').keyup(function () {
+    var t = this;
+    if (this.value != this.lastValue) {
+      if (this.timer) clearTimeout(this.timer);
+      validateUsername.removeClass('error').html('<img src="{{ MEDIA_URL }}/static/images/ajax-loader.gif" height="16" width="16" /> Tarkistetaan...');
+
+      this.timer = setTimeout(function () {
+        $.ajax({
+          url: 'handle_json/',
+          data: '{"requestType": "VALIDATE_ALIAS", "payload": "' + t.value + '"}',
+          dataType: 'json',
+          type: 'post',
+          success: function (j) {
+            if (j.exists) {
+              validateUsername.html("Tunnus varattu");
+            } else if (!j.valid) {
+              validateUsername.html("Tunnus ei täytä vaatimuksia");
+            } else {
+              validateUsername.html("OK");
+            }
+
+          }
+        });
+      }, 100);
+
+      this.lastValue = this.value;
+    }
+  });
+});
 </script>
+
 {% endblock %}
