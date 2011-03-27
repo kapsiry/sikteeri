@@ -88,10 +88,12 @@ class OpDictReader(UnicodeDictReader):
                           u'Tapahtumalajikoodi' : 'event_type_code',
                           u'Selitys'            : 'event_type_description',
                           u'Saaja/Maksaja'      : 'fromto',
-                          u'Saajan tilinumero'  : 'account',
+                          u'Saajan tilinumero'  : 'account', # old format
+                          u'Saajan tilinumero ja pankin BIC' : 'account',
                           u'Viite'              : 'reference',
                           u'Viesti'             : 'message',
-                          u'Arkistotunnus'      : 'transaction'}
+                          u'Arkistotunnus'      : 'transaction', # old format
+                          u'Arkistointitunnus'  : 'transaction'}
 
     def __init__(self, f, delimiter=';', encoding="iso8859-1", *args, **kw):
         UnicodeDictReader.__init__(self, f, delimiter=delimiter,
@@ -118,6 +120,7 @@ class OpDictReader(UnicodeDictReader):
         row['amount'] = Decimal(row['amount'].replace(",", "."))
         row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
         row['reference'] = row['reference'].replace(' ', '').lstrip('0')
+        row['transaction'] = row['transaction'].replace(' ', '').replace('/', '')
         if row.has_key('value_date'):
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
