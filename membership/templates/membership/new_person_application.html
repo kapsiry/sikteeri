@@ -14,7 +14,7 @@
   href="http://www.kapsi.fi/asiakirjat/rekisteriseloste.html">jäsenrekisterin
   rekisteriseloste</a>, <a target="_blank"
   href="http://www.kapsi.fi/liityjaseneksi.html">hakemuksen käsittelyajat sekä
-  muuta tietoa</a>. Tähdellä merkityt kentät ovat pakollisia.
+  muuta tietoa</a>. Tähdellä (<span class="required">*</span>) merkityt kentät ovat pakollisia.
 </p>
 
 <form method="POST">{% csrf_token %}
@@ -23,8 +23,8 @@
   <fieldset><legend>Henkilötiedot</legend>
   <p{% if form.first_name.errors %} class="error"{% endif %}>
     <label for="id_first_name">{{ form.first_name.label }}</label>
-    {{ form.first_name }}{% if form.first_name.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.first_name.help_text }}</span>{% endif %}
+    {{ form.first_name }} <span class="required">*</span>{% if form.first_name.help_text %}
+    <span class="help"> {{ form.first_name.help_text }}</span>{% endif %}
     {% for error in form.first_name.errors %}
     <span class="error{% if form.first_name.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -32,8 +32,8 @@
 
   <p{% if form.given_names.errors %} class="error"{% endif %}>
     <label for="id_given_names">{{ form.given_names.label }}</label>
-    {{ form.given_names }}{% if form.given_names.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.given_names.help_text }}</span>{% endif %}
+    {{ form.given_names }} <span class="required">*</span>{% if form.given_names.help_text %}
+    <span class="help"> {{ form.given_names.help_text }}</span>{% endif %}
     {% for error in form.given_names.errors %}
     <span class="error{% if form.given_names.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -41,8 +41,8 @@
 
   <p{% if form.last_name.errors %} class="error"{% endif %}>
     <label for="id_last_name">{{ form.last_name.label }}</label>
-    {{ form.last_name }}{% if form.last_name.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.last_name.help_text }}</span>{% endif %}
+    {{ form.last_name }} <span class="required">*</span>{% if form.last_name.help_text %}
+    <span class="help"> {{ form.last_name.help_text }}</span>{% endif %}
     {% for error in form.last_name.errors %}
     <span class="error{% if form.last_name.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -50,8 +50,8 @@
 
   <p{% if form.nationality.errors %} class="error"{% endif %}>
     <label for="id_nationality">{{ form.nationality.label }}</label>
-    {{ form.nationality }}{% if form.nationality.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.nationality.help_text }}</span>{% endif %}
+    {{ form.nationality }} <span class="required">*</span>{% if form.nationality.help_text %}
+    <span class="help"> {{ form.nationality.help_text }}</span>{% endif %}
     {% for error in form.nationality.errors %}
     <span class="error{% if form.nationality.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -59,8 +59,8 @@
 
   <p{% if form.municipality.errors %} class="error"{% endif %}>
     <label for="id_municipality">{{ form.municipality.label }}</label>
-    {{ form.municipality }}
-    <span class="help"><span class="required">*</span> {{ form.municipality.help_text }}</span>
+    {{ form.municipality }} <span class="required">*</span>
+    <span class="help">{{ form.municipality.help_text }}</span>
     {% for error in form.municipality.errors %}
     <span class="error{% if form.municipality.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -69,8 +69,8 @@
   <fieldset><legend>Postiosoite</legend>
   <p{% if form.street_address.errors %} class="error"{% endif %}>
     <label for="id_street_address">{{ form.street_address.label }}</label>
-    {{ form.street_address }}{% if form.street_address.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.street_address.help_text }}</span>{% endif %}
+    {{ form.street_address }} <span class="required">*</span>{% if form.street_address.help_text %}
+    <span class="help"> {{ form.street_address.help_text }}</span>{% endif %}
     {% for error in form.street_address.errors %}
     <span class="error{% if form.street_address.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -78,8 +78,8 @@
 
   <p{% if form.postal_code.errors %} class="error"{% endif %}>
     <label for="id_postal_code">{{ form.postal_code.label }}</label>
-    {{ form.postal_code }}{% if form.postal_code.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.postal_code.help_text }}</span>{% endif %}
+    {{ form.postal_code }} <span class="required">*</span>{% if form.postal_code.help_text %}
+    <span class="help"> {{ form.postal_code.help_text }}</span>{% endif %}
     {% for error in form.postal_code.errors %}
     <span class="error{% if form.postal_code.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -87,8 +87,8 @@
 
   <p{% if form.post_office.errors %} class="error"{% endif %}>
     <label for="id_post_office">{{ form.post_office.label }}</label>
-    {{ form.post_office }}{% if form.post_office.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.post_office.help_text }}</span>{% endif %}
+    {{ form.post_office }} <span class="required">*</span>{% if form.post_office.help_text %}
+    <span class="help"> {{ form.post_office.help_text }}</span>{% endif %}
     {% for error in form.post_office.errors %}
     <span class="error{% if form.post_office.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -96,8 +96,8 @@
 
   <p{% if form.country.errors %} class="error"{% endif %}>
     <label for="id_country">{{ form.country.label }}</label>
-    {{ form.country }}{% if form.country.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.country.help_text }}</span>{% endif %}
+    {{ form.country }} <span class="required">*</span>{% if form.country.help_text %}
+    <span class="help"> {{ form.country.help_text }}</span>{% endif %}
     {% for error in form.country.errors %}
     <span class="error{% if form.country.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -107,8 +107,8 @@
   <fieldset><legend>Muut yhteystiedot</legend>
   <p{% if form.phone.errors %} class="error"{% endif %}>
     <label for="id_phone">{{ form.phone.label }}</label>
-    {{ form.phone }}{% if form.phone.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.phone.help_text }}</span>{% endif %}
+    {{ form.phone }} <span class="required">*</span>{% if form.phone.help_text %}
+    <span class="help"> {{ form.phone.help_text }}</span>{% endif %}
     {% for error in form.phone.errors %}
     <span class="error{% if form.phone.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -116,7 +116,10 @@
 
   <p{% if form.sms.errors %} class="error"{% endif %}>
     <label for="id_sms">{{ form.sms.label }}</label>
-    {{ form.sms }} <span class="help"><span class="required">*</span> {{ form.sms.help_text }}</span>
+    {{ form.sms }} <span class="required">*</span>
+    <span class="help">
+      {{ form.sms.help_text }}
+    </span>
     {% for error in form.sms.errors %}
     <span class="error{% if form.sms.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -124,8 +127,8 @@
 
   <p{% if form.email.errors %} class="error"{% endif %}>
     <label for="id_email">{{ form.email.label }}</label>
-    {{ form.email }}{% if form.email.help_text %}
-    <span class="help"><span class="required">*</span> {{ form.email.help_text }}</span>{% endif %}
+    {{ form.email }} <span class="required">*</span>{% if form.email.help_text %}
+    <span class="help"> {{ form.email.help_text }}</span>{% endif %}
     {% for error in form.email.errors %}
     <span class="error{% if form.email.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
@@ -147,8 +150,9 @@
     </p>
     <p>
       <label for="id_unix_login">{{ form.unix_login.label }}</label>
-      {{ form.unix_login }}<span id="unix_account_availability"></span>{% if form.unix_login.help_text %}
-      <span class="help"><span class="required">*</span> {{ form.unix_login.help_text }}</span>{% endif %}
+      {{ form.unix_login }} <span class="required">*</span>
+      <span id="unix_account_availability"></span>{% if form.unix_login.help_text %}
+      <span class="help"> {{ form.unix_login.help_text }}</span>{% endif %}
       {% for error in form.unix_login.errors %}
       <span class="error{% if form.unix_login.help_text %} newline{% endif %}">{{ error }}</span>
       {% endfor %}
