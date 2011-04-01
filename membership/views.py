@@ -133,10 +133,11 @@ def person_application(request, template_name='membership/new_person_application
                 logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
                 return redirect('new_application_error')
 
-    return render_to_response(template_name, {"form": application_form,
-                                              "chosen_email_forward": chosen_email_forward,
-                                              "title": _("Person member application")},
-                              context_instance=RequestContext(request))
+    with transaction.autocommit():
+        return render_to_response(template_name, {"form": application_form,
+                                    "chosen_email_forward": chosen_email_forward,
+                                    "title": _("Person member application")},
+                                    context_instance=RequestContext(request))
 
 # Public access
 def organization_application(request, template_name='membership/new_organization_application.html'):
