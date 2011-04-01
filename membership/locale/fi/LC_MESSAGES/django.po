@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-24 21:15+0200\n"
-"PO-Revision-Date: 2009-12-21 09:24+0200\n"
+"POT-Creation-Date: 2011-04-01 09:13+0300\n"
+"PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,46 +19,46 @@ msgstr ""
 msgid "Kapsi member application %i"
 msgstr "Kapsin jäsenhakemus %i"
 
-#: forms.py:21
+#: forms.py:25
 msgid ""
 "Login begins with an illegal character or contains an illegal character."
 msgstr ""
 "Käyttäjätunnus alkaa merkillä, joka ei käy käyttäjätunnuksen ensimmäiseksi "
 "merkiksi, tai käyttäjätunnus sisältää merkin, jota se ei voi sisältää."
 
-#: forms.py:23
+#: forms.py:27
 msgid "Login already reserved."
 msgstr "Käyttäjätunnus on jo käytössä."
 
-#: forms.py:40 forms.py:63 models.py:133
+#: forms.py:44 forms.py:67 models.py:133
 msgid "Nationality"
 msgstr "Kansallisuus"
 
-#: forms.py:41 forms.py:64
+#: forms.py:45 forms.py:68
 msgid "Finnish nationality"
 msgstr "Suomi"
 
-#: forms.py:42
+#: forms.py:46
 msgid "Your nationality"
 msgstr "Kansallisuus"
 
-#: forms.py:44 forms.py:67 models.py:132
+#: forms.py:48 forms.py:71 models.py:132
 msgid "Home municipality"
 msgstr "Kotipaikka"
 
-#: forms.py:45
+#: forms.py:49
 msgid "Finnish municipality"
 msgstr "Suomen kunta"
 
-#: forms.py:46 forms.py:69 models.py:140
+#: forms.py:50 forms.py:73 models.py:140
 msgid "Additional information"
 msgstr "Lisätietoja"
 
-#: forms.py:49 forms.py:72
+#: forms.py:53 forms.py:76
 msgid "You can write additional questions or details here"
 msgstr "Lisätietoja tai kysymyksiä"
 
-#: forms.py:53
+#: forms.py:57
 msgid ""
 "My name (first and last name) and homepage can be shown in the public "
 "memberlist"
@@ -66,31 +66,31 @@ msgstr ""
 "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
 "jäsenluettelossa"
 
-#: forms.py:56
+#: forms.py:60
 msgid "I want a MySQL database"
 msgstr "Haluaisin käyttööni MySQL-tietokannan"
 
-#: forms.py:57
+#: forms.py:61
 msgid "I want a PostgreSQL database"
 msgstr "Haluaisin käyttööni PostgreSQL-tietokannan"
 
-#: forms.py:58
+#: forms.py:62
 msgid "I want a login.kapsi.fi website"
 msgstr "Haluaisin käyttööni käyttäjätunnus.kapsi.fi -verkko-osoitteen"
 
-#: forms.py:59
+#: forms.py:63
 msgid "UNIX Login"
 msgstr "Käyttäjätunnus"
 
-#: forms.py:65
+#: forms.py:69
 msgid "Home country of your organization"
 msgstr "Kotimaa"
 
-#: forms.py:68
+#: forms.py:72
 msgid "Place where your organization is registered to"
 msgstr "Kotipaikka (säännöissä)"
 
-#: forms.py:74
+#: forms.py:78
 msgid ""
 "Organization information (name and homepage) can be shown in the public "
 "memberlist"
@@ -98,103 +98,105 @@ msgstr ""
 "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
 "jäsenluettelossa"
 
-#: forms.py:78
+#: forms.py:82
 msgid "Street address required."
 msgstr "Katuosoite vaaditaan."
 
-#: forms.py:79 models.py:70
+#: forms.py:83 models.py:70
 msgid "Street address"
 msgstr "Katuosoite"
 
-#: forms.py:81
+#: forms.py:85
 msgid "Postal code required."
 msgstr "Postinumero vaaditaan."
 
-#: forms.py:82 models.py:71
+#: forms.py:86 models.py:71
 msgid "Postal code"
 msgstr "Postinumero"
 
-#: forms.py:83 models.py:72
+#: forms.py:87 models.py:72
 msgid "Post office"
 msgstr "Postitoimipaikka"
 
-#: forms.py:84 models.py:73
+#: forms.py:88 models.py:73
 msgid "Country"
 msgstr "Maa"
 
-#: forms.py:84
+#: forms.py:88
 msgid "Finland"
 msgstr "Suomi"
 
-#: forms.py:85
+#: forms.py:89
 msgid "Phone invalid."
 msgstr "Virheellinen puhelinnumero."
 
-#: forms.py:86
+#: forms.py:90
 msgid "Phone number"
 msgstr "Puhelinnumero"
 
-#: forms.py:87
+#: forms.py:91
 msgid "Phone number that accepts calls"
 msgstr "Puhelinnumero johon voi soittaa"
 
-#: forms.py:88
+#: forms.py:92
 msgid "SMS number invalid."
 msgstr "Virheellinen tekstiviestinumero."
 
-#: forms.py:89 models.py:75
+#: forms.py:93 models.py:75
 msgid "SMS number"
 msgstr "Tekstiviestinumero"
 
-#: forms.py:90
+#: forms.py:94
 msgid "Phone number that accepts text messages. Used for sending the password."
-msgstr "Puhelinnumero, johon voi lähettää tekstiviestejä. Käytetään salasanan lähettämiseen."
+msgstr ""
+"Puhelinnumero, johon voi lähettää tekstiviestejä. Käytetään salasanan "
+"lähettämiseen."
 
-#: forms.py:91 models.py:76
+#: forms.py:95 models.py:76
 msgid "E-mail"
 msgstr "Sähköpostiosoite"
 
-#: forms.py:93 models.py:77
+#: forms.py:97 models.py:77
 msgid "Homepage"
 msgstr "Kotisivu"
 
-#: forms.py:94
+#: forms.py:98
 msgid "Homepage for the public member list"
 msgstr "Kotisivuosoite julkiseen jäsenluetteloon"
 
-#: forms.py:100
+#: forms.py:104
 msgid "Postal codes in Finland must consist of 5 numbers."
 msgstr "Suomalaisissa postinumeroissa on 5 numeroa."
 
-#: forms.py:106
+#: forms.py:110
 msgid "First name required."
 msgstr "Etunimi vaaditaan."
 
-#: forms.py:107 models.py:65
+#: forms.py:111 models.py:65
 msgid "First name"
 msgstr "Kutsumanimi (etunimi)"
 
-#: forms.py:109
+#: forms.py:113
 msgid "Given names required."
 msgstr "Kaikki etunimet vaaditaan."
 
-#: forms.py:110 models.py:66
+#: forms.py:114 models.py:66
 msgid "Given names"
 msgstr "Kaikki etunimet"
 
-#: forms.py:111
+#: forms.py:115
 msgid "Including first name"
 msgstr "Myös ensimmäinen nimi"
 
-#: forms.py:113
+#: forms.py:117
 msgid "Last name required."
 msgstr "Sukunimi vaaditaan."
 
-#: forms.py:114 models.py:67
+#: forms.py:118 models.py:67
 msgid "Last name"
 msgstr "Sukunimi"
 
-#: forms.py:117 models.py:68
+#: forms.py:121 models.py:68
 msgid "Organization name"
 msgstr "Yhteisön nimi"
 
@@ -486,24 +488,24 @@ msgstr "Varmista muutos valitsemalla tämä laatikko:"
 msgid "Member %s successfully converted to an organization."
 msgstr "Jäsen %s muutettu yhteisöjäseneksi onnistuneesti."
 
-#: views.py:775
+#: views.py:776
 msgid "Recipient e-mail address"
 msgstr "Vastaanottajan sähköpostiosoite"
 
-#: management/commands/csvbills.py:152
+#: management/commands/csvbills.py:155
 msgid "duplicate payment"
 msgstr "duplikaattimaksu"
 
-#: management/commands/csvbills.py:180
+#: management/commands/csvbills.py:183
 msgid "Attached payment {payment} to cycle {cycle}"
 msgstr "Liitettiin maksu {payment} laskutuskauteen {cycle}"
 
-#: management/commands/csvbills.py:186
+#: management/commands/csvbills.py:189
 #, python-format
 msgid "Billing cycle already paid for %s. Payment not attached."
 msgstr "Laskutuskausi maksettu jo maksulle %s. Maksua ei liitetty."
 
-#: management/commands/csvbills.py:194
+#: management/commands/csvbills.py:197
 #, python-format
 msgid "No billing cycle found for %s"
 msgstr "Ei laskutuskautta maksulle %s"
@@ -767,7 +769,7 @@ msgid "Application review"
 msgstr "Hakemuksen tietojen tarkistus"
 
 #: templates/membership/new_organization_application_review.html:22
-#: templates/membership/new_person_application.html:231
+#: templates/membership/new_person_application.html:243
 msgid "Send application"
 msgstr "Lähetä hakemus"
 
@@ -775,7 +777,7 @@ msgstr "Lähetä hakemus"
 msgid "Save services"
 msgstr "Tallenna palvelut"
 
-#: templates/membership/new_person_application.html:171
+#: templates/membership/new_person_application.html:173
 msgid "No e-mail forward"
 msgstr "Ei sähköpostiohjausta"
 
