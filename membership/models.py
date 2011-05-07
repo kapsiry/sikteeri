@@ -440,6 +440,9 @@ class Bill(models.Model):
             subject = subject % self.id
         return subject
 
+    def reference_number(self):
+        return self.billingcycle.reference_number
+
 class Payment(models.Model):
     class Meta:
         permissions = (

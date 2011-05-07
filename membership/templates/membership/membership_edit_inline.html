@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load humanize %}
 {% load comments %}
+{% load reference_number %}
 
 {% if membership.person %}
 <a href="{% url contact_edit membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
@@ -60,20 +61,25 @@
     <li><a href="{% url billingcycle_edit billingcycle.id%}">{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}</a>
         <ul>
             {% for bill in billingcycle.bill_set.all %}
-            <li><a href="{% url bill_edit bill.id %}"
-              >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}}){% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
-             {% trans "sent" %} {{ bill.created|naturalday }},
-             {% trans "due on" %} {{ bill.due_date|naturalday }}
-             ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
+            <li>
+	      <a href="{% url bill_edit bill.id %}">
+		{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}})
+		{% else %}{% trans "Bill" %} {{bill.id}}{% endif %}
+	      </a> [{{bill.reference_number|fref:"0"}}]
+              {% trans "sent" %} {{ bill.created|naturalday }},
+              {% trans "due on" %} {{ bill.due_date|naturalday }}
+              ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
               <small><a href="https://tuki.kapsi.fi/otrs/index.pl?Action=AgentTicketSearch&amp;Subaction=Search&amp;Subject=maksulasku+{{bill.id}}" target="_blank">OTRS</a></small>
             </li>
             {% endfor %}
 
             {% for payment in billingcycle.payment_set.all %}
-            <li><a href="{% url payment_edit payment.id %}">{% trans "Payment" %}</a> {% trans "paid on" %}
-                {{ payment.payment_day|naturalday }}
-                ({{payment.amount}} &euro;,
-                <small>{{payment.reference_number}}</small>)
+            <li><a href="{% url payment_edit payment.id %}">
+		{% trans "Payment" %}</a>
+	      {% trans "paid on" %}
+              {{ payment.payment_day|naturalday }}
+              ({{payment.amount}} &euro;,
+              <small>{{payment.reference_number|fref:"0"}}</small>)
             </li>
             {% endfor %}
         </ul>
