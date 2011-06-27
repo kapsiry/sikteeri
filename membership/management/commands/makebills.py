@@ -53,7 +53,7 @@ def create_billingcycle(membership):
         raise e
     return billing_cycle
 
-def can_send_reminder(last_due_date):
+def can_send_reminder(last_due_date, latest_recorded_payment):
     """
     Determine if we have recent payments so that we can be sure
     recent payments have been imported into the system.
@@ -61,12 +61,10 @@ def can_send_reminder(last_due_date):
     if not settings.ENABLE_REMINDERS:
         return False
     can_send = True
-    payments = Payment.objects
-    if payments.count() == 0:
+    if not latest_recorded_payment:
         logger.critical("no payments in the database.")
         can_send = False
     else:
-        latest_recorded_payment = payments.latest("payment_day").payment_day
         if latest_recorded_payment > datetime.now():
             latest_recorded_payment = datetime.now()
         due_plus_margin = last_due_date + timedelta(days=settings.REMINDER_GRACE_DAYS)
@@ -84,6 +82,8 @@ def send_reminder(membership):
     return bill
 
 def makebills():
+    latest_recorded_payment = Payment.latest_payment_date()
+
     for member in Membership.objects.filter(status='A').filter(id__gt=0):
         # Billing cycles and bills
         cycles = member.billingcycle_set
@@ -101,7 +101,7 @@ def makebills():
         if not latest_cycle.is_paid:
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
-                if can_send_reminder(last_due_date):
+                if can_send_reminder(last_due_date, latest_recorded_payment):
                     send_reminder(member)
                     logger.info("makebills: sent a reminder to %s." %
                                  repr(member))

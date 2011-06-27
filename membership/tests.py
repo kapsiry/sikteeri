@@ -535,7 +535,7 @@ class CanSendReminderTest(TestCase):
         handler = MockLoggingHandler()
         makebills_logger.addHandler(handler)
         now = datetime.now()
-        can_send = can_send_reminder(now)
+        can_send = can_send_reminder(now, Payment.latest_payment_date())
         self.assertFalse(can_send, "Should fail if no payments exist")
         criticals = len(handler.messages['critical'])
         self.assertEqual(criticals, 1, "One log message")
@@ -548,7 +548,7 @@ class CanSendReminderTest(TestCase):
             transaction_id="test_can_send_reminder_1")
         p.save()
         two_weeks_ago = datetime.now() - timedelta(days=14)
-        can_send = can_send_reminder(two_weeks_ago)
+        can_send = can_send_reminder(two_weeks_ago, Payment.latest_payment_date())
         self.assertFalse(can_send, "Should fail if payment is old")
         criticals = len(handler.messages['critical'])
         self.assertEqual(criticals, 0, "No critical log messages, got %d" % criticals)
@@ -557,7 +557,7 @@ class CanSendReminderTest(TestCase):
         p = Payment(billingcycle=self.cycle, amount=5, payment_day=now,
             transaction_id="test_can_send_reminder_2")
         p.save()
-        can_send = can_send_reminder(month_ago)
+        can_send = can_send_reminder(month_ago, Payment.latest_payment_date())
         self.assertTrue(can_send, "Should be true with recent payment")
 
 class CSVNoMembersTest(TestCase):

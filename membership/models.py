@@ -524,6 +524,13 @@ class Payment(models.Model):
         self.save()
         cycle.update_is_paid()
 
+    @classmethod
+    def latest_payment_date(cls):
+        try:
+            return Payment.objects.latest("payment_day").payment_day
+        except Payment.DoesNotExist:
+            return None
+
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
 models.signals.post_save.connect(logging_log_change, sender=BillingCycle)
