@@ -5,14 +5,15 @@
 # Install virtualenv environment for sikteeri development
 # to "env/" if it doesn't exist already
 
-VIRTUALENV=virtualenv
+VIRTUALENV=${1-virtualenv}
 ENVDIR=env
 
-if [[ -n $1 ]]; then
-    VIRTUALENV=$1
+if [[ ! -x "$VIRTUALENV" ]]; then
+	VIRTUALENV=`which $VIRTUALENV`
 fi
 
-if [[ ! -x `which $VIRTUALENV` ]]; then
+if [[ ! -x "$VIRTUALENV" ]]; then
+
     echo "Please install virtualenv first."
     echo
     echo "  sudo apt-get install python-virtualenv (Debian/Ubuntu)"
