@@ -19,6 +19,7 @@ BILL_DAYS_BEFORE_CYCLE = 14 # Send bills 2 weeks before new cycle starts
 BILL_DAYS_TO_DUE = 14       # New bills will have a due date 2 weeks in the future
 REMINDER_GRACE_DAYS = 14    # Send reminders 2 weeks after previous due day
 ENABLE_REMINDERS = False    # Enable reminder sending
+UNIX_EMAIL_DOMAIN = None    # Reminders will be additionally sent to account@domain if specified
 
 # Maintenance message (when set to other than None, show a maintenance message
 # on the front page)
