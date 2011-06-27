@@ -177,7 +177,7 @@ class Membership(models.Model):
                     return unicode(contact.email_to())
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
-
+    
     def save(self, *args, **kwargs):
         if self.type not in MEMBER_TYPES_DICT.keys():
             raise Exception("Illegal member type '%s'" % self.type)
@@ -334,7 +334,7 @@ class BillingCycle(models.Model):
     def amount_paid(self):
         data = self.payment_set.aggregate(Sum('amount'))['amount__sum']
         if data == None:
-            data = Decimal('0.0')
+            data = Decimal('0')
         return data
 
     def update_is_paid(self):
@@ -406,10 +406,12 @@ class Bill(models.Model):
                 'membership_type_raw' : membership.type,
                 'bill_id': self.id,
                 'member_id': membership.id,
+                'member_name': membership.name(),
                 'billing_name': unicode(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
+                'billing_contact': membership.billing_contact,
                 'billingcycle': self.billingcycle,
                 'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
                 'bic_code': settings.BIC_CODE,
@@ -429,16 +431,20 @@ class Bill(models.Model):
                 'membership_type_raw' : membership.type,
                 'bill_id': self.id,
                 'member_id': membership.id,
+                'member_name': membership.name(),
+                'billing_contact': membership.billing_contact,
                 'billing_name': unicode(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
                 'municipality': membership.municipality,
-                'email': membership.get_billing_contact().email,
+                'billing_email': membership.get_billing_contact().email,
+                'email': membership.primary_contact().email,
                 'billingcycle': self.billingcycle,
                 'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
                 'bic_code': settings.BIC_CODE,
                 'today': datetime.now(),
+                'latest_recorded_payment': Payment.latest_payment_date(),
                 'reference_number': group_right(self.billingcycle.reference_number),
                 'original_sum': self.billingcycle.sum,
                 'amount_paid': amount_paid,
@@ -457,6 +463,7 @@ class Bill(models.Model):
             for item in ret_items:
                 sender, error = item
                 if error != None:
+                    logger.error("%s" % traceback.format_exc())
                     raise error
         else:
             self.billingcycle.is_paid = True
