@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+from decimal import Decimal
 import logging
 logger = logging.getLogger("models")
 import traceback
@@ -331,8 +332,10 @@ class BillingCycle(models.Model):
         return False
 
     def amount_paid(self):
-        data = self.payment_set.aggregate(Sum('amount'))
-        return data['amount__sum']
+        data = self.payment_set.aggregate(Sum('amount'))['amount__sum']
+        if data == None:
+            data = Decimal('0.0')
+        return data
 
     def update_is_paid(self):
         was_paid = self.is_paid
@@ -397,27 +400,54 @@ class Bill(models.Model):
     # FIXME: different template based on class? should this code be here?
     def render_as_text(self):
         membership = self.billingcycle.membership
-        return render_to_string('membership/bill.txt', {
-            'membership_type' : MEMBER_TYPES_DICT[membership.type],
-            'membership_type_raw' : membership.type,
-            'bill_id': self.id,
-            'member_id': membership.id,
-            'billing_name': unicode(membership.get_billing_contact()),
-            'street_address': membership.get_billing_contact().street_address,
-            'postal_code': membership.get_billing_contact().postal_code,
-            'post_office': membership.get_billing_contact().post_office,
-            'billingcycle': self.billingcycle,
-            'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
-            'bic_code': settings.BIC_CODE,
-            'due_date': self.due_date,
-            'today': datetime.now(),
-            'reference_number': group_right(self.billingcycle.reference_number),
-            'sum': self.billingcycle.sum,
-            'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
-                                 refnum = self.billingcycle.reference_number,
-                                 duedate = self.due_date,
-                                 euros = self.billingcycle.sum)
-            })
+        if not self.is_reminder():
+            return render_to_string('membership/bill.txt', {
+                'membership_type' : MEMBER_TYPES_DICT[membership.type],
+                'membership_type_raw' : membership.type,
+                'bill_id': self.id,
+                'member_id': membership.id,
+                'billing_name': unicode(membership.get_billing_contact()),
+                'street_address': membership.get_billing_contact().street_address,
+                'postal_code': membership.get_billing_contact().postal_code,
+                'post_office': membership.get_billing_contact().post_office,
+                'billingcycle': self.billingcycle,
+                'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
+                'bic_code': settings.BIC_CODE,
+                'due_date': self.due_date,
+                'today': datetime.now(),
+                'reference_number': group_right(self.billingcycle.reference_number),
+                'sum': self.billingcycle.sum,
+                'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
+                                     refnum = self.billingcycle.reference_number,
+                                     duedate = self.due_date,
+                                     euros = self.billingcycle.sum)
+                })
+        else:
+            amount_paid = self.billingcycle.amount_paid()
+            return render_to_string('membership/reminder.txt', {
+                'membership_type' : MEMBER_TYPES_DICT[membership.type],
+                'membership_type_raw' : membership.type,
+                'bill_id': self.id,
+                'member_id': membership.id,
+                'billing_name': unicode(membership.get_billing_contact()),
+                'street_address': membership.get_billing_contact().street_address,
+                'postal_code': membership.get_billing_contact().postal_code,
+                'post_office': membership.get_billing_contact().post_office,
+                'municipality': membership.municipality,
+                'email': membership.get_billing_contact().email,
+                'billingcycle': self.billingcycle,
+                'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
+                'bic_code': settings.BIC_CODE,
+                'today': datetime.now(),
+                'reference_number': group_right(self.billingcycle.reference_number),
+                'original_sum': self.billingcycle.sum,
+                'amount_paid': amount_paid,
+                'sum': self.billingcycle.sum - amount_paid,
+                'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
+                                     refnum = self.billingcycle.reference_number,
+                                     duedate = None,
+                                     euros = self.billingcycle.sum)
+                })
 
     # FIXME: Should save sending date
     def send_as_email(self):
@@ -435,7 +465,10 @@ class Bill(models.Model):
         self.billingcycle.save()
 
     def bill_subject(self):
-        subject = settings.BILL_SUBJECT
+        if not self.is_reminder():
+            subject = settings.BILL_SUBJECT
+        else:
+            subject = settings.REMINDER_SUBJECT
         if '%i' in subject:
             subject = subject % self.id
         return subject

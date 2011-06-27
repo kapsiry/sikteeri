@@ -12,6 +12,7 @@ BILLING_CC_EMAIL = None     # E-mail address (or None) for sending copies of the
 FROM_EMAIL = None           # Generic from e-mail
 SYSADMIN_EMAIL = None       # Sysadmin email to send preapprove e-mails to
 BILL_SUBJECT = None         # Text to be used as bill subjects
+REMINDER_SUBJECT = None     # Text to be used as reminder subjects
 
 # Billing options
 BILL_DAYS_BEFORE_CYCLE = 14 # Send bills 2 weeks before new cycle starts

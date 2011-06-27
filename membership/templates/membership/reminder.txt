@@ -1,0 +1,87 @@
+Hei!
+
+Havaitsimme jäsenmaksuseurannassa puuttuvia maksusuorituksia.
+Tämä on muistutus jäsenmaksujen maksamisesta.
+
+Tarkistathan muistutuksessa olevat yhteystietosi ja ilmoita
+muuttuneet tiedot meille vastaamalla tähän viestiin.
+
+Ota meihin yhteyttä myös, jos...
+     - tämä muistutus on sinusta virheellinen.
+     - haluat erota yhdistyksestä.
+     - haluat sopia tai olet jo sopinut maksuaikatauluista.
+     - sinulla on muuta kysyttävää jäsenasioista.
+
+Sisällytä viestiisi tämä muistutus.
+
+
+Muistutuksen lopussa on listattuna tapahtumat laskuista ja maksuista.
+
+Olemme huomioineet %PPVM asti näkyvät maksusuoritukset.
+
+_______________________________________________________________________
+                                    *** MUISTUTUS ***
+Kapsi Internet-käyttäjät ry             {{ today|date:"SHORT_DATE_FORMAT" }}
+PL 11
+90571 OULU
+
+{{ billing_name|ljust:"40" }}Jäsennumero   {{ member_id }}
+{{ street_address|ljust:"40" }}Laskunnumero  {{ bill_id }}
+{{ postal_code|ljust:"6" }} {{ post_office|ljust:"33" }}Eräpäivä      *** HETI ***
+
+Sähköposti: {{ email|ljust:"30" }}
+Kotipaikka: {{ municipality|ljust:"30" }}
+
+Muistutettavat jäsenmaksut:
+-----------------------------------------------------------------------
+
+Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}             {{ original_sum|rjust:"5"}} e{{% if amount_paid %}}
+Aiemmat suoritukset                                                 {{ amount_paid|rjust:"5"}} e{{% endif %}}
+-----------------------------------------------------------------------
+{{ sum|rjust:"5"}} e
+
+
+
+
+Maksutiedot
+-----------------------------------------------------------------------
+Tilinumero          {{ iban_account_number }}
+BIC                 {{ bic_code }}
+Summa               {{ sum|rjust:"5"}} e
+Viitenumero         {{ reference_number }}
+Eräpäivä            *** HETI ***
+
+Virtuaaliviivakoodi: {{ barcode }}
+
+
+Viitenumeroa on EHDOTTOMASTI käytettävä jotta maksu kohdistuu oikein!
+
+
+Maksamaton jäsenmaksu johtaa palveluiden lukitsemiseen ja myöhemmin
+jäsenen erottamiseen yhdistyksestä!
+
+
+
+Laskuttaja
+-----------------------------------------------------------------------
+Kapsi Internet-käyttäjät ry
+PL 11
+90571 OULU
+Sähköposti: laskutus@tuki.kapsi.fi
+Yhdistysrekisterinumero: 187.418
+_______________________________________________________________________
+
+
+
+
+
+
+
+TAPAHTUMAT
+==========
+
+(Tapahtumalistaa ei vielä saatavilla)
+
+
+-- 
+Kapsin laskutus <laskutus@tuki.kapsi.fi>
