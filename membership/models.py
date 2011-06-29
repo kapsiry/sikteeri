@@ -427,6 +427,7 @@ class Bill(models.Model):
                 })
         else:
             amount_paid = self.billingcycle.amount_paid()
+            sum = self.billingcycle.sum - amount_paid
             return render_to_string('membership/reminder.txt', {
                 'membership_type' : MEMBER_TYPES_DICT[membership.type],
                 'membership_type_raw' : membership.type,
@@ -449,11 +450,11 @@ class Bill(models.Model):
                 'reference_number': group_right(self.billingcycle.reference_number),
                 'original_sum': self.billingcycle.sum,
                 'amount_paid': amount_paid,
-                'sum': self.billingcycle.sum - amount_paid,
+                'sum': sum,
                 'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
                                      refnum = self.billingcycle.reference_number,
                                      duedate = None,
-                                     euros = self.billingcycle.sum)
+                                     euros = sum)
                 })
 
     # FIXME: Should save sending date
