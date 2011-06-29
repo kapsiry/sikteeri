@@ -407,6 +407,7 @@ class Bill(models.Model):
                 'bill_id': self.id,
                 'member_id': membership.id,
                 'member_name': membership.name(),
+                'billing_contact': membership.billing_contact,
                 'billing_name': unicode(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
