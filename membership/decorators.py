@@ -17,7 +17,7 @@ def trusted_host_required(view_func):
     """ decorator which checks remote address """
     def decorator(request, *args, **kwargs):
         if not hasattr(settings, 'TRUSTED_HOSTS') or not settings.TRUSTED_HOSTS:
-            settings.TRUSTED_HOSTS = []            
+            settings.TRUSTED_HOSTS = []
         if 'REMOTE_ADDR' in request.META:
             ip = request.META['REMOTE_ADDR']
             allowed = IpRangeList(*settings.TRUSTED_HOSTS)

@@ -177,7 +177,7 @@ class Membership(models.Model):
                     return unicode(contact.email_to())
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
-    
+
     def save(self, *args, **kwargs):
         if self.type not in MEMBER_TYPES_DICT.keys():
             raise Exception("Illegal member type '%s'" % self.type)
