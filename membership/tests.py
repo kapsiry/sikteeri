@@ -626,6 +626,7 @@ class LoginRequiredTest(TestCase):
                      '/membership/memberships/preapproved/',
                      '/membership/memberships/preapproved-plain/',
                      '/membership/memberships/approved/',
+                     '/membership/memberships/approved-emails/',
                      '/membership/memberships/deleted/',
                      '/membership/memberships/convert_to_an_organization/1/'
                      '/membership/memberships/',

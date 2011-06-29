@@ -62,10 +62,10 @@
         <ul>
             {% for bill in billingcycle.bill_set.all %}
             <li>
-	      <a href="{% url bill_edit bill.id %}">
-		{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}})
-		{% else %}{% trans "Bill" %} {{bill.id}}{% endif %}
-	      </a> [{{bill.reference_number|fref:"0"}}]
+        <a href="{% url bill_edit bill.id %}">
+    {% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}})
+    {% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
+              <small>({{bill.reference_number|fref:"0"}})</small>
               {% trans "sent" %} {{ bill.created|naturalday }},
               {% trans "due on" %} {{ bill.due_date|naturalday }}
               ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
@@ -75,8 +75,8 @@
 
             {% for payment in billingcycle.payment_set.all %}
             <li><a href="{% url payment_edit payment.id %}">
-		{% trans "Payment" %}</a>
-	      {% trans "paid on" %}
+              {% trans "Payment" %}</a>
+              {% trans "paid on" %}
               {{ payment.payment_day|naturalday }}
               ({{payment.amount}} &euro;,
               <small>{{payment.reference_number|fref:"0"}}</small>)

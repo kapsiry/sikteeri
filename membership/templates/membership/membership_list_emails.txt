@@ -1,0 +1,2 @@
+{% for member in member_list %}{{member.email}}
+{% endfor %}
