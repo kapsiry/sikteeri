@@ -42,6 +42,7 @@ from management.commands.makebills import can_send_reminder
 from management.commands.makebills import MembershipNotApproved
 
 from management.commands.csvbills import process_csv
+from management.commands.csvbills import PaymentFromFutureException
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -617,6 +618,11 @@ class CSVReadingTest(TestCase):
         cycle = BillingCycle.objects.get(pk=self.cycle.pk)
         self.assertEqual(cycle.reference_number, payment.reference_number)
         self.assertTrue(cycle.is_paid)
+
+    def test_future_payment(self):
+        error = "Should fail on payment in the future"
+        with open("../membership/fixtures/csv-future.txt", 'r') as f:
+            self.assertRaises(PaymentFromFutureException, process_csv, f)
 
 class LoginRequiredTest(TestCase):
     fixtures = ['membpership_fees.json', 'test_user.json']

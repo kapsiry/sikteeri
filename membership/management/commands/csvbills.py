@@ -12,7 +12,7 @@ import codecs
 import csv
 import os
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import logging
@@ -70,6 +70,7 @@ class UnicodeDictReader(UnicodeReader):
 
 class RequiredFieldNotFoundException(Exception): pass
 class DuplicateColumnException(Exception): pass
+class PaymentFromFutureException(Exception): pass
 
 class OpDictReader(UnicodeDictReader):
     '''Reader for Osuuspankki CSV file format
@@ -171,6 +172,9 @@ def process_csv(file_handle):
             continue
         if row['amount'] < 0: # Transaction is paid by us, ignored
             continue
+        # Payment in future more than 1 day is a fatal error
+        if row['date'] > datetime.now() + timedelta(days=1):
+            raise PaymentFromFutureException("Payment date in future")
         payment = row_to_payment(row)
 
         # Do nothing if this payment has already been assigned or ignored

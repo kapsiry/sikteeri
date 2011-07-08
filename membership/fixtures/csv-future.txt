@@ -1,0 +1,2 @@
+Kirjauspäivä;Arvopäivä;Määrä EUROA;Tapahtumalajikoodi;Selitys;Saaja/Maksaja;Saajan tilinumero;Viite;Viesti;Arkistotunnus;
+10.07.2030;10.07.2030;30,00;588;VIITESIIRTO;MEIKÄLÄINEN MATTI JOHANNES;;00000000000001110012;SEPA-MAKSU                         SAAJA/MOTTAG./BEN: Kapsi Internet-kKULUKOODI: SLEV                    ALKUP.MÄÄRÄ EUR              30.00+            EUR              30.00+;203007255UTZ00002151;
