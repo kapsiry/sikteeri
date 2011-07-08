@@ -10,7 +10,12 @@ Ota meihin yhteyttä myös, jos...
      - tämä muistutus on sinusta virheellinen.
      - haluat erota yhdistyksestä.
      - haluat sopia tai olet jo sopinut maksuaikatauluista.
-     - sinulla on muuta kysyttävää jäsenasioista.
+     - sinulla on muuta kysyttävää jäsenasioista.{% if membership_type_raw == 'S' %}
+
+Huomio: Kannatusjäsenten jäsenmaksu on noussut. Yhteisöille on tullut
+mahdolliseksi valita uusi jäsenluokka, yhteisöjäsenyys, jonka jäsenmaksu
+on pienempi. Halutessanne vaihtaa jäsenryhmää, vastatkaa tähän viestiin.
+{% endif %}
 
 Sisällytä viestiisi tämä muistutus.
 
@@ -20,16 +25,15 @@ Muistutuksen lopussa on listattuna tapahtumat laskuista ja maksuista.
 Olemme huomioineet {{ latest_recorded_payment|date:"SHORT_DATE_FORMAT" }} asti näkyvät maksusuoritukset.
 
 ____________________________________________________________________
-                                    *** MUISTUTUS ***
-Kapsi Internet-käyttäjät ry             {{ today|date:"SHORT_DATE_FORMAT" }}
+Kapsi Internet-käyttäjät ry             *** MUISTUTUS ***
 PL 11
-90571 OULU
+90571 OULU                                  {{ today|date:"SHORT_DATE_FORMAT" }}
 
-{{ member_name|ljust:"40" }}Jäsennumero   {{ member_id }}{% if billing_contact %}
+{{ member_name|ljust:"43" }} Jäsennumero   {{ member_id }}{% if billing_contact %}
 Maksaja
-{{ billing_name|ljust:"40" }}{% endif %}
-{{ street_address|ljust:"40" }}Laskunnumero  {{ bill_id }}
-{{ postal_code|ljust:"6" }} {{ post_office|ljust:"33" }}Eräpäivä      *** HETI ***
+{{ billing_name|ljust:"43" }}{% endif %}
+{{ street_address|ljust:"43" }} Laskunnumero  {{ bill_id }}
+{{ postal_code|ljust:"6" }} {{ post_office|ljust:"36" }} Eräpäivä      *** HETI ***
 
 Sähköposti: {{ email|ljust:"30" }}
 Kotipaikka: {{ municipality|ljust:"30" }}
