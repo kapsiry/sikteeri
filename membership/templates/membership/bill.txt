@@ -13,8 +13,7 @@ PL 11
 90571 OULU                                  {{ today|date:"SHORT_DATE_FORMAT" }}
 
 {{ member_name|ljust:"43" }} Jäsennumero   {{ member_id }}{% if billing_contact %}
-Maksaja
-{{ billing_name|ljust:"43" }}{% endif %}
+{% if membership_type_raw != "O" %}c/o {% endif %}{{ billing_name|ljust:"43" }}{% endif %}
 {{ street_address|ljust:"43" }} Laskunnumero  {{ bill_id }}
 {{ postal_code|ljust:"6" }} {{ post_office|ljust:"36" }} Eräpäivä      {{ due_date|date:"SHORT_DATE_FORMAT" }}
 
