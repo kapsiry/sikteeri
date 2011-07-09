@@ -1,2 +1,2 @@
-{% for member in member_list %}{{member.email}}
+{% for m in member_list %}{% if m.organization__email %}{{m.organization__email}}{% else %}{{m.person__email}}{% endif %}
 {% endfor %}
