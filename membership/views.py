@@ -796,8 +796,8 @@ def test_email(request, template_name='membership/test_email.html'):
 
 @trusted_host_required
 def membership_metrics(request):
-    unpaid_bills = Bill.objects.filter(billingcycle__is_paid=False)
-    unpaid_sum = unpaid_bills.aggregate(Sum("billingcycle__sum"))['billingcycle__sum__sum']
+    unpaid_cycles = BillingCycle.objects.filter(is_paid=False)
+    unpaid_sum = unpaid_cycles.aggregate(Sum("sum"))['sum__sum']
     if unpaid_sum == None:
         unpaid_sum = "0.0"
     d = {'memberships':
@@ -807,7 +807,7 @@ def membership_metrics(request):
           'deleted': Membership.objects.filter(status='D').count(),
           },
          'bills':
-         {'unpaid_count': unpaid_bills.count(),
+         {'unpaid_count': unpaid_cycles.count(),
           'unpaid_sum': float(unpaid_sum),
           },
          }
