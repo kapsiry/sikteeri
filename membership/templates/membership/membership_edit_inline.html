@@ -69,7 +69,7 @@
               {% trans "sent" %} {{ bill.created|naturalday }},
               {% trans "due on" %} {{ bill.due_date|naturalday }}
               ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
-              <small><a href="https://tuki.kapsi.fi/otrs/index.pl?Action=AgentTicketSearch&amp;Subaction=Search&amp;Subject=maksulasku+{{bill.id}}" target="_blank">OTRS</a></small>
+              <small><a href="https://tuki.kapsi.fi/otrs/index.pl?Action=AgentTicketSearch&amp;Subaction=Search&amp;Subject={% if bill.is_reminder %}muistutus{% else %}maksulasku{% endif %}+{{bill.id}}" target="_blank">OTRS</a></small>
             </li>
             {% endfor %}
 
