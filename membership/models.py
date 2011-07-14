@@ -283,6 +283,22 @@ class Membership(models.Model):
                 contact.delete_if_no_references(user)
         log_change(self, user, change_message="Deleted")
 
+    def has_duplicate(self):
+        if self.person and not self.organization:
+            first_name = self.person.first_name.strip()
+            last_name = self.person.last_name.strip()
+
+            duplicates = Membership.objects.filter(person__first_name__icontains=first_name,
+                                                   person__last_name__icontains=last_name)
+            if len(duplicates) > 1:
+                return True
+        elif self.organization and not self.person:
+            duplicates = Membership.objects.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
+            if len(duplicates) > 1:
+                return True
+
+        return False
+
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 

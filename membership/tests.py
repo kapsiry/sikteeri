@@ -177,6 +177,8 @@ def create_dummy_member(status, type='P', mid=None):
     person = Contact(**d)
     person.save()
     if type == 'O':
+        person.organization_name = u'Organization %i' % i
+        person.save()
         membership = Membership(id=mid, type=type, status=status,
                                 organization=person,
                                 nationality='Finnish',
@@ -999,3 +1001,56 @@ class DecoratorTest(TestCase):
         response2 = dummyView(request)
         self.assertEqual(response2.status_code, 403)
 
+
+class DuplicateMembershipDetectionTest(TestCase):
+    def setUp(self):
+        self.m1 = create_dummy_member('N')
+        self.m2 = create_dummy_member('N')
+        self.m3 = create_dummy_member('N')
+        self.m4 = create_dummy_member('N')
+
+        self.m1.person.first_name = u"Foo"
+        self.m1.person.last_name = u"Bar"
+        self.m1.person.save()
+
+        self.m3.person.first_name = u"Baz"
+        self.m3.person.last_name = u"Bar"
+        self.m3.person.save()
+
+        self.m3.person.first_name = u"Foo"
+        self.m3.person.last_name = u"Bar"
+        self.m3.person.save()
+
+        self.m4.person.first_name = u" foo"
+        self.m4.person.last_name = u"BAR "
+        self.m4.person.save()
+
+        self.m5 = create_dummy_member('N', type='O')
+        self.m5.organization.organization_name = u'Organization Foo'
+        self.m5.save()
+
+        self.m6 = create_dummy_member('N', type='O')
+        self.m6.organization.organization_name = u'Organization foo '
+        self.m6.save()
+
+        self.m7 = create_dummy_member('N', type='O')
+        self.m7.organization.organization_name = u'Organization Bar'
+        self.m7.save()
+
+    def test_has_duplicate_membership(self):
+        self.assertTrue(self.m3.has_duplicate())
+
+    def test_same_last_name(self):
+        self.assertFalse(self.m2.has_duplicate())
+
+    def test_strippable_spaces_and_different_case(self):
+        self.assertTrue(self.m4.has_duplicate())
+        self.assertTrue(self.m1.has_duplicate())
+
+    def test_has_duplicate_organization(self):
+        # TODO: this fails, don't know why
+        self.assertTrue(self.m5.has_duplicate())
+        self.assertTrue(self.m6.has_duplicate())
+
+    def test_has_duplicate_organization_false(self):
+        self.assertFalse(self.m7.has_duplicate())
