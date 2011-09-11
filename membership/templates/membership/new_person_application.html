@@ -21,21 +21,21 @@
 <div id="new_application">
   {{ form.non_field_errors }}
   <fieldset><legend>Henkilötiedot</legend>
-  <p{% if form.first_name.errors %} class="error"{% endif %}>
-    <label for="id_first_name">{{ form.first_name.label }}</label>
-    {{ form.first_name }} <span class="required">*</span>{% if form.first_name.help_text %}
-    <span class="help"> {{ form.first_name.help_text }}</span>{% endif %}
-    {% for error in form.first_name.errors %}
-    <span class="error{% if form.first_name.help_text %} newline{% endif %}">{{ error }}</span>
-    {% endfor %}
-  </p>
-
   <p{% if form.given_names.errors %} class="error"{% endif %}>
     <label for="id_given_names">{{ form.given_names.label }}</label>
     {{ form.given_names }} <span class="required">*</span>{% if form.given_names.help_text %}
     <span class="help"> {{ form.given_names.help_text }}</span>{% endif %}
     {% for error in form.given_names.errors %}
     <span class="error{% if form.given_names.help_text %} newline{% endif %}">{{ error }}</span>
+    {% endfor %}
+  </p>
+
+  <p{% if form.first_name.errors %} class="error"{% endif %}>
+    <label for="id_first_name">{{ form.first_name.label }}</label>
+    {{ form.first_name }} <span class="required">*</span>{% if form.first_name.help_text %}
+    <span class="help"> {{ form.first_name.help_text }}</span>{% endif %}
+    {% for error in form.first_name.errors %}
+    <span class="error{% if form.first_name.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
 
@@ -285,9 +285,10 @@ $("#id_phone").focusout(function() {
 });
 
 // Auto-populate given names
-$("#id_first_name").focusout(function() {
-  if ($("#id_given_names").val().length == 0) {
-    $("#id_given_names").val($("#id_first_name").val());
+$("#id_given_names").focusout(function() {
+  if ($("#id_first_name").val().length == 0) {
+    firstname = $("#id_given_names").val().split(" ")[0]
+    $("#id_first_name").val(firstname);
   }
 });
 
