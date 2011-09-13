@@ -27,6 +27,7 @@ from services.models import Alias, Service, ServiceType
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
 from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
+from public_memberlist import public_memberlist_data
 
 from services.views import check_alias_availability, validate_alias
 
@@ -812,6 +813,20 @@ def membership_metrics(request):
           },
          }
     return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
+                        mimetype='application/json')
+
+
+@trusted_host_required
+def public_memberlist(request):
+    data = public_memberlist_data()
+    public_members = []
+    for member in data['public_members']:
+        public_members.append(dict(name=member.name(),
+                                   url=member.primary_contact().homepage))
+    json_data=dict(totalpublic=data['public_membership_count'],
+                   total=data['membership_count'],
+                   public_members=public_members)
+    return HttpResponse(simplejson.dumps(json_data, sort_keys=True, indent=4),
                         mimetype='application/json')
 
 @trusted_host_required

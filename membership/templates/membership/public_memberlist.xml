@@ -1,4 +1,10 @@
-<jasenlista>
-    <total>{{ count }}</total>{% for member in member_list %}
-    <person><name>{{ member.name }}</name><url>{{ member.primary_contact.homepage }}</url></person>{% endfor %}
-</jasenlista>
+<memberlist>
+    <totalpublic>{{ public_membership_count }}</totalpublic>
+    <total>{{ membership_count }}</total>
+    <public_members>{% for member in public_members %}
+        <person>
+            <name>{{ member.name }}</name>
+            <url>{{ member.primary_contact.homepage }}</url>
+        </person>{% endfor %}
+    </public_members>
+</memberlist>

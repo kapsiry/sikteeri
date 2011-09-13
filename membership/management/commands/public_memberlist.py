@@ -6,13 +6,10 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 from membership.models import *
+from membership.public_memberlist import public_memberlist_data
 
 class Command(NoArgsCommand):
     def handle_noargs(self, **options):
-        mship = Membership.objects.filter(status__exact='A', id__gt=0)
-        count = mship.count()
-        mship = mship.filter(public_memberlist__exact="True").order_by('person__last_name', 'person__first_name')
-        return render_to_string('membership/public_memberlist.xml', {
-                                  'count': count,
-		                          'member_list': mship
-                               } ).encode('utf-8')
+        template_name = 'membership/public_memberlist.xml'
+        data = public_memberlist_data()
+        return render_to_string(template_name, data).encode('utf-8')
