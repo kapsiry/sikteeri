@@ -815,19 +815,11 @@ def membership_metrics(request):
     return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
                         mimetype='application/json')
 
-
 @trusted_host_required
 def public_memberlist(request):
+    template_name = 'membership/public_memberlist.xml'
     data = public_memberlist_data()
-    public_members = []
-    for member in data['public_members']:
-        public_members.append(dict(name=member.name(),
-                                   url=member.primary_contact().homepage))
-    json_data=dict(totalpublic=data['public_membership_count'],
-                   total=data['membership_count'],
-                   public_members=public_members)
-    return HttpResponse(simplejson.dumps(json_data, sort_keys=True, indent=4),
-                        mimetype='application/json')
+    return render_to_response(template_name, data, mimetype='text/xml')
 
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
