@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <memberlist>
     <totalpublic>{{ public_membership_count }}</totalpublic>
     <total>{{ membership_count }}</total>
