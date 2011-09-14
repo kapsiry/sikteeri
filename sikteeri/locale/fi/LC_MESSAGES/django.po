@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 11:41+0300\n"
+"POT-Creation-Date: 2011-09-14 20:09+0300\n"
 "PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -84,59 +84,55 @@ msgstr "Uudet hakemukset"
 msgid "Preapproved applications"
 msgstr "Esihyväksytyt hakemukset"
 
-#: templates/menu.html:22
-msgid "Preapproved applications (plain)"
-msgstr "Esihyväksytyt hakemukset (plain)"
-
-#: templates/menu.html:23
+#: templates/menu.html:24
 msgid "Members"
 msgstr "Jäsenet"
 
-#: templates/menu.html:24
-msgid "Members (emails)"
-msgstr "Jäsenet (sähköpostit)"
-
 #: templates/menu.html:25
+msgid "emails"
+msgstr "emailit"
+
+#: templates/menu.html:27
 msgid "Deleted members"
 msgstr "Poistetut jäsenet"
 
-#: templates/menu.html:26
+#: templates/menu.html:28
 msgid "All membership entities"
 msgstr "Kaikki jäsentietueet"
 
-#: templates/menu.html:30
+#: templates/menu.html:32
 msgid "Search memberships"
 msgstr "Hae jäsentietoja"
 
-#: templates/menu.html:37
+#: templates/menu.html:39
 msgid "List of unpaid bills"
 msgstr "Lista avoimista laskuista"
 
-#: templates/menu.html:38
+#: templates/menu.html:40
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:39
+#: templates/menu.html:41
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:40
+#: templates/menu.html:42
 msgid "Ignored payments"
 msgstr "Huomiotta jätetyt maksut"
 
-#: templates/menu.html:41
+#: templates/menu.html:43
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:43
+#: templates/menu.html:45
 msgid "Import payments"
 msgstr "Tuo maksut"
 
-#: templates/menu.html:48
+#: templates/menu.html:50
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:53
+#: templates/menu.html:55
 msgid "Admin"
 msgstr "Ylläpito"
 
@@ -151,3 +147,9 @@ msgstr "Salasana"
 #: templates/registration/login.html:12
 msgid "Log in"
 msgstr "Kirjaudu sisään"
+
+#~ msgid "Preapproved applications (plain)"
+#~ msgstr "Esihyväksytyt hakemukset (plain)"
+
+#~ msgid "Members (emails)"
+#~ msgstr "Jäsenet (sähköpostit)"
