@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     url(r'testemail/$', 'membership.views.test_email', name='test_email'),
     url(r'metrics/$', 'membership.views.membership_metrics'),
     url(r'public_memberlist/$', 'membership.views.public_memberlist'),
+    url(r'unpaid_members/$', 'membership.views.unpaid_members'),
 
     # Should we use this?
     # <http://docs.djangoproject.com/en/dev/ref/generic-views/#django-views-generic-create-update-create-object>

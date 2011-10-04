@@ -28,6 +28,7 @@ from forms import PersonApplicationForm, OrganizationApplicationForm, PersonCont
 from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
+from unpaid_members import unpaid_members_data
 
 from services.views import check_alias_availability, validate_alias
 
@@ -820,6 +821,12 @@ def public_memberlist(request):
     template_name = 'membership/public_memberlist.xml'
     data = public_memberlist_data()
     return render_to_response(template_name, data, mimetype='text/xml')
+
+@trusted_host_required
+def unpaid_members(request):
+    json_obj = unpaid_members_data()
+    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+                        mimetype='application/json')
 
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
