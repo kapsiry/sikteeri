@@ -9,5 +9,5 @@ def unpaid_members_data():
         member = bc.membership
         accounts = member.alias_set.filter(account=True)
         for account in accounts:
-            unpaid_members.append((member.id, account))
+            unpaid_members.append((member.id, account.name))
     return unpaid_members
