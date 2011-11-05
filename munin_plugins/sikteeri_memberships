@@ -59,8 +59,7 @@ def main():
 
     code, payload = httpreq(env['URL'])
     if code != 200:
-        print >> sys.stderr, "sikteeri munin plugin ERROR: received HTTP code %i from %s" % \
-              (code, url)
+        print >> sys.stderr, "sikteeri munin plugin ERROR: received HTTP code %i" % code
         sys.exit(1)
     d = json.loads(payload)
 
