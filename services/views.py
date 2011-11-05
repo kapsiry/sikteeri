@@ -4,16 +4,16 @@ import re
 import simplejson
 import logging
 logger = logging.getLogger("services.views")
-from membership.utils import log_change, serializable_membership_info
+from membership.utils import log_change
 from membership.utils import bake_log_entries
 from membership.models import Membership
 from membership.forms import VALID_USERNAME_RE
 from services.models import Alias
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.db import transaction
 from django.forms import ModelForm, ModelChoiceField
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _

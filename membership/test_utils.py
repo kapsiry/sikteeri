@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from random import choice
-
-from models import *
+import logging
 
 # Finnish population register center's most popular first names for year 2009
 first_names = [

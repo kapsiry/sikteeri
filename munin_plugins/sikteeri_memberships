@@ -3,7 +3,6 @@
 
 from os import environ as env
 import sys
-import urllib
 import urllib2
 from urllib2 import HTTPError, URLError
 

@@ -1,15 +1,13 @@
 import logging
 logger = logging.getLogger("models")
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import unicodedata
 
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import Q
-
-from membership.models import Membership
 
 def remove_accents(str):
     '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''

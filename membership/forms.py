@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import re
-import logging
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from utils import log_change
-from models import *
 from services.models import Alias
 
 # User login format validation regex
