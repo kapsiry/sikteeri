@@ -10,9 +10,3 @@ local_settings.py
 *.mo
 /env
 django.wsgi
-
-# Eclipse project files
-/.project
-/.pydevproject
-/.settings/
-
