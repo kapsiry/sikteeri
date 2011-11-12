@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<p>{% trans "Presenting the new jazzy Sikteeri" %}.</p>
+<p>{% trans "Presenting the new jazzy Sikteeri" %} ({{version}}).</p>
 
 <p><img src="{{ MEDIA_URL }}/static/images/django.jpg" alt="{% trans "Django and the jazz cigarette" %}"></p>
 {% endblock %}
