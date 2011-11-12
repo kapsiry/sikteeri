@@ -1,0 +1,17 @@
+<VirtualHost *:80>
+    ServerName <host>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !=/<cgi-deploy-url>
+    RewriteRule .* https://<host>/ [R=301]
+
+    Alias /<cgi-deploy-url> <path-to-git-repo>/cgi-bin/deploy.cgi
+    SuexecUserGroup <user> <group>
+    <Directory <path-to-git-repo>/cgi-bin/deploy.cgi>
+    	SetHandler cgi-script
+        Options +ExecCGI
+    </Directory>
+
+    ErrorLog <path-to-vhost-log-dir>/error.log
+    LogLevel warn
+    CustomLog <path-to-vhost-log-dir>/access.log combined
+</VirtualHost>
