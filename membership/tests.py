@@ -666,6 +666,8 @@ class TrustedHostTest(TestCase):
         self.urls = ['/membership/admtool/1',
                      '/membership/admtool/lookup/alias/test',
                      '/membership/metrics/',
+                     '/membership/public_memberlist/',
+                     '/membership/unpaid_members/',
                      ]
         self.oldhosts = settings.TRUSTED_HOSTS
 
