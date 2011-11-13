@@ -1,0 +1,38 @@
+<VirtualHost *:443>
+    ServerAdmin <server-admin-email>
+    ServerName <host>
+    SSLEngine on
+
+    SSLCACertificateFile <path-to-cacert-file>
+    SSLCertificateFile <path-to-cert-file>
+    SSLCertificateKeyFile <path-to-cert-key-file>
+
+    Header set Strict-Transport-Security "max-age=86400"
+
+    WSGIApplicationGroup deployment-name
+    WSGIDaemonProcess deployment-name python-path=<path-to-git-repo>:<path-to-env-site-packages> home=<path-to-git-repo>/sikteeri user=<user> group=<user>
+    WSGIProcessGroup deployment-name
+    WSGIScriptAlias <path-to-webroot>/django.wsgi
+
+    Alias /deployment-name/static/membership  <path-to-git-repo>/membership/static
+    <Directory <path-to-git-repo>/membership/static>
+        Order allow,deny
+	Allow from all
+    </Directory>
+
+    Alias /deployment-name/membership  <path-to-git-repo>/static
+    <Directory <path-to-git-repo>/sikteeri/static>
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    Alias /deployment-name/admin_media <path-to-admin-media>
+    <Directory <path-to-admin-media>>
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    ErrorLog <path-to-vhost-log-dir>/error.log
+    LogLevel warn
+    CustomLog <path-to-vhost-log-dir>/access.log combined
+</VirtualHost>
