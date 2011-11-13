@@ -9,7 +9,7 @@
     # http://httpd.apache.org/docs/2.2/sections.html#file-and-web
     <Directory <path-to-git-repo>/cgi-bin>
         <Files deploy.cgi>
-	    SetHandler cgi-script
+            SetHandler cgi-script
             Options +ExecCGI
         </Files>
     </Directory>

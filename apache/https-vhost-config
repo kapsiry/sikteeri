@@ -17,7 +17,7 @@
     Alias /deployment-name/static/membership  <path-to-git-repo>/membership/static
     <Directory <path-to-git-repo>/membership/static>
         Order allow,deny
-	Allow from all
+        Allow from all
     </Directory>
 
     Alias /deployment-name/membership  <path-to-git-repo>/static
