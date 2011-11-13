@@ -6,9 +6,12 @@
 
     Alias /<cgi-deploy-url> <path-to-git-repo>/cgi-bin/deploy.cgi
     SuexecUserGroup <user> <group>
-    <Directory <path-to-git-repo>/cgi-bin/deploy.cgi>
-    	SetHandler cgi-script
-        Options +ExecCGI
+    # http://httpd.apache.org/docs/2.2/sections.html#file-and-web
+    <Directory <path-to-git-repo>/cgi-bin>
+        <Files deploy.cgi>
+	    SetHandler cgi-script
+            Options +ExecCGI
+        </Files>
     </Directory>
 
     ErrorLog <path-to-vhost-log-dir>/error.log
