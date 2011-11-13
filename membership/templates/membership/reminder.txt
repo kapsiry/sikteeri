@@ -1,10 +1,13 @@
 Hei!
 
-Havaitsimme jäsenmaksuseurannassa puuttuvia maksusuorituksia.
-Tämä on muistutus jäsenmaksujen maksamisesta.
+Havaitsimme jäsenmaksuseurannassa puuttuvia maksusuorituksia. Tämä on
+muistutus jäsenmaksujen maksamisesta. Maksamaton jäsenmaksu johtaa
+palveluiden lukitsemiseen ja myöhemmin jäsenen erottamiseen
+yhdistyksestä!
 
 Tarkistathan muistutuksessa olevat yhteystietosi ja ilmoita
 muuttuneet tiedot meille vastaamalla tähän viestiin.
+
 
 Ota meihin yhteyttä myös, jos...
      - tämä muistutus on sinusta virheellinen.
