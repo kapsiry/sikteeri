@@ -283,21 +283,32 @@ class Membership(models.Model):
                 contact.delete_if_no_references(user)
         log_change(self, user, change_message="Deleted")
 
-    def has_duplicate(self):
+    def find_duplicates(self):
+        '''
+        Returns a list of tuples. Each tuple consists of the duplicate
+        membership object and a string specifying the reason the system
+        considered it a duplicate.
+        '''
+        duplicates = []
+        members = Membership.objects
+
         if self.person and not self.organization:
             first_name = self.person.first_name.strip()
             last_name = self.person.last_name.strip()
 
-            duplicates = Membership.objects.filter(person__first_name__icontains=first_name,
-                                                   person__last_name__icontains=last_name)
-            if len(duplicates) > 1:
-                return True
+            qs = members.filter(person__first_name__icontains=first_name,
+                                person__last_name__icontains=last_name)
+            if len(qs) > 1:
+                for obj in qs:
+                    duplicates.append((obj, _('First and last make these suspiciously similar to each other')))
         elif self.organization and not self.person:
-            duplicates = Membership.objects.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
-            if len(duplicates) > 1:
-                return True
+            qs = members.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
 
-        return False
+            if len(qs) > 1:
+                for obj in qs:
+                    duplicates.append((obj, _('Organization names make these suspiciously similar to each other')))
+
+        return duplicates
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)

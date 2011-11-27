@@ -1038,19 +1038,19 @@ class DuplicateMembershipDetectionTest(TestCase):
         self.m7.save()
 
     def test_has_duplicate_membership(self):
-        self.assertTrue(self.m3.has_duplicate())
+        self.assertTrue(len(self.m3.find_duplicates()) > 0)
 
     def test_same_last_name(self):
-        self.assertFalse(self.m2.has_duplicate())
+        self.assertFalse(len(self.m2.find_duplicates()) > 0)
 
     def test_strippable_spaces_and_different_case(self):
-        self.assertTrue(self.m4.has_duplicate())
-        self.assertTrue(self.m1.has_duplicate())
+        self.assertTrue(len(self.m4.find_duplicates()) > 0)
+        self.assertTrue(len(self.m1.find_duplicates()) > 0)
 
     def test_has_duplicate_organization(self):
-        # TODO: this fails, don't know why
-        self.assertTrue(self.m5.has_duplicate())
-        self.assertTrue(self.m6.has_duplicate())
+        # TODO: this fails, don't know why, needs to be fixed
+        self.assertTrue(len(self.m5.find_duplicates()) > 0)
+        self.assertTrue(len(self.m6.find_duplicates()) > 0)
 
     def test_has_duplicate_organization_false(self):
-        self.assertFalse(self.m7.has_duplicate())
+        self.assertEquals(len(self.m7.find_duplicates()), 0)
