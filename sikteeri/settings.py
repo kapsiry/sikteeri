@@ -80,6 +80,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'sikteeri.ForceDefaultLanguageMiddleware.ForceDefaultLanguageMiddleware',
+    'sikteeri.GitVersionHeaderMiddleware.GitVersionHeaderMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
