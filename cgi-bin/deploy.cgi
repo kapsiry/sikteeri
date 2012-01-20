@@ -41,9 +41,13 @@ with working_directory('../'):
         if s != 0:
             raise Exception("git pull returned %(s)s (%(o)s)" % vars())
 
-        s, o = gso('touch webroot/django.wsgi')
-        if s != 0:
-            raise Exception("touch returned %(s)s (%(o)s)" % vars())
+        pidfile = os.path.join(os.environ['HOME'], 'gunicorn.pid')
+        pid = None
+        if not os.path.exists(pidfile):
+            raise Exception("pidfile %s does not exist" % pidfile)
+        with open(pidfile) as f:
+            pid = int(f.read())
+            os.kill(pid, 1)
 
         print "Content-Type: text/plain"
         print
