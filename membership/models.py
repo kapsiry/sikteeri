@@ -172,24 +172,32 @@ class Membership(models.Model):
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
 
-    def save(self, *args, **kwargs):
+    # https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.clean
+    def clean(self):
         if self.type not in MEMBER_TYPES_DICT.keys():
-            raise Exception("Illegal member type '%s'" % self.type)
+            raise ValidationError("Illegal member type '%s'" % self.type)
         if self.status not in MEMBER_STATUS_DICT.keys():
-            raise Exception("Illegal member status '%s'" % self.status)
+            raise ValidationError("Illegal member status '%s'" % self.status)
         if self.status != 'D':
             if self.type == 'O' and self.person:
-                raise Exception("Organization may not have a person contact.")
+                raise ValidationError("Organization may not have a person contact.")
             if self.type != 'O' and self.organization:
-                raise Exception("Non-organization may not have an organization contact.")
+                raise ValidationError("Non-organization may not have an organization contact.")
 
             if self.person and self.organization:
-                raise Exception("Person-contact and organization-contact are mutually exclusive.")
+                raise ValidationError("Person-contact and organization-contact are mutually exclusive.")
             if not self.person and not self.organization:
-                raise Exception("Either Person-contact or organization-contact must be defined.")
+                raise ValidationError("Either Person-contact or organization-contact must be defined.")
         else:
             if self.person or self.organization or self.billing_contact or self.tech_contact:
-                raise Exception("A membership may not have any contacts if it is deleted.")
+                raise ValidationError("A membership may not have any contacts if it is deleted.")
+
+    def save(self, *args, **kwargs):
+        try:
+            self.full_clean()
+        except ValidationError, ve:
+            raise ve
+
         super(Membership, self).save(*args, **kwargs)
 
     def preapprove(self, user):
