@@ -1,42 +1,27 @@
 # -*- coding: utf-8 -*-
 
-# The following need to be defined (empty strings might work for development)
-SECRET_KEY = None
-IBAN_ACCOUNT_NUMBER = None  # Pan-European new standard bank account number
-BIC_CODE = None             # Bank account's bank code in the BIC format
-BILLING_FROM_EMAIL = None   # E-mail address for bill sending. Also see
-                            # the setting EMAIL_BACKEND.
-BILLING_CC_EMAIL = None     # E-mail address (or None) for sending copies of the bills
+# For quick start, simply copy local_settings.py.template as local_settings.py.
 
-# Format for email addresses: u'Karhuryhmä <karhuryhma@example.com>'
-FROM_EMAIL = None           # Generic from e-mail
-SYSADMIN_EMAIL = None       # Sysadmin email to send preapprove e-mails to
-BILL_SUBJECT = None         # Text to be used as bill subjects
-REMINDER_SUBJECT = None     # Text to be used as reminder subjects
+# Development
+from devel_settings import *
 
-# Billing options
-BILL_DAYS_BEFORE_CYCLE = 14 # Send bills 2 weeks before new cycle starts
-BILL_DAYS_TO_DUE = 14       # New bills will have a due date 2 weeks in the future
-REMINDER_GRACE_DAYS = 14    # Send reminders 2 weeks after previous due day
-ENABLE_REMINDERS = False    # Enable reminder sending
-UNIX_EMAIL_DOMAIN = None    # Reminders will be additionally sent to account@domain if specified
+# Production: generate SECRET_KEY and create production_settings before use.
+# Do not import devel_settings!
+# SECRET_KEY = None
 
-# Maintenance message (when set to other than None, show a maintenance message
-# on the front page)
-MAINTENANCE_MESSAGE = None
+# In non-debug mode, admins get emails if there are errors
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+MANAGERS = ADMINS
+
+# Maintenance message (when set, show a maintenance message on the front page)
+#MAINTENANCE_MESSAGE = 'Maintenance break for software updates'
 
 # Uncomment the following lines to enable more verbose stdout logging.
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-# Secure cookies require https, for local development needs to be False.
-# Default = True
-SESSION_COOKIE_SECURE = False
-
-# Don't really send email messages, only show them on console
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_SUBJECT_PREFIX = '[sikteeri] '
+# "Send" emails to a mbox file through a mock email backend
 #EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
 #EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
-
-TRUSTED_HOSTS = ['127.0.0.1']
