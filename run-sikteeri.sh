@@ -29,5 +29,5 @@ if [[ -z $PORT ]]; then
     PORT=12765
 fi
 
-./manage.py runserver $PORT || fail "Starting server failed"
+gunicorn_django -b 127.0.0.1:$PORT || fail "Starting server failed"
 
