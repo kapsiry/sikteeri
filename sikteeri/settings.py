@@ -1,6 +1,6 @@
 # Django settings for sikteeri project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -8,15 +8,6 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-
-DATABASES = {
-    'default' : {
-        'NAME': 'sikteeri_test.sqlite',
-        'ENGINE': 'django.db.backends.sqlite3',
-        'USER': '',
-        'PASSWORD' : '',
-    }
-}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -101,6 +92,9 @@ INSTALLED_APPS = (
     'services',
 )
 
+# If set, this string will be displayed and sikteeri is disabled
+MAINTENANCE_MESSAGE = None
+
 SESSION_COOKIE_SECURE = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
@@ -123,4 +117,3 @@ assert(REMINDER_GRACE_DAYS != None)
 assert(BILL_DAYS_BEFORE_CYCLE != None)
 assert(BILL_DAYS_TO_DUE != None)
 assert(TRUSTED_HOSTS != None)
-MAINTENANCE_MESSAGE
