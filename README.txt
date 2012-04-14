@@ -1,9 +1,9 @@
 REQUIREMENTS
 ============
 
-* django (1.2, known not to work on older versions)
-* simplejson
-* pysqlite, if using Python < 2.5
+* Django 1.4 (as of 2012/04/14)
+* Python 2.6
+* gunicorn for production deployment
 * gettext
 
 The virtualenv install script installs everything but the Python sqlite

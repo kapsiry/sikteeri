@@ -4,13 +4,9 @@
 from os import environ as env
 import sys
 import urllib2
+import json
 from urllib2 import HTTPError, URLError
 
-try:
-    import simplejson
-    json = simplejson
-except Exception, e:
-    import json
 
 def httpreq(url):
     req = urllib2.Request(url)

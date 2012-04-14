@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import json
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment
@@ -18,8 +19,6 @@ from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
-
-import simplejson
 
 from services.models import Alias, Service, ServiceType
 
@@ -748,15 +747,15 @@ def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     #sleep(1)
     json_obj = serializable_membership_info(membership)
-    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
-    # return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-    #                    mimetype='text/plain')
+    # return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
+    #                     mimetype='text/plain')
 
 # Public access
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.raw_post_data)
-    msg = simplejson.loads(request.raw_post_data)
+    msg = json.loads(request.raw_post_data)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
              'MEMBERSHIP_DETAIL': membership_detail_json,
@@ -812,7 +811,7 @@ def membership_metrics(request):
           'unpaid_sum': float(unpaid_sum),
           },
          }
-    return HttpResponse(simplejson.dumps(d, sort_keys=True, indent=4),
+    return HttpResponse(json.dumps(d, sort_keys=True, indent=4),
                         mimetype='application/json')
 
 @trusted_host_required
@@ -824,14 +823,14 @@ def public_memberlist(request):
 @trusted_host_required
 def unpaid_members(request):
     json_obj = unpaid_members_data()
-    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
 
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     json_obj = admtool_membership_details(membership)
-    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
+    return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         mimetype='application/json')
 
 @trusted_host_required

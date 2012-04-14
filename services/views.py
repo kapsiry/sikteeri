@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-import simplejson
+import json
 import logging
 logger = logging.getLogger("services.views")
 from membership.utils import log_change
@@ -107,5 +107,5 @@ def validate_alias(request, alias):
     if re.match(VALID_USERNAME_RE, alias) == None:
         valid = False
     json_obj = {'exists' : exists, 'valid' : valid}
-    return HttpResponse(simplejson.dumps(json_obj, sort_keys=True, indent=4),
-                            mimetype='application/json')
+    return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
+                        mimetype='application/json')

@@ -9,7 +9,7 @@ logger = logging.getLogger("tests")
 from decimal import Decimal
 from datetime import datetime, timedelta
 from random import randint
-import simplejson
+import json
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -746,10 +746,10 @@ class MemberApplicationTest(TestCase):
         login = self.client.login(username='admin', password='dhtn')
         self.failUnless(login, 'Could not log in')
         json_response = self.client.post('/membership/application/handle_json/',
-                                             simplejson.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
-                                             content_type="application/json")
+                                         json.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
+                                         content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
-        json_dict = simplejson.loads(json_response.content)
+        json_dict = json.loads(json_response.content)
         self.assertEqual(json_dict['contacts']['person']['first_name'],
                          u'&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
@@ -758,10 +758,10 @@ class MemberApplicationTest(TestCase):
 
     def _validate_alias(self, alias):
         json_response = self.client.post('/membership/application/handle_json/',
-            simplejson.dumps({"requestType": "VALIDATE_ALIAS", "payload": alias}),
-                             content_type="application/json")
+            json.dumps({"requestType": "VALIDATE_ALIAS", "payload": alias}),
+                       content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
-        json_dict = simplejson.loads(json_response.content)
+        json_dict = json.loads(json_response.content)
         return json_dict
 
     def test_validate_alias_ajax(self):
@@ -930,7 +930,7 @@ class MetricsInterfaceTest(TestCase):
     def test_membership_statuses(self):
         response = self.client.get('/membership/metrics/')
         self.assertEqual(response.status_code, 200)
-        d = simplejson.loads(response.content)
+        d = json.loads(response.content)
         self.assertTrue(d.has_key(u'memberships'))
         for key in [u'new', u'preapproved', u'approved', u'deleted']:
             self.assertTrue(d[u'memberships'].has_key(key))

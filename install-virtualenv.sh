@@ -32,7 +32,7 @@ function fatal () {
 
 test -a $ENVDIR && fatal "$ENVDIR already exists"
 
-$VIRTUALENV $ENVDIR || fatal "Failed to create virtualenv $ENVDIR"
+$VIRTUALENV $ENVDIR --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
 
 source $ENVDIR/bin/activate
 
@@ -40,9 +40,7 @@ if [[ ! -a $ENVDIR/bin/pip ]]; then
     $ENVDIR/bin/easy_install pip || fatal "Could not install pip in virtualenv"
 fi
 
-for pkg in django simplejson; do
-    $ENVDIR/bin/pip install $pkg || fatal "Could not install $pkg in $ENVDIR"
-done
+pip install -r requirements.txt
 
 echo "export PYTHONPATH=.." >> $ENVDIR/bin/activate
 
