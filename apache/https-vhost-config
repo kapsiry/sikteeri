@@ -9,25 +9,24 @@
 
     Header set Strict-Transport-Security "max-age=86400"
 
-    WSGIApplicationGroup deployment-name
-    WSGIDaemonProcess deployment-name python-path=<path-to-git-repo>:<path-to-env-site-packages> home=<path-to-git-repo>/sikteeri user=<user> group=<user>
-    WSGIProcessGroup deployment-name
-    WSGIScriptAlias <path-to-webroot>/django.wsgi
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !static/
+    RewriteRule ^(.*)$ http://127.0.0.1:<gunicorn-port>/$1 [L,P]
 
-    Alias /deployment-name/static/membership  <path-to-git-repo>/membership/static
+    Alias /static/admin <path-to-admin-media>
+    <Directory <path-to-admin>>
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    Alias /static/membership  <path-to-git-repo>/membership/static
     <Directory <path-to-git-repo>/membership/static>
         Order allow,deny
         Allow from all
     </Directory>
 
-    Alias /deployment-name/membership  <path-to-git-repo>/static
+    Alias /static <path-to-git-repo>/static
     <Directory <path-to-git-repo>/sikteeri/static>
-        Order allow,deny
-        Allow from all
-    </Directory>
-
-    Alias /deployment-name/admin_media <path-to-admin-media>
-    <Directory <path-to-admin-media>>
         Order allow,deny
         Allow from all
     </Directory>

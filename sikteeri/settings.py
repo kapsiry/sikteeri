@@ -45,10 +45,7 @@ MEDIA_ROOT = 'static/'
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = ''
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -109,6 +106,8 @@ INSTALLED_APPS = (
 SESSION_COOKIE_SECURE = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+USE_X_FORWARDED_HOST = True
 
 from local_settings import *
 
