@@ -1,0 +1,7 @@
+.logo {
+    background-image: url("../images/sikteeri_bomb.png");
+}
+
+body {
+    border-top: 5px dashed red;
+}

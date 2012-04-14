@@ -1,6 +1,8 @@
 # Django settings for sikteeri project.
 
-DEBUG = True
+import django.conf.global_settings as DEFAULT_SETTINGS
+
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -8,15 +10,6 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-
-DATABASES = {
-    'default' : {
-        'NAME': 'sikteeri_test.sqlite',
-        'ENGINE': 'django.db.backends.sqlite3',
-        'USER': '',
-        'PASSWORD' : '',
-    }
-}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -69,6 +62,10 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    "sikteeri.context_processors.is_production",
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -101,7 +98,11 @@ INSTALLED_APPS = (
     'services',
 )
 
+# If set, this string will be displayed and sikteeri is disabled
+MAINTENANCE_MESSAGE = None
+
 SESSION_COOKIE_SECURE = True
+PRODUCTION = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
@@ -123,4 +124,3 @@ assert(REMINDER_GRACE_DAYS != None)
 assert(BILL_DAYS_BEFORE_CYCLE != None)
 assert(BILL_DAYS_TO_DUE != None)
 assert(TRUSTED_HOSTS != None)
-MAINTENANCE_MESSAGE

@@ -11,6 +11,8 @@
         @import "{{ STATIC_URL }}css/content.css";
         @import "{{ STATIC_URL }}css/form.css";{% if user.is_authenticated %}
         @import "{{ STATIC_URL }}css/blue.css";{% endif %}
+        {% if not is_production %}@import "{{ STATIC_URL }}css/devel.css";
+        {% endif %}
     </style>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/django-csrf.js"></script>
