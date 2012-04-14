@@ -3,30 +3,24 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
+from membership.reference_numbers import barcode_4, group_right,\
+    generate_membership_bill_reference_number
 logger = logging.getLogger("models")
 import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q, F, Sum
+from django.db.models import Q, Sum
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.template import Context
-from django.core import mail
 from django.template.loader import render_to_string
 
-from django.contrib.admin.models import LogEntry
-from django.contrib.contenttypes.generic import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
 
 from email_utils import send_as_email, send_preapprove_email
 from email_utils import bill_sender, preapprove_email_sender
-
-from reference_numbers import generate_membership_bill_reference_number
-from reference_numbers import generate_checknumber, add_checknumber, group_right
-from reference_numbers import barcode_4
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass

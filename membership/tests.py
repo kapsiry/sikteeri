@@ -156,9 +156,9 @@ class ReferenceNumberTest(TestCase):
 
 def create_dummy_member(status, type='P', mid=None):
     if status not in ['N', 'P', 'A']:
-        raise Error("Unknown membership status")
+        raise Exception("Unknown membership status")
     if type not in ['P', 'S', 'O', 'H']:
-        raise Error("Unknown membership type")
+        raise Exception("Unknown membership type")
     i = randint(1, 300)
     fname = random_first_name()
     d = {

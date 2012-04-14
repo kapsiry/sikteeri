@@ -1,5 +1,5 @@
 # This is shared between management commands and views
-from membership.models import *
+from membership.models import Membership
 
 def public_memberlist_data():
     '''Get the membership counts and data for public memberlist.'''

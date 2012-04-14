@@ -6,9 +6,7 @@ logger = logging.getLogger("sikteeri.views")
 from django.conf import settings
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from django.contrib.comments.models import Comment
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponse, HttpResponseForbidden
 
 from sikteeri.version import VERSION
 
