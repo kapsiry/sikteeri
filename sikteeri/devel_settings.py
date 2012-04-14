@@ -50,3 +50,7 @@ EMAIL_SUBJECT_PREFIX = '[sikteeri-TEST] '
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+# When PRODUCTION is true, show final graphics and colours.
+# Otherwise indicate that this is a development environment (logo, colour)
+PRODUCTION = False

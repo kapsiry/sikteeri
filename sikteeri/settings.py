@@ -1,5 +1,7 @@
 # Django settings for sikteeri project.
 
+import django.conf.global_settings as DEFAULT_SETTINGS
+
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
@@ -60,6 +62,10 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
+    "sikteeri.context_processors.is_production",
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,6 +102,7 @@ INSTALLED_APPS = (
 MAINTENANCE_MESSAGE = None
 
 SESSION_COOKIE_SECURE = True
+PRODUCTION = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
