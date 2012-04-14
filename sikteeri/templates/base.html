@@ -7,13 +7,13 @@
     <meta content="Kapsi Internet-käyttäjät ry" name="Author">
     <link href="http://www.kapsi.fi/favicon.ico" type="image/x-icon" rel="shortcut icon">
     <style media="screen" type="text/css">
-        @import "{{ MEDIA_URL }}/static/css/screen.css";
-        @import "{{ MEDIA_URL }}/static/css/content.css";
-        @import "{{ MEDIA_URL }}/static/css/form.css";{% if user.is_authenticated %}
-        @import "{{ MEDIA_URL }}/static/css/blue.css";{% endif %}
+        @import "{{ STATIC_URL }}css/screen.css";
+        @import "{{ STATIC_URL }}css/content.css";
+        @import "{{ STATIC_URL }}css/form.css";{% if user.is_authenticated %}
+        @import "{{ STATIC_URL }}css/blue.css";{% endif %}
     </style>
-    <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="{{ MEDIA_URL }}/static/js/django-csrf.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/django-csrf.js"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     {% block extra_head %}{% endblock %}
   </head>

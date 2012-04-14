@@ -26,3 +26,10 @@ source env/bin/activate
 
 # Compile translations
 ./run-sikteeri.sh
+
+Static assets URLs
+==================
+
+* /static/ => sikteeri/static/
+* /static/membership/ => membership/static/
+* /static/admin/ => Django static root
