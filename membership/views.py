@@ -1,27 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger("membership.views")
+from sikteeri import settings
+from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
+    BillingCycle, Payment
+from django.template.loader import render_to_string
 import traceback
+from django.db.models.aggregates import Sum
+logger = logging.getLogger("membership.views")
 
-from time import sleep
-
-from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput, FileField
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.comments.models import Comment
 from django.db import transaction
-from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 
 import simplejson
 
-from models import *
 from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm

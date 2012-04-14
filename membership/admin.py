@@ -1,6 +1,6 @@
 from django.contrib import admin
-
-from models import *
+from membership.models import Membership, Contact, Fee, BillingCycle, Bill,\
+    Payment
 
 admin.site.register(Membership)
 admin.site.register(Contact)

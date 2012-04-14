@@ -1,11 +1,9 @@
-from django.db.models import Q, Sum
-from django.contrib.auth.decorators import login_required, permission_required
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url
+from django.contrib.auth.decorators import permission_required
 from django.shortcuts import redirect
 import django.views.generic.list_detail
-
-from membership.models import *
-from membership.forms import *
+from membership.models import Contact, Membership, Payment, BillingCycle
+from django.db.models.query_utils import Q
 
 ENTRIES_PER_PAGE=30
 

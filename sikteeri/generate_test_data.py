@@ -8,11 +8,11 @@ Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
-from random import random, choice, randint
+from random import random, randint, choice
 from uuid import uuid4
 from decimal import Decimal
-import traceback
 import logging
+from membership.test_utils import random_first_name, random_last_name
 logger = logging.getLogger("generate_test_data")
 
 from datetime import datetime
@@ -20,14 +20,11 @@ from datetime import datetime
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
 
-from django.conf import settings
 from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
-from django.contrib.comments.models import Comment
 
-from membership.models import Contact, Membership, Bill, BillingCycle, Fee, Payment
-from membership.test_utils import *
+from membership.models import Contact, Membership, Fee, Payment
 
 from membership.management.commands.csvbills import attach_payment_to_cycle
 

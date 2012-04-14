@@ -11,6 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from optparse import OptionParser
+from services.models import Alias
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
 sys.path.insert(0, '..')
@@ -21,11 +22,7 @@ logger = logging.getLogger("import_member_data")
 
 from django.contrib.auth.models import User
 from membership.models import Contact, Membership, Bill, BillingCycle
-from membership.models import Fee, MEMBER_TYPES
-from services.models import Alias
 from membership.utils import log_change
-
-from services.models import Alias
 
 user = User.objects.get(id=1)
 
