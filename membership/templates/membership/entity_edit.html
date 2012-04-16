@@ -4,8 +4,10 @@
 {% load comments %}
 
 {% block content %}
+{% if memberid != None %}
 <a href="{% url membership_edit memberid %}">{% trans "Back to member overview" %}</a>
 <hr />
+{% endif %}
 {% if cycle %}
 <h2>{% trans "Billing cycle for member" %} <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }}</a>,
   {{ cycle }}, {{ cycle.sum }} EUR</h2>

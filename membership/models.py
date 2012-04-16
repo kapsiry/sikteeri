@@ -89,6 +89,25 @@ class Contact(models.Model):
             self.logs.delete()
             self.delete()
 
+    def find_memberid(self):
+        # Is there better way to find a memberid?
+        try:
+            return Membership.objects.get(person_id=self.id).id
+        except Membership.DoesNotExist:
+            pass
+        try:
+            return Membership.objects.get(organization_id=self.id).id
+        except Membership.DoesNotExist:
+            pass
+        try:
+            return Membership.objects.get(billing_contact_id=self.id).id
+        except Membership.DoesNotExist:
+            pass
+        try:
+            return Membership.objects.get(tech_contact_id=self.id).id
+        except Membership.DoesNotExist:
+             return None
+
     def email_to(self):
         if self.email:
             return '%s <%s>' % (self.name(), self.email)
