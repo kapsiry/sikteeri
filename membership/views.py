@@ -25,6 +25,7 @@ from services.models import Alias, Service, ServiceType
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
 from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
+from helper_functions import find_memberid
 from public_memberlist import public_memberlist_data
 from unpaid_members import unpaid_members_data
 
@@ -372,7 +373,6 @@ def organization_application_save(request):
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
-
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
     class Form(ModelForm):
         class Meta:
@@ -399,7 +399,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         message = ""
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
-        'logentries': logentries},
+        'logentries': logentries, 'memberid': find_memberid(id)},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
