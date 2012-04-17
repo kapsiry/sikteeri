@@ -192,6 +192,34 @@ def create_dummy_member(status, type='P', mid=None):
     membership.save()
     return membership
 
+class MembershipStatusTest(TestCase):
+    def setUp(self):
+        self.m = create_dummy_member('N')
+    def test_status_validations(self):
+        for k, v in MEMBER_STATUS:
+            if k == 'D':
+                continue # deleted memberships don't have contacts
+            self.m.status = k
+            self.m.save()
+        self.m.status = 'X'
+        self.assertRaises(ValidationError, self.m.save)
+    def test_deleted_should_have_no_contacts(self):
+        self.m.status = 'D'
+        self.assertRaises(ValidationError, self.m.save)
+        self.m.person = None
+        self.m.save()
+
+class MembershipTypeTest(TestCase):
+    def setUp(self):
+        self.m = create_dummy_member('N')
+    def test_person_and_organization_contacts_correctly_set(self):
+        self.m.organization = self.m.person
+        self.assertRaises(ValidationError, self.m.save)
+        self.m.type = 'O'
+        self.assertRaises(ValidationError, self.m.save)
+        self.m.person = None
+        self.m.save()
+
 class MembershipFeeTest(TestCase):
     fixtures = ['test_user.json']
 
