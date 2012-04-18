@@ -25,6 +25,7 @@ from services.models import Alias, Service, ServiceType
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
 from utils import log_change, serializable_membership_info, admtool_membership_details
 from utils import bake_log_entries
+from helper_functions import find_memberid
 from public_memberlist import public_memberlist_data
 from unpaid_members import unpaid_members_data
 
@@ -398,7 +399,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         message = ""
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
-        'logentries': logentries, 'memberid': contact.find_memberid()},
+        'logentries': logentries, 'memberid': find_memberid(id)},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -425,7 +426,7 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
         form =  Form(instance=bill)
     logentries = bake_log_entries(bill.logs.all())
     return render_to_response(template_name, {'form': form, 'bill': bill,
-        'logentries': logentries,'memberid': bill.billingcycle.membership.id},
+        'logentries': logentries},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -542,7 +543,7 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
     return render_to_response(template_name, {'form': form, 'cycle': cycle,
-        'logentries': logentries,'memberid': cycle.membership.id},
+        'logentries': logentries},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -631,13 +632,8 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         form.disable_fields()
 
     logentries = bake_log_entries(payment.logs.all())
-    if payment.billingcycle:
-            memberid = payment.billingcycle.membership.id
-    else:
-            memberid = None
-
     return render_to_response(template_name, {'form': form, 'payment': payment,
-        'logentries': logentries, 'memberid': memberid},
+        'logentries': logentries},
         context_instance=RequestContext(request))
 
 @permission_required('membership.read_members')
