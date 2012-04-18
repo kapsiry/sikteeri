@@ -73,11 +73,17 @@ def billing_object_list(*args, **kwargs):
 #     return django.views.generic.list_detail.object_list(request, queryset=qs, *args, **kwargs)
 
 @permission_required('membership.read_members')
-def search(request, query=None,
-           template_name='membership/membership_list.html'):
-    if not query:
+def search(request, **kwargs):
+    try:
+        query = kwargs['query']
+        del kwargs['query']
+        if not query:
+            raise KeyError()
+    except KeyError, ke:
         query = request.REQUEST.get("query", None)
 
+    kwargs['extra_context'] = {'query': query}
+ 
     if query.startswith("#"):
         return redirect('membership_edit', query.lstrip("#"))
 
@@ -112,10 +118,8 @@ def search(request, query=None,
     qs = qs.order_by("organization__organization_name",
                      "person__last_name",
                      "person__first_name")
-    return django.views.generic.list_detail.object_list(request, queryset=qs,
-                                                        template_name=template_name,
-                                                        template_object_name='member',
-                                                        paginate_by=ENTRIES_PER_PAGE)
+
+    return django.views.generic.list_detail.object_list(request, qs, **kwargs)
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
@@ -162,8 +166,12 @@ urlpatterns += patterns('django.views.generic',
          'paginate_by': ENTRIES_PER_PAGE}, name='all_memberships'),
 
     url(r'^memberships/inline/search/(?P<query>\w+)/$', search,
-        {'template_name': 'membership/membership_list_inline.html'}),
-    url(r'^memberships/search/((?P<query>\w+)/)?$', search, name="membership_search"),
+        {'template_name': 'membership/membership_list_inline.html',
+         'template_object_name': 'member', 'paginate_by': ENTRIES_PER_PAGE}),
+    url(r'^memberships/search/((?P<query>\w+)/)?$', search,
+        {'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member', 'paginate_by': ENTRIES_PER_PAGE},
+         name='membership_search'),
 
     url(r'bills/$', billing_object_list,
         {'queryset': BillingCycle.objects.filter(
