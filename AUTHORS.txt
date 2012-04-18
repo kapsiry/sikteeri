@@ -6,3 +6,4 @@ The following people have contributed significantly towards this project:
 * Ilkka Mattila
 * Tomi Pieviläinen
 * Henri Strand
+* Antti Jaakkola
