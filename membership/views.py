@@ -372,7 +372,6 @@ def organization_application_save(request):
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
-
     # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
     class Form(ModelForm):
         class Meta:
@@ -399,7 +398,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         message = ""
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
-        'logentries': logentries},
+        'logentries': logentries, 'memberid': contact.find_memberid()},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -426,7 +425,7 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
         form =  Form(instance=bill)
     logentries = bake_log_entries(bill.logs.all())
     return render_to_response(template_name, {'form': form, 'bill': bill,
-        'logentries': logentries},
+        'logentries': logentries,'memberid': bill.billingcycle.membership.id},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -543,7 +542,7 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
     return render_to_response(template_name, {'form': form, 'cycle': cycle,
-        'logentries': logentries},
+        'logentries': logentries,'memberid': cycle.membership.id},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -632,8 +631,13 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         form.disable_fields()
 
     logentries = bake_log_entries(payment.logs.all())
+    if payment.billingcycle:
+            memberid = payment.billingcycle.membership.id
+    else:
+            memberid = None
+
     return render_to_response(template_name, {'form': form, 'payment': payment,
-        'logentries': logentries},
+        'logentries': logentries, 'memberid': memberid},
         context_instance=RequestContext(request))
 
 @permission_required('membership.read_members')
