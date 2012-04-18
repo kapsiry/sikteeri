@@ -12,6 +12,7 @@ from os import environ as env
 from commands import getstatusoutput as gso
 from contextlib import contextmanager
 
+gunicorn_pid = os.path.join(os.environ['HOME'], 'gunicorn.pid')
 
 @contextmanager
 def working_directory(dst_dir):
@@ -37,11 +38,17 @@ with working_directory('../'):
     logger.addHandler(handler)
 
     try:
+        # Revert possible changes on version file
+        gso('git checkout sikteeri/version.py')
+
         s, o = gso('git pull')
         if s != 0:
             raise Exception("git pull returned %(s)s (%(o)s)" % vars())
 
-        pidfile = os.path.join(os.environ['HOME'], 'gunicorn.pid')
+        # Compile translations
+        s, o = gso('source ../env/bin/activate && ./build.sh')
+
+        pidfile = gunicorn_pid
         pid = None
         if not os.path.exists(pidfile):
             raise Exception("pidfile %s does not exist" % pidfile)
@@ -49,8 +56,15 @@ with working_directory('../'):
             pid = int(f.read())
             os.kill(pid, 1)
 
+        # Write version number
+        s, o = gso('git describe')
+        if s == 0:
+            with open('sikteeri/version.py', 'a') as f:
+                f.write('''VERSION = "%s"\n''' % o)
+
         print "Content-Type: text/plain"
         print
         print 'OK'
+        logger.info('Successfully updated')
     except Exception, e:
         logging.getLogger('deploy.cgi').critical(traceback.format_exc(e))
