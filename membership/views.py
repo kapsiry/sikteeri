@@ -28,6 +28,8 @@ from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
 from unpaid_members import unpaid_members_data
 
+from urls import member_object_list, ENTRIES_PER_PAGE
+
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
@@ -683,6 +685,18 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
     return render_to_response(template_name, {'form': form,
         'membership': membership, 'logentries': logentries},
         context_instance=RequestContext(request))
+
+@permission_required('membership.read_members')
+def membership_duplicates(request, id):
+    membership = get_object_or_404(Membership, id=id)
+    qs, duplicates = membership.find_duplicates()
+
+    view_params = {'queryset': qs,
+                   'template_name': 'membership/membership_list.html',
+                   'template_object_name': 'member',
+                   'paginate_by': ENTRIES_PER_PAGE }
+
+    return member_object_list(request, **view_params)
 
 @permission_required('membership.delete_members')
 @transaction.commit_on_success

@@ -11,7 +11,7 @@
 {% for member in member_list %}
   {% if member.status == "N" %}
     <li class="list_item preapprovable" id="{{ member.id }}">
-      {% if member.has_duplicate %}???{% endif %}
+      {% if member.find_duplicates %}<a href="{% url membership_duplicates member.id %}">{% trans "possible duplicates" %}</a>{% endif %}
   {% else %}
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">

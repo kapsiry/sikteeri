@@ -308,7 +308,9 @@ class Membership(models.Model):
                 for obj in qs:
                     duplicates.append((obj, _('Organization names make these suspiciously similar to each other')))
 
-        return duplicates
+        if len(duplicates) == 0:
+            return None
+        return (qs, duplicates)
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
