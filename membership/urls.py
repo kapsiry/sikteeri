@@ -81,8 +81,9 @@ def search(request, **kwargs):
             raise KeyError()
     except KeyError, ke:
         query = request.REQUEST.get("query", None)
-
-    kwargs['extra_context'] = {'query': query}
+        extra = kwargs.get('extra_context', {})
+        extra['search_query'] = query
+        kwargs['extra_context'] = extra
  
     if query.startswith("#"):
         return redirect('membership_edit', query.lstrip("#"))
