@@ -285,7 +285,11 @@ class Membership(models.Model):
 
     def find_duplicates(self):
         '''
-        Returns a list of tuples. Each tuple consists of the duplicate
+        If no duplicates are found, returns None (because it behaves
+        nicely in template boolean context).
+
+        Otherwise returns a tuple that consists of the queryset of
+        duplicates and a list of tuples which consists of the duplicate
         membership object and a string specifying the reason the system
         considered it a duplicate.
         '''

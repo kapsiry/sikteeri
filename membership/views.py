@@ -689,7 +689,12 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 @permission_required('membership.read_members')
 def membership_duplicates(request, id):
     membership = get_object_or_404(Membership, id=id)
-    qs, duplicates = membership.find_duplicates()
+    duplicates_tuple = membership.find_duplicates()
+    if duplicates_tuple:
+        qs, duplicates = duplicates_tuple
+    else:
+        qs = Membership.objects.none()
+        duplicates = []
 
     view_params = {'queryset': qs,
                    'template_name': 'membership/membership_list.html',
