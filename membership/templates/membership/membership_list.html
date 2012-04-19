@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block content %}
+{% if header %}<h2>{{ header }}</h2>{% endif %}
 {% include "membership/paginating_snippet.html" %}
 <ul id="memberlist">
 {% for member in member_list %}

@@ -694,6 +694,8 @@ def membership_duplicates(request, id):
     view_params = {'queryset': qs,
                    'template_name': 'membership/membership_list.html',
                    'template_object_name': 'member',
+                   'extra_context': {'header':
+                                     _(u"List duplicates for member ") + unicode(membership) },
                    'paginate_by': ENTRIES_PER_PAGE }
 
     return member_object_list(request, **view_params)
