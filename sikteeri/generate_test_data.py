@@ -12,7 +12,7 @@ from random import random, randint, choice
 from uuid import uuid4
 from decimal import Decimal
 import logging
-from membership.test_utils import random_first_name, random_last_name
+from membership.test_utils import random_first_name, random_last_name, random_municipality, random_email, random_street
 logger = logging.getLogger("generate_test_data")
 
 from datetime import datetime
@@ -41,18 +41,19 @@ user = User.objects.get(id=1)
 @transaction.commit_manually
 def create_dummy_member(i, duplicate_of=None):
     fname = random_first_name()
+    lname = random_last_name()
     d = {
-        'street_address' : 'Testikatu %d'%i,
+        'street_address' : '%s %d'%(random_street(), i),
         'postal_code' : '%d' % (i+1000),
-        'post_office' : 'Paska kaupunni',
+        'post_office' : '%s' % random_municipality(),
         'country' : 'Finland',
         'phone' : "%09d" % (40123000 + i),
         'sms' : "%09d" % (40123000 + i),
-        'email' : 'user%d@example.com' % i,
+        'email' : '%s' % random_email(fname, lname),
         'homepage' : 'http://www.example.com/%d'%i,
         'first_name' : fname,
-        'given_names' : '%s %s' % (fname, "Kapsi"),
-        'last_name' : random_last_name(),
+        'given_names' : '%s %s' % (fname, u"Testikäyttäjä"),
+        'last_name' : lname,
     }
 
     if duplicate_of is not None:
@@ -65,8 +66,9 @@ def create_dummy_member(i, duplicate_of=None):
     membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
-                            municipality='Paska kaupunni',
-                            extra_info='Hintsunlaisesti semmoisia tietoja.')
+                            public_memberlist=random() > 0.7,
+                            municipality='%s' % random_municipality(),
+                            extra_info='')
 
     print unicode(person)
     membership.save()
@@ -106,7 +108,9 @@ def create_dummy_member(i, duplicate_of=None):
     logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
+@transaction.commit_manually
 def create_payment(membership):
+    transaction.commit()
     if random() < 0.7:
         amount = "35.0"
         if random() < 0.2:
@@ -116,12 +120,13 @@ def create_payment(membership):
         if random() < 0.2:
             ref = str(randint(1000, 1000000))
         p = Payment(reference_number=ref,
-                    transaction_id=str(uuid4()),
+                    transaction_id=str(uuid4())[0:29],
                     payment_day=datetime.now(),
                     amount=Decimal(amount),
                     type="XYZ",
                     payer_name=membership.name())
         p.save()
+        transaction.commit()
         return p
 
 
@@ -129,6 +134,7 @@ def create_payment(membership):
 def main():
     if Membership.objects.count() > 0 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
+        transaction.commit()
         sys.exit(1)
     # Approved members
     for i in xrange(1,1000):
