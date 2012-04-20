@@ -4,6 +4,14 @@
 {% load reference_number %}
 
 {% if membership.person %}
+<h2>{{ membership.person }} ({{ membership.id }})</h2>
+{% elif membership.organization %}
+<h2>{{ membership.organization }} ({{ membership.id}})</h2>
+{% elif membership %}
+<h2>{% trans "Member" %} ({{ membership.id }})</h2>
+{% endif %}
+
+{% if membership.person %}
 <a href="{% url contact_edit membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
 {% endif %}
 {% if membership.billing_contact %}

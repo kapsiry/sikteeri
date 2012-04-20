@@ -553,6 +553,10 @@ msgstr "jäsenyydelle"
 msgid "Connect"
 msgstr "Yhdistä"
 
+#: templates/membership/entity_edit.html:6
+msgid "Member"
+msgstr "Jäsen"
+
 #: templates/membership/entity_edit.html:7
 msgid "Back to member overview"
 msgstr "Takaisin jäsenen tietoihin"
