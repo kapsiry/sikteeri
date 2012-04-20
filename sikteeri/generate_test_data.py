@@ -38,8 +38,8 @@ if Fee.objects.all().count() == 0:
 
 user = User.objects.get(id=1)
 
-@transaction.commit_manually
-def create_dummy_member(i, duplicate_of=None):
+@transaction.commit_on_success
+def create_dummy_member(i):
     fname = random_first_name()
     lname = random_last_name()
     d = {
@@ -62,7 +62,6 @@ def create_dummy_member(i, duplicate_of=None):
 
     person = Contact(**d)
     person.save()
-    transaction.commit()
     membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
@@ -72,18 +71,18 @@ def create_dummy_member(i, duplicate_of=None):
 
     print unicode(person)
     membership.save()
-    transaction.commit()
 
     forward_alias = Alias(owner=membership,
                           name=Alias.email_forwards(membership)[0])
     forward_alias.save()
 
-
-    transaction.commit()
+    login_alias_candidates = Alias.unix_logins(membership)
+    if login_alias_candidates == []:
+        transaction.rollback()
+        return
     login_alias = Alias(owner=membership, account=True,
                         name=choice(Alias.unix_logins(membership)))
     login_alias.save()
-    transaction.commit()
 
     # Services
     forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
@@ -102,15 +101,13 @@ def create_dummy_member(i, duplicate_of=None):
         postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                      alias=login_alias, owner=membership, data=login_alias.name)
         postgresql_service.save()
-    transaction.commit()
     # End of services
 
     logger.info("New application %s from %s:." % (str(person), '::1'))
     return membership
 
-@transaction.commit_manually
+@transaction.commit_on_success
 def create_payment(membership):
-    transaction.commit()
     if random() < 0.7:
         amount = "35.0"
         if random() < 0.2:
@@ -126,34 +123,30 @@ def create_payment(membership):
                     type="XYZ",
                     payer_name=membership.name())
         p.save()
-        transaction.commit()
         return p
 
-
-@transaction.commit_manually
+@transaction.commit_on_success
 def main():
     if Membership.objects.count() > 0 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
-        transaction.commit()
         sys.exit(1)
     # Approved members
     for i in xrange(1,1000):
         membership = create_dummy_member(i)
-        membership.preapprove(user)
-        membership.approve(user)
-        create_payment(membership)
-        transaction.commit()
+        if membership:
+            membership.preapprove(user)
+            membership.approve(user)
+            create_payment(membership)
 
     # Pre-approved members
     for i in xrange(1000,1100):
         membership = create_dummy_member(i)
-        membership.preapprove(user)
-        transaction.commit()
+        if membership:
+            membership.preapprove(user)
 
     # New applications
     for i in xrange(1100,1190):
         membership = create_dummy_member(i)
-        transaction.commit()
 
     # Make a few duplicates for duplicate detection GUI testing
     for i in xrange(1190,1200):
@@ -162,11 +155,9 @@ def main():
         transaction.commit()
 
     management.call_command('makebills')
-    transaction.commit()
     for payment in Payment.objects.all():
         try:
             attach_payment_to_cycle(payment)
-            transaction.commit()
         except:
             pass
 
