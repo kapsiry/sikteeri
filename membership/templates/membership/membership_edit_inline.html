@@ -3,10 +3,12 @@
 {% load comments %}
 {% load reference_number %}
 
-{% if membership.type == "P" %}
-<h2>{% if membership.person %}{{ membership.person }}{% else %}Jäsen{% endif %} ({{ membership.id }})</h2>
-{% elif membership.type == "O" %}
-<h2>{% if membership.organization %}{{ membership.organization }}{% else %}Jäsen{% endif %} ({{ membership.id}})</h2>
+{% if membership.person %}
+<h2>{{ membership.person }} ({{ membership.id }})</h2>
+{% elif membership.organization %}
+<h2>{{ membership.organization }} ({{ membership.id}})</h2>
+{% elif membership %}
+<h2>{% trans "Member" %} ({{ membership.id }})</h2>
 {% endif %}
 
 {% if membership.person %}
