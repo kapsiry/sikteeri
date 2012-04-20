@@ -108,6 +108,9 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 USE_X_FORWARDED_HOST = True
 
+# Show 30 items per page in listview
+ENTRIES_PER_PAGE=30
+
 from local_settings import *
 
 # Is this the right way to do this?

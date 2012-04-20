@@ -25,6 +25,3 @@ MANAGERS = ADMINS
 # "Send" emails to a mbox file through a mock email backend
 #EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
 #EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
-
-# Show 30 items per page in listview
-ENTRIES_PER_PAGE=30
