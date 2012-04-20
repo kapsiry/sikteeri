@@ -33,6 +33,10 @@ from services.views import check_alias_availability, validate_alias
 from management.commands.csvbills import process_csv as payment_csv_import
 from decorators import trusted_host_required
 
+from django.db.models.query_utils import Q
+import django.views.generic.list_detail
+from sikteeri.settings import ENTRIES_PER_PAGE
+
 # Public access
 def new_application(request, template_name='membership/choose_membership_type.html'):
     return render_to_response(template_name, {},
@@ -845,3 +849,72 @@ def admtool_lookup_alias_json(request, alias):
     elif not aliases:
         return HttpResponse("No match", mimetype='text/plain')
     return HttpResponse("Too many matches", mimetype='text/plain')
+
+
+
+@permission_required('membership.read_members')
+def member_object_list(*args, **kwargs):
+    return django.views.generic.list_detail.object_list(*args, **kwargs)
+
+@permission_required('membership.read_bills')
+def billing_object_list(*args, **kwargs):
+    return django.views.generic.list_detail.object_list(*args, **kwargs)
+
+# This should list any bills/cycles that were forcefully set as paid even
+# though insufficient payments were paid.
+# @permission_required('membership.read_bills')
+# def forced_paid_cycles_list(*args, **kwargs):
+#     paid_q = Q(is_paid__exact=True)
+#     payments_sum_q = Q(payment_set.aggregate(Sum('amount'))__lt=sum)
+#     qs = BillingCycle.objects.filter(paid_q, payments_sum_q)
+#     return django.views.generic.list_detail.object_list(request, queryset=qs, *args, **kwargs)
+
+@permission_required('membership.read_members')
+def search(request, **kwargs):
+    try:
+        query = kwargs['query']
+        del kwargs['query']
+        if not query:
+            raise KeyError()
+    except KeyError, ke:
+        query = request.REQUEST.get("query", None)
+        extra = kwargs.get('extra_context', {})
+        extra['search_query'] = query
+        kwargs['extra_context'] = extra
+
+    if query.startswith("#"):
+        return redirect('membership_edit', query.lstrip("#"))
+
+    person_contacts = Contact.objects
+    org_contacts = Contact.objects
+    # Split into words and remove duplicates
+    d = {}.fromkeys(query.split(" "))
+    for word in d.keys():
+        # Common search parameters
+        email_q = Q(email__icontains=word)
+        phone_q = Q(phone__icontains=word)
+        sms_q = Q(sms__icontains=word)
+        common_q = email_q | phone_q | sms_q
+
+        # Search query for people
+        f_q = Q(first_name__icontains=word)
+        l_q = Q(last_name__icontains=word)
+        g_q = Q(given_names__icontains=word)
+        person_contacts = person_contacts.filter(f_q | l_q | g_q | common_q)
+
+        # Search for organizations
+        o_q = Q(organization_name__icontains=word)
+        org_contacts = org_contacts.filter(o_q | common_q)
+
+    # Combined single query
+    person_q = Q(person__in=person_contacts)
+    org_q = Q(organization__in=org_contacts)
+    qs = Membership.objects.filter(person_q | org_q)
+    if qs.count() == 1:
+        return redirect('membership_edit', qs[0].id)
+
+    qs = qs.order_by("organization__organization_name",
+                     "person__last_name",
+                     "person__first_name")
+
+    return django.views.generic.list_detail.object_list(request, qs, **kwargs)
