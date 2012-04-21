@@ -2,7 +2,7 @@
 from random import choice, random, randint
 import logging
 
-# Finnish population register center's most popular first names for year 2009
+# Some first names taken from Disney cartoons.
 first_names = [
     u"Iines", u"Aku", u"Minni", u"Mikki", u"Tupu", u"Hupu", u"Lupu",
     u"Leenu", u"Liinu", u"Tiinu", u"Pluto", u"Roope", u"Taavi", u"Touho",
@@ -11,11 +11,11 @@ first_names = [
     u"Klaara", u"Sisu", u"Matami", u"Tiku", u"Tiku", u"Veli", u"Sepe",
     u"Tipsu", u"Timotei", u"Bumba", u"Dumbo", u"Jopi", u"Neiti"]
 
-# Kapsi members public unique last name listing as of today.
+# Some last names taken from Disney cartoons
 last_names = [
     u"Ankka", u"Hiiri", u"Koninkaulus", u"Peloton", u"Hanhi", u"Pennonen",
-    u"Pii", u"Magia", u"Hopo", u"Kotro", u"Jalkapuoli", u"Kaasi", u"Kani"
-    u"Susi", u"Hukka",u"Ponteva", u"Sirkka", u"Näpsä"
+    u"Pii", u"Magia", u"Hopo", u"Kotro", u"Jalkapuoli", u"Kaasi", u"Kani",
+    u"Susi", u"Hukka",u"Ponteva", u"Sirkka", u"Näpsä", u"Musta"
     ]
 
 # Random finctonal municipalities
@@ -24,6 +24,7 @@ municipalities = [
     u"Timpuktu", u"Toisaala", u"Mäentaus", u"Vuorisola", u"Mikälie", u"Jokimutka"
     ]
 
+# Fictional streets
 street_addresses = [
     u"Paratiisitie", u"Onnitie", "Pääkatu", "Sivukuja", u"Jullentie", u"Säiliökatu",
     u"Rahakuja", u"Rosvotie", u"Hassukuja", u"Puutarhakatu", u"Lähitie"
