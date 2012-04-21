@@ -77,11 +77,11 @@ def create_dummy_member(i):
     forward_alias.save()
 
     login_alias_candidates = Alias.unix_logins(membership)
-    if login_alias_candidates == []:
+    if not login_alias_candidates:
         transaction.rollback()
         return
     login_alias = Alias(owner=membership, account=True,
-                        name=choice(Alias.unix_logins(membership)))
+                        name=choice(login_alias_candidates))
     login_alias.save()
 
     # Services
