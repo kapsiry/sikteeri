@@ -5,13 +5,12 @@
 {% for member in member_list %}
   {% if member.status == "N" %}
     <li class="preapprovable" id="{{ member.id }}">
-    <span class="status">{{ member.list_duplicates }}</span>
   {% else %}
     <li id="{{ member.id }}">
   {% endif %}
       <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
       <span class="status">{{ member.get_status_display }}</span>
-  </li>
+    </li>
 {% empty %}
 {% trans "No membership matches this filter, try seeing the full list" %}
 {% endfor %}
