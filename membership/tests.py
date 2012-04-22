@@ -1003,54 +1003,53 @@ class DecoratorTest(TestCase):
 
 
 class DuplicateMembershipDetectionTest(TestCase):
-    def setUp(self):
-        self.m1 = create_dummy_member('N')
-        self.m2 = create_dummy_member('N')
-        self.m3 = create_dummy_member('N')
-        self.m4 = create_dummy_member('N')
-
-        self.m1.person.first_name = u"Foo"
-        self.m1.person.last_name = u"Bar"
-        self.m1.person.save()
-
-        self.m3.person.first_name = u"Baz"
-        self.m3.person.last_name = u"Bar"
-        self.m3.person.save()
-
-        self.m3.person.first_name = u"Foo"
-        self.m3.person.last_name = u"Bar"
-        self.m3.person.save()
-
-        self.m4.person.first_name = u" foo"
-        self.m4.person.last_name = u"BAR "
-        self.m4.person.save()
-
-        self.m5 = create_dummy_member('N', type='O')
-        self.m5.organization.organization_name = u'Organization Foo'
-        self.m5.save()
-
-        self.m6 = create_dummy_member('N', type='O')
-        self.m6.organization.organization_name = u'Organization foo '
-        self.m6.save()
-
-        self.m7 = create_dummy_member('N', type='O')
-        self.m7.organization.organization_name = u'Organization Bar'
-        self.m7.save()
-
     def test_has_duplicate_membership(self):
-        self.assertTrue(len(self.m3.find_duplicates()) > 0)
+        m1 = create_dummy_member('N')
+        m1.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.first_name = m1.person.first_name
+        m2.person.last_name = m1.person.last_name
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)
+        self.assertEquals(m1.duplicates()[0].id, m2.id)
+        self.assertEquals(len(m2.duplicates()), 1)
+        self.assertEquals(m2.duplicates()[0].id, m1.id)
 
     def test_same_last_name(self):
-        self.assertFalse(len(self.m2.find_duplicates()) > 0)
+        m1 = create_dummy_member('N')
+        m1.save()
 
-    def test_strippable_spaces_and_different_case(self):
-        self.assertTrue(len(self.m4.find_duplicates()) > 0)
-        self.assertTrue(len(self.m1.find_duplicates()) > 0)
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.last_name = m1.person.last_name
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 0)
 
     def test_has_duplicate_organization(self):
-        # TODO: this fails, don't know why, needs to be fixed
-        self.assertTrue(len(self.m5.find_duplicates()) > 0)
-        self.assertTrue(len(self.m6.find_duplicates()) > 0)
+        m1 = create_dummy_member('N', type='O')
+        m1.save()
 
-    def test_has_duplicate_organization_false(self):
-        self.assertEquals(len(self.m7.find_duplicates()), 0)
+        m2 = create_dummy_member('N', type='O')
+        m2.save()
+        m2.organization.organization_name = m1.organization.organization_name
+        m2.organization.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)
+        self.assertEquals(m1.duplicates()[0].id, m2.id)
+        self.assertEquals(len(m2.duplicates()), 1)
+        self.assertEquals(m2.duplicates()[0].id, m1.id)
+
+    def test_duplicate_phone(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.phone = m1.person.phone
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)

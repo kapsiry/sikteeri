@@ -283,38 +283,28 @@ class Membership(models.Model):
                 contact.delete_if_no_references(user)
         log_change(self, user, change_message="Deleted")
 
-    def find_duplicates(self):
+    def duplicates(self):
         '''
-        If no duplicates are found, returns None (because it behaves
-        nicely in template boolean context).
-
-        Otherwise returns a tuple that consists of the queryset of
-        duplicates and a list of tuples which consists of the duplicate
-        membership object and a string specifying the reason the system
-        considered it a duplicate.
+        Finds duplicates of memberships, looks for similar names, emails, phone
+        numbers and contact details.  Returns a QuerySet object that doesn't
+        include the membership of which duplicates are search for itself.
         '''
-        duplicates = []
-        members = Membership.objects
+        qs = Membership.objects
 
         if self.person and not self.organization:
-            first_name = self.person.first_name.strip()
-            last_name = self.person.last_name.strip()
+            name_q = Q(person__first_name__icontains=self.person.first_name.strip(),
+                       person__last_name__icontains=self.person.last_name.strip())
 
-            qs = members.filter(person__first_name__icontains=first_name,
-                                person__last_name__icontains=last_name)
-            if len(qs) > 1:
-                for obj in qs:
-                    duplicates.append((obj, _('First and last make these suspiciously similar to each other')))
+            email_q = Q(person__email__contains=self.person.email.strip())
+            phone_q = Q(person__phone__icontains=self.person.phone.strip())
+            sms_q = Q(person__sms__icontains=self.person.sms.strip())
+            contacts_q = email_q | phone_q | sms_q
+
+            qs = qs.filter(name_q | contacts_q)
         elif self.organization and not self.person:
-            qs = members.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
+            qs = qs.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
 
-            if len(qs) > 1:
-                for obj in qs:
-                    duplicates.append((obj, _('Organization names make these suspiciously similar to each other')))
-
-        if len(duplicates) == 0:
-            return None
-        return (qs, duplicates)
+        return qs.exclude(id__exact=self.id)
 
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
