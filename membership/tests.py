@@ -177,8 +177,6 @@ def create_dummy_member(status, type='P', mid=None):
     person = Contact(**d)
     person.save()
     if type == 'O':
-        person.organization_name = u'Organization %i' % i
-        person.save()
         membership = Membership(id=mid, type=type, status=status,
                                 organization=person,
                                 nationality='Finnish',
