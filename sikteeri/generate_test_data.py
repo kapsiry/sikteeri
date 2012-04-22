@@ -145,13 +145,14 @@ def main():
         transaction.commit()
 
     # New applications
-    for i in xrange(1100,1200):
+    for i in xrange(1100,1190):
         membership = create_dummy_member(i)
         transaction.commit()
 
     # Make a few duplicates for duplicate detection GUI testing
     for i in xrange(1190,1200):
-        membership = create_dummy_member(i + 10, duplicate_of=Membership.objects.get(id=i))
+        duplicate_of = Membership.objects.get(id=i-10)
+        membership = create_dummy_member(i + 10, duplicate_of=duplicate_of)
         transaction.commit()
 
     management.call_command('makebills')
