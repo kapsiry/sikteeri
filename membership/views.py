@@ -520,7 +520,7 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         def disable_fields(self):
             self.fields['is_paid'].required = False
             if cycle.amount_paid() >= cycle.sum and cycle.is_paid:
-                self.fields['is_paid'].widget.attrs['disabled'] = 'disabled'
+                self.fields['is_paid'].widget.attrs['readonly'] = 'readonly'
                 self.is_paid_forced = True
 
         def clean_is_paid(self):
@@ -569,23 +569,23 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         def disable_fields(self):
             if payment.billingcycle:
                 self.fields['ignore'].required = False
-                self.fields['ignore'].widget.attrs['disabled'] = 'disabled'
+                self.fields['ignore'].widget.attrs['readonly'] = 'readonly'
             self.fields['billingcycle'].required = False
-            self.fields['billingcycle'].widget.attrs['disabled'] = 'disabled'
+            self.fields['billingcycle'].widget.attrs['readonly'] = 'readonly'
             self.fields['reference_number'].required = False
-            self.fields['reference_number'].widget.attrs['disabled'] = 'disabled'
+            self.fields['reference_number'].widget.attrs['readonly'] = 'readonly'
             self.fields['message'].required = False
-            self.fields['message'].widget.attrs['disabled'] = 'disabled'
+            self.fields['message'].widget.attrs['readonly'] = 'readonly'
             self.fields['transaction_id'].required = False
-            self.fields['transaction_id'].widget.attrs['disabled'] = 'disabled'
+            self.fields['transaction_id'].widget.attrs['readonly'] = 'readonly'
             self.fields['payment_day'].required = False
-            self.fields['payment_day'].widget.attrs['disabled'] = 'disabled'
+            self.fields['payment_day'].widget.attrs['readonly'] = 'readonly'
             self.fields['amount'].required = False
-            self.fields['amount'].widget.attrs['disabled'] = 'disabled'
+            self.fields['amount'].widget.attrs['readonly'] = 'readonly'
             self.fields['type'].required = False
-            self.fields['type'].widget.attrs['disabled'] = 'disabled'
+            self.fields['type'].widget.attrs['readonly'] = 'readonly'
             self.fields['payer_name'].required = False
-            self.fields['payer_name'].widget.attrs['disabled'] = 'disabled'
+            self.fields['payer_name'].widget.attrs['readonly'] = 'readonly'
             self.fields['comment'].required = False
 
         def clean_ignore(self):
@@ -660,9 +660,9 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 
         def disable_fields(self):
             self.fields['status'].required = False
-            self.fields['status'].widget.attrs['disabled'] = 'disabled'
+            self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
-            self.fields['approved'].widget.attrs['disabled'] = 'disabled'
+            self.fields['approved'].widget.attrs['readonly'] = 'readonly'
 
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
