@@ -38,9 +38,9 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
 
         def disable_fields(self):
             self.fields['name'].required = False
-            self.fields['name'].widget.attrs['disabled'] = 'disabled'
+            self.fields['name'].widget.attrs['readonly'] = 'readonly'
             self.fields['owner'].required = False
-            self.fields['owner'].widget.attrs['disabled'] = 'disabled'
+            self.fields['owner'].widget.attrs['readonly'] = 'readonly'
 
     if request.method == 'POST':
         form = Form(request.POST, instance=alias)
