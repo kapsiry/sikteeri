@@ -419,3 +419,7 @@ li.list_item span.paid {
     font-family: verdana;
     text-align: right;
 }
+
+li.dublicate {
+    border: 2px solid #bb0000;
+}
