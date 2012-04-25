@@ -6,11 +6,14 @@
 {% endblock %}
 
 {% block content %}
+{% if header %}<h2>{{ header }}</h2>{% endif %}
 {% include "membership/paginating_snippet.html" %}
 <ul id="memberlist">
 {% for member in member_list %}
   {% if member.status == "N" %}
     <li class="list_item preapprovable" id="{{ member.id }}">
+      {% if not disable_duplicates_header %}
+      {% if member.duplicates %}<a href="{% url membership_duplicates member.id %}">{% trans "possible duplicates" %}</a>{% endif %}{% endif %}
   {% else %}
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">

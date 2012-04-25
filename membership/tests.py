@@ -999,3 +999,55 @@ class DecoratorTest(TestCase):
         response2 = dummyView(request)
         self.assertEqual(response2.status_code, 403)
 
+
+class DuplicateMembershipDetectionTest(TestCase):
+    def test_has_duplicate_membership(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.first_name = m1.person.first_name
+        m2.person.last_name = m1.person.last_name
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)
+        self.assertEquals(m1.duplicates()[0].id, m2.id)
+        self.assertEquals(len(m2.duplicates()), 1)
+        self.assertEquals(m2.duplicates()[0].id, m1.id)
+
+    def test_same_last_name(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.last_name = m1.person.last_name
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 0)
+
+    def test_has_duplicate_organization(self):
+        m1 = create_dummy_member('N', type='O')
+        m1.save()
+
+        m2 = create_dummy_member('N', type='O')
+        m2.save()
+        m2.organization.organization_name = m1.organization.organization_name
+        m2.organization.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)
+        self.assertEquals(m1.duplicates()[0].id, m2.id)
+        self.assertEquals(len(m2.duplicates()), 1)
+        self.assertEquals(m2.duplicates()[0].id, m1.id)
+
+    def test_duplicate_phone(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.phone = m1.person.phone
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 1)
