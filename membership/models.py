@@ -283,6 +283,29 @@ class Membership(models.Model):
                 contact.delete_if_no_references(user)
         log_change(self, user, change_message="Deleted")
 
+    def duplicates(self):
+        '''
+        Finds duplicates of memberships, looks for similar names, emails, phone
+        numbers and contact details.  Returns a QuerySet object that doesn't
+        include the membership of which duplicates are search for itself.
+        '''
+        qs = Membership.objects
+
+        if self.person and not self.organization:
+            name_q = Q(person__first_name__icontains=self.person.first_name.strip(),
+                       person__last_name__icontains=self.person.last_name.strip())
+
+            email_q = Q(person__email__contains=self.person.email.strip())
+            phone_q = Q(person__phone__icontains=self.person.phone.strip())
+            sms_q = Q(person__sms__icontains=self.person.sms.strip())
+            contacts_q = email_q | phone_q | sms_q
+
+            qs = qs.filter(name_q | contacts_q)
+        elif self.organization and not self.person:
+            qs = qs.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
+
+        return qs.exclude(id__exact=self.id)
+
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 

@@ -684,6 +684,21 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
         'membership': membership, 'logentries': logentries},
         context_instance=RequestContext(request))
 
+@permission_required('membership.read_members')
+def membership_duplicates(request, id):
+    membership = get_object_or_404(Membership, id=id)
+
+    view_params = {'queryset': membership.duplicates(),
+                   'template_name': 'membership/membership_list.html',
+                   'template_object_name': 'member',
+                   'extra_context': {'header':
+                                     _(u"List duplicates for member #%i %s" % (membership.id,
+                                                                               unicode(membership))),
+                                     'disable_duplicates_header': True},
+                   'paginate_by': ENTRIES_PER_PAGE}
+
+    return member_object_list(request, **view_params)
+
 @permission_required('membership.delete_members')
 @transaction.commit_on_success
 def membership_delete(request, id, template_name='membership/membership_delete.html'):

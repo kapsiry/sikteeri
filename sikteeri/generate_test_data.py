@@ -39,7 +39,7 @@ if Fee.objects.all().count() == 0:
 user = User.objects.get(id=1)
 
 @transaction.commit_manually
-def create_dummy_member(i):
+def create_dummy_member(i, duplicate_of=None):
     fname = random_first_name()
     d = {
         'street_address' : 'Testikatu %d'%i,
@@ -54,6 +54,11 @@ def create_dummy_member(i):
         'given_names' : '%s %s' % (fname, "Kapsi"),
         'last_name' : random_last_name(),
     }
+
+    if duplicate_of is not None:
+        d['first_name'] = duplicate_of.person.first_name
+        d['last_name'] = duplicate_of.person.last_name
+
     person = Contact(**d)
     person.save()
     transaction.commit()
@@ -140,8 +145,14 @@ def main():
         transaction.commit()
 
     # New applications
-    for i in xrange(1100,1200):
+    for i in xrange(1100,1190):
         membership = create_dummy_member(i)
+        transaction.commit()
+
+    # Make a few duplicates for duplicate detection GUI testing
+    for i in xrange(1190,1200):
+        duplicate_of = Membership.objects.get(id=i-10)
+        membership = create_dummy_member(i + 10, duplicate_of=duplicate_of)
         transaction.commit()
 
     management.call_command('makebills')
