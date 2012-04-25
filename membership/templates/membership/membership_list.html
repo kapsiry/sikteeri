@@ -11,9 +11,7 @@
 <ul id="memberlist">
 {% for member in member_list %}
   {% if member.status == "N" %}
-    <li class="list_item preapprovable" id="{{ member.id }}">
-      {% if not disable_duplicates_header %}
-      {% if member.duplicates %}<a href="{% url membership_duplicates member.id %}">{% trans "possible duplicates" %}</a>{% endif %}{% endif %}
+	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} dublicate{% endif %}{% endif %}" id="{{ member.id }}">
   {% else %}
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">
@@ -34,6 +32,11 @@
     {% if member.comment %}
       <span class="comment">{{ member.comment }}</span>
     {% endif %}
+	{% if not disable_duplicates_header %}
+		{% if member.duplicates %}
+		<a href="{% url membership_duplicates member.id %}">{% trans "show possible duplicates" %}</a>
+		{% endif %}
+	{% endif %}
     </li>
 
 {% empty %}
