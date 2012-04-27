@@ -11,7 +11,7 @@
 <ul id="memberlist">
 {% for member in member_list %}
   {% if member.status == "N" %}
-	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} dublicate{% endif %}{% endif %}" id="{{ member.id }}">
+	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} duplicate{% endif %}{% endif %}" id="{{ member.id }}">
   {% else %}
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">
