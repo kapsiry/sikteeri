@@ -284,11 +284,11 @@ class Membership(models.Model):
         log_change(self, user, change_message="Deleted")
 
     def duplicates(self):
-        '''
+        """
         Finds duplicates of memberships, looks for similar names, emails, phone
         numbers and contact details.  Returns a QuerySet object that doesn't
         include the membership of which duplicates are search for itself.
-        '''
+        """
         qs = Membership.objects
 
         if self.person and not self.organization:
