@@ -903,8 +903,8 @@ def search(request, **kwargs):
     person_contacts = Contact.objects
     org_contacts = Contact.objects
     # Split into words and remove duplicates
-    d = {}.fromkeys(query.split(" "))
-    for word in d.keys():
+    words = set(query.split(" "))
+    for word in words:
         # Common search parameters
         email_q = Q(email__icontains=word)
         phone_q = Q(phone__icontains=word)
@@ -924,7 +924,7 @@ def search(request, **kwargs):
     # Combined single query
     person_q = Q(person__in=person_contacts)
     org_q = Q(organization__in=org_contacts)
-    alias_q = Q(alias__name__in=d.keys())
+    alias_q = Q(alias__name__in=words)
     qs = Membership.objects.filter(person_q | org_q | alias_q).distinct()
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
