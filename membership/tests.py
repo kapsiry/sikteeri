@@ -1051,3 +1051,17 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.save()
 
         self.assertEquals(len(m1.duplicates()), 1)
+
+
+class MembershipSearchTest(TestCase):
+    def test_find_by_first_name(self):
+        pass
+
+    def test_find_by_last_name(self):
+        pass
+
+    def test_find_by_organization_name(self):
+        pass
+
+    def test_find_by_alias(self):
+        pass
