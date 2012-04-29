@@ -174,21 +174,25 @@ def create_dummy_member(status, type='P', mid=None):
         'given_names' : '%s %s' % (fname, "Kapsi"),
         'last_name' : random_last_name(),
     }
-    person = Contact(**d)
-    person.save()
+    contact = Contact(**d)
+    contact.save()
     if type == 'O':
+        contact.organization_name = contact.name()
+        contact.first_name = u''
+        contact.last_name = u''
+        contact.save()
         membership = Membership(id=mid, type=type, status=status,
-                                organization=person,
+                                organization=contact,
                                 nationality='Finnish',
                                 municipality='Paska kaupunni',
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
     else:
         membership = Membership(id=mid, type=type, status=status,
-                                person=person,
+                                person=contact,
                                 nationality='Finnish',
                                 municipality='Paska kaupunni',
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logger.info("New application %s from %s:." % (str(person), '::1'))
+    logger.info("New application %s from %s:." % (str(contact), '::1'))
     membership.save()
     return membership
 
