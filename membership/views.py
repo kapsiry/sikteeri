@@ -924,7 +924,8 @@ def search(request, **kwargs):
     # Combined single query
     person_q = Q(person__in=person_contacts)
     org_q = Q(organization__in=org_contacts)
-    qs = Membership.objects.filter(person_q | org_q)
+    alias_q = Q(alias__name__in=d.keys())
+    qs = Membership.objects.filter(person_q | org_q | alias_q)
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
