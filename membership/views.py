@@ -900,53 +900,10 @@ def search(request, **kwargs):
     if query.startswith("#"):
         return redirect('membership_edit', query.lstrip("#"))
 
-    person_contacts = Contact.objects
-    org_contacts = Contact.objects
-    # Split into words and remove duplicates
-    words = set(query.split(" "))
+    qs = Membership.search(query)
 
-    # Each word narrows the search further
-    for word in words:
-        # Exact word match when word is "word"
-        if word.startswith('"') and word.endswith('"'):
-            word = word[1:-1]
-            # Search query for people
-            f_q = Q(first_name__iexact=word)
-            l_q = Q(last_name__iexact=word)
-            g_q = Q(given_names__iexact=word)
-            person_contacts = person_contacts.filter(f_q | l_q | g_q)
-
-            # Search for organizations
-            o_q = Q(organization_name__iexact=word)
-            org_contacts = org_contacts.filter(o_q)
-        else:
-            # Common search parameters
-            email_q = Q(email__icontains=word)
-            phone_q = Q(phone__icontains=word)
-            sms_q = Q(sms__icontains=word)
-            common_q = email_q | phone_q | sms_q
-
-            # Search query for people
-            f_q = Q(first_name__icontains=word)
-            l_q = Q(last_name__icontains=word)
-            g_q = Q(given_names__icontains=word)
-            person_contacts = person_contacts.filter(f_q | l_q | g_q | common_q)
-
-            # Search for organizations
-            o_q = Q(organization_name__icontains=word)
-            org_contacts = org_contacts.filter(o_q | common_q)
-
-    # Finally combine matches; all membership for which there are matching
-    # contacts or aliases
-    person_q = Q(person__in=person_contacts)
-    org_q = Q(organization__in=org_contacts)
-    alias_q = Q(alias__name__in=words)
-    qs = Membership.objects.filter(person_q | org_q | alias_q).distinct()
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
-    qs = qs.order_by("organization__organization_name",
-                     "person__last_name",
-                     "person__first_name")
-
     return django.views.generic.list_detail.object_list(request, qs, **kwargs)
+

@@ -1058,14 +1058,21 @@ class DuplicateMembershipDetectionTest(TestCase):
 
 
 class MembershipSearchTest(TestCase):
+    def setUp(self):
+        self.m = create_dummy_member('N')
+        self.m.save()
+
+        self.o = create_dummy_member('N', type='O')
+        self.o.save()
+
     def test_find_by_first_name(self):
-        pass
+        self.assertEquals(len(Membership.search(self.m.person.first_name)), 1)
 
     def test_find_by_last_name(self):
-        pass
+        self.assertEquals(len(Membership.search(self.m.person.last_name)), 1)
 
     def test_find_by_organization_name(self):
-        pass
+        self.assertEquals(len(Membership.search(self.o.organization.organization_name)), 1)
 
     def test_find_by_alias(self):
         pass
