@@ -9,6 +9,11 @@
 {% if header %}<h2>{{ header }}</h2>{% endif %}
 {% include "membership/paginating_snippet.html" %}
 <ul id="memberlist">
+	<li class="list_header">
+		<span class="member_id">{% trans "id"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-id">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=id">&#9650;</a></span>
+		<span class="name">{% trans "Member"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=name">A</a> <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-name">Z</a>
+			 &nbsp;&nbsp;<a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=last_name">A</a> <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-last_name">Z</a></span>
+	</li>
 {% for member in member_list %}
   {% if member.status == "N" %}
 	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} duplicate{% endif %}{% endif %}" id="{{ member.id }}">
@@ -90,6 +95,9 @@ var preApproveCartCreated = false;
 var approveCartCreated = false;
 $("#memberlist").children().each(function (idx, object) {
   var item = enhanceMemberItem($(object));
+  if ($(object).hasClass("list_header")) {
+	return;
+  }
   addMemberDetails(item);
 
   if ($(object).hasClass("preapprovable")) {
