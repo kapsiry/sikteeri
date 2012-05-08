@@ -4,7 +4,7 @@
 {% load comments %}
 
 {% block content %}
-{% if memberid != None %}
+{% if memberid != None and not bill and not payment %}
 <a href="{% url membership_edit memberid %}">{% trans "Back to member overview" %}</a>
 <hr />
 {% endif %}
@@ -40,7 +40,7 @@
 {% if payment %}
 <h2>{% trans "Payer" %} {{ payment.payer_name }}</h2>
 {% if payment.billingcycle %}
-<p>{% trans "Payment assigned to" %} {{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }} {{ payment.billingcycle }}</p>
+<p>{% trans "Payment assigned to" %} <a href="{% url membership_edit payment.billingcycle.membership.id %}">{{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }}</a> {{ payment.billingcycle }}</p>
 {% endif %}
 {% endif %}
 
