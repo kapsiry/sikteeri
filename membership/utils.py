@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
+from django.db.models import Sum
 
 # http://code.activestate.com/recipes/576644/
 
@@ -286,3 +287,51 @@ def tupletuple_to_dict(tupletuple):
         (key, value) = t
         d[key] = value
     return d
+
+def sort_objects(request, **kwargs):
+    '''Sorting function for views
+    '''
+    try:
+        query = kwargs['sort']
+        del kwargs['sort']
+        if not sort:
+            raise KeyError()
+    except KeyError, ke:
+        sort = request.GET.get("sort", None)
+
+    if 'queryset' in kwargs and sort:
+        if len(sort) is 0:
+            return kwargs
+        extra = kwargs.get('extra_context', {})
+        extra['sort'] = sort
+        sort = sort.strip().lower()
+        kwargs['extra_context'] = extra
+        sortkey = sort.lstrip("-")
+        reverse = False
+        if sort[0] == "-":
+            reverse = True
+        # validate sort key dirty way
+        sort = ''.join([str(s) for s in sort if s.isalpha() or s.isdigit() or s in "_-"])
+        queryset = kwargs['queryset']
+        if queryset.model._meta.module_name.lower() == "membership" and sortkey == u"name":
+            kwargs['queryset'] = queryset.order_by("person__first_name", "organization__organization_name")
+            if reverse:
+                kwargs['queryset'] = kwargs['queryset'].reverse()
+        elif queryset.model._meta.module_name.lower() == "membership" and sortkey == u"last_name":
+            kwargs['queryset'] = queryset.order_by("person__last_name", "organization__organization_name")
+            if reverse:
+                kwargs['queryset'] = kwargs['queryset'].reverse()
+        # check defaults
+        elif sortkey in [p.name for p in queryset.model._meta.fields]:
+            kwargs['queryset'] = queryset.order_by(sort)
+
+        elif queryset.model._meta.module_name.lower() == "membership" and sortkey in [u"id", u"person__last_name", u"person__first_name"]:
+            kwargs['queryset'] = queryset.order_by(sort)
+        elif queryset.model._meta.module_name.lower() == "billingcycle" and sortkey in [u"bill__due_date", u"bill__reminder_count"]:
+            kwargs['queryset'] = queryset.order_by(sort)
+        elif queryset.model._meta.module_name.lower() == "billingcycle" and sortkey == u"reminder_count":
+            kwargs['queryset'] = queryset.annotate(reminder_sum=Sum('bill__reminder_count')).order_by('reminder_sum')
+            if reverse:
+                    kwargs['queryset'] = kwargs['queryset'].reverse()
+
+    return kwargs

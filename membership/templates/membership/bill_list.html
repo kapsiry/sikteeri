@@ -5,6 +5,15 @@
 {% include "membership/paginating_snippet.html" %}
 
 <ul id="billlist">
+  <li class="list_header">
+	<span class="name">{% trans "Member" %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=membership">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-membership">&#9650;</a></span>
+	<span class="cycle">{% trans "Cycle" %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-start">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=start">&#9650;</a></span>
+	<span class="sum">{% trans "Sum" %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-sum">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=sum">&#9650;</a></span>
+	<span class="paid">&nbsp;&nbsp;{% trans "Due date" %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-bill__due_date">&#9660;</a><a 
+		href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=bill__due_date">&#9650;</a></span>
+	<span class="comment">{% trans "Reminder count"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-reminder_count">&#9660;</a><a 
+		href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=reminder_count">&#9650;</a></span>
+  </li>
   {% for cycle in cycle_list %}
   {% with cycle.membership as member %}
   {% with cycle.last_bill as last_bill %}

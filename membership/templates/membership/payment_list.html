@@ -6,6 +6,14 @@
 {% include "membership/paginating_snippet.html" %}
 
 <ul id="paymentlist">
+  <li class="list_header">
+	<span class="name">{% trans "Payer name"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=payer_name">A</a> <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-payer_name">Z</a></span>
+	<span class="sum">{% trans "Sum"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-amount">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=amount">&#9650;</a></span>
+	<span class="reference">{% trans "Reference number"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-reference_number">&#9660;</a><a 
+		href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=reference_number">&#9650;</a></span>
+	<span class="paid">&nbsp;&nbsp;{% trans "paid"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=billingcycle">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-billingcycle">&#9650;</a></span>
+	<span class="comment">{% trans "Comment"|capfirst %} <a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=comment">&#9660;</a><a href="?page={{ page }}{% if search_query %}&query={{ search_query }}{% endif %}&sort=-comment">&#9650;</a></span>
+  </li>
   {% for payment in payment_list %}
   <li class="list_item{% if payment.is_due %} due{% endif %}{% if payment.ignore %} ignored{% endif %}">
     <span class="name"><a href="{% url payment_edit payment.id %}">{{ payment.payer_name }}</a></span>
