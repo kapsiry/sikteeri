@@ -897,39 +897,17 @@ def search(request, **kwargs):
         extra['search_query'] = query
         kwargs['extra_context'] = extra
 
+    # Shorthand for viewing a membership by giving # and the id
     if query.startswith("#"):
-        return redirect('membership_edit', query.lstrip("#"))
+        try:
+            return redirect('membership_edit', int(query.lstrip("#")))
+        except ValueError, ve:
+            pass
 
-    person_contacts = Contact.objects
-    org_contacts = Contact.objects
-    # Split into words and remove duplicates
-    d = {}.fromkeys(query.split(" "))
-    for word in d.keys():
-        # Common search parameters
-        email_q = Q(email__icontains=word)
-        phone_q = Q(phone__icontains=word)
-        sms_q = Q(sms__icontains=word)
-        common_q = email_q | phone_q | sms_q
+    qs = Membership.search(query)
 
-        # Search query for people
-        f_q = Q(first_name__icontains=word)
-        l_q = Q(last_name__icontains=word)
-        g_q = Q(given_names__icontains=word)
-        person_contacts = person_contacts.filter(f_q | l_q | g_q | common_q)
-
-        # Search for organizations
-        o_q = Q(organization_name__icontains=word)
-        org_contacts = org_contacts.filter(o_q | common_q)
-
-    # Combined single query
-    person_q = Q(person__in=person_contacts)
-    org_q = Q(organization__in=org_contacts)
-    qs = Membership.objects.filter(person_q | org_q)
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
-    qs = qs.order_by("organization__organization_name",
-                     "person__last_name",
-                     "person__first_name")
-
     return django.views.generic.list_detail.object_list(request, qs, **kwargs)
+
