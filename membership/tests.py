@@ -1075,4 +1075,7 @@ class MembershipSearchTest(TestCase):
         self.assertEquals(len(Membership.search(self.o.organization.organization_name)), 1)
 
     def test_find_by_alias(self):
-        pass
+        alias = Alias(owner=self.m,
+                      name=u"this.alias.should.be.unique")
+        alias.save()
+        self.assertEquals(len(Membership.search(alias.name)), 1)
