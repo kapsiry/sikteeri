@@ -897,8 +897,12 @@ def search(request, **kwargs):
         extra['search_query'] = query
         kwargs['extra_context'] = extra
 
+    # Shorthand for viewing a membership by giving # and the id
     if query.startswith("#"):
-        return redirect('membership_edit', query.lstrip("#"))
+        try:
+            return redirect('membership_edit', int(query.lstrip("#")))
+        except ValueError, ve:
+            pass
 
     qs = Membership.search(query)
 
