@@ -174,21 +174,25 @@ def create_dummy_member(status, type='P', mid=None):
         'given_names' : '%s %s' % (fname, "Kapsi"),
         'last_name' : random_last_name(),
     }
-    person = Contact(**d)
-    person.save()
+    contact = Contact(**d)
+    contact.save()
     if type == 'O':
+        contact.organization_name = contact.name()
+        contact.first_name = u''
+        contact.last_name = u''
+        contact.save()
         membership = Membership(id=mid, type=type, status=status,
-                                organization=person,
+                                organization=contact,
                                 nationality='Finnish',
                                 municipality='Paska kaupunni',
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
     else:
         membership = Membership(id=mid, type=type, status=status,
-                                person=person,
+                                person=contact,
                                 nationality='Finnish',
                                 municipality='Paska kaupunni',
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logger.info("New application %s from %s:." % (str(person), '::1'))
+    logger.info("New application %s from %s:." % (str(contact), '::1'))
     membership.save()
     return membership
 
@@ -1051,3 +1055,27 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.save()
 
         self.assertEquals(len(m1.duplicates()), 1)
+
+
+class MembershipSearchTest(TestCase):
+    def setUp(self):
+        self.m = create_dummy_member('N')
+        self.m.save()
+
+        self.o = create_dummy_member('N', type='O')
+        self.o.save()
+
+    def test_find_by_first_name(self):
+        self.assertEquals(len(Membership.search(self.m.person.first_name)), 1)
+
+    def test_find_by_last_name(self):
+        self.assertEquals(len(Membership.search(self.m.person.last_name)), 1)
+
+    def test_find_by_organization_name(self):
+        self.assertEquals(len(Membership.search(self.o.organization.organization_name)), 1)
+
+    def test_find_by_alias(self):
+        alias = Alias(owner=self.m,
+                      name=u"this.alias.should.be.unique")
+        alias.save()
+        self.assertEquals(len(Membership.search(alias.name)), 1)
