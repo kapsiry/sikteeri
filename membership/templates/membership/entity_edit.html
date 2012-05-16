@@ -34,7 +34,7 @@
 
 {% if bill %}
 <h2>{% trans "Bill for member" %} <a href="{% url membership_edit bill.billingcycle.membership.id %}">{{ bill.billingcycle.membership }}</a>,
-   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></h2>
+   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a> ({{bill.billingcycle.sum}} EUR)</h2>
 {% endif %}
 
 {% if payment %}
