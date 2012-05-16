@@ -32,10 +32,10 @@
     {% if member.comment %}
       <span class="comment">{{ member.comment }}</span>
     {% endif %}
-	{% if not disable_duplicates_header %}
+	{% if member.status == "N" %}
+		{% if not disable_duplicates_header %}
 		{% if member.duplicates %}
-		{% if member.status == "N" or member.status == "P" %}
-		<a href="{% url membership_duplicates member.id %}">{% trans "show possible duplicates" %}</a>
+			<a href="{% url membership_duplicates member.id %}">{% trans "show possible duplicates" %}</a>
 		{% endif %}
 		{% endif %}
 	{% endif %}

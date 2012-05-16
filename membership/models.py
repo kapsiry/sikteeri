@@ -298,7 +298,11 @@ class Membership(models.Model):
             email_q = Q(person__email__contains=self.person.email.strip())
             phone_q = Q(person__phone__icontains=self.person.phone.strip())
             sms_q = Q(person__sms__icontains=self.person.sms.strip())
-            contacts_q = email_q | phone_q | sms_q
+            # don't match empty sms string
+            if self.person.sms.strip():
+                contacts_q = email_q | phone_q | sms_q
+            else:
+                contacts_q = email_q | phone_q
 
             qs = qs.filter(name_q | contacts_q)
         elif self.organization and not self.person:
