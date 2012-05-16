@@ -18,9 +18,81 @@ MANAGERS = ADMINS
 # Maintenance message (when set, show a maintenance message on the front page)
 #MAINTENANCE_MESSAGE = 'Maintenance break for software updates'
 
-# Uncomment the following lines to enable more verbose stdout logging.
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
+# https://docs.djangoproject.com/en/dev/topics/logging/#logging
+#
+# A sample logging config that should log all the relevant stuff;
+#  - debugs if DEBUG is True
+#  - send errors as e-mail if DEBUG isn't True
+# SQL and request logging should be pretty straightforward to enable.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+            }
+    },
+
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler' },
+
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler' },
+
+        'console_debug': {
+            'level':'DEBUG',
+            'filters': ['require_debug_false'],
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose' },
+
+        'console_info': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose' },
+    },
+
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False, },
+        'django': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'django.db.backends': {
+            # Add handlers here to log SQL queries (or set propagate: True)
+            'handlers': [],
+            'level': 'DEBUG',
+            'propagate': False },
+        'sikteeri': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'membership': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'services': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        }
+    }
 
 # "Send" emails to a mbox file through a mock email backend
 #EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
