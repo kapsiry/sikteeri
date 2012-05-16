@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 import logging
-logger = logging.getLogger("csvbills")
+logger = logging.getLogger("membership.csvbills")
 
 from membership.models import Bill, BillingCycle, Payment
 from membership.utils import log_change

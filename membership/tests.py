@@ -4,7 +4,7 @@ from __future__ import with_statement
 import os
 import tempfile
 import logging
-logger = logging.getLogger("tests")
+logger = logging.getLogger("membership.tests")
 
 from decimal import Decimal
 from datetime import datetime, timedelta

@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import transaction
 
 import logging
-logger = logging.getLogger("sikteeri.membership.management.commands.makebills")
+logger = logging.getLogger("membership.makebills")
 from datetime import datetime, timedelta
 
 from membership.models import *
