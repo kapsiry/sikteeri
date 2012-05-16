@@ -434,7 +434,7 @@ class BillingCycle(models.Model):
             data = Decimal('0')
         return data
 
-    def update_is_paid(self):
+    def update_is_paid(self, user=None):
         was_paid = self.is_paid
         total_paid = self.amount_paid()
         if not was_paid and total_paid >= self.sum:
@@ -447,6 +447,9 @@ class BillingCycle(models.Model):
             self.save()
             logger.info("BillingCycle %s marked as unpaid, total paid: %.2f." % (
                 repr(self), total_paid))
+
+        if user:
+            log_change(self, user, change_message="Marked as paid")
 
     def get_fee(self):
         for_this_type = Q(type=self.membership.type)
@@ -610,17 +613,20 @@ class Payment(models.Model):
     def __unicode__(self):
         return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
 
-    def attach_to_cycle(self, cycle):
+    def attach_to_cycle(self, cycle, user=None):
         if self.billingcycle:
             raise PaymentAttachedError("Payment %s already attached to BillingCycle %s." % (repr(self), repr(cycle)))
+
         self.billingcycle = cycle
         self.ignore = False
         self.save()
         logger.info("Payment %s attached to member %s cycle %s." % (repr(self),
             cycle.membership.id, repr(cycle)))
-        cycle.update_is_paid()
+        if user:
+            log_change(self, user, change_message="Attached to billing cycle")
+        cycle.update_is_paid(user=user)
 
-    def detach_from_cycle(self):
+    def detach_from_cycle(self, user=None):
         if not self.billingcycle:
             return
         cycle = self.billingcycle
@@ -628,6 +634,8 @@ class Payment(models.Model):
             repr(cycle)))
         self.billingcycle = None
         self.save()
+        if user:
+            log_change(self, user, change_message="Detached from billing cycle")
         cycle.update_is_paid()
 
     @classmethod
