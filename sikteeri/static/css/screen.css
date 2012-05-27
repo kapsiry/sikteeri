@@ -448,3 +448,51 @@ li.duplicate {
 li.comments {
     border: 2px solid #df6020;
 }
+
+div.loginner {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.loginner div.old {
+    width: 250px;
+}
+
+div.loginner div.new {
+    width: 250px;
+}
+
+div.loginner div.key {
+    width: 100px;
+}
+
+div.loginner div {
+    padding: 2px 4px 2px 4px;
+}
+
+div.header_tr {
+    background: #bbb;
+    font-weight: bold;
+    display: table-row;
+}
+
+div.tr:nth-child(odd) {
+    background: #e0e0e0;
+}
+
+div.tr:nth-child(even) {
+    background: #eeeeee;
+}
+
+.table {
+    display: table;
+    margin: 0px 0px 0px 0px;
+}
+
+.tr {
+    display: table-row;
+}
+
+.td {
+    display: table-cell;
+}

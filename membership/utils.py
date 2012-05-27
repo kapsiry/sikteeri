@@ -72,12 +72,35 @@ def log_change(object, user, before=None, after=None, change_message=None):
         change_message  = change_message
     )
 
+def change_message_to_list(row):
+    """Convert humanized diffs to a list for usage in template"""
+    retval = []
+    for message in row.change_message.strip().strip(".").split("."):
+        if ":" not in message:
+            continue
+        if "->" not in message and "=>" not in message:
+            continue
+
+        key, value  = message.split(":",2)
+        key = key.strip().strip("'")
+        if "=>" in value:
+            old,new = value.split("=>",2)
+        elif "->" in value:
+            old, new = value.split("->",2)
+        else:
+            continue
+        old = old.strip().strip("'")
+        new = new.strip().strip("'")
+        retval.append([key, old, new])
+    return retval
+
 def bake_log_entries(raw_log_entries):
     ACTION_FLAGS = {1 : _('Addition'),
                     2 : _('Change'),
                     3 : _('Deletion')}
     for x in raw_log_entries:
         x.action_flag_str = unicode(ACTION_FLAGS[x.action_flag])
+        x.change_list = change_message_to_list(x)
     return raw_log_entries
 
 def serializable_membership_info(membership):

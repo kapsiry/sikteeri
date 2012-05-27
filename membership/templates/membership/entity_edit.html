@@ -75,14 +75,37 @@
 
 {% if logentries %}
 <h2>{% trans "Event log" %}</h2>
-{% endif %}
+
 <table class="event_log">
+	<tr class="header_row">
+		<td>{% trans "Time"|capfirst %}</td>
+		<td>{% trans "Actions"|capfirst %}</td>
+		<td>{% trans "Modifer"|capfirst %}</td>
+		<td>
+			<div class="loginner table">
+				<div class="header_row header_tr">
+					<div class="key td">{% trans "Record"|capfirst %}</div>
+					<div class="old td">{% trans "Old"|capfirst %}</div>
+					<div class="new td">{% trans "New"|capfirst %}</div>
+				</div>
+			</div>
+		</td>
+	</tr>
+{% endif %}
 {% for logentry in logentries %}
   <tr>
     <td>{{ logentry.action_time|date:"j.n.Y H:i" }}</td>
     <td>{{ logentry.action_flag_str}}</td>
     <td>{{ logentry.user }}</td>
-    <td>{{ logentry.change_message }}</td>
+    <td>
+		<div class="loginner table">{% for key, old, new in logentry.change_list %}
+			<div class="tr">
+				<div class="key td">{% trans key|capfirst %}</div>
+				<div class="old td">{% if old %}{{ old }}{% else %}-{% endif %}</div>
+				<div class="new td">{% if new %}{{ new }}{% else %}-{% endif %}</div>
+			</div>
+		{% endfor %}</div>
+	</td>
   </tr>
 {% endfor %}
 </table>
