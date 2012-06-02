@@ -29,12 +29,6 @@ from services.models import Alias, Service, ServiceType
 
 logger = logging.getLogger("sikteeri.generate_test_data")
 
-if Fee.objects.all().count() == 0:
-    sys.exit("No fees in the database. Did you load fixtures into the " +
-	     "database first?\n (./manage.py loaddata test_data.json)")
-
-user = User.objects.get(id=1)
-
 @transaction.commit_manually
 def create_dummy_member(i, duplicate_of=None):
     fname = random_first_name()
@@ -124,9 +118,15 @@ def create_payment(membership):
 
 @transaction.commit_manually
 def generate_test_data():
+    if Fee.objects.all().count() == 0:
+        sys.exit("No fees in the database. Did you load fixtures into the " +
+                 "database first?\n (./manage.py loaddata test_data.json)")
     if Membership.objects.count() > 0 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
         sys.exit(1)
+
+    user = User.objects.get(id=1)
+
     # Approved members
     for i in xrange(1,1000):
         membership = create_dummy_member(i)
