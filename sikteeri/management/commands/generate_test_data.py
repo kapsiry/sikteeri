@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 generate_test_data.py
 
-Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
+Copyright (c) 2010-2013 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
 
 import sys
@@ -13,13 +12,13 @@ from uuid import uuid4
 from decimal import Decimal
 import logging
 from membership.test_utils import random_first_name, random_last_name
-logger = logging.getLogger("generate_test_data")
+logger = logging.getLogger("sikteeri.generate_test_data")
 
 from datetime import datetime
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
-sys.path.insert(0, '..')
-
+from django.core.management.base import NoArgsCommand
+from django.utils import translation
+from django.conf import settings
 from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
@@ -126,7 +125,7 @@ def create_payment(membership):
 
 
 @transaction.commit_manually
-def main():
+def generate_test_data():
     if Membership.objects.count() > 0 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
         sys.exit(1)
@@ -164,5 +163,10 @@ def main():
         except:
             pass
 
-if __name__ == '__main__':
-    main()
+
+class Command(NoArgsCommand):
+    help = 'Generate test data'
+
+    def handle_noargs(self, **options):
+        translation.activate(settings.LANGUAGE_CODE)
+        generate_test_data()
