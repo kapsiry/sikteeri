@@ -11,9 +11,6 @@ from random import random, randint, choice
 from uuid import uuid4
 from decimal import Decimal
 import logging
-from membership.test_utils import random_first_name, random_last_name
-logger = logging.getLogger("sikteeri.generate_test_data")
-
 from datetime import datetime
 
 from django.core.management.base import NoArgsCommand
@@ -23,13 +20,14 @@ from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
 
+from membership.test_utils import random_first_name, random_last_name
 from membership.models import Contact, Membership, Fee, Payment
-
 from membership.management.commands.csvbills import attach_payment_to_cycle
-
 from membership.reference_numbers import generate_membership_bill_reference_number
 
 from services.models import Alias, Service, ServiceType
+
+logger = logging.getLogger("sikteeri.generate_test_data")
 
 if Fee.objects.all().count() == 0:
     sys.exit("No fees in the database. Did you load fixtures into the " +
