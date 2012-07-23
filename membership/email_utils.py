@@ -13,7 +13,7 @@ from django.dispatch import Signal
 # Signals
 send_as_email = Signal(providing_args=["instance"])
 send_preapprove_email = Signal(providing_args=["instance", "user"])
-send_duplicate_payment_notice = Signal(providing_args=["instance"])
+send_duplicate_payment_notice = Signal(providing_args=["instance","user","billingcycle"])
 
 # Address helper
 def unix_email(membership):
@@ -74,13 +74,15 @@ def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
                                                                instance.billing_email(),
                                                                user))
 
-def duplicate_payment_sender(sender, instance=None, user=None, **kwargs):
+def duplicate_payment_sender(sender, instance=None, user=None, billingcycle=None, **kwargs):
     """Email to bill payer due to duplicate payment"""
-    membership = instance.membership
+    membership = billingcycle.membership
     to = [membership.billing_email()]
     email_body = render_to_string('membership/duplicate_payment_mail.txt', {
         'membership' : membership,
-        'billingcycle' : instance
+        'billingcycle' : billingcycle,
+        'payment': instance,
+        'user': user
     })
     email = EmailMessage(_('Duplicate payment'),
                              email_body,
@@ -90,3 +92,6 @@ def duplicate_payment_sender(sender, instance=None, user=None, **kwargs):
                              headers={'CC': settings.BILLING_CC_EMAIL})
     connection = mail.get_connection()
     connection.send_messages([email])
+    logger.info(u'A duplicate payment notice email sent to %s (%s) by %s' % (unicode(membership),
+                                                               membership.billing_email(),
+                                                               user))

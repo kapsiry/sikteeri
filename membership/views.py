@@ -649,8 +649,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
 @permission_required('membership.manage_bills')
 def send_duplicate_notification(request, payment, **kwargs):
     payment = get_object_or_404(Payment, id=payment)
-    billingcycle = get_object_or_404(BillingCycle, reference_number=payment.reference_number)
-    billingcycle.send_duplicate_payment_notice()
+    payment.send_duplicate_payment_notice(request.user)
     return redirect('payment_edit', payment.id)
 
 @permission_required('membership.read_members')
