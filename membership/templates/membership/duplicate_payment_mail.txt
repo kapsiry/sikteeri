@@ -1,0 +1,5 @@
+Hei!
+
+Havaitsimme, että olette maksaneet jäsenmaksunne {{ billingcycle.reference_number }} kaksi kertaa. Haluatteko, että palautamme ylimääräisen summan, vai tulkitsemmeko summan lahjoitukseksi? 
+
+Mikäli tähän viestiin ei vastata X päivän sisällä, summa tulkitaan lahjoitukseksi.
