@@ -41,6 +41,14 @@ MEMBER_STATUS = (('N', _('New')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
+
+BILL_TYPES = (
+('E', _('Email')),
+('P', _('Paper')),
+('S', _('SMS'))
+)
+BILL_TYPES_DICT = tupletuple_to_dict(BILL_TYPES)
+
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
@@ -182,6 +190,8 @@ class Membership(models.Model):
     organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
+
+    locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
 
     objects = MembershipManager()
 
@@ -552,6 +562,7 @@ class Bill(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
+    type = models.CharField(max_length=1, choices=BILL_TYPES, blank=False, null=False, verbose_name=_('Bill type'), default='E')
     logs = property(_get_logs)
 
     def is_due(self):
@@ -680,6 +691,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
+    duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
     logs = property(_get_logs)
 
     def __unicode__(self):
