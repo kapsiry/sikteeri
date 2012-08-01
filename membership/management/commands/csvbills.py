@@ -140,7 +140,7 @@ def row_to_payment(row):
                     transaction_id=row['transaction'])
     return p
 
-def attach_payment_to_cycle(payment):
+def attach_payment_to_cycle(payment, user=None):
     """
     Outside of this module, this function is mainly used by
     generate_test_data.py.
@@ -150,7 +150,7 @@ def attach_payment_to_cycle(payment):
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
     if cycle.is_paid == False or cycle.amount_paid() < cycle.sum:
-        payment.attach_to_cycle(cycle)
+        payment.attach_to_cycle(cycle, user=user)
     else:
         # Don't attach a payment to a cycle with enough payments
         payment.comment = _('duplicate payment')
@@ -160,7 +160,7 @@ def attach_payment_to_cycle(payment):
         return None
     return cycle
 
-def process_csv(file_handle):
+def process_csv(file_handle, user=None):
     """Actual CSV file processing logic
     """
     return_messages = []
@@ -182,15 +182,14 @@ def process_csv(file_handle):
             continue
 
         try:
-            cycle = attach_payment_to_cycle(payment)
+            cycle = attach_payment_to_cycle(payment, user=user)
             if cycle:
-                return_messages.append(_("Attached payment {payment} to cycle {cycle}").
-                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
+                return_messages.append((cycle.id, payment.id, _("Attached payment {payment} to cycle {cycle}").replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle))))
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
             else:
                 # Payment not attached to cycle because enough payments were attached
-                return_messages.append(_("Billing cycle already paid for %s. Payment not attached.") % payment)
+                return_messages.append((None, payment.id, _("Billing cycle already paid for %s. Payment not attached.") % payment))
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
         except BillingCycle.DoesNotExist:
@@ -198,7 +197,7 @@ def process_csv(file_handle):
             if not payment.id:
                 payment.save() # Only save if object not in database yet
                 logger.warning("No billing cycle found for %s" % payment.reference_number)
-                return_messages.append(_("No billing cycle found for %s") % payment)
+                return_messages.append((None, payment.id, _("No billing cycle found for %s") % payment))
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
 
@@ -206,7 +205,7 @@ def process_csv(file_handle):
                   (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached, \
                    sum_notattached)
     logger.info(log_message)
-    return_messages.append(log_message)
+    return_messages.append((None, None, log_message))
     return return_messages
 
 
