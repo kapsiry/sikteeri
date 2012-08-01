@@ -3,19 +3,19 @@
 <div class="pagination">
   <span class="step-links">
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&query={{ search_query }}{% endif %}">{% trans "Previous" %}</a>
+    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&query={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{% trans "Previous" %}</a>
     {% endif %}
 
     {% for pagenum in paginator.page_range %}
     {% ifnotequal pagenum page %}
-      <a href="?page={{ pagenum }}{% if search_query %}&query={{ search_query }}{% endif %}">{{ pagenum }}</a>
+      <a href="?page={{ pagenum }}{% if search_query %}&query={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ pagenum }}</a>
     {% else %}
       <strong>{{ pagenum }}</strong>
     {% endifnotequal %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&query={{ search_query }}{% endif %}">{% trans "Next" %}</a>
+    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&query={{ search_query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{% trans "Next" %}</a>
     {% endif %}
   </span>
 </div>

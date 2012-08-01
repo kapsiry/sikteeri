@@ -2,6 +2,11 @@
 
 {% include "membership/paginating_snippet.html" %}
 <ul id="member_list">
+	<li class="list_header">
+		<span class="sum"><a href="{% sorturl "id" %}">{% trans "id" %}</a></span>
+		<span class="name"><a href="{% sorturl "name" %}">{% trans "Member" %}</a></span>
+		<span class="name"><a href="{% sorturl "status" %}">{% trans "Status" %}</a></span>
+	</li>
 {% for member in member_list %}
   {% if member.status == "N" %}
     <li class="preapprovable" id="{{ member.id }}">

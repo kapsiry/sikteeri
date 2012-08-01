@@ -23,7 +23,7 @@ from django.contrib import messages
 from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
-from utils import log_change, serializable_membership_info, admtool_membership_details
+from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
 from unpaid_members import unpaid_members_data
@@ -868,12 +868,14 @@ def admtool_lookup_alias_json(request, alias):
 
 
 @permission_required('membership.read_members')
-def member_object_list(*args, **kwargs):
-    return django.views.generic.list_detail.object_list(*args, **kwargs)
+def member_object_list(request, **kwargs):
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)
 
 @permission_required('membership.read_bills')
-def billing_object_list(*args, **kwargs):
-    return django.views.generic.list_detail.object_list(*args, **kwargs)
+def billing_object_list(request, **kwargs):
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)
 
 # This should list any bills/cycles that were forcefully set as paid even
 # though insufficient payments were paid.
@@ -909,5 +911,8 @@ def search(request, **kwargs):
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
-    return django.views.generic.list_detail.object_list(request, qs, **kwargs)
-
+    kwargs['queryset'] = qs.order_by("organization__organization_name",
+                     "person__last_name",
+                     "person__first_name")
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)
