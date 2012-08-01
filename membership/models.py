@@ -16,6 +16,8 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.forms import ValidationError
 
+from django.db.models.query import QuerySet
+
 from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
@@ -38,7 +40,6 @@ MEMBER_STATUS = (('N', _('New')),
                  ('A', _('Approved')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
-
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
@@ -127,6 +128,34 @@ class Contact(models.Model):
             return u'%s %s' % (self.last_name, self.first_name)
 
 
+class MembershipManager(models.Manager):
+    def sort(self, sortkey):
+        qs = MembershipQuerySet(self.model)
+        return qs.sort(sortkey)
+
+    def get_query_set(self):
+        return MembershipQuerySet(self.model)
+
+class MembershipQuerySet(QuerySet):
+    def sort(self, sortkey):
+        sortkey = sortkey.strip()
+        reverse = False
+        if sortkey == "name":
+            return self.order_by("person__first_name",
+                                 "organization__organization_name")
+        elif sortkey == "-name":
+            return self.order_by("person__first_name",
+                                     "organization__organization_name"
+                                     ).reverse()
+        elif sortkey == "last_name":
+            return self.order_by("person__last_name",
+                                 "organization__organization_name")
+        elif sortkey == "-last_name":
+            return self.order_by("person__last_name",
+                                 "organization__organization_name").reverse()
+        return self.order_by(sortkey)
+
+
 class Membership(models.Model):
     class Meta:
         permissions = (
@@ -153,6 +182,8 @@ class Membership(models.Model):
     organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
+
+    objects = MembershipManager()
 
     def primary_contact(self):
         if self.organization:
@@ -384,6 +415,41 @@ class Fee(models.Model):
     def __unicode__(self):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
 
+
+class BillingCycleManager(models.Manager):
+    def sort(self, sortkey):
+        qs = BillingQuerySet(self.model)
+        return qs.sort(sortkey)
+
+    def get_query_set(self):
+        return BillingCycleQuerySet(self.model)
+
+class BillingCycleQuerySet(QuerySet):
+    def sort(self, sortkey):
+        sortkey = sortkey.strip()
+        reverse = False
+        if sortkey == "name":
+            return self.order_by("membership__person__first_name",
+                                 "membership__organization__organization_name")
+        elif sortkey == "-name":
+                return self.order_by("membership__person__first_name",
+                        "memership__organization__organization_name").reverse()
+        elif sortkey == "last_name":
+            return self.order_by("membership__person__last_name",
+                                 "membership__organization__organization_name")
+        elif sortkey == "-last_name":
+            return self.order_by("membership__person__last_name",
+                                 "membership__organization__organization_name"
+                                 ).reverse()
+        elif sortkey == "reminder_count":
+            return self.annotate(reminder_sum=Sum('bill__reminder_count')
+                                ).order_by('reminder_sum')
+        elif sortkey == "-reminder_count":
+            return self.annotate(reminder_sum=Sum('bill__reminder_count')
+                                ).order_by('reminder_sum').reverse()
+        return self.order_by(sortkey)
+
+
 class BillingCycle(models.Model):
     class Meta:
         permissions = (
@@ -398,6 +464,8 @@ class BillingCycle(models.Model):
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
     logs = property(_get_logs)
+
+    objects = BillingCycleManager()
 
     def first_bill_sent_on(self):
         try:
