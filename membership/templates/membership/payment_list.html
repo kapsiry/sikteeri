@@ -1,11 +1,27 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load reference_number %}
-
+{% load sorturl %}
 {% block content %}
 {% include "membership/paginating_snippet.html" %}
 
 <ul id="paymentlist">
+  <li class="list_header">
+	<span class="name">
+		<a href="{% sorturl "payer_name" %}">{% trans "Payer name"|capfirst %}</a>
+	</span>
+	<span class="sum">
+		<a href="{% sorturl "amount" %}">{% trans "Sum"|capfirst %}</a></span>
+	<span class="reference">
+		<a href="{% sorturl "reference_number" %}">{% trans "Reference number"|capfirst %}</a>
+	</span>
+	<span class="paid">
+		<a href="{% sorturl "billingcycle" %}">&nbsp;&nbsp;{% trans "Attached"|capfirst %} </a>
+	</span>
+	<span class="comment">
+		<a href="{% sorturl "comment" %}">{% trans "Comment"|capfirst %}</a>
+	</span>
+  </li>
   {% for payment in payment_list %}
   <li class="list_item{% if payment.is_due %} due{% endif %}{% if payment.ignore %} ignored{% endif %}">
     <span class="name"><a href="{% url payment_edit payment.id %}">{{ payment.payer_name }}</a></span>

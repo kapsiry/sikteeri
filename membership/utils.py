@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
+from django.db.models import Sum
 
 # http://code.activestate.com/recipes/576644/
 
@@ -286,3 +287,27 @@ def tupletuple_to_dict(tupletuple):
         (key, value) = t
         d[key] = value
     return d
+
+def sort_objects(request, **kwargs):
+    '''Sorting function for views
+    '''
+    try:
+        sort = kwargs['sort']
+        del kwargs['sort']
+        if not sort:
+            raise KeyError()
+    except KeyError, ke:
+        sort = request.GET.get("sort", None)
+
+    if 'queryset' in kwargs and sort:
+        if len(sort) is 0:
+            return kwargs
+        extra = kwargs.get('extra_context', {})
+        extra['sort'] = sort
+        sort = sort.strip().lower()
+        kwargs['extra_context'] = extra
+        try:
+            kwargs['queryset'] = kwargs['queryset'].sort(sort)
+        except AttributeError:
+            kwargs['queryset'] = kwargs['queryset'].order_by(sort)
+    return kwargs
