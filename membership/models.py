@@ -41,7 +41,6 @@ MEMBER_STATUS = (('N', _('New')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
-
 BILL_TYPES = (
 ('E', _('Email')),
 ('P', _('Paper')),

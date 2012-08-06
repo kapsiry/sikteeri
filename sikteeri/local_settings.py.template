@@ -129,3 +129,5 @@ LOGGING = {
 # "Send" emails to a mbox file through a mock email backend
 #EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
 #EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
+
+#PAPER_REMINDER_TEMPLATE = 'myreminder.tex'

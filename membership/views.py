@@ -2,6 +2,7 @@
 
 import logging
 import json
+from os import remove as remove_file
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment
@@ -31,6 +32,7 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
+from management.commands.paper_reminders import generate_reminders, get_data as get_paper_reminders
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
@@ -506,6 +508,39 @@ def import_payments(request, template_name='membership/import_payments.html'):
                                               'import_messages': import_messages},
                               context_instance=RequestContext(request))
 
+@permission_required('membership.read_bills')
+def print_reminders(request, **kwargs):
+    output_messages = []
+    if request.method == 'POST':
+        try:
+            if 'marksent' in request.POST:
+                for billing_cycle in get_paper_reminders().all():
+                    bill = Bill(billingcycle=billing_cycle, type='P')
+                    bill.reminder_count = billing_cycle.bill_set.count()
+                    bill.save()
+                output_messages.append(_('Reminders marked as sent'))
+            else:
+                pdffile = generate_reminders()
+                f = open(pdffile, 'r')
+                pdf = f.read()
+                f.close()
+                try:
+                    # remove file from tmp
+                    remove_file(pdffile)
+                except OSError:
+                    pass
+                response = HttpResponse(pdf, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=reminders.pdf'
+                return response
+        except RuntimeError:
+            output_messages.append(_('Error processing PDF'))
+        except IOError:
+            output_messages.append(_('Cannot open PDF file'))
+    return render_to_response('membership/print_reminders.html',
+    {'title': _("Print paper reminders"),
+     'output_messages': output_messages,
+     'count': get_paper_reminders().count()},
+     context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
 def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
