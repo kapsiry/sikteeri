@@ -455,7 +455,7 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
             oldcycle = payment.billingcycle
             if oldcycle:
                 oldcycle_before = oldcycle.__dict__.copy()
-                payment.detach_from_cycle()
+                payment.detach_from_cycle(user=request.user)
                 oldcycle_after = oldcycle.__dict__.copy()
                 log_change(oldcycle, request.user, oldcycle_before, oldcycle_after)
 
@@ -490,7 +490,7 @@ def import_payments(request, template_name='membership/import_payments.html'):
             try:
                 in_memory_file = request.FILES['csv']
                 logger.info("Beginning payment import.")
-                import_messages = payment_csv_import(in_memory_file)
+                import_messages = payment_csv_import(in_memory_file, user=request.user)
                 messages.success(request, unicode(_("Payment import succeeded!")))
             except:
                   logger.error("%s" % traceback.format_exc())
@@ -545,8 +545,10 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         form =  Form(instance=cycle)
         form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
-    return render_to_response(template_name, {'form': form, 'cycle': cycle,
-        'logentries': logentries,'memberid': cycle.membership.id},
+    return render_to_response(template_name,
+                              {'form': form, 'cycle': cycle,
+                               'logentries': logentries,
+                               'memberid': cycle.membership.id},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
