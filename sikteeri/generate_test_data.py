@@ -13,7 +13,7 @@ from uuid import uuid4
 from decimal import Decimal
 import logging
 from membership.test_utils import random_first_name, random_last_name
-logger = logging.getLogger("generate_test_data")
+logger = logging.getLogger("sikteeri.generate_test_data")
 
 from datetime import datetime
 

@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
+import logging
+from datetime import datetime, timedelta
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
 from django.utils import translation
 from django.conf import settings
 from django.db import transaction
 
-import logging
-logger = logging.getLogger("sikteeri.membership.management.commands.makebills")
-from datetime import datetime, timedelta
-
 from membership.models import *
 from membership.utils import *
+
+logger = logging.getLogger("membership.makebills")
 
 class MembershipNotApproved(Exception): pass
 
@@ -82,19 +84,23 @@ def send_reminder(membership):
     return bill
 
 def makebills():
+    logger.info("Running makebills...")
     latest_recorded_payment = Payment.latest_payment_date()
 
     for member in Membership.objects.filter(status='A').filter(id__gt=0):
         # Billing cycles and bills
         cycles = member.billingcycle_set
         if cycles.count() == 0:
-            create_billingcycle(member)
+            cycle = create_billingcycle(member)
+            logger.info("Created billing cycle %s for %s" % (repr(cycle), repr(member)))
         else:
             latest_cycle = cycles.latest("end")
             if latest_cycle.end < datetime.now():
                 logger.warning("no new billing cycle created for %s after an expired one!" % repr(member))
             if latest_cycle.end < datetime.now() + timedelta(days=settings.BILL_DAYS_BEFORE_CYCLE):
-                create_billingcycle(member)
+                cycle = create_billingcycle(member)
+                logger.info("Created billing cycle %s for %s" %
+                            (repr(cycle), repr(member)))
 
         # Reminders
         latest_cycle = member.billingcycle_set.latest('end')
@@ -102,9 +108,9 @@ def makebills():
             if latest_cycle.is_last_bill_late():
                 last_due_date = latest_cycle.last_bill().due_date
                 if can_send_reminder(last_due_date, latest_recorded_payment):
-                    send_reminder(member)
-                    logger.info("makebills: sent a reminder to %s." %
-                                 repr(member))
+                    reminder = send_reminder(member)
+                    logger.info("Sent reminder %s to %s." % (repr(reminder), repr(member)))
+    logger.info("Done running makebills.")
 
 class Command(NoArgsCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'
