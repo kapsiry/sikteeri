@@ -22,8 +22,8 @@ from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
 
-from email_utils import send_as_email, send_preapprove_email
-from email_utils import bill_sender, preapprove_email_sender
+from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
+from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -722,6 +722,20 @@ class Payment(models.Model):
             log_change(self, user, change_message="Detached from billing cycle")
         cycle.update_is_paid()
 
+
+    def send_duplicate_payment_notice(self, user, **kwargs):
+        if not user:
+            raise Exception('send_duplicate_payment_notice user objects as parameter')
+        billingcycle = BillingCycle.objects.get(reference_number=self.reference_number)
+        if billingcycle.sum > 0:
+            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user, billingcycle=billingcycle)
+            for item in ret_items:
+                sender, error = item
+                if error != None:
+                    logger.error("%s" % traceback.format_exc())
+                    raise error
+            log_change(self, user, change_message="Duplicate payment notice sent")
+
     @classmethod
     def latest_payment_date(cls):
         try:
@@ -740,3 +754,5 @@ models.signals.post_save.connect(logging_log_change, sender=Payment)
 send_as_email.connect(bill_sender, sender=Bill, dispatch_uid="email_bill")
 send_preapprove_email.connect(preapprove_email_sender, sender=Membership,
                               dispatch_uid="preapprove_email")
+send_duplicate_payment_notice.connect(duplicate_payment_sender, sender=Payment,
+                              dispatch_uid="duplicate_payment_notice")

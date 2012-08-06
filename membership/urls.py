@@ -45,6 +45,7 @@ urlpatterns = patterns('',
 
     url(r'payments/edit/(\d+)/$', 'membership.views.payment_edit', name='payment_edit'),
     url(r'payments/import/$', 'membership.views.import_payments', name='import_payments'),
+    url(r'payments/send_duplicate_notification/(\d+)$', 'membership.views.send_duplicate_notification', name='payment_send_duplicate_notification'),
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),

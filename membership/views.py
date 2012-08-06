@@ -646,6 +646,12 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         'logentries': logentries, 'memberid': memberid},
         context_instance=RequestContext(request))
 
+@permission_required('membership.manage_bills')
+def send_duplicate_notification(request, payment, **kwargs):
+    payment = get_object_or_404(Payment, id=payment)
+    payment.send_duplicate_payment_notice(request.user)
+    return redirect('payment_edit', payment.id)
+
 @permission_required('membership.read_members')
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     membership = get_object_or_404(Membership, id=id)

@@ -1,0 +1,13 @@
+Hei!
+
+Huomasimme jäsenmaksutietojen tarkistuksissa, että olet vahingossa maksanut jäsenmaksusi
+vuodelle {{ billingcycle.start|date:"Y" }} kahdesti, ensin {% for payment in billingcycle.payment_set.all %}{{payment.payment_day|date:"j.n.Y" }}{% endfor %} ja uudestaan {{ payment.payment_day|date:"j.n.Y" }}.
+
+Haluatko että palautamme liikaa maksetun summan, {{ billingcycle.sum }} euroa, tilillesi? Tässä tapauksessa
+tarvitsemme tilinumerosi vastauksena tähän viestiin. Voimme myös tulkita liikamaksun
+lahjoitukseksi, jos niin haluat.
+
+Terveisin,
+{{ user.get_full_name }}
+Kapsi Internet-käyttäjät ry
+http://www.kapsi.fi/
