@@ -55,6 +55,12 @@
 </form>
 <hr />
 
+{% if payment and perms.membership.manage_bills %}
+{% if not payment.billingcycle and payment.comment = 'duplikaattimaksu' %}
+<h2>Actions</h2>
+<a href="{% url payment_send_duplicate_notification payment.id %}">{% trans "Send duplicate payment notice" %}</a>
+{% endif %}
+{% endif %}
 {% if cycle and perms.membership.manage_bills %}
 {% if not cycle.is_paid or not cycle.amount_paid %}
 <h2>Actions</h2>
