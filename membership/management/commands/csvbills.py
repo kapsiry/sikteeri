@@ -1,13 +1,7 @@
 # encoding: UTF-8
-
 from __future__ import with_statement
 
-from django.db.models import Q, Sum
-from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext as _
-from django.contrib.auth.models import User
-
+import logging
 import codecs
 import csv
 import os
@@ -15,11 +9,16 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import logging
-logger = logging.getLogger("csvbills")
+from django.db.models import Q, Sum
+from django.core.management.base import BaseCommand
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 from membership.models import Bill, BillingCycle, Payment
 from membership.utils import log_change
+
+logger = logging.getLogger("membership.csvbills")
 
 class UTF8Recoder:
     """
@@ -163,6 +162,7 @@ def attach_payment_to_cycle(payment):
 def process_csv(file_handle):
     """Actual CSV file processing logic
     """
+    logger.info("Starting payment CSV processing...")
     return_messages = []
     num_attached = num_notattached = 0
     sum_attached = sum_notattached = 0
@@ -184,13 +184,17 @@ def process_csv(file_handle):
         try:
             cycle = attach_payment_to_cycle(payment)
             if cycle:
-                return_messages.append(_("Attached payment {payment} to cycle {cycle}").
-                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
+                msg = _("Attached payment {payment} to cycle {cycle}"). \
+                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle))
+                logger.info(msg)
+                return_messages.append(msg)
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
             else:
                 # Payment not attached to cycle because enough payments were attached
-                return_messages.append(_("Billing cycle already paid for %s. Payment not attached.") % payment)
+                msg = _("Billing cycle already paid for %s. Payment not attached.") % payment
+                return_messages.append(msg)
+                logger.info(msg)
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
         except BillingCycle.DoesNotExist:

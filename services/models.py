@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger("models")
+logger = logging.getLogger("services.models")
 
 from datetime import datetime
 import unicodedata

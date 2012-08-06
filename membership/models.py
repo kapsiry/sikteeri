@@ -5,7 +5,7 @@ from decimal import Decimal
 import logging
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
-logger = logging.getLogger("models")
+logger = logging.getLogger("membership.models")
 import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
