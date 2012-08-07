@@ -67,6 +67,10 @@ class OrganizationMembershipForm(forms.Form):
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
                                    help_text=_('Place where your organization is registered to'))
+    organization_registration_number = forms.CharField(max_length=7, min_length=5,
+                                                  label=_('Organization registration number'),
+                                                  required=True,
+                                                  help_text=_('Registration number given by Patentti- ja rekisterihallitus'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
