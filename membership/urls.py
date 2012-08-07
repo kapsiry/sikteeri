@@ -35,6 +35,8 @@ urlpatterns = patterns('',
     # <http://docs.djangoproject.com/en/dev/ref/generic-views/#django-views-generic-create-update-create-object>
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
 
+    url(r'contacts/add/(billing_contact|tech_contact)/(\d+)/$', 'membership.views.contact_add', name='contact_add'),
+
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
     url(r'memberships/duplicates/(\d+)/$', 'membership.views.membership_duplicates', name='membership_duplicates'),
 
