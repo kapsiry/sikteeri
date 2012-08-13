@@ -33,7 +33,7 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
-from management.commands.paper_reminders import generate_reminders, get_data as get_paper_reminders, TMPDIR as paper_reminders_base
+from management.commands.paper_reminders import get_reminders, get_data as get_paper_reminders
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
@@ -521,13 +521,13 @@ def print_reminders(request, **kwargs):
                     bill.save()
                 output_messages.append(_('Reminders marked as sent'))
             else:
-                pdffile = path.join(paper_reminders_base, 'reminders.pdf')
-                f = open(pdffile, 'r')
-                pdf = f.read()
-                f.close()
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=reminders.pdf'
-                return response
+                pdf = get_reminders()
+                if pdf:
+                    response = HttpResponse(pdf, content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename=reminders.pdf'
+                    return response
+                else:
+                    output_messages.append(_('Error processing PDF'))
         except RuntimeError:
             output_messages.append(_('Error processing PDF'))
         except IOError:

@@ -10,6 +10,7 @@ from membership.reference_numbers import barcode_4
 from django.conf import settings
 
 import os
+import signal
 
 from optparse import make_option
 
@@ -29,6 +30,12 @@ TMPDIR = '/tmp/sikteeritex'
 
 class LatexTemplate(Template):
     delimiter = '\$'
+
+class Timeout(Exception):
+    pass
+
+def timeout_handler(signum, frame):
+    raise Timeout
 
 def get_data(memberid=None):
     if not settings.ENABLE_REMINDERS:
@@ -58,6 +65,15 @@ def data2pdf(data):
 def create_datalist(memberid=None):
     datalist = []
     for cycle in get_data(memberid).all():
+        # check if paper reminder already sent
+        cont = False
+        for bill in cycle.bill_set.all():
+            if bill.type == 'P':
+                cont=True
+                break
+        if cont:
+            continue
+
         membercontact = cycle.membership.get_billing_contact()
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
@@ -92,7 +108,7 @@ def generate_pdf(latexfile):
     # Restore previous umask
     os.umask(oldumask)
     pdffile = latexfile.replace('.tex','.pdf')
-    if os.path.exist(pdffile)
+    if os.path.exists(pdffile):
         return pdffile
     else:
         return None
@@ -143,6 +159,19 @@ def generate_reminders(memberid=None):
     if not singlefile:
         return None
     return singlefile
+
+def get_reminders(memberid=None):
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(28)  # 28 sec
+    try:
+        singlefile = generate_reminders(memberid)
+        signal.alarm(0)
+    except Timeout:
+        return
+    if singlefile:
+        f = open(singlefile, 'r')
+        return f.read()
+
 
 class Command(BaseCommand):
     args = ''
