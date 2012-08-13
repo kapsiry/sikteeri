@@ -3,6 +3,7 @@
 import logging
 import json
 from os import remove as remove_file
+from os import path
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment
@@ -32,7 +33,7 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
-from management.commands.paper_reminders import generate_reminders, get_data as get_paper_reminders
+from management.commands.paper_reminders import generate_reminders, get_data as get_paper_reminders, TMPDIR as paper_reminders_base
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
@@ -520,15 +521,10 @@ def print_reminders(request, **kwargs):
                     bill.save()
                 output_messages.append(_('Reminders marked as sent'))
             else:
-                pdffile = generate_reminders()
+                pdffile = path.join(paper_reminders_base, 'reminders.pdf')
                 f = open(pdffile, 'r')
                 pdf = f.read()
                 f.close()
-                try:
-                    # remove file from tmp
-                    remove_file(pdffile)
-                except OSError:
-                    pass
                 response = HttpResponse(pdf, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=reminders.pdf'
                 return response
