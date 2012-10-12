@@ -85,6 +85,9 @@ class Alias(models.Model):
         self.expiration_date = time
         self.save()
 
+    def clean(self):
+        self.name = self.name.strip()
+
     def is_valid(self):
         expiration = self.expiration_date
         if not expiration or expiration > datetime.now():
@@ -164,6 +167,14 @@ class Alias(models.Model):
 
         return [perm for perm in permutations
                 if cls.objects.filter(name__iexact=perm).count() == 0]
+
+    def save(self,*args,**kwargs):
+        try:
+            self.full_clean()
+        except ValidationError as e:
+            raise e
+
+        super(Alias, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
