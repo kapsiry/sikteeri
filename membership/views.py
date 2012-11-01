@@ -5,7 +5,7 @@ import json
 from os import remove as remove_file
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
-    BillingCycle, Payment
+    BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
 import traceback
 from django.db.models.aggregates import Sum
@@ -70,7 +70,7 @@ def person_application(request, template_name='membership/new_person_application
                                  'public_memberlist', 'email_forward',
                                  'unix_login', 'extra_info',
                                  'mysql_database', 'postgresql_database',
-                                 'login_vhost']:
+                                 'login_vhost', 'poll', 'poll_other']:
                         contact_dict[k] = v
 
                 person = Contact(**contact_dict)
@@ -119,6 +119,15 @@ def person_application(request, template_name='membership/new_person_application
 
                 logger.debug("Attempting to save with the following services: %s." % ", ".join((str(service) for service in services)))
                 # End of services
+
+                if f['poll'] is not None:
+                    answer = f['poll']
+                    if answer == 'other':
+                        answer = '%s: %s' % (answer, f['poll_other'])
+                    pollanswer = ApplicationPoll(membership=membership,
+                                                 answer=answer)
+                    pollanswer.save()
+
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),

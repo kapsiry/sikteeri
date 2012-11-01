@@ -742,6 +742,17 @@ class Payment(models.Model):
         except Payment.DoesNotExist:
             return None
 
+class ApplicationPoll(models.Model):
+    """
+    Store statistics taken from membership application "where did you
+    hear about us" poll.
+    """
+
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
+    answer = models.CharField(max_length=512,verbose_name=_('Service specific data'),
+                                  blank=False, null=False)
+
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
 models.signals.post_save.connect(logging_log_change, sender=BillingCycle)

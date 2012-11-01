@@ -50,6 +50,15 @@ class PersonMembershipForm(forms.Form):
                                  help_text=_('You can write additional questions or details here'),
                                  max_length=1000)
 
+    CHOICES = (('friend', _('From friend'),),('irc', _('From IRC'),),
+               ('some',_('From social media'),),('advertisement',_('From advertisement')),
+               ('event', _('From event')),('other', _('Other, what?')))
+    poll = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+    poll_other = forms.CharField(max_length=60, min_length=2,
+                                   label=_('Where did you hear about as'),
+                                   required=False,
+                                   help_text=_(u'Other, where?'))
+
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
 

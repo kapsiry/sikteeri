@@ -238,6 +238,21 @@
     {% endfor %}
   </p>
   </fieldset>
+  <fieldset class="wide">
+	<legend>Miten kuulit Kapsista?</legend>
+	{% for radio in form.poll %}
+		<p> <span class="radio">{{ radio.tag }}</span>{% trans radio.choice_label %}
+			{% if radio.choice_value == "other" %}
+			<input type="text" value="" name="poll_other" class="form-input">
+			{% for error in form.poll_other.errors %}
+			<span class="error{% if from.poll_other.help_text %} newline{% endif %}">{{ error }}</span>
+			{% endfor %}
+			{% endif %}</p>
+	{% endfor %}
+	<p>
+
+	</p>
+  </fieldset>
   <p>
     <label for="submit_button"></label>
     <input id="submit_button" type="submit" value="{% trans "Send application" %}" />

@@ -162,3 +162,8 @@ input[type="submit"] {
     padding-left: 2em;
     padding-right: 2em;
 }
+
+#new_application span.radio input {
+    width: 50px;
+    vertical-align: middle;
+}
