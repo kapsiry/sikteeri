@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load sorturl %}
+{% load comments %}
 {% block extra_head %}
     <script type="text/javascript" src="{{ MEDIA_URL }}/membership/static/js/member_list.js"></script>
 {% endblock %}
@@ -20,7 +21,8 @@
 	</li>
 {% for member in member_list %}
   {% if member.status == "N" %}
-	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} duplicate{% endif %}{% endif %}" id="{{ member.id }}">
+	{% get_comment_list for member as comment_list %}
+	<li class="list_item preapprovable{% if not disable_duplicates_header %}{% if member.duplicates %} duplicate{% endif %}{% endif %}{% if comment_list %} comments{% endif %}" id="{{ member.id }}">
   {% else %}
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">
