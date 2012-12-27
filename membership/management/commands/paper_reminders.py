@@ -12,6 +12,8 @@ from django.conf import settings
 import os
 import signal
 
+from threading import currentThread
+
 from optparse import make_option
 
 from datetime import datetime, timedelta
@@ -161,8 +163,11 @@ def generate_reminders(memberid=None):
     return singlefile
 
 def get_reminders(memberid=None):
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(28)  # 28 sec
+    if currentThread().getName() == 'MainThread':
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(28)  # 28 sec
+    else:
+        logging.error("Cannot use signals on child thread")
     try:
         singlefile = generate_reminders(memberid)
         signal.alarm(0)
