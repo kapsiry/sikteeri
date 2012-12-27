@@ -180,7 +180,7 @@ class Membership(models.Model):
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Membership changed'))
     public_memberlist = models.BooleanField(_('Show in the memberlist'))
 
-    municipality = models.CharField(_('Home municipality'), max_length=128)
+    municipality = models.CharField(_('Home municipality'), max_length=128, blank=True)
     nationality = models.CharField(_('Nationality'), max_length=128)
     birth_date = models.DateField(_('Date of birth'), null=True, blank=True)
     organization_registration_number = models.CharField(_('Organization registration number'), max_length=15, null=True, blank=True)
@@ -250,6 +250,8 @@ class Membership(models.Model):
                 raise ValidationError("Person-contact and organization-contact are mutually exclusive.")
             if not self.person and not self.organization:
                 raise ValidationError("Either Person-contact or organization-contact must be defined.")
+            if not self.municipality:
+                raise ValidationError("Municipality can't be null.")
         else:
             if self.person or self.organization or self.billing_contact or self.tech_contact:
                 raise ValidationError("A membership may not have any contacts if it is deleted.")
@@ -319,6 +321,7 @@ class Membership(models.Model):
         self.billing_contact = None
         self.tech_contact = None
         self.organization = None
+        self.municipality = ''
         self.save()
         for contact in contacts:
             if contact != None:
