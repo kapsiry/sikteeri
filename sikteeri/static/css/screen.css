@@ -444,3 +444,7 @@ li.list_item span.paid, li.list_header span.paid {
 li.duplicate {
     border: 2px solid #bb0000;
 }
+
+li.comments {
+    border: 2px solid #df6020;
+}
