@@ -7,7 +7,9 @@ from django.core.management.base import NoArgsCommand
 from django.utils import translation
 from django.conf import settings
 from django.db import transaction
+from django.conf import settings
 
+from management.commands.paper_reminders import generate_reminders
 from membership.models import *
 from membership.utils import *
 
@@ -118,3 +120,9 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         translation.activate(settings.LANGUAGE_CODE)
         makebills()
+        if settings.PAPER_REMINDER_TEMPLATE:
+            # create paper-reminders
+            try:
+                generate_reminders()
+            except RuntimeError:
+                pass
