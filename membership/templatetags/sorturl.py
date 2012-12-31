@@ -8,13 +8,13 @@ class SortUrl(template.Node):
         self.sort_cycles = {
             u'id': [u'id', u'-id'],
             u'status': [u'status', u'-status'],
-            u'name': [u'name', u'-lastname', u'name', u'lastname'],
+            u'name': [u'name', u'-last_name', u'name', u'last_name'],
             u'payer_name': [u'payer_name', u'-payer_name'],
             u'amount': [u'amount', u'-amount'],
             u'reference_number': [u'reference_number', u'-reference_number'],
             u'billingcycle': [u'billingcycle', u'-billingcycle'],
             u'comment': [u'comment', u'-comment'],
-            u'cycle': [u'start', u'stop'],
+            u'cycle': [u'start', u'end'],
             u'sum': [u'sum', u'-sum'],
             u'due_date': [u'bill__due_date', u'-bill__due_date']
         }
