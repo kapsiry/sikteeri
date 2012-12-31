@@ -4,7 +4,7 @@
 {% load comments %}
 
 {% block content %}
-{% if memberid != None %}
+{% if memberid != None and not bill and not payment %}
 <a href="{% url membership_edit memberid %}">{% trans "Back to member overview" %}</a>
 <hr />
 {% endif %}
@@ -34,13 +34,13 @@
 
 {% if bill %}
 <h2>{% trans "Bill for member" %} <a href="{% url membership_edit bill.billingcycle.membership.id %}">{{ bill.billingcycle.membership }}</a>,
-   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a></h2>
+   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a> ({{bill.billingcycle.sum}} EUR)</h2>
 {% endif %}
 
 {% if payment %}
 <h2>{% trans "Payer" %} {{ payment.payer_name }}</h2>
 {% if payment.billingcycle %}
-<p>{% trans "Payment assigned to" %} {{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }} {{ payment.billingcycle }}</p>
+<p>{% trans "Payment assigned to" %} <a href="{% url membership_edit payment.billingcycle.membership.id %}">{{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }}</a> {{ payment.billingcycle }}</p>
 {% endif %}
 {% endif %}
 
@@ -75,14 +75,37 @@
 
 {% if logentries %}
 <h2>{% trans "Event log" %}</h2>
-{% endif %}
+
 <table class="event_log">
+	<tr class="header_row">
+		<td>{% trans "Time"|capfirst %}</td>
+		<td>{% trans "Actions"|capfirst %}</td>
+		<td>{% trans "Modifer"|capfirst %}</td>
+		<td>
+			<div class="loginner table">
+				<div class="header_row header_tr">
+					<div class="key td">{% trans "Record"|capfirst %}</div>
+					<div class="old td">{% trans "Old"|capfirst %}</div>
+					<div class="new td">{% trans "New"|capfirst %}</div>
+				</div>
+			</div>
+		</td>
+	</tr>
+{% endif %}
 {% for logentry in logentries %}
   <tr>
     <td>{{ logentry.action_time|date:"j.n.Y H:i" }}</td>
     <td>{{ logentry.action_flag_str}}</td>
     <td>{{ logentry.user }}</td>
-    <td>{{ logentry.change_message }}</td>
+    <td>
+		<div class="loginner table">{% for key, old, new in logentry.change_list %}
+			<div class="tr">
+				<div class="key td">{% trans key|capfirst %}</div>
+				<div class="old td">{% if old %}{{ old }}{% else %}-{% endif %}</div>
+				<div class="new td">{% if new %}{{ new }}{% else %}-{% endif %}</div>
+			</div>
+		{% endfor %}</div>
+	</td>
   </tr>
 {% endfor %}
 </table>

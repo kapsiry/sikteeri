@@ -115,7 +115,7 @@
 <h2>{% trans "Comments" %}</h2>
 {% get_comment_list for membership as comment_list %}
 {% for comment in comment_list %}
-    <p>{{ comment.submit_date|date:"j.n.Y" }} {{ comment.comment }}</p>
+    <p>{{ comment.submit_date|date:"j.n.Y" }} {{ comment.user_name }}: {{ comment.comment }}</p>
 {% endfor %}
 
 {% get_comment_form for membership as commentform %}
