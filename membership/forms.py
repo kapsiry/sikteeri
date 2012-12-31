@@ -61,6 +61,7 @@ class DateOfBirthField(forms.DateField):
             raise forms.ValidationError(_("You must be at least 1 year old"))
         elif c < years_ago:
             raise forms.ValidationError(_("You can't be more than %(years)s years old" % {"years":MAX_AGE}))
+        return c
 
 
 class PersonMembershipForm(forms.Form):

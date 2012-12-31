@@ -754,16 +754,16 @@ class MemberApplicationTest(TestCase):
 
     def test_do_application(self):
         response = self.client.post('/membership/application/person/', self.post_data)
-        print("%s" % response)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
 
 
     def test_redundant_email_alias(self):
-        self.post_data['unix_login'] = 'fname.lname'
+        self.post_data['unix_login'] = 'fnamelname'
         self.post_data['email_forward'] = 'fname.lname'
         response = self.client.post('/membership/application/person/', self.post_data)
+        print("%s" % response)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
@@ -845,6 +845,19 @@ class PhoneNumberFieldTest(TestCase):
 
     def test_dash_delimiter_begins_with_plus(self):
         self.assertEquals(u"+358400123123", self.field.clean(u"+358-400-123123 "))
+
+class OrganizationRegistratioTest(TestCase):
+    def setUp(self):
+        self.field = OrganizationRegistrationNumber()
+    
+    def test_valid(self):
+        self.assertEqual(u"1.11", self.field.clean(u"1.11"))
+        self.assertEqual(u"123.123", self.field.clean(u"123.123"))
+        
+    def test_invalid(self):
+        self.assertRaises(ValidationError, self.field.clean, "str.str")
+        self.assertRaises(ValidationError, self.field.clean, "11111")
+        self.assertRaises(ValidationError, self.field.clean, "11111.1111111")
 
 class LoginFieldTest(TestCase):
     def setUp(self):
