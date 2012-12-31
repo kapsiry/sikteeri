@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load future %}
 
 {% block content %}
 <h2>{% trans 'Get reminders on pdf format' %}</h2>
@@ -17,5 +18,5 @@
 <input type="submit" value="{% trans "Mark reminders as sent" %}" {%if count = 0 %}disabled=disabled{% endif %} />
 </form>
 </p>
-<p><a href="{% url locked_cycle_list %}">{% trans "List reminders" %}</a> {% trans "count" %}: {{count}}</p>
+<p><a href="{% url 'locked_cycle_list' %}">{% trans "List reminders" %}</a> {% trans "count" %}: {{count}}</p>
 {% endblock %}
