@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-16 12:00+0300\n"
+"POT-Creation-Date: 2012-12-31 08:30+0200\n"
 "PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Antti Jaakkola <annttu@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -124,15 +124,19 @@ msgstr "Huomiotta jätetyt maksut"
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:45
+#: templates/menu.html:44
+msgid "Print reminders"
+msgstr "Tulosta muistutukset"
+
+#: templates/menu.html:46
 msgid "Import payments"
 msgstr "Tuo maksut"
 
-#: templates/menu.html:50
+#: templates/menu.html:51
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:55
+#: templates/menu.html:56
 msgid "Admin"
 msgstr "Ylläpito"
 
