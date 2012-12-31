@@ -753,6 +753,7 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 
         def disable_fields(self):
             self.fields['status'].required = False
+            self.fields['status'].widget.attrs['disabled'] = 'disabled'
             self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
