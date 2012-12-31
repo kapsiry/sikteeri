@@ -786,8 +786,8 @@ def membership_duplicates(request, id):
                    'template_name': 'membership/membership_list.html',
                    'template_object_name': 'member',
                    'extra_context': {'header':
-                                     _(u"List duplicates for member #%i %s" % (membership.id,
-                                                                               unicode(membership))),
+                                     _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
+                                                                               "membership":unicode(membership)}),
                                      'disable_duplicates_header': True},
                    'paginate_by': ENTRIES_PER_PAGE}
 
