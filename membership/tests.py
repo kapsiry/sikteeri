@@ -745,6 +745,7 @@ class MemberApplicationTest(TestCase):
             "municipality": "Vaasa",
             "extra_info": u"Mää oon testikäyttäjä.",
             "unix_login": "luser",
+            "birth_date": "02.02.1993",
             "email_forward": "y.aikas",
             "mysql_database": "yes",
             "postgresql_database": "yes",
@@ -759,9 +760,10 @@ class MemberApplicationTest(TestCase):
 
 
     def test_redundant_email_alias(self):
-        self.post_data['unix_login'] = 'fname.lname'
+        self.post_data['unix_login'] = 'fnamelname'
         self.post_data['email_forward'] = 'fname.lname'
         response = self.client.post('/membership/application/person/', self.post_data)
+        print("%s" % response)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
@@ -844,6 +846,19 @@ class PhoneNumberFieldTest(TestCase):
     def test_dash_delimiter_begins_with_plus(self):
         self.assertEquals(u"+358400123123", self.field.clean(u"+358-400-123123 "))
 
+class OrganizationRegistratioTest(TestCase):
+    def setUp(self):
+        self.field = OrganizationRegistrationNumber()
+    
+    def test_valid(self):
+        self.assertEqual(u"1.11", self.field.clean(u"1.11"))
+        self.assertEqual(u"123.123", self.field.clean(u"123.123"))
+        
+    def test_invalid(self):
+        self.assertRaises(ValidationError, self.field.clean, "str.str")
+        self.assertRaises(ValidationError, self.field.clean, "11111")
+        self.assertRaises(ValidationError, self.field.clean, "11111.1111111")
+
 class LoginFieldTest(TestCase):
     def setUp(self):
         self.field = LoginField()
@@ -852,10 +867,13 @@ class LoginFieldTest(TestCase):
         self.assertEquals(u"testuser", self.field.clean(u"testuser"))
         self.assertEquals(u"testuser2", self.field.clean(u"testuser2"))
         self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
-        self.assertEquals(u"user.name", self.field.clean(u"user.name"))
-        self.assertEquals(u"user-name", self.field.clean(u"user-name"))
     def test_uppercase(self):
         self.assertEquals(u"testuser", self.field.clean(u"TestUser"))
+
+    def test_bad_chars(self):
+        self.assertRaises(ValidationError, self.field.clean, "user.name")
+        self.assertRaises(ValidationError, self.field.clean, "user-name")
+
 
     def test_too_short(self):
         self.assertRaises(ValidationError, self.field.clean, "a")

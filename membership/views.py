@@ -6,7 +6,7 @@ from os import remove as remove_file
 from os import path
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
-    BillingCycle, Payment
+    BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
 import traceback
 from django.db.models.aggregates import Sum
@@ -71,7 +71,8 @@ def person_application(request, template_name='membership/new_person_application
                                  'public_memberlist', 'email_forward',
                                  'unix_login', 'extra_info',
                                  'mysql_database', 'postgresql_database',
-                                 'login_vhost']:
+                                 'login_vhost', 'poll', 'poll_other',
+                                 'birth_date']:
                         contact_dict[k] = v
 
                 person = Contact(**contact_dict)
@@ -81,6 +82,7 @@ def person_application(request, template_name='membership/new_person_application
                                         nationality=f['nationality'],
                                         municipality=f['municipality'],
                                         public_memberlist=f['public_memberlist'],
+                                        birth_date=f['birth_date'],
                                         extra_info=f['extra_info'])
                 membership.save()
 
@@ -120,6 +122,15 @@ def person_application(request, template_name='membership/new_person_application
 
                 logger.debug("Attempting to save with the following services: %s." % ", ".join((str(service) for service in services)))
                 # End of services
+
+                if f['poll'] is not None:
+                    answer = f['poll']
+                    if answer == 'other':
+                        answer = '%s: %s' % (answer, f['poll_other'])
+                    pollanswer = ApplicationPoll(membership=membership,
+                                                 answer=answer)
+                    pollanswer.save()
+
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
@@ -158,7 +169,8 @@ def organization_application(request, template_name='membership/new_organization
 
             d = {}
             for k, v in f.items():
-                if k not in ['nationality', 'municipality', 'extra_info', 'public_memberlist']:
+                if k not in ['nationality', 'municipality', 'extra_info',
+                'public_memberlist', 'organization_registration_number']:
                     d[k] = v
 
             organization = Contact(**d)
@@ -166,6 +178,7 @@ def organization_application(request, template_name='membership/new_organization
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
                                     extra_info=f['extra_info'],
+                                    organization_registration_number=f['organization_registration_number'],
                                     public_memberlist=f['public_memberlist'])
 
             request.session.set_expiry(0) # make this expire when the browser exits
@@ -296,7 +309,8 @@ def organization_application_save(request):
         membership = Membership(type='O', status='N',
                                 nationality=request.session['membership']['nationality'],
                                 municipality=request.session['membership']['municipality'],
-                                extra_info=request.session['membership']['extra_info'])
+                                extra_info=request.session['membership']['extra_info'],
+                                organization_registration_number=request.session['membership']['organization_registration_number'])
 
         organization = Contact(**request.session['organization'])
 
