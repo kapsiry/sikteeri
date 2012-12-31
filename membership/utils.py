@@ -81,12 +81,12 @@ def change_message_to_list(row):
         if "->" not in message and "=>" not in message:
             continue
 
-        key, value  = message.split(":",2)
+        key, value  = message.split(":",1)
         key = key.strip().strip("'")
         if "=>" in value:
-            old,new = value.split("=>",2)
+            old,new = value.split("=>",1)
         elif "->" in value:
-            old, new = value.split("->",2)
+            old, new = value.split("->",1)
         else:
             continue
         old = old.strip().strip("'")

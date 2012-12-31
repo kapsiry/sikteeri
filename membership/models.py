@@ -322,6 +322,8 @@ class Membership(models.Model):
         self.tech_contact = None
         self.organization = None
         self.municipality = ''
+        self.birth_date = None
+        self.organization_registration_number = None
         self.save()
         for contact in contacts:
             if contact != None:
