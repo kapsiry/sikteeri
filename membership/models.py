@@ -182,6 +182,8 @@ class Membership(models.Model):
 
     municipality = models.CharField(_('Home municipality'), max_length=128)
     nationality = models.CharField(_('Nationality'), max_length=128)
+    birth_date = models.DateField(_('Date of birth'), null=True, blank=True)
+    organization_registration_number = models.CharField(_('Organization registration number'), max_length=15, null=True, blank=True)
 
     person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
     billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)
@@ -741,6 +743,17 @@ class Payment(models.Model):
             return Payment.objects.latest("payment_day").payment_day
         except Payment.DoesNotExist:
             return None
+
+class ApplicationPoll(models.Model):
+    """
+    Store statistics taken from membership application "where did you
+    hear about us" poll.
+    """
+
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
+    answer = models.CharField(max_length=512,verbose_name=_('Service specific data'),
+                                  blank=False, null=False)
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
