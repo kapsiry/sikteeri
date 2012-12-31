@@ -182,6 +182,8 @@ class Membership(models.Model):
 
     municipality = models.CharField(_('Home municipality'), max_length=128)
     nationality = models.CharField(_('Nationality'), max_length=128)
+    birth_date = models.DateField(_('Date of birth'), null=True, blank=True)
+    organization_registration_number = models.CharField(_('Organization registration number'), max_length=15, null=True, blank=True)
 
     person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
     billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)

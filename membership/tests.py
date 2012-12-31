@@ -745,6 +745,7 @@ class MemberApplicationTest(TestCase):
             "municipality": "Vaasa",
             "extra_info": u"Mää oon testikäyttäjä.",
             "unix_login": "luser",
+            "birth_date": "02.02.1993",
             "email_forward": "y.aikas",
             "mysql_database": "yes",
             "postgresql_database": "yes",
@@ -753,6 +754,7 @@ class MemberApplicationTest(TestCase):
 
     def test_do_application(self):
         response = self.client.post('/membership/application/person/', self.post_data)
+        print("%s" % response)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
@@ -852,10 +854,13 @@ class LoginFieldTest(TestCase):
         self.assertEquals(u"testuser", self.field.clean(u"testuser"))
         self.assertEquals(u"testuser2", self.field.clean(u"testuser2"))
         self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
-        self.assertEquals(u"user.name", self.field.clean(u"user.name"))
-        self.assertEquals(u"user-name", self.field.clean(u"user-name"))
     def test_uppercase(self):
         self.assertEquals(u"testuser", self.field.clean(u"TestUser"))
+
+    def test_bad_chars(self):
+        self.assertRaises(ValidationError, self.field.clean, "user.name")
+        self.assertRaises(ValidationError, self.field.clean, "user-name")
+
 
     def test_too_short(self):
         self.assertRaises(ValidationError, self.field.clean, "a")
