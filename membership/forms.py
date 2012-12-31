@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from services.models import Alias
 
 # User login format validation regex
-VALID_USERNAME_RE = r"^[a-z][a-z0-9._-]*[a-z0-9]$"
+VALID_USERNAME_RE = r"^[a-z][a-z0-9_]*[a-z0-9]$"
 
 class LoginField(forms.CharField):
     def __init__(self, *args, **kwargs):
