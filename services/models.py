@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 def remove_accents(str):
     '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
