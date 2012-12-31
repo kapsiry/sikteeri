@@ -28,7 +28,7 @@
             "last_changed": "2009-11-04 00:03:03", 
             "status": "P", 
             "type": "P" ,
-            "accepted": null, 
+            "approved": null,
             "municipality": "Liverpool", 
             "person": 1,
             "nationality": "English", 
@@ -37,7 +37,7 @@
     }, 
     {
         "pk": 1, 
-        "model": "membership.alias", 
+        "model": "services.alias",
 
         "fields": {
             "created": "2009-11-03 22:22:46", 

@@ -375,6 +375,46 @@ def organization_application_save(request):
         logger.error("Transaction rolled back.")
         return redirect('new_application_error')
 
+@permission_required('membership.edit_members')
+def contact_add(request, contact_type, memberid, template_name='membership/entity_edit.html'):
+    membership = get_object_or_404(Membership, id=memberid)
+    forms = ['billing_contact', 'tech_contact']
+
+    class Form(ModelForm):
+        class Meta:
+            model = Contact
+
+    if contact_type not in forms:
+        return HttpResponseForbidden("Access denied")
+
+    if contact_type == 'billing_contact' and membership.billing_contact:
+        return redirect('contact_edit',membership.billing_contact.id)
+    elif contact_type == 'tech_contact' and membership.tech_contact:
+        return redirect('contact_edit',membership.tech_contact.id)
+
+    if request.method == 'POST':
+        form = Form(request.POST)
+        if form.is_valid():
+            contact = Contact(**form.cleaned_data)
+            contact.save()
+            if contact_type == 'billing_contact':
+                membership.billing_contact = contact
+            elif contact_type == 'tech_contact':
+                membership.tech_contact = contact
+            membership.save()
+            messages.success(request,
+                             unicode(_("Added contact %s.") %
+                             contact))
+            return redirect('contact_edit', contact.id)
+        else:
+            messages.error(request,
+                           unicode(_("New contact not saved.")))
+    else:
+        form = Form()
+    return render_to_response(template_name,
+                             {"form": form, 'memberid': memberid},
+                             context_instance=RequestContext(request))
+
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
