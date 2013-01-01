@@ -745,7 +745,7 @@ class MemberApplicationTest(TestCase):
             "municipality": "Vaasa",
             "extra_info": u"Mää oon testikäyttäjä.",
             "unix_login": "luser",
-            "birth_date": "02.02.1993",
+            "birth_year": "1993",
             "email_forward": "y.aikas",
             "mysql_database": "yes",
             "postgresql_database": "yes",
