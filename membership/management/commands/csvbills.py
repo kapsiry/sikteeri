@@ -184,16 +184,16 @@ def process_csv(file_handle, user=None):
         try:
             cycle = attach_payment_to_cycle(payment, user=user)
             if cycle:
-                msg = _("Attached payment {payment} to cycle {cycle}"). \
-                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle))
+                msg = _("Attached payment %(payment)s to cycle %(cycle)s") % {
+                        'payment': unicode(payment), 'cycle': unicode(cycle)}
                 logger.info(msg)
-                return_messages.append(msg)
+                return_messages.append((None, None, msg))
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
             else:
                 # Payment not attached to cycle because enough payments were attached
                 msg = _("Billing cycle already paid for %s. Payment not attached.") % payment
-                return_messages.append(msg)
+                return_messages.append((None, None, msg))
                 logger.info(msg)
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount

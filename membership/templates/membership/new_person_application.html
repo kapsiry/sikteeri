@@ -65,12 +65,12 @@
     <span class="error{% if form.municipality.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
-  <p{% if form.birth_date.errors %} class="error"{% endif %}>
-    <label for="id_birth_date">{{ form.birth_date.label }}</label>
-    {{ form.birth_date }} <span class="required">*</span>
-    <span class="help">{{ form.birth_date.help_text }}</span>
-    {% for error in form.birth_date.errors %}
-    <span class="error{% if form.birth_date.help_text %} newline{% endif %}">{{ error }}</span>
+  <p{% if form.birth_year.errors %} class="error"{% endif %}>
+    <label for="id_birth_year">{{ form.birth_year.label }}</label>
+    {{ form.birth_year }} <span class="required">*</span>
+    <span class="help">{{ form.birth_year.help_text }}</span>
+    {% for error in form.birth_year.errors %}
+    <span class="error{% if form.birth_year.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
 
