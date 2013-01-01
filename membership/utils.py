@@ -113,7 +113,8 @@ def serializable_membership_info(membership):
     json_obj = {}
     # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'public_memberlist', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info', 'birth_year',
+                 'organization_registration_number']:
         # Get the translated value for choice fields, not database field values
         if attr in ['type', 'status']:
             attr_val = getattr(membership, 'get_' + attr + '_display')()
@@ -205,7 +206,8 @@ def admtool_membership_details(membership):
     json_obj = {}
     # Membership details
     for attr in ['id', 'type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'public_memberlist', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info', 'birth_year',
+                 'organization_registration_number']:
         # Get the translated value for choice fields, not database field values
         attr_val = escape(getattr(membership, attr, u''))
         if isinstance(attr_val, basestring):
