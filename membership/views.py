@@ -72,7 +72,7 @@ def person_application(request, template_name='membership/new_person_application
                                  'unix_login', 'extra_info',
                                  'mysql_database', 'postgresql_database',
                                  'login_vhost', 'poll', 'poll_other',
-                                 'birth_date']:
+                                 'birth_year']:
                         contact_dict[k] = v
 
                 person = Contact(**contact_dict)
@@ -82,7 +82,7 @@ def person_application(request, template_name='membership/new_person_application
                                         nationality=f['nationality'],
                                         municipality=f['municipality'],
                                         public_memberlist=f['public_memberlist'],
-                                        birth_date=f['birth_date'],
+                                        birth_year=f['birth_year'],
                                         extra_info=f['extra_info'])
                 membership.save()
 
