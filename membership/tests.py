@@ -1097,3 +1097,73 @@ class MembershipSearchTest(TestCase):
                       name=u"this.alias.should.be.unique")
         alias.save()
         self.assertEquals(len(Membership.search(alias.name)), 1)
+
+
+class MembershipPaperReminderSentTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+        self.m = create_dummy_member('N')
+        self.m.save()
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+
+        self.m2 = create_dummy_member('N')
+        self.m2.save()
+        self.m2.preapprove(self.user)
+        self.m2.approve(self.user)
+
+        self.m3 = create_dummy_member('N')
+        self.m3.save()
+        self.m3.preapprove(self.user)
+        self.m3.approve(self.user)
+
+        self.m4 = create_dummy_member('N')
+        self.m4.save()
+        self.m4.preapprove(self.user)
+        self.m4.approve(self.user)
+
+        # Positive #1
+        cycle_start = datetime.now() - timedelta(days=60)
+        cycle = BillingCycle(membership=self.m, start=cycle_start)
+        cycle.save()
+        bill = Bill(billingcycle=cycle, type='P',
+                    due_date=datetime.now() - timedelta(days=20))
+        bill.save()
+
+        # Positive #2
+        cycle_start = datetime.now() - timedelta(days=60)
+        cycle = BillingCycle(membership=self.m2, start=cycle_start)
+        cycle.save()
+        bill = Bill(billingcycle=cycle, type='P',
+                    due_date=datetime.now() - timedelta(days=10))
+        bill.save()
+
+        # Negative #1
+        cycle_start = datetime.now() - timedelta(days=60)
+        cycle = BillingCycle(membership=self.m3, start=cycle_start)
+        cycle.save()
+        bill = Bill(billingcycle=cycle,
+                    due_date=datetime.now() - timedelta(days=20))
+        bill.save()
+
+        # Negative #2
+        cycle_start = datetime.now() - timedelta(days=60)
+        cycle = BillingCycle(membership=self.m4, start=cycle_start)
+        cycle.save()
+        bill = Bill(billingcycle=cycle, type='P',
+                    due_date=datetime.now() - timedelta(days=5))
+        bill.save()
+
+
+    def test_membership_found_for_late_paper_reminder(self):
+        qs = Membership.paper_reminder_sent_unpaid_after()
+        self.assertEquals(1, len(qs))
+        self.assertIn(self.m, qs)
+
+        qs = Membership.paper_reminder_sent_unpaid_after(days=9)
+        self.assertEquals(2, len(qs))
+        self.assertIn(self.m, qs)
+        self.assertIn(self.m2, qs)
