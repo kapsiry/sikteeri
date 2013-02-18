@@ -409,6 +409,23 @@ class Membership(models.Model):
 
         return qs
 
+    @classmethod
+    def paper_reminder_sent_unpaid_after(cls, days=14):
+        unpaid_filter = Q(billingcycle__is_paid=False)
+        type_filter = Q(type='P')
+
+        date_filter = Q(due_date__lt=datetime.now() - timedelta(days=days))
+        bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter)
+
+        membership_ids = set()
+        for bill in bill_qs:
+            print bill
+            print bill.due_date
+            print bill.billingcycle.membership
+            membership_ids.add(bill.billingcycle.membership.id)
+
+        return Membership.objects.filter(id__in=list(membership_ids))
+
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
