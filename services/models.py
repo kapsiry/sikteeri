@@ -79,6 +79,7 @@ class Alias(models.Model):
             ("manage_aliases", "Can manage aliases"),
         )
         ordering = ["name"]
+        verbose_name_plural = "aliases"
 
     def expire(self, time=None):
         if time == None:
