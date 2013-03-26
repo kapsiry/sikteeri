@@ -75,7 +75,7 @@ def log_change(object, user, before=None, after=None, change_message=None):
 def change_message_to_list(row):
     """Convert humanized diffs to a list for usage in template"""
     retval = []
-    for message in row.change_message.strip().strip(".").split("."):
+    for message in row.change_message.strip().strip(".").split(". "):
         if ":" not in message:
             continue
         if "->" not in message and "=>" not in message:
