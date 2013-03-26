@@ -770,6 +770,10 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
+            instance = getattr(self, 'instance', None)
+            if instance and instance.type == 'O':
+                self.fields["birth_year"].widget = HiddenInput()
+                self.fields['birth_year'].required = False
 
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
