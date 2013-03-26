@@ -61,7 +61,7 @@ class UnicodeDictReader(UnicodeReader):
     def __init__(self, *args, **kw):
         UnicodeReader.__init__(self, *args, **kw)
         # Read headers from first line
-        self.headers = UnicodeReader.next(self)
+        self.headers = map(lambda x: x.strip(), UnicodeReader.next(self))
 
     def next(self):
         row = UnicodeReader.next(self)
@@ -84,7 +84,7 @@ class OpDictReader(UnicodeDictReader):
                           u'Arvopäivä'          : 'value_date',
                           u'Tap.pv'             : 'date', # old format
                           u'Määrä EUROA'        : 'amount',
-                          u'Määrä EUROA'        : 'amount',
+                          u'Määrä'              : 'amount',
                           u'Tapahtumalajikoodi' : 'event_type_code',
                           u'Selitys'            : 'event_type_description',
                           u'Saaja/Maksaja'      : 'fromto',
