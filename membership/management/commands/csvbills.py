@@ -101,6 +101,10 @@ class OpDictReader(UnicodeDictReader):
         # Translate headers
         h = self.headers
         for i in xrange(0, len(h)):
+            # Quick and dirty, OP changes this field name too often!
+            if h[i].startswith(u"Määrä"):
+                self.headers[i] = "amount"
+                continue
             self.headers[i] = self.OP_CSV_TRANSLATION.get(h[i], h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
