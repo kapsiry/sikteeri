@@ -42,7 +42,7 @@ from management.commands.makebills import can_send_reminder
 from management.commands.makebills import MembershipNotApproved
 
 from management.commands.csvbills import process_csv
-from management.commands.csvbills import PaymentFromFutureException
+from management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -655,6 +655,16 @@ class CSVReadingTest(TestCase):
         error = "Should fail on payment in the future"
         with open("../membership/fixtures/csv-future.txt", 'r') as f:
             self.assertRaises(PaymentFromFutureException, process_csv, f)
+
+    def test_csv_header_processing(self):
+        error = "Should fail on invalid header"
+        with open("../membership/fixtures/csv-invalid.txt", 'r') as f:
+            self.assertRaises(RequiredFieldNotFoundException, process_csv, f)
+        with open("../membership/fixtures/csv-test.txt", 'r') as f:
+            try:
+                process_csv(f)
+            except RequiredFieldNotFoundException:
+                self.fail("Valid csv should not raise header error.")
 
 class LoginRequiredTest(TestCase):
     fixtures = ['membpership_fees.json', 'test_user.json']
