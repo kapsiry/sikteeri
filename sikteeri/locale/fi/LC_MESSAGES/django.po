@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-18 22:51+0200\n"
+"POT-Creation-Date: 2013-04-07 19:29+0300\n"
 "PO-Revision-Date: 2013-02-18 22:58+0300\n"
 "Last-Translator: Atte Hinkka <gua@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -110,37 +110,37 @@ msgstr "Lista avoimista laskuista"
 
 #: templates/menu.html:40
 msgid "Unpaid paper reminders"
-msgstr "Maksamattomat, paperimuistutetut"
+msgstr "Maksamattomat paperimuistutukset"
 
-#: templates/menu.html:41
+#: templates/menu.html:42
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:42
+#: templates/menu.html:43
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:43
+#: templates/menu.html:44
 msgid "Ignored payments"
 msgstr "Huomiotta jätetyt maksut"
 
-#: templates/menu.html:44
+#: templates/menu.html:45
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:45
+#: templates/menu.html:46
 msgid "Print reminders"
 msgstr "Tulosta muistutukset"
 
-#: templates/menu.html:47
+#: templates/menu.html:48
 msgid "Import payments"
 msgstr "Tuo maksut"
 
-#: templates/menu.html:52
+#: templates/menu.html:53
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:57
+#: templates/menu.html:58
 msgid "Admin"
 msgstr "Ylläpito"
 

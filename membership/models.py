@@ -414,8 +414,9 @@ class Membership(models.Model):
         unpaid_filter = Q(billingcycle__is_paid=False)
         type_filter = Q(type='P')
         date_filter = Q(due_date__lt=datetime.now() - timedelta(days=days))
-
-        bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter)
+        not_deleted_filter = Q(billingcycle__membership__status__exact='A')
+        bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter,
+                                      not_deleted_filter)
 
         membership_ids = set()
         for bill in bill_qs:
