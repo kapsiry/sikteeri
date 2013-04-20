@@ -809,7 +809,9 @@ class MemberApplicationTest(TestCase):
         return json_dict
 
     def test_validate_alias_ajax(self):
-        alias = Alias(name='validalias', owner_id=1)
+        m = create_dummy_member('A')
+        m.save()
+        alias = Alias(name='validalias', owner=m)
         alias.save()
         result = self._validate_alias('usernotfound')
         self.assertEqual(result['exists'], False)
