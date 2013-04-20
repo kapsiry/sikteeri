@@ -38,6 +38,7 @@ MEMBER_TYPES_DICT = tupletuple_to_dict(MEMBER_TYPES)
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
+                 ('I', _('Dissociated')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
@@ -193,6 +194,7 @@ class Membership(models.Model):
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
+    dissociated = models.DateTimeField(blank=True, null=True, verbose_name=_('Member dissociated'))
 
     objects = MembershipManager()
 
@@ -295,6 +297,20 @@ class Membership(models.Model):
         self.approved = datetime.now()
         self.save()
         log_change(self, user, change_message="Approved")
+
+    def dissociate(self, user):
+        if self.status != 'A':
+            raise MembershipOperationError("A membership from other state than approved can't be dissociated.")
+        if user == None:
+            msg = "Membership.dissociate() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
+
+        self.status = 'I'
+        self.dissociated = datetime.now()
+        self.save()
+        log_change(self, user, change_message="Dissociated")
 
     def delete_membership(self, user):
         if self.status == 'D':
