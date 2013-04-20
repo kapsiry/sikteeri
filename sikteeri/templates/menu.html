@@ -37,10 +37,13 @@
 {% if perms.membership.read_bills %}
 <ul>
    <li><a href="{% url unpaid_cycle_list %}">{% trans "List of unpaid bills" %}</a></li>
+   <li><a href="{% url unpaid_paper_reminded_memberships %}">{% trans "Unpaid paper reminders" %}</a>
+		<small><a href="{% url unpaid_paper_reminded_memberships_plain %}">txt</a></small></li>
    <li><a href="{% url cycle_list %}">{% trans "All bills" %}</a></li>
    <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
    <li><a href="{% url ignored_payment_list %}">{% trans "Ignored payments" %}</a></li>
    <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
+   <li><a href="{% url print_reminders %}">{% trans "Print reminders" %}</a></li>
    {% if perms.membership.can_import_payments %}
    <li><a href="{% url import_payments %}">{% trans "Import payments" %}</a></li>
    {% endif %}

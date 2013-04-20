@@ -6,8 +6,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from services.models import Alias
 
+from datetime import datetime, date, timedelta
+
 # User login format validation regex
-VALID_USERNAME_RE = r"^[a-z][a-z0-9._-]*[a-z0-9]$"
+VALID_USERNAME_RE = r"^[a-z][a-z0-9_]*[a-z0-9]$"
+
+MAX_AGE = 80
 
 class LoginField(forms.CharField):
     def __init__(self, *args, **kwargs):
@@ -36,6 +40,30 @@ class PhoneNumberField(forms.RegexField):
     def clean(self, value):
         return super(PhoneNumberField, self).clean(value).replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
 
+class OrganizationRegistrationNumber(forms.RegexField):
+    def __init__(self, *args, **kwargs):
+        super(OrganizationRegistrationNumber, self).__init__(regex=r"^ *[\d]{1,4}\.[\d]{1,4} *$",
+                                               min_length=4, max_length=14, *args, **kwargs)
+
+    def clean(self, value):
+        return super(OrganizationRegistrationNumber, self).clean(value).replace(" ", "")
+
+class YearOfBirthField(forms.RegexField):
+    def __init__(self, *args, **kwargs):
+        super(YearOfBirthField, self).__init__(regex=r"^(1[9]|2[01])\d\d$",
+                                               min_length=4, max_length=4, *args, **kwargs)
+    
+    def clean(self, value):
+        c = super(YearOfBirthField, self).clean(value)
+        try:
+            c = int(c)
+            if c > datetime.now().year:
+                raise forms.ValidationError(_('Invalid year of birth'))
+        except ValueError:
+            raise forms.ValidationError(_('Invalid year of birth'))
+        return c
+
+
 class PersonMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
                                   label=_('Nationality'),
@@ -44,11 +72,23 @@ class PersonMembershipForm(forms.Form):
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
                                    help_text=_(u'Finnish municipality'))
+    birth_year = YearOfBirthField(label=_("Year of birth"),
+                                  help_text=_(u'Year of birth on format YYYY'),
+                                  required=True)
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'),
                                  max_length=1000)
+
+    CHOICES = (('friend', _('From friend'),),('irc', _('From IRC'),),
+               ('some',_('From social media'),),('advertisement',_('From advertisement')),
+               ('event', _('From event')),('other', _('Other, what?')))
+    poll = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES, required=False)
+    poll_other = forms.CharField(max_length=500, min_length=2,
+                                   label=_('Where did you hear about as'),
+                                   required=False,
+                                   help_text=_(u'Other, where?'))
 
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
@@ -67,6 +107,10 @@ class OrganizationMembershipForm(forms.Form):
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
                                    help_text=_('Place where your organization is registered to'))
+    organization_registration_number = OrganizationRegistrationNumber(
+                                                  label=_('Organization registration number'),
+                                                  required=True,
+                                                  help_text=_('Registration number given by Patentti- ja rekisterihallitus'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,

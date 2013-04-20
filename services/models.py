@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger("models")
+logger = logging.getLogger("services.models")
 
 from datetime import datetime
 import unicodedata
@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 def remove_accents(str):
     '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
@@ -78,12 +79,16 @@ class Alias(models.Model):
             ("manage_aliases", "Can manage aliases"),
         )
         ordering = ["name"]
+        verbose_name_plural = "aliases"
 
     def expire(self, time=None):
         if time == None:
             time = datetime.now()
         self.expiration_date = time
         self.save()
+
+    def clean(self):
+        self.name = self.name.strip()
 
     def is_valid(self):
         expiration = self.expiration_date
@@ -164,6 +169,14 @@ class Alias(models.Model):
 
         return [perm for perm in permutations
                 if cls.objects.filter(name__iexact=perm).count() == 0]
+
+    def save(self,*args,**kwargs):
+        try:
+            self.full_clean()
+        except ValidationError as e:
+            raise e
+
+        super(Alias, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name

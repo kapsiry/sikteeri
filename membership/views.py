@@ -2,9 +2,11 @@
 
 import logging
 import json
+from os import remove as remove_file
+from os import path
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
-    BillingCycle, Payment
+    BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
 import traceback
 from django.db.models.aggregates import Sum
@@ -23,7 +25,7 @@ from django.contrib import messages
 from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
-from utils import log_change, serializable_membership_info, admtool_membership_details
+from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
 from unpaid_members import unpaid_members_data
@@ -31,6 +33,7 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
+from management.commands.paper_reminders import get_reminders, get_data as get_paper_reminders
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
@@ -68,7 +71,8 @@ def person_application(request, template_name='membership/new_person_application
                                  'public_memberlist', 'email_forward',
                                  'unix_login', 'extra_info',
                                  'mysql_database', 'postgresql_database',
-                                 'login_vhost']:
+                                 'login_vhost', 'poll', 'poll_other',
+                                 'birth_year']:
                         contact_dict[k] = v
 
                 person = Contact(**contact_dict)
@@ -78,6 +82,7 @@ def person_application(request, template_name='membership/new_person_application
                                         nationality=f['nationality'],
                                         municipality=f['municipality'],
                                         public_memberlist=f['public_memberlist'],
+                                        birth_year=f['birth_year'],
                                         extra_info=f['extra_info'])
                 membership.save()
 
@@ -117,6 +122,15 @@ def person_application(request, template_name='membership/new_person_application
 
                 logger.debug("Attempting to save with the following services: %s." % ", ".join((str(service) for service in services)))
                 # End of services
+
+                if f['poll'] is not None:
+                    answer = f['poll']
+                    if answer == 'other':
+                        answer = '%s: %s' % (answer, f['poll_other'])
+                    pollanswer = ApplicationPoll(membership=membership,
+                                                 answer=answer)
+                    pollanswer.save()
+
                 transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
@@ -155,7 +169,8 @@ def organization_application(request, template_name='membership/new_organization
 
             d = {}
             for k, v in f.items():
-                if k not in ['nationality', 'municipality', 'extra_info', 'public_memberlist']:
+                if k not in ['nationality', 'municipality', 'extra_info',
+                'public_memberlist', 'organization_registration_number']:
                     d[k] = v
 
             organization = Contact(**d)
@@ -163,6 +178,7 @@ def organization_application(request, template_name='membership/new_organization
                                     nationality=f['nationality'],
                                     municipality=f['municipality'],
                                     extra_info=f['extra_info'],
+                                    organization_registration_number=f['organization_registration_number'],
                                     public_memberlist=f['public_memberlist'])
 
             request.session.set_expiry(0) # make this expire when the browser exits
@@ -293,7 +309,8 @@ def organization_application_save(request):
         membership = Membership(type='O', status='N',
                                 nationality=request.session['membership']['nationality'],
                                 municipality=request.session['membership']['municipality'],
-                                extra_info=request.session['membership']['extra_info'])
+                                extra_info=request.session['membership']['extra_info'],
+                                organization_registration_number=request.session['membership']['organization_registration_number'])
 
         organization = Contact(**request.session['organization'])
 
@@ -373,6 +390,46 @@ def organization_application_save(request):
         logger.error("Transaction rolled back.")
         return redirect('new_application_error')
 
+@permission_required('membership.edit_members')
+def contact_add(request, contact_type, memberid, template_name='membership/entity_edit.html'):
+    membership = get_object_or_404(Membership, id=memberid)
+    forms = ['billing_contact', 'tech_contact']
+
+    class Form(ModelForm):
+        class Meta:
+            model = Contact
+
+    if contact_type not in forms:
+        return HttpResponseForbidden("Access denied")
+
+    if contact_type == 'billing_contact' and membership.billing_contact:
+        return redirect('contact_edit',membership.billing_contact.id)
+    elif contact_type == 'tech_contact' and membership.tech_contact:
+        return redirect('contact_edit',membership.tech_contact.id)
+
+    if request.method == 'POST':
+        form = Form(request.POST)
+        if form.is_valid():
+            contact = Contact(**form.cleaned_data)
+            contact.save()
+            if contact_type == 'billing_contact':
+                membership.billing_contact = contact
+            elif contact_type == 'tech_contact':
+                membership.tech_contact = contact
+            membership.save()
+            messages.success(request,
+                             unicode(_("Added contact %s.") %
+                             contact))
+            return redirect('contact_edit', contact.id)
+        else:
+            messages.error(request,
+                           unicode(_("New contact not saved.")))
+    else:
+        form = Form()
+    return render_to_response(template_name,
+                             {"form": form, 'memberid': memberid},
+                             context_instance=RequestContext(request))
+
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
@@ -409,10 +466,23 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 def bill_edit(request, id, template_name='membership/entity_edit.html'):
     bill = get_object_or_404(Bill, id=id)
 
-    class Form(ModelForm):
+    class Form(ModelForm):    
         class Meta:
             model = Bill
             exclude = ('billingcycle', 'reminder_count')
+
+        def __init__(self, *args, **kwargs):
+            super(Form, self).__init__(*args, **kwargs)
+            instance = getattr(self, 'instance', None)
+            if instance and instance.pk:
+                self.fields['type'].widget.attrs['readonly'] = True
+            
+        def clean_type(self):
+            instance = getattr(self, 'instance', None)
+            if instance and instance.pk:
+                return instance.type
+            else:
+                return self.cleaned_data['type']
 
     before = bill.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
@@ -455,7 +525,7 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
             oldcycle = payment.billingcycle
             if oldcycle:
                 oldcycle_before = oldcycle.__dict__.copy()
-                payment.detach_from_cycle()
+                payment.detach_from_cycle(user=request.user)
                 oldcycle_after = oldcycle.__dict__.copy()
                 log_change(oldcycle, request.user, oldcycle_before, oldcycle_after)
 
@@ -490,7 +560,7 @@ def import_payments(request, template_name='membership/import_payments.html'):
             try:
                 in_memory_file = request.FILES['csv']
                 logger.info("Beginning payment import.")
-                import_messages = payment_csv_import(in_memory_file)
+                import_messages = payment_csv_import(in_memory_file, user=request.user)
                 messages.success(request, unicode(_("Payment import succeeded!")))
             except:
                   logger.error("%s" % traceback.format_exc())
@@ -506,6 +576,34 @@ def import_payments(request, template_name='membership/import_payments.html'):
                                               'import_messages': import_messages},
                               context_instance=RequestContext(request))
 
+@permission_required('membership.read_bills')
+def print_reminders(request, **kwargs):
+    output_messages = []
+    if request.method == 'POST':
+        try:
+            if 'marksent' in request.POST:
+                for billing_cycle in get_paper_reminders().all():
+                    bill = Bill(billingcycle=billing_cycle, type='P')
+                    bill.reminder_count = billing_cycle.bill_set.count()
+                    bill.save()
+                output_messages.append(_('Reminders marked as sent'))
+            else:
+                pdf = get_reminders()
+                if pdf:
+                    response = HttpResponse(pdf, content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename=reminders.pdf'
+                    return response
+                else:
+                    output_messages.append(_('Error processing PDF'))
+        except RuntimeError:
+            output_messages.append(_('Error processing PDF'))
+        except IOError:
+            output_messages.append(_('Cannot open PDF file'))
+    return render_to_response('membership/print_reminders.html',
+    {'title': _("Print paper reminders"),
+     'output_messages': output_messages,
+     'count': get_paper_reminders().count()},
+     context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
 def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
@@ -545,8 +643,10 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         form =  Form(instance=cycle)
         form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
-    return render_to_response(template_name, {'form': form, 'cycle': cycle,
-        'logentries': logentries,'memberid': cycle.membership.id},
+    return render_to_response(template_name,
+                              {'form': form, 'cycle': cycle,
+                               'logentries': logentries,
+                               'memberid': cycle.membership.id},
         context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')
@@ -644,6 +744,12 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         'logentries': logentries, 'memberid': memberid},
         context_instance=RequestContext(request))
 
+@permission_required('membership.manage_bills')
+def send_duplicate_notification(request, payment, **kwargs):
+    payment = get_object_or_404(Payment, id=payment)
+    payment.send_duplicate_payment_notice(request.user)
+    return redirect('payment_edit', payment.id)
+
 @permission_required('membership.read_members')
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
     membership = get_object_or_404(Membership, id=id)
@@ -660,9 +766,14 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
 
         def disable_fields(self):
             self.fields['status'].required = False
+            self.fields['status'].widget.attrs['disabled'] = 'disabled'
             self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
+            instance = getattr(self, 'instance', None)
+            if instance and instance.type == 'O':
+                self.fields["birth_year"].widget = HiddenInput()
+                self.fields['birth_year'].required = False
 
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
@@ -692,8 +803,8 @@ def membership_duplicates(request, id):
                    'template_name': 'membership/membership_list.html',
                    'template_object_name': 'member',
                    'extra_context': {'header':
-                                     _(u"List duplicates for member #%i %s" % (membership.id,
-                                                                               unicode(membership))),
+                                     _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
+                                                                               "membership":unicode(membership)}),
                                      'disable_duplicates_header': True},
                    'paginate_by': ENTRIES_PER_PAGE}
 
@@ -868,12 +979,14 @@ def admtool_lookup_alias_json(request, alias):
 
 
 @permission_required('membership.read_members')
-def member_object_list(*args, **kwargs):
-    return django.views.generic.list_detail.object_list(*args, **kwargs)
+def member_object_list(request, **kwargs):
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)
 
 @permission_required('membership.read_bills')
-def billing_object_list(*args, **kwargs):
-    return django.views.generic.list_detail.object_list(*args, **kwargs)
+def billing_object_list(request, **kwargs):
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)
 
 # This should list any bills/cycles that were forcefully set as paid even
 # though insufficient payments were paid.
@@ -909,5 +1022,8 @@ def search(request, **kwargs):
     if qs.count() == 1:
         return redirect('membership_edit', qs[0].id)
 
-    return django.views.generic.list_detail.object_list(request, qs, **kwargs)
-
+    kwargs['queryset'] = qs.order_by("organization__organization_name",
+                     "person__last_name",
+                     "person__first_name")
+    kwargs = sort_objects(request,**kwargs)
+    return django.views.generic.list_detail.object_list(request, **kwargs)

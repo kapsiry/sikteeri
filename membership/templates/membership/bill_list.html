@@ -1,10 +1,24 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load sorturl %}
 
 {% block content %}
 {% include "membership/paginating_snippet.html" %}
 
 <ul id="billlist">
+  <li class="list_header">
+	<span class="name"><a href="{% sorturl "name" %}">{% trans "Member"|capfirst %}</a></span>
+	<span class="cycle">
+		<a href="{% sorturl "cycle" %}">{% trans "Cycle" %}</a>
+	</span>
+	<span class="sum">
+		<a href="{% sorturl "sum" %}">{% trans "Sum" %}</a>
+	</span>
+	<span class="paid">
+		<a href="{% sorturl "bill__due_date" %}">&nbsp;&nbsp;{% trans "Due date" %}</a>
+	</span>
+	<span class="comment"><a href="{% sorturl "comment" %}">{% trans "Reminder count"|capfirst %}</a></span>
+  </li>
   {% for cycle in cycle_list %}
   {% with cycle.membership as member %}
   {% with cycle.last_bill as last_bill %}

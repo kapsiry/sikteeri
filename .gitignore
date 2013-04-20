@@ -10,3 +10,4 @@ local_settings.py
 *.mo
 /env
 django.wsgi
+muistutusviesti.tex

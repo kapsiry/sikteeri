@@ -1,13 +1,7 @@
 # encoding: UTF-8
-
 from __future__ import with_statement
 
-from django.db.models import Q, Sum
-from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import ugettext as _
-from django.contrib.auth.models import User
-
+import logging
 import codecs
 import csv
 import os
@@ -15,11 +9,16 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import logging
-logger = logging.getLogger("csvbills")
+from django.db.models import Q, Sum
+from django.core.management.base import BaseCommand
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 from membership.models import Bill, BillingCycle, Payment
 from membership.utils import log_change
+
+logger = logging.getLogger("membership.csvbills")
 
 class UTF8Recoder:
     """
@@ -62,7 +61,7 @@ class UnicodeDictReader(UnicodeReader):
     def __init__(self, *args, **kw):
         UnicodeReader.__init__(self, *args, **kw)
         # Read headers from first line
-        self.headers = UnicodeReader.next(self)
+        self.headers = map(lambda x: x.strip(), UnicodeReader.next(self))
 
     def next(self):
         row = UnicodeReader.next(self)
@@ -85,7 +84,7 @@ class OpDictReader(UnicodeDictReader):
                           u'Arvopäivä'          : 'value_date',
                           u'Tap.pv'             : 'date', # old format
                           u'Määrä EUROA'        : 'amount',
-                          u'Määrä EUROA'        : 'amount',
+                          u'Määrä'              : 'amount',
                           u'Tapahtumalajikoodi' : 'event_type_code',
                           u'Selitys'            : 'event_type_description',
                           u'Saaja/Maksaja'      : 'fromto',
@@ -102,6 +101,10 @@ class OpDictReader(UnicodeDictReader):
         # Translate headers
         h = self.headers
         for i in xrange(0, len(h)):
+            # Quick and dirty, OP changes this field name too often!
+            if h[i].startswith(u"Määrä"):
+                self.headers[i] = "amount"
+                continue
             self.headers[i] = self.OP_CSV_TRANSLATION.get(h[i], h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
@@ -140,7 +143,7 @@ def row_to_payment(row):
                     transaction_id=row['transaction'])
     return p
 
-def attach_payment_to_cycle(payment):
+def attach_payment_to_cycle(payment, user=None):
     """
     Outside of this module, this function is mainly used by
     generate_test_data.py.
@@ -150,7 +153,7 @@ def attach_payment_to_cycle(payment):
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
     if cycle.is_paid == False or cycle.amount_paid() < cycle.sum:
-        payment.attach_to_cycle(cycle)
+        payment.attach_to_cycle(cycle, user=user)
     else:
         # Don't attach a payment to a cycle with enough payments
         payment.comment = _('duplicate payment')
@@ -160,9 +163,10 @@ def attach_payment_to_cycle(payment):
         return None
     return cycle
 
-def process_csv(file_handle):
+def process_csv(file_handle, user=None):
     """Actual CSV file processing logic
     """
+    logger.info("Starting payment CSV processing...")
     return_messages = []
     num_attached = num_notattached = 0
     sum_attached = sum_notattached = 0
@@ -182,15 +186,19 @@ def process_csv(file_handle):
             continue
 
         try:
-            cycle = attach_payment_to_cycle(payment)
+            cycle = attach_payment_to_cycle(payment, user=user)
             if cycle:
-                return_messages.append(_("Attached payment {payment} to cycle {cycle}").
-                    replace("{payment}", unicode(payment)).replace("{cycle}", unicode(cycle)))
+                msg = _("Attached payment %(payment)s to cycle %(cycle)s") % {
+                        'payment': unicode(payment), 'cycle': unicode(cycle)}
+                logger.info(msg)
+                return_messages.append((None, None, msg))
                 num_attached = num_attached + 1
                 sum_attached = sum_attached + payment.amount
             else:
                 # Payment not attached to cycle because enough payments were attached
-                return_messages.append(_("Billing cycle already paid for %s. Payment not attached.") % payment)
+                msg = _("Billing cycle already paid for %s. Payment not attached.") % payment
+                return_messages.append((None, None, msg))
+                logger.info(msg)
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
         except BillingCycle.DoesNotExist:
@@ -198,7 +206,7 @@ def process_csv(file_handle):
             if not payment.id:
                 payment.save() # Only save if object not in database yet
                 logger.warning("No billing cycle found for %s" % payment.reference_number)
-                return_messages.append(_("No billing cycle found for %s") % payment)
+                return_messages.append((None, payment.id, _("No billing cycle found for %s") % payment))
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
 
@@ -206,7 +214,7 @@ def process_csv(file_handle):
                   (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached, \
                    sum_notattached)
     logger.info(log_message)
-    return_messages.append(log_message)
+    return_messages.append((None, None, log_message))
     return return_messages
 
 

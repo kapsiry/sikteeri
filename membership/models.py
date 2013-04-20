@@ -5,7 +5,7 @@ from decimal import Decimal
 import logging
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
-logger = logging.getLogger("models")
+logger = logging.getLogger("membership.models")
 import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,12 +16,14 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.forms import ValidationError
 
+from django.db.models.query import QuerySet
+
 from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
 
-from email_utils import send_as_email, send_preapprove_email
-from email_utils import bill_sender, preapprove_email_sender
+from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
+from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -39,6 +41,12 @@ MEMBER_STATUS = (('N', _('New')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
+BILL_TYPES = (
+('E', _('Email')),
+('P', _('Paper')),
+('S', _('SMS'))
+)
+BILL_TYPES_DICT = tupletuple_to_dict(BILL_TYPES)
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
@@ -127,6 +135,34 @@ class Contact(models.Model):
             return u'%s %s' % (self.last_name, self.first_name)
 
 
+class MembershipManager(models.Manager):
+    def sort(self, sortkey):
+        qs = MembershipQuerySet(self.model)
+        return qs.sort(sortkey)
+
+    def get_query_set(self):
+        return MembershipQuerySet(self.model)
+
+class MembershipQuerySet(QuerySet):
+    def sort(self, sortkey):
+        sortkey = sortkey.strip()
+        reverse = False
+        if sortkey == "name":
+            return self.order_by("person__first_name",
+                                 "organization__organization_name")
+        elif sortkey == "-name":
+            return self.order_by("person__first_name",
+                                     "organization__organization_name"
+                                     ).reverse()
+        elif sortkey == "last_name":
+            return self.order_by("person__last_name",
+                                 "organization__organization_name")
+        elif sortkey == "-last_name":
+            return self.order_by("person__last_name",
+                                 "organization__organization_name").reverse()
+        return self.order_by(sortkey)
+
+
 class Membership(models.Model):
     class Meta:
         permissions = (
@@ -144,8 +180,10 @@ class Membership(models.Model):
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Membership changed'))
     public_memberlist = models.BooleanField(_('Show in the memberlist'))
 
-    municipality = models.CharField(_('Home municipality'), max_length=128)
+    municipality = models.CharField(_('Home municipality'), max_length=128, blank=True)
     nationality = models.CharField(_('Nationality'), max_length=128)
+    birth_year = models.IntegerField(_('Year of birth'), null=True, blank=True)
+    organization_registration_number = models.CharField(_('Organization registration number'), max_length=15, null=True, blank=True)
 
     person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
     billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)
@@ -153,6 +191,10 @@ class Membership(models.Model):
     organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
+
+    locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
+
+    objects = MembershipManager()
 
     def primary_contact(self):
         if self.organization:
@@ -208,6 +250,8 @@ class Membership(models.Model):
                 raise ValidationError("Person-contact and organization-contact are mutually exclusive.")
             if not self.person and not self.organization:
                 raise ValidationError("Either Person-contact or organization-contact must be defined.")
+            if not self.municipality:
+                raise ValidationError("Municipality can't be null.")
         else:
             if self.person or self.organization or self.billing_contact or self.tech_contact:
                 raise ValidationError("A membership may not have any contacts if it is deleted.")
@@ -277,6 +321,9 @@ class Membership(models.Model):
         self.billing_contact = None
         self.tech_contact = None
         self.organization = None
+        self.municipality = ''
+        self.birth_year = None
+        self.organization_registration_number = None
         self.save()
         for contact in contacts:
             if contact != None:
@@ -298,7 +345,11 @@ class Membership(models.Model):
             email_q = Q(person__email__contains=self.person.email.strip())
             phone_q = Q(person__phone__icontains=self.person.phone.strip())
             sms_q = Q(person__sms__icontains=self.person.sms.strip())
-            contacts_q = email_q | phone_q | sms_q
+            # don't match empty sms string
+            if self.person.sms.strip():
+                contacts_q = email_q | phone_q | sms_q
+            else:
+                contacts_q = email_q | phone_q
 
             qs = qs.filter(name_q | contacts_q)
         elif self.organization and not self.person:
@@ -358,6 +409,21 @@ class Membership(models.Model):
 
         return qs
 
+    @classmethod
+    def paper_reminder_sent_unpaid_after(cls, days=14):
+        unpaid_filter = Q(billingcycle__is_paid=False)
+        type_filter = Q(type='P')
+        date_filter = Q(due_date__lt=datetime.now() - timedelta(days=days))
+        not_deleted_filter = Q(billingcycle__membership__status__exact='A')
+        bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter,
+                                      not_deleted_filter)
+
+        membership_ids = set()
+        for bill in bill_qs:
+            membership_ids.add(bill.billingcycle.membership.id)
+
+        return Membership.objects.filter(id__in=membership_ids)
+
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
@@ -380,6 +446,41 @@ class Fee(models.Model):
     def __unicode__(self):
         return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
 
+
+class BillingCycleManager(models.Manager):
+    def sort(self, sortkey):
+        qs = BillingQuerySet(self.model)
+        return qs.sort(sortkey)
+
+    def get_query_set(self):
+        return BillingCycleQuerySet(self.model)
+
+class BillingCycleQuerySet(QuerySet):
+    def sort(self, sortkey):
+        sortkey = sortkey.strip()
+        reverse = False
+        if sortkey == "name":
+            return self.order_by("membership__person__first_name",
+                                 "membership__organization__organization_name")
+        elif sortkey == "-name":
+                return self.order_by("membership__person__first_name",
+                        "memership__organization__organization_name").reverse()
+        elif sortkey == "last_name":
+            return self.order_by("membership__person__last_name",
+                                 "membership__organization__organization_name")
+        elif sortkey == "-last_name":
+            return self.order_by("membership__person__last_name",
+                                 "membership__organization__organization_name"
+                                 ).reverse()
+        elif sortkey == "reminder_count":
+            return self.annotate(reminder_sum=Sum('bill__reminder_count')
+                                ).order_by('reminder_sum')
+        elif sortkey == "-reminder_count":
+            return self.annotate(reminder_sum=Sum('bill__reminder_count')
+                                ).order_by('reminder_sum').reverse()
+        return self.order_by(sortkey)
+
+
 class BillingCycle(models.Model):
     class Meta:
         permissions = (
@@ -394,6 +495,8 @@ class BillingCycle(models.Model):
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
     logs = property(_get_logs)
+
+    objects = BillingCycleManager()
 
     def first_bill_sent_on(self):
         try:
@@ -434,7 +537,7 @@ class BillingCycle(models.Model):
             data = Decimal('0')
         return data
 
-    def update_is_paid(self):
+    def update_is_paid(self, user=None):
         was_paid = self.is_paid
         total_paid = self.amount_paid()
         if not was_paid and total_paid >= self.sum:
@@ -447,6 +550,9 @@ class BillingCycle(models.Model):
             self.save()
             logger.info("BillingCycle %s marked as unpaid, total paid: %.2f." % (
                 repr(self), total_paid))
+
+        if user:
+            log_change(self, user, change_message="Marked as paid")
 
     def get_fee(self):
         for_this_type = Q(type=self.membership.type)
@@ -477,6 +583,7 @@ class Bill(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
+    type = models.CharField(max_length=1, choices=BILL_TYPES, blank=False, null=False, verbose_name=_('Bill type'), default='E')
     logs = property(_get_logs)
 
     def is_due(self):
@@ -605,22 +712,26 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
+    duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
     logs = property(_get_logs)
 
     def __unicode__(self):
         return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
 
-    def attach_to_cycle(self, cycle):
+    def attach_to_cycle(self, cycle, user=None):
         if self.billingcycle:
             raise PaymentAttachedError("Payment %s already attached to BillingCycle %s." % (repr(self), repr(cycle)))
+
         self.billingcycle = cycle
         self.ignore = False
         self.save()
         logger.info("Payment %s attached to member %s cycle %s." % (repr(self),
             cycle.membership.id, repr(cycle)))
-        cycle.update_is_paid()
+        if user:
+            log_change(self, user, change_message="Attached to billing cycle")
+        cycle.update_is_paid(user=user)
 
-    def detach_from_cycle(self):
+    def detach_from_cycle(self, user=None):
         if not self.billingcycle:
             return
         cycle = self.billingcycle
@@ -628,7 +739,23 @@ class Payment(models.Model):
             repr(cycle)))
         self.billingcycle = None
         self.save()
+        if user:
+            log_change(self, user, change_message="Detached from billing cycle")
         cycle.update_is_paid()
+
+
+    def send_duplicate_payment_notice(self, user, **kwargs):
+        if not user:
+            raise Exception('send_duplicate_payment_notice user objects as parameter')
+        billingcycle = BillingCycle.objects.get(reference_number=self.reference_number)
+        if billingcycle.sum > 0:
+            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user, billingcycle=billingcycle)
+            for item in ret_items:
+                sender, error = item
+                if error != None:
+                    logger.error("%s" % traceback.format_exc())
+                    raise error
+            log_change(self, user, change_message="Duplicate payment notice sent")
 
     @classmethod
     def latest_payment_date(cls):
@@ -636,6 +763,17 @@ class Payment(models.Model):
             return Payment.objects.latest("payment_day").payment_day
         except Payment.DoesNotExist:
             return None
+
+class ApplicationPoll(models.Model):
+    """
+    Store statistics taken from membership application "where did you
+    hear about us" poll.
+    """
+
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
+    answer = models.CharField(max_length=512,verbose_name=_('Service specific data'),
+                                  blank=False, null=False)
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
@@ -648,3 +786,5 @@ models.signals.post_save.connect(logging_log_change, sender=Payment)
 send_as_email.connect(bill_sender, sender=Bill, dispatch_uid="email_bill")
 send_preapprove_email.connect(preapprove_email_sender, sender=Membership,
                               dispatch_uid="preapprove_email")
+send_duplicate_payment_notice.connect(duplicate_payment_sender, sender=Payment,
+                              dispatch_uid="duplicate_payment_notice")

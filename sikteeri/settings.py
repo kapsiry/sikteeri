@@ -112,6 +112,9 @@ USE_X_FORWARDED_HOST = True
 # Show 30 items per page in listview
 ENTRIES_PER_PAGE=30
 
+# path to paper reminder latex template
+PAPER_REMINDER_TEMPLATE = None
+
 from local_settings import *
 
 # Is this the right way to do this?

@@ -7,10 +7,11 @@ Copyright (c) 2010-2013 Kapsi Internet-käyttäjät ry. All rights reserved.
 
 import sys
 import os
+import logging
+
 from random import random, randint, choice
 from uuid import uuid4
 from decimal import Decimal
-import logging
 from datetime import datetime
 
 from django.core.management.base import NoArgsCommand
@@ -24,6 +25,7 @@ from membership.test_utils import random_first_name, random_last_name
 from membership.models import Contact, Membership, Fee, Payment
 from membership.management.commands.csvbills import attach_payment_to_cycle
 from membership.reference_numbers import generate_membership_bill_reference_number
+from membership.test_utils import random_first_name, random_last_name
 
 from services.models import Alias, Service, ServiceType
 

@@ -356,7 +356,17 @@ div.applicationlist, div.memberlist {
     clear: right;
 }
 
+li.list_header {
+    padding-top: 0.2em;
+    padding-left: 1em;
+    padding-bottom: 0.2em;
+}
 
+li.list_header a {
+    text-decoration: none;
+    text-align: center;
+    color: #000;
+}
 
 /* generic list items */
 li.list_item {
@@ -368,49 +378,60 @@ li.list_item {
     border-bottom: 1px solid silver;
 }
 
-li.list_item span.member_id {
+li.list_item span.member_id, li.list_header span.member_id {
     display: inline-block;
-    width: 3.5em;
+    width: 5em;
     font-weight: bold;
 }
 
-li.list_item span.name {
+li.list_item span.name, li.list_header span.name {
     display: inline-block;
     width: 12em;
 }
 
-li.list_item span.status {
+li.list_header a {
+    font-weight: bold;
+}
+
+li.list_item span.status, li.list_header span.status {
     display: inline-block;
     width: 8em;
 }
 
-li.list_item a.cart_function {
+li.list_item a.cart_function, li.list_header span.cart_function {
     display: inline-block;
     margin-left: 1em;
 }
 
-li.list_item span.sum {
+li.list_item span.sum, li.list_header span.sum {
     display: inline-block;
     width: 16em;
 }
 
-li.list_item span.reference {
+li.list_item span.reference, li.list_header span.reference {
     font-family: monospace;
 }
 
-li.list_item span.due {
+li.list_header span.reference {
+    text-align: center;
+    /* don't use monospace on header */
+    font-family: inherit;
+}
+
+li.list_item span.due, li.list_header span.due {
     display: inline-block;
     width: 12em;
 }
 
-li.list_item span.cycle {
+li.list_item span.cycle, li.list_header span.cycle {
     display: inline-block;
     padding-right: 1em;
+    width: 10em;
 }
 
-li.list_item span.paid {
+li.list_item span.paid, li.list_header span.paid {
     display: inline-block;
-    width: 2em;
+    width: 10em;
 }
 
 #pageLogin
@@ -422,4 +443,56 @@ li.list_item span.paid {
 
 li.duplicate {
     border: 2px solid #bb0000;
+}
+
+li.comments {
+    border: 2px solid #df6020;
+}
+
+div.loginner {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.loginner div.old {
+    width: 250px;
+}
+
+div.loginner div.new {
+    width: 250px;
+}
+
+div.loginner div.key {
+    width: 100px;
+}
+
+div.loginner div {
+    padding: 2px 4px 2px 4px;
+}
+
+div.header_tr {
+    background: #bbb;
+    font-weight: bold;
+    display: table-row;
+}
+
+div.tr:nth-child(odd) {
+    background: #e0e0e0;
+}
+
+div.tr:nth-child(even) {
+    background: #eeeeee;
+}
+
+.table {
+    display: table;
+    margin: 0px 0px 0px 0px;
+}
+
+.tr {
+    display: table-row;
+}
+
+.td {
+    display: table-cell;
 }

@@ -18,10 +18,116 @@ MANAGERS = ADMINS
 # Maintenance message (when set, show a maintenance message on the front page)
 #MAINTENANCE_MESSAGE = 'Maintenance break for software updates'
 
-# Uncomment the following lines to enable more verbose stdout logging.
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
+# https://docs.djangoproject.com/en/dev/topics/logging/#logging
+#
+# A sample logging config that should log all the relevant stuff;
+#  - DEBUGs to console if DEBUG is True, INFOs to console if DEBUG is False
+#  - send ERRORs as e-mail if DEBUG is False
+#  - logs billing stuff to billing.log
+# SQL and request logging should be pretty straightforward to enable.
+from logging import Filter
+
+class RequireDebugTrue(Filter):
+    def filter(self, record):
+        return DEBUG
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+            },
+        'require_debug_true': {
+            '()': RequireDebugTrue,
+            }
+    },
+
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(name)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler' },
+
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler' },
+
+        'console_debug': {
+            'level':'DEBUG',
+            'filters': ['require_debug_true'],
+            'class':'logging.StreamHandler',
+            'formatter': 'simple' },
+        'console_info': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose' },
+
+        'billing': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'billing.log', # Be careful with this one!
+            'formatter': 'verbose' },
+    },
+
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False, },
+        'django': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'django.db.backends': {
+            # Add handlers here to log SQL queries (or set propagate: True)
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False },
+
+        'sikteeri': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'sikteeri.generate_test_data': {
+            'handlers': ['console_debug'],
+            'level': 'DEBUG',
+            'propagate': False },
+
+        'membership': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+
+        'membership.makebills': {
+            'handlers': ['billing'],
+            'level': 'DEBUG',
+            'propagate': True },
+        'membership.csvbills': {
+            'handlers': ['billing'],
+            'level': 'DEBUG',
+            'propagate': True },
+
+        'services': {
+            'handlers': ['console_debug', 'console_info'],
+            'level': 'DEBUG',
+            'propagate': True },
+        }
+    }
 
 # "Send" emails to a mbox file through a mock email backend
 #EMAIL_BACKEND = 'mboxemailbackend.EmailBackend'
 #EMAIL_MBOX_FILE_PATH = 'sikteeri.mbox' # change this to a proper location
+
+#PAPER_REMINDER_TEMPLATE = 'myreminder.tex'

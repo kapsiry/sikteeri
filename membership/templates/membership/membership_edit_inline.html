@@ -10,9 +10,13 @@
 {% endif %}
 {% if membership.billing_contact %}
 <a href="{% url contact_edit membership.billing_contact.id %}">{% trans "Edit billing contact" %} ({{ membership.billing_contact }})</a><br />
+{% else%}
+<a href="{% url contact_add "billing_contact" membership.id %}">{% trans "Add billing contact" %} </a><br />
 {% endif %}
 {% if membership.tech_contact %}
 <a href="{% url contact_edit membership.tech_contact.id %}">{% trans "Edit technical contact" %} ({{ membership.tech_contact }})</a><br />
+{% elif not membership.person %}
+<a href="{% url contact_add "tech_contact" membership.id %}">{% trans "Add technical contact" %}</a><br />
 {% endif %}
 {% if membership.organization %}
 <a href="{% url contact_edit membership.organization.id %}">{% trans "Edit organization contact" %} ({{ membership.organization }})</a><br />
@@ -111,7 +115,7 @@
 <h2>{% trans "Comments" %}</h2>
 {% get_comment_list for membership as comment_list %}
 {% for comment in comment_list %}
-    <p>{{ comment.submit_date|date:"j.n.Y" }} {{ comment.comment }}</p>
+    <p>{{ comment.submit_date|date:"j.n.Y" }} {{ comment.user_name }}: {{ comment.comment }}</p>
 {% endfor %}
 
 {% get_comment_form for membership as commentform %}

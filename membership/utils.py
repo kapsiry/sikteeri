@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
+from django.db.models import Sum
 
 # http://code.activestate.com/recipes/576644/
 
@@ -71,12 +72,35 @@ def log_change(object, user, before=None, after=None, change_message=None):
         change_message  = change_message
     )
 
+def change_message_to_list(row):
+    """Convert humanized diffs to a list for usage in template"""
+    retval = []
+    for message in row.change_message.strip().strip(".").split(". "):
+        if ":" not in message:
+            continue
+        if "->" not in message and "=>" not in message:
+            continue
+
+        key, value  = message.split(":",1)
+        key = key.strip().strip("'")
+        if "=>" in value:
+            old,new = value.split("=>",1)
+        elif "->" in value:
+            old, new = value.split("->",1)
+        else:
+            continue
+        old = old.strip().strip("'")
+        new = new.strip().strip("'")
+        retval.append([key, old, new])
+    return retval
+
 def bake_log_entries(raw_log_entries):
     ACTION_FLAGS = {1 : _('Addition'),
                     2 : _('Change'),
                     3 : _('Deletion')}
     for x in raw_log_entries:
         x.action_flag_str = unicode(ACTION_FLAGS[x.action_flag])
+        x.change_list = change_message_to_list(x)
     return raw_log_entries
 
 def serializable_membership_info(membership):
@@ -89,7 +113,8 @@ def serializable_membership_info(membership):
     json_obj = {}
     # Membership details
     for attr in ['type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'public_memberlist', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info', 'birth_year',
+                 'organization_registration_number']:
         # Get the translated value for choice fields, not database field values
         if attr in ['type', 'status']:
             attr_val = getattr(membership, 'get_' + attr + '_display')()
@@ -181,7 +206,8 @@ def admtool_membership_details(membership):
     json_obj = {}
     # Membership details
     for attr in ['id', 'type', 'status', 'created', 'last_changed', 'municipality',
-                 'nationality', 'public_memberlist', 'extra_info']:
+                 'nationality', 'public_memberlist', 'extra_info', 'birth_year',
+                 'organization_registration_number']:
         # Get the translated value for choice fields, not database field values
         attr_val = escape(getattr(membership, attr, u''))
         if isinstance(attr_val, basestring):
@@ -286,3 +312,27 @@ def tupletuple_to_dict(tupletuple):
         (key, value) = t
         d[key] = value
     return d
+
+def sort_objects(request, **kwargs):
+    '''Sorting function for views
+    '''
+    try:
+        sort = kwargs['sort']
+        del kwargs['sort']
+        if not sort:
+            raise KeyError()
+    except KeyError, ke:
+        sort = request.GET.get("sort", None)
+
+    if 'queryset' in kwargs and sort:
+        if len(sort) is 0:
+            return kwargs
+        extra = kwargs.get('extra_context', {})
+        extra['sort'] = sort
+        sort = sort.strip().lower()
+        kwargs['extra_context'] = extra
+        try:
+            kwargs['queryset'] = kwargs['queryset'].sort(sort)
+        except AttributeError:
+            kwargs['queryset'] = kwargs['queryset'].order_by(sort)
+    return kwargs

@@ -1,9 +1,11 @@
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import permission_required
 from django.shortcuts import redirect
+from django.db.models import Count
 import django.views.generic.list_detail
 from membership.models import Contact, Membership, Payment, BillingCycle
 from sikteeri.settings import ENTRIES_PER_PAGE
+from management.commands.paper_reminders import get_data as get_paper_reminders
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
@@ -33,6 +35,8 @@ urlpatterns = patterns('',
     # <http://docs.djangoproject.com/en/dev/ref/generic-views/#django-views-generic-create-update-create-object>
     url(r'contacts/edit/(\d+)/$', 'membership.views.contact_edit', name='contact_edit'),
 
+    url(r'contacts/add/(billing_contact|tech_contact)/(\d+)/$', 'membership.views.contact_add', name='contact_add'),
+
     url(r'memberships/edit/(\d+)/$', 'membership.views.membership_edit', name='membership_edit'),
     url(r'memberships/duplicates/(\d+)/$', 'membership.views.membership_duplicates', name='membership_duplicates'),
 
@@ -45,6 +49,7 @@ urlpatterns = patterns('',
 
     url(r'payments/edit/(\d+)/$', 'membership.views.payment_edit', name='payment_edit'),
     url(r'payments/import/$', 'membership.views.import_payments', name='import_payments'),
+    url(r'payments/send_duplicate_notification/(\d+)$', 'membership.views.send_duplicate_notification', name='payment_send_duplicate_notification'),
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', 'membership.views.handle_json', name='memberships_handle_json'),
@@ -82,6 +87,16 @@ urlpatterns = patterns('',
          'template_object_name': 'member',
          'mimetype': 'text/plain'},
          name='approved_memberships_emails'),
+    url(r'memberships/unpaid_paper_reminded/$', 'membership.views.member_object_list',
+        {'queryset': Membership.paper_reminder_sent_unpaid_after(),
+         'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member',
+         'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_paper_reminded_memberships'),
+    url(r'memberships/unpaid_paper_reminded-plain/$', 'membership.views.member_object_list',
+        {'queryset': Membership.paper_reminder_sent_unpaid_after().order_by('id'),
+         'template_name': 'membership/membership_list_plaintext.html',
+         'template_object_name': 'member'},
+         name='unpaid_paper_reminded_memberships_plain'),
     url(r'memberships/deleted/$', 'membership.views.member_object_list',
         {'queryset': Membership.objects.filter(status__exact='D').order_by('-id'),
          'template_name': 'membership/membership_list.html',
@@ -113,6 +128,13 @@ urlpatterns = patterns('',
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_cycle_list'),
+    url(r'bills/locked/$', 'membership.views.billing_object_list',
+        {'queryset': get_paper_reminders(),
+         'template_name': 'membership/bill_list.html',
+         'template_object_name': 'cycle',
+         'paginate_by': ENTRIES_PER_PAGE}, name='locked_cycle_list'),
+    url(r'bills/print_reminders/$', 'membership.views.print_reminders',
+            name='print_reminders'),
 
     url(r'payments/$', 'membership.views.billing_object_list',
         {'queryset': payments,
