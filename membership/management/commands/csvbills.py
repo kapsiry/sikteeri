@@ -61,7 +61,7 @@ class UnicodeDictReader(UnicodeReader):
     def __init__(self, *args, **kw):
         UnicodeReader.__init__(self, *args, **kw)
         # Read headers from first line
-        self.headers = UnicodeReader.next(self)
+        self.headers = map(lambda x: x.strip(), UnicodeReader.next(self))
 
     def next(self):
         row = UnicodeReader.next(self)
@@ -84,7 +84,7 @@ class OpDictReader(UnicodeDictReader):
                           u'Arvopäivä'          : 'value_date',
                           u'Tap.pv'             : 'date', # old format
                           u'Määrä EUROA'        : 'amount',
-                          u'Määrä EUROA'        : 'amount',
+                          u'Määrä'              : 'amount',
                           u'Tapahtumalajikoodi' : 'event_type_code',
                           u'Selitys'            : 'event_type_description',
                           u'Saaja/Maksaja'      : 'fromto',
@@ -101,6 +101,10 @@ class OpDictReader(UnicodeDictReader):
         # Translate headers
         h = self.headers
         for i in xrange(0, len(h)):
+            # Quick and dirty, OP changes this field name too often!
+            if h[i].startswith(u"Määrä"):
+                self.headers[i] = "amount"
+                continue
             self.headers[i] = self.OP_CSV_TRANSLATION.get(h[i], h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:

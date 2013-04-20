@@ -85,7 +85,7 @@ class PersonMembershipForm(forms.Form):
                ('some',_('From social media'),),('advertisement',_('From advertisement')),
                ('event', _('From event')),('other', _('Other, what?')))
     poll = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES, required=False)
-    poll_other = forms.CharField(max_length=60, min_length=2,
+    poll_other = forms.CharField(max_length=500, min_length=2,
                                    label=_('Where did you hear about as'),
                                    required=False,
                                    help_text=_(u'Other, where?'))

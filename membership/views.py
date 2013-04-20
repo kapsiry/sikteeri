@@ -466,10 +466,23 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 def bill_edit(request, id, template_name='membership/entity_edit.html'):
     bill = get_object_or_404(Bill, id=id)
 
-    class Form(ModelForm):
+    class Form(ModelForm):    
         class Meta:
             model = Bill
             exclude = ('billingcycle', 'reminder_count')
+
+        def __init__(self, *args, **kwargs):
+            super(Form, self).__init__(*args, **kwargs)
+            instance = getattr(self, 'instance', None)
+            if instance and instance.pk:
+                self.fields['type'].widget.attrs['readonly'] = True
+            
+        def clean_type(self):
+            instance = getattr(self, 'instance', None)
+            if instance and instance.pk:
+                return instance.type
+            else:
+                return self.cleaned_data['type']
 
     before = bill.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
@@ -757,6 +770,10 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
+            instance = getattr(self, 'instance', None)
+            if instance and instance.type == 'O':
+                self.fields["birth_year"].widget = HiddenInput()
+                self.fields['birth_year'].required = False
 
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
