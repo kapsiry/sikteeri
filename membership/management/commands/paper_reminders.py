@@ -54,7 +54,10 @@ def get_data(memberid=None):
 def prettyname(cycle):
     return u"%d & Jäsenmaksu kaudelle & %s - %s \\\\\n" % (1, 
                     cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y'))
-                    
+
+def tex_sanitize(data):
+    return data.replace("#","\#").replace("$", "\$").replace("_", "\_")
+
 def data2pdf(data):
     t = LatexTemplate(open(settings.PAPER_REMINDER_TEMPLATE).read().decode("UTF-8"))
     targetfile = "m_%d.tex" % int(data['JASENNRO'])
@@ -80,13 +83,13 @@ def create_datalist(memberid=None):
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
             'JASENNRO'  : cycle.membership.id,
-            'NIMI'      : cycle.membership.name(),
+            'NIMI'      : tex_sanitize(cycle.membership.name()),
             'SUMMA'     : cycle.sum,
             'VIITENRO'  : cycle.reference_number,
             'MAKSUDATA' : prettyname(cycle),
-            'EMAIL'     : membercontact.email.replace("_", "\_"),
-            'OSOITE'    : membercontact.street_address,
-            'POSTI'     : "%s %s" % (membercontact.postal_code, membercontact.post_office),
+            'EMAIL'     : tex_sanitize(membercontact.email),
+            'OSOITE'    : tex_sanitize(membercontact.street_address),
+            'POSTI'     : tex_sanitize("%s %s" % (membercontact.postal_code, membercontact.post_office)),
             'BARCODE'   : barcode_4(settings.IBAN_ACCOUNT_NUMBER,cycle.reference_number,None,cycle.sum)
         }
         datalist.append(data)
