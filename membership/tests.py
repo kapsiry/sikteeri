@@ -978,6 +978,34 @@ class MemberDeletionTest(TestCase):
         self.assertEquals(Alias.objects.all().count(), 1)
         self.assertFalse(Alias.objects.all()[0].is_valid())
 
+class MemberDissociationScheduledTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_dissociation(self):
+        m = create_dummy_member('N')
+        self.assertRaises(MembershipOperationError, m.schedule_dissociation, self.user)
+
+    def test_preapproved_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.schedule_dissociation, self.user)
+
+    def test_approved_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+
+        self.assertIsNone(m.dissociation_scheduled)
+        before = datetime.now()
+        m.schedule_dissociation(self.user)
+        after = datetime.now()
+
+        self.assertIsNotNone(m.dissociation_scheduled)
+        self.assertTrue(m.dissociation_scheduled > before)
+        self.assertTrue(m.dissociation_scheduled < after)
+
 class MemberDissociationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
     def setUp(self):
@@ -991,6 +1019,13 @@ class MemberDissociationTest(TestCase):
         m = create_dummy_member('N')
         m.preapprove(self.user)
         self.assertRaises(MembershipOperationError, m.dissociate, self.user)
+
+    def test_dissociation_scheduled_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.schedule_dissociation(self.user)
+        m.dissociate(self.user)
 
     def test_approved_dissociation(self):
         m = create_dummy_member('N')
