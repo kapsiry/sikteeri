@@ -40,13 +40,26 @@ def get_data(memberid=None):
     # TODO: rename (data is never a good name for anything)
     if not settings.ENABLE_REMINDERS:
         return BillingCycle.objects.none()
-    elif memberid:
+
+    qs = BillingCycle.objects
+
+    # Single membership case
+    if memberid:
         logger.info('memberid: %s' % memberid)
-        return BillingCycle.objects.filter(membership__id=memberid
-                ).exclude(bill__type='P')
-    return BillingCycle.objects.annotate(bills=Count('bill')).filter(bills__gt=2,
-         is_paid__exact=False,membership__status='A',membership__id__gt=-1
-         ).exclude(bill__type='P').order_by('start')
+        qs = qs.filter(membership__id=memberid)
+        qs = qs.exclude(bill__type='P')
+        return qs
+
+    # For all memberships in Approved state
+    qs = qs.annotate(bills=Count('bill'))
+    qs = qs.filter(bills__gt=2,
+                   is_paid__exact=False,
+                   membership__status='A',
+                   membership__id__gt=-1)
+    qs = qs.exclude(bill__type='P')
+    qs = qs.order_by('start')
+
+    return qs
 
 def prettyname(cycle):
     # TODO: use translations
