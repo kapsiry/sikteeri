@@ -36,6 +36,10 @@ def timeout_handler(signum, frame):
     raise Timeout
 
 def get_data(memberid=None):
+    # TODO: refactor central parts into classmethod BillingCycle.paper_reminders
+    # TODO: rename (data is never a good name for anything)
+    # TODO: use logger, not print (we import with_statement and then expect print-function?)
+    # TODO: use queryset's none-method as per https://docs.djangoproject.com/en/dev/ref/models/querysets/#none
     if not settings.ENABLE_REMINDERS:
         # return empty queryset
         return BillingCycle.objects.filter(id=-1)
@@ -48,10 +52,12 @@ def get_data(memberid=None):
          ).exclude(bill__type='P').order_by('start')
 
 def prettyname(cycle):
+    # TODO: use translations
     return u"%d & Jäsenmaksu kaudelle & %s - %s \\\\\n" % (1, 
                     cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y'))
-                    
+
 def data2pdf(data):
+    # TODO: use Django templates, use with-statement
     t = LatexTemplate(open(settings.PAPER_REMINDER_TEMPLATE).read().decode("UTF-8"))
     targetfile = "m_%d.tex" % int(data['JASENNRO'])
     targetfile = os.path.join(TMPDIR, targetfile)
@@ -61,6 +67,9 @@ def data2pdf(data):
     return generate_pdf(targetfile)
 
 def create_datalist(memberid=None):
+    # TODO: template variable names in English
+    # TODO: use Django SHORT_DATE_FORMAT
+    # TODO: do LaTeX-specific escaping utilities belong into an application-wide latex_utils.py?
     datalist = []
     for cycle in get_data(memberid).all():
         # check if paper reminder already sent
@@ -89,6 +98,7 @@ def create_datalist(memberid=None):
     return datalist
 
 def generate_pdf(latexfile):
+    # TODO: with_timeouting_process(...)
     # set umask to 0077
     oldumask = os.umask(63)
     pid = Popen(['pdflatex', '-interaction=batchmode', '-output-directory=%s' % TMPDIR, 
@@ -112,6 +122,10 @@ def generate_pdf(latexfile):
         return None
 
 def generate_reminders(memberid=None):
+    # TODO: check for settings existence at the end of settings.py
+    # TODO: use the tempfile library http://docs.python.org/2/library/tempfile.html
+    # TODO: refactor LaTeX-specific things into a latex_utils.py
+    # TODO: use Django templates
     if not settings.PAPER_REMINDER_TEMPLATE or not settings.PAPER_REMINDER_TEMPLATE.endswith('.tex'):
         raise RuntimeError('Cannot create reminders without latex template!')
     elif not os.path.exists(settings.PAPER_REMINDER_TEMPLATE):
@@ -159,6 +173,9 @@ def generate_reminders(memberid=None):
     return singlefile
 
 def get_reminders(memberid=None):
+    # TODO: don't do signals, don't do threads
+    # TODO: call with Popen, wait in our own while loop with a counter
+    # TODO: use with-statement for reading files
     if currentThread().getName() == 'MainThread':
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(28)  # 28 sec
