@@ -132,14 +132,9 @@ def generate_pdf(latexfile):
         return None
 
 def generate_reminders(memberid=None):
-    # TODO: check for settings existence at the end of settings.py
     # TODO: use the tempfile library http://docs.python.org/2/library/tempfile.html
     # TODO: refactor LaTeX-specific things into a latex_utils.py
     # TODO: use Django templates
-    if not settings.PAPER_REMINDER_TEMPLATE or not settings.PAPER_REMINDER_TEMPLATE.endswith('.tex'):
-        raise RuntimeError('Cannot create reminders without latex template!')
-    elif not os.path.exists(settings.PAPER_REMINDER_TEMPLATE):
-        raise RuntimeError('Reminders template file %s does not found' % settings.PAPER_REMINDER_TEMPLATE)
     if not os.path.isdir(TMPDIR) and not os.path.exists(TMPDIR):
         os.mkdir(TMPDIR)
     elif os.path.exists(TMPDIR) and not os.path.isdir(TMPDIR):

@@ -111,12 +111,11 @@ USE_X_FORWARDED_HOST = True
 # Show 30 items per page in listview
 ENTRIES_PER_PAGE=30
 
-# path to paper reminder latex template
-PAPER_REMINDER_TEMPLATE = None
-
 from local_settings import *
 
-# Is this the right way to do this?
+# Sanity checks for settings
+from os.path import exists as path_exists
+
 assert(IBAN_ACCOUNT_NUMBER != None)
 assert(BIC_CODE != None)
 assert(BILLING_FROM_EMAIL != None)
@@ -130,3 +129,6 @@ assert(REMINDER_GRACE_DAYS != None)
 assert(BILL_DAYS_BEFORE_CYCLE != None)
 assert(BILL_DAYS_TO_DUE != None)
 assert(TRUSTED_HOSTS != None)
+
+assert 'PAPER_REMINDER_TEMPLATE' in locals(), "Paper reminder template should be defined"
+assert path_exists(PAPER_REMINDER_TEMPLATE), "Paper reminder LaTeX template file should exist"
