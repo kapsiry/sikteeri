@@ -9,9 +9,10 @@ from django.conf import settings
 from django.db import transaction
 from django.conf import settings
 
-from management.commands.paper_reminders import generate_reminders
 from membership.models import *
 from membership.utils import *
+
+from paper_reminders import generate_reminders
 
 logger = logging.getLogger("membership.makebills")
 
