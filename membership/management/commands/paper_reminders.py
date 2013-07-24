@@ -38,12 +38,10 @@ def timeout_handler(signum, frame):
 def get_data(memberid=None):
     # TODO: refactor central parts into classmethod BillingCycle.paper_reminders
     # TODO: rename (data is never a good name for anything)
-    # TODO: use logger, not print (we import with_statement and then expect print-function?)
     if not settings.ENABLE_REMINDERS:
-        # return empty queryset
         return BillingCycle.objects.none()
     elif memberid:
-        print('memberid: %s' % memberid)
+        logger.info('memberid: %s' % memberid)
         return BillingCycle.objects.filter(membership__id=memberid
                 ).exclude(bill__type='P')
     return BillingCycle.objects.annotate(bills=Count('bill')).filter(bills__gt=2,
