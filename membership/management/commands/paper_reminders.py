@@ -39,10 +39,9 @@ def get_data(memberid=None):
     # TODO: refactor central parts into classmethod BillingCycle.paper_reminders
     # TODO: rename (data is never a good name for anything)
     # TODO: use logger, not print (we import with_statement and then expect print-function?)
-    # TODO: use queryset's none-method as per https://docs.djangoproject.com/en/dev/ref/models/querysets/#none
     if not settings.ENABLE_REMINDERS:
         # return empty queryset
-        return BillingCycle.objects.filter(id=-1)
+        return BillingCycle.objects.none()
     elif memberid:
         print('memberid: %s' % memberid)
         return BillingCycle.objects.filter(membership__id=memberid
