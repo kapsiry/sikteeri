@@ -1,33 +1,29 @@
 # encoding: UTF-8
-
 from __future__ import with_statement
+
+import os
+import signal
+import logging
+
+from threading import currentThread
+from subprocess import Popen
+
+from datetime import datetime, timedelta
+from decimal import Decimal
+from string import Template
+from optparse import make_option
 
 from django.db.models import Count
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
-from membership.reference_numbers import barcode_4
 from django.conf import settings
-
-import os
-import signal
-
-from threading import currentThread
-
-from optparse import make_option
-
-from datetime import datetime, timedelta
-from decimal import Decimal
-from string import Template
-
-from subprocess import Popen
-
-import logging
-logger = logging.getLogger("paper_bills")
 
 from membership.models import BillingCycle
 from membership.utils import log_change
+from membership.reference_numbers import barcode_4
 
+logger = logging.getLogger("paper_bills")
 TMPDIR = '/tmp/sikteeritex'
 
 class LatexTemplate(Template):
