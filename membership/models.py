@@ -38,7 +38,7 @@ MEMBER_TYPES_DICT = tupletuple_to_dict(MEMBER_TYPES)
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
-                 ('S', _('Dissociation scheduled')),
+                 ('S', _('Dissociation requested')),
                  ('I', _('Dissociated')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
@@ -195,7 +195,7 @@ class Membership(models.Model):
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
-    dissociation_scheduled = models.DateTimeField(blank=True, null=True, verbose_name=_('Dissociation scheduled'))
+    dissociation_requested = models.DateTimeField(blank=True, null=True, verbose_name=_('Dissociation requested'))
     dissociated = models.DateTimeField(blank=True, null=True, verbose_name=_('Member dissociated'))
 
     objects = MembershipManager()
@@ -300,23 +300,23 @@ class Membership(models.Model):
         self.save()
         log_change(self, user, change_message="Approved")
 
-    def schedule_dissociation(self, user):
+    def request_dissociation(self, user):
         if self.status != 'A':
-            raise MembershipOperationError("A membership from other state than approved can't be scheduled for dissociation.")
+            raise MembershipOperationError("A membership from other state than approved can't be requested for dissociation.")
         if user == None:
-            msg = "Membership.schedule_dissociation() needs user object as a parameter"
+            msg = "Membership.request_dissociation() needs user object as a parameter"
             logger.critical("%s" % traceback.format_exc())
             logger.critical(msg)
             raise MembershipOperationError(msg)
 
         self.status = 'S'
-        self.dissociation_scheduled = datetime.now()
+        self.dissociation_requested = datetime.now()
         self.save()
-        log_change(self, user, change_message="Dissociation scheduled")
+        log_change(self, user, change_message="Dissociation requested")
 
     def dissociate(self, user):
         if self.status not in ('A', 'S'):
-            raise MembershipOperationError("A membership from other state than dissociation scheduled or approved can't be dissociated.")
+            raise MembershipOperationError("A membership from other state than dissociation requested or approved can't be dissociated.")
         if user == None:
             msg = "Membership.dissociate() needs user object as a parameter"
             logger.critical("%s" % traceback.format_exc())

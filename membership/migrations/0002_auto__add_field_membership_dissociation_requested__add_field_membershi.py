@@ -8,8 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Membership.dissociation_scheduled'
-        db.add_column('membership_membership', 'dissociation_scheduled',
+        # Adding field 'Membership.dissociation_requested'
+        db.add_column('membership_membership', 'dissociation_requested',
                       self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
                       keep_default=False)
 
@@ -20,8 +20,8 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting field 'Membership.dissociation_scheduled'
-        db.delete_column('membership_membership', 'dissociation_scheduled')
+        # Deleting field 'Membership.dissociation_requested'
+        db.delete_column('membership_membership', 'dissociation_requested')
 
         # Deleting field 'Membership.dissociated'
         db.delete_column('membership_membership', 'dissociated')
@@ -87,7 +87,7 @@ class Migration(SchemaMigration):
             'birth_year': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'dissociated': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'dissociation_scheduled': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'dissociation_requested': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'extra_info': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_changed': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
