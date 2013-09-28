@@ -171,6 +171,8 @@ class Membership(models.Model):
             ("read_members", "Can read member details"),
             ("manage_members", "Can change details, pre-/approve"),
             ("delete_members", "Can delete members"),
+            ("dissociate_members", "Can dissociate members"),
+            ("request_dissociation_for_member", "Can request dissociation for member"),
         )
 
     logs = property(_get_logs)

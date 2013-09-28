@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load comments %}
+
+{% block content %}
+<p>
+  {% trans "Dissociating membership" %} <strong>{{ membership }} ({{ membership.id }})</strong>.
+</p>
+<form method="POST">{% csrf_token %}
+{{ form.as_p }}
+<p>
+  <input id="submit_button" type="submit" value="{% trans "Dissociate member" %}" />
+</p>
+
+</form>
+{% endblock %}

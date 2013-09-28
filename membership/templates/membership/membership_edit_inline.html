@@ -38,6 +38,8 @@
 <h2>{% trans "Actions" %}</h2>
 {% if membership.status != "D" %}
 <a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
+<a href="{% url membership_request_dissociation membership.id %}">{% trans "Request dissociation" %}</a>
+<a href="{% url membership_dissociate membership.id %}">{% trans "Dissociate" %}</a>
 <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
 {% if not membership.organization %}<a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>{% endif %}
 {% endif %}
