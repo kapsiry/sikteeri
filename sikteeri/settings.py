@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.humanize',
     'django.contrib.comments',
+    'south',
     'membership',
     'services',
 )
