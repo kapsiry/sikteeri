@@ -61,6 +61,9 @@ def get_data(memberid=None):
 
     return qs
 
+def tex_sanitize(input_string):
+    return input_string.replace("#","\#").replace("$", "\$")
+
 def prettyname(cycle):
     # TODO: use translations
     return u"%d & Jäsenmaksu kaudelle & %s - %s \\\\\n" % (1, 
@@ -74,7 +77,14 @@ def data2pdf(data):
     target = open(targetfile, 'w')
     target.write(t.safe_substitute(data).encode("UTF-8"))
     target.close()
-    return generate_pdf(targetfile)
+
+    try:
+        return generate_pdf(targetfile)
+    except RuntimeError as e:
+        logger.exception(e)
+        print("Failed to generate pdf for member %d" % int(data['JASENNRO']))
+        print("Data was %s" % data)
+    return None
 
 def create_datalist(memberid=None):
     # TODO: template variable names in English
@@ -95,13 +105,13 @@ def create_datalist(memberid=None):
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
             'JASENNRO'  : cycle.membership.id,
-            'NIMI'      : cycle.membership.name(),
+            'NIMI'      : tex_sanitize(cycle.membership.name()),
             'SUMMA'     : cycle.sum,
             'VIITENRO'  : cycle.reference_number,
             'MAKSUDATA' : prettyname(cycle),
-            'EMAIL'     : membercontact.email.replace("_", "\_"),
-            'OSOITE'    : membercontact.street_address,
-            'POSTI'     : "%s %s" % (membercontact.postal_code, membercontact.post_office),
+            'EMAIL'     : tex_sanitize(membercontact.email.replace("_", "\_")),
+            'OSOITE'    : tex_sanitize(membercontact.street_address),
+            'POSTI'     : tex_sanitize("%s %s" % (membercontact.postal_code, membercontact.post_office)),
             'BARCODE'   : barcode_4(settings.IBAN_ACCOUNT_NUMBER,cycle.reference_number,None,cycle.sum)
         }
         datalist.append(data)
