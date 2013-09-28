@@ -1,3 +1,4 @@
-Django==1.4.3
+Django==1.4.8
 gunicorn==0.17.2
 psycopg2==2.4.5
+south==0.8.2

@@ -48,6 +48,9 @@ SYSADMIN_EMAIL = 'admins@example.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[sikteeri-TEST] '
 
+# Paper reminder templates
+PAPER_REMINDER_TEMPLATE = '/tmp/paper_reminder.tex'
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 

@@ -1,33 +1,29 @@
 # encoding: UTF-8
-
 from __future__ import with_statement
+
+import os
+import signal
+import logging
+
+from threading import currentThread
+from subprocess import Popen
+
+from datetime import datetime, timedelta
+from decimal import Decimal
+from string import Template
+from optparse import make_option
 
 from django.db.models import Count
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
-from membership.reference_numbers import barcode_4
 from django.conf import settings
-
-import os
-import signal
-
-from threading import currentThread
-
-from optparse import make_option
-
-from datetime import datetime, timedelta
-from decimal import Decimal
-from string import Template
-
-from subprocess import Popen
-
-import logging
-logger = logging.getLogger("paper_bills")
 
 from membership.models import BillingCycle
 from membership.utils import log_change
+from membership.reference_numbers import barcode_4
 
+logger = logging.getLogger("paper_bills")
 TMPDIR = '/tmp/sikteeritex'
 
 class LatexTemplate(Template):
@@ -40,31 +36,60 @@ def timeout_handler(signum, frame):
     raise Timeout
 
 def get_data(memberid=None):
+    # TODO: refactor central parts into classmethod BillingCycle.paper_reminders
+    # TODO: rename (data is never a good name for anything)
     if not settings.ENABLE_REMINDERS:
-        # return empty queryset
-        return BillingCycle.objects.filter(id=-1)
-    elif memberid:
-        print('memberid: %s' % memberid)
-        return BillingCycle.objects.filter(membership__id=memberid
-                ).exclude(bill__type='P')
-    return BillingCycle.objects.annotate(bills=Count('bill')).filter(bills__gt=2,
-         is_paid__exact=False,membership__status='A',membership__id__gt=-1
-         ).exclude(bill__type='P').order_by('start')
+        return BillingCycle.objects.none()
+
+    qs = BillingCycle.objects
+
+    # Single membership case
+    if memberid:
+        logger.info('memberid: %s' % memberid)
+        qs = qs.filter(membership__id=memberid)
+        qs = qs.exclude(bill__type='P')
+        return qs
+
+    # For all memberships in Approved state
+    qs = qs.annotate(bills=Count('bill'))
+    qs = qs.filter(bills__gt=2,
+                   is_paid__exact=False,
+                   membership__status='A',
+                   membership__id__gt=-1)
+    qs = qs.exclude(bill__type='P')
+    qs = qs.order_by('start')
+
+    return qs
+
+def tex_sanitize(input_string):
+    return input_string.replace("#","\#").replace("$", "\$")
 
 def prettyname(cycle):
+    # TODO: use translations
     return u"%d & Jäsenmaksu kaudelle & %s - %s \\\\\n" % (1, 
                     cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y'))
-                    
+
 def data2pdf(data):
+    # TODO: use Django templates, use with-statement
     t = LatexTemplate(open(settings.PAPER_REMINDER_TEMPLATE).read().decode("UTF-8"))
     targetfile = "m_%d.tex" % int(data['JASENNRO'])
     targetfile = os.path.join(TMPDIR, targetfile)
     target = open(targetfile, 'w')
     target.write(t.safe_substitute(data).encode("UTF-8"))
     target.close()
-    return generate_pdf(targetfile)
+
+    try:
+        return generate_pdf(targetfile)
+    except RuntimeError as e:
+        logger.exception(e)
+        print("Failed to generate pdf for member %d" % int(data['JASENNRO']))
+        print("Data was %s" % data)
+    return None
 
 def create_datalist(memberid=None):
+    # TODO: template variable names in English
+    # TODO: use Django SHORT_DATE_FORMAT
+    # TODO: do LaTeX-specific escaping utilities belong into an application-wide latex_utils.py?
     datalist = []
     for cycle in get_data(memberid).all():
         # check if paper reminder already sent
@@ -80,19 +105,20 @@ def create_datalist(memberid=None):
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
             'JASENNRO'  : cycle.membership.id,
-            'NIMI'      : cycle.membership.name(),
+            'NIMI'      : tex_sanitize(cycle.membership.name()),
             'SUMMA'     : cycle.sum,
             'VIITENRO'  : cycle.reference_number,
             'MAKSUDATA' : prettyname(cycle),
-            'EMAIL'     : membercontact.email.replace("_", "\_"),
-            'OSOITE'    : membercontact.street_address,
-            'POSTI'     : "%s %s" % (membercontact.postal_code, membercontact.post_office),
+            'EMAIL'     : tex_sanitize(membercontact.email.replace("_", "\_")),
+            'OSOITE'    : tex_sanitize(membercontact.street_address),
+            'POSTI'     : tex_sanitize("%s %s" % (membercontact.postal_code, membercontact.post_office)),
             'BARCODE'   : barcode_4(settings.IBAN_ACCOUNT_NUMBER,cycle.reference_number,None,cycle.sum)
         }
         datalist.append(data)
     return datalist
 
 def generate_pdf(latexfile):
+    # TODO: with_timeouting_process(...)
     # set umask to 0077
     oldumask = os.umask(63)
     pid = Popen(['pdflatex', '-interaction=batchmode', '-output-directory=%s' % TMPDIR, 
@@ -116,10 +142,9 @@ def generate_pdf(latexfile):
         return None
 
 def generate_reminders(memberid=None):
-    if not settings.PAPER_REMINDER_TEMPLATE or not settings.PAPER_REMINDER_TEMPLATE.endswith('.tex'):
-        raise RuntimeError('Cannot create reminders without latex template!')
-    elif not os.path.exists(settings.PAPER_REMINDER_TEMPLATE):
-        raise RuntimeError('Reminders template file %s does not found' % settings.PAPER_REMINDER_TEMPLATE)
+    # TODO: use the tempfile library http://docs.python.org/2/library/tempfile.html
+    # TODO: refactor LaTeX-specific things into a latex_utils.py
+    # TODO: use Django templates
     if not os.path.isdir(TMPDIR) and not os.path.exists(TMPDIR):
         os.mkdir(TMPDIR)
     elif os.path.exists(TMPDIR) and not os.path.isdir(TMPDIR):
@@ -163,6 +188,9 @@ def generate_reminders(memberid=None):
     return singlefile
 
 def get_reminders(memberid=None):
+    # TODO: don't do signals, don't do threads
+    # TODO: call with Popen, wait in our own while loop with a counter
+    # TODO: use with-statement for reading files
     if currentThread().getName() == 'MainThread':
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(28)  # 28 sec
