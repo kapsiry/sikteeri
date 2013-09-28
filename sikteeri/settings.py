@@ -94,10 +94,12 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.humanize',
     'django.contrib.comments',
-    'south',
     'membership',
     'services',
+    'south',
 )
+
+SOUTH_TESTS_MIGRATE = False
 
 # If set, this string will be displayed and sikteeri is disabled
 MAINTENANCE_MESSAGE = None
