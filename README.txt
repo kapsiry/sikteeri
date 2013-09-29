@@ -30,8 +30,8 @@ source env/bin/activate
 RUNNING MIGRATIONS IN PRODUCTION
 ================================
 
-./manage.py migrate  # Migrate all installed apps.
-./manage.py syncdb   # Ensure that permissions are there.
+./manage.py migrate       # Migrate all installed apps.
+./manage.py syncdb --all  # Ensure that permissions are there.
 
 MIGRATIONS INITIALIZATION FOR DEPLOYMENTS < 1.2.4
 =================================================
