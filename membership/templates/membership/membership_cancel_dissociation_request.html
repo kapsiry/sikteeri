@@ -4,7 +4,7 @@
 
 {% block content %}
 <p>
-  {% trans "Canceling dissociation request for member" %} <strong>{{ membership }} ({{ membership.id }})</strong>.
+  {% trans "Canceling dissociation request" %}: <strong>{{ membership }} ({{ membership.id }})</strong>.
 </p>
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}
