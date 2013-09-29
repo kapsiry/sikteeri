@@ -316,6 +316,20 @@ class Membership(models.Model):
         self.save()
         log_change(self, user, change_message="Dissociation requested")
 
+    def cancel_dissociation_request(self, user):
+        if self.status != 'S':
+            raise MembershipOperationError("A membership has to be in dissociation requested state for the state to be canceled.")
+        if user == None:
+            msg = "Membership.cancel_dissociation_request() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
+
+        self.status = 'A'
+        self.dissociation_requested = None
+        self.save()
+        log_change(self, user, change_message="Dissociation request state reverted")
+
     def dissociate(self, user):
         if self.status not in ('A', 'S'):
             raise MembershipOperationError("A membership from other state than dissociation requested or approved can't be dissociated.")

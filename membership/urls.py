@@ -44,6 +44,7 @@ urlpatterns = patterns('',
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
     url(r'memberships/dissociate/(\d+)/$', 'membership.views.membership_dissociate', name='membership_dissociate'),
     url(r'memberships/request_dissociation/(\d+)/$', 'membership.views.membership_request_dissociation', name='membership_request_dissociation'),
+    url(r'memberships/cancel_dissociation_request/(\d+)/$', 'membership.views.membership_cancel_dissociation_request', name='membership_cancel_dissociation_request'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),

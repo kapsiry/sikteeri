@@ -1016,6 +1016,42 @@ class MemberDissociationRequestedTest(TestCase):
         m.dissociate(self.user)
         self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
 
+class MemberCancelDissociationRequestTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_request_dissociation(self):
+        m = create_dummy_member('N')
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_preapproved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_approved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_approved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.cancel_dissociation_request(self.user)
+        self.assertIsNone(m.dissociation_requested)
+
+    def test_dissociated_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
 class MemberDissociationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
     def setUp(self):
