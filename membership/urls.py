@@ -84,6 +84,18 @@ urlpatterns = patterns('',
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': ENTRIES_PER_PAGE}, name='approved_memberships'),
+    url(r'memberships/dissociation_requested/$', 'membership.views.member_object_list',
+        {'queryset': Membership.objects.filter(status__exact='S').
+            order_by('person__last_name', 'person__first_name', 'id'),
+         'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member',
+         'paginate_by': ENTRIES_PER_PAGE}, name='dissociation_requested_memberships'),
+    url(r'memberships/dissociated/$', 'membership.views.member_object_list',
+        {'queryset': Membership.objects.filter(status__exact='I').
+            order_by('person__last_name', 'person__first_name', 'id'),
+         'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member',
+         'paginate_by': ENTRIES_PER_PAGE}, name='dissociated_memberships'),
     url(r'memberships/approved-emails/$', 'membership.views.member_object_list',
         {'queryset': Membership.objects.filter(status__exact='A').
             order_by('id').values('person__email', 'organization__email'),
