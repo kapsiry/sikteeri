@@ -11,7 +11,11 @@
 </p>
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}
+{% if not membership.dissociated %}
 <p>
+  <strong>{% trans "Member has not been dissociated. Are you want to delete them?" %}</strong>
+</p>
+{% endif %}<p>
   <input id="submit_button" type="submit" value="{% trans "Delete member" %}" />
 </p>
 
