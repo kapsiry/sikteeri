@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-30 19:20+0300\n"
+"POT-Creation-Date: 2013-09-30 19:24+0300\n"
 "PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Antti Jaakkola <annttu@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -847,7 +847,11 @@ msgstr "Jäsenyyden poisto"
 msgid "This action is irreversible and data will be lost!"
 msgstr "Tämä toimenpide on peruuttamaton ja tiedot katoavat!"
 
-#: templates/membership/membership_delete.html:15
+#: templates/membership/membership_delete.html:16
+msgid "Member has not been dissociated. Are you want to delete them?"
+msgstr "Jäsenelle ei ole myönnetty eroa. Oletko varma että haluat poistaa jäsenen?"
+
+#: templates/membership/membership_delete.html:19
 msgid "Delete member"
 msgstr "Poista jäsen"
 
@@ -856,8 +860,7 @@ msgid "Dissociating membership"
 msgstr "Myönnetään ero jäsenelle"
 
 #: templates/membership/membership_dissociate.html:13
-msgid ""
-"Member has not requested for dissociation. Are you want to dissociate them?"
+msgid "Member has not requested for dissociation. Do you still want to dissociate them?"
 msgstr "Jäsen ei ole hakenut eroa. Oletko varma että haluat myöntää eron?"
 
 #: templates/membership/membership_dissociate.html:17
