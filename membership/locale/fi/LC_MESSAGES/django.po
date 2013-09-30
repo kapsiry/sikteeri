@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-29 13:24+0300\n"
+"POT-Creation-Date: 2013-09-30 19:20+0300\n"
 "PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Antti Jaakkola <annttu@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -626,6 +626,7 @@ msgid "Member %s successfully transferred to requested dissociation state."
 msgstr "Jäsen %s on nyt tilassa eronpyyntö esitetty."
 
 #: views.py:903
+#, python-format
 msgid "Member %s successfully transferred back to approved state."
 msgstr "Jäsenen %s eronpyyntö peruttu."
 
@@ -854,7 +855,12 @@ msgstr "Poista jäsen"
 msgid "Dissociating membership"
 msgstr "Myönnetään ero jäsenelle"
 
-#: templates/membership/membership_dissociate.html:12
+#: templates/membership/membership_dissociate.html:13
+msgid ""
+"Member has not requested for dissociation. Are you want to dissociate them?"
+msgstr "Jäsen ei ole hakenut eroa. Oletko varma että haluat myöntää eron?"
+
+#: templates/membership/membership_dissociate.html:17
 msgid "Dissociate member"
 msgstr "Myönnä ero jäsenelle"
 
@@ -892,7 +898,7 @@ msgstr "Lisää alias"
 
 #: templates/membership/membership_edit_inline.html:41
 msgid "Request dissociation"
-msgstr "Esitä eronpyyntö"
+msgstr "Kirjaa eropyyntö"
 
 #: templates/membership/membership_edit_inline.html:45
 msgid "Cancel dissociation request"
