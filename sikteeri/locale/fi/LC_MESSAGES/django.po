@@ -94,7 +94,7 @@ msgstr "emailit"
 
 #: templates/menu.html:30
 msgid "Members that have requested dissociation"
-msgstr "Jäsenet, jotka ovat hakeneet eroa"
+msgstr "Eroavat jäsenet"
 
 #: templates/menu.html:36
 msgid "Dissociated members"
