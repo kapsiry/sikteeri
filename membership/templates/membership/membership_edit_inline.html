@@ -36,8 +36,11 @@
 <hr />
 
 <h2>{% trans "Actions" %}</h2>
-{% if membership.status == "A" %}
+{% if membership.status == "P" or membership.status == "A" %}
   <a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
+{% endif %}
+
+{% if membership.status == "A" %}
   <a href="{% url membership_request_dissociation membership.id %}">{% trans "Request dissociation" %}</a>
 {% endif %}
 
