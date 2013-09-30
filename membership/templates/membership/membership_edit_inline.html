@@ -36,11 +36,42 @@
 <hr />
 
 <h2>{% trans "Actions" %}</h2>
-{% if membership.status != "D" %}
-<a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
-<a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
-{% if not membership.organization %}<a href="{% url membership_convert_to_organization membership.id %}">{% trans "Convert to an organization" %}</a>{% endif %}
+{% if perms.services.manage_aliases %}
+  {% if membership.status == "P" or membership.status == "A" %}
+    <a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
+  {% endif %}
 {% endif %}
+
+{% if perms.membership.request_dissociation_for_member %}
+  {% if membership.status == "A" %}
+    <a href="{% url membership_request_dissociation membership.id %}">{% trans "Request dissociation" %}</a>
+  {% endif %}
+
+  {% if membership.status == "S" %}
+    <a href="{% url membership_cancel_dissociation_request membership.id %}">{% trans "Cancel dissociation request" %}</a>
+  {% endif %}
+{% endif %}
+
+
+{% if perms.membership.dissociate_members %}
+  {% if membership.status == "A" or membership.status == "S" %}
+    <a href="{% url membership_dissociate membership.id %}">{% trans "Dissociate" %}</a>
+  {% endif %}
+{% endif %}
+
+{% if perms.membership.delete_members and membership.status != "D" %}
+  <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
+{% endif %}
+
+{% if perms.membership.manage_members %}
+  {% if membership.status == "A" and not membership.organization %}
+    <a href="{% url membership_convert_to_organization membership.id %}">
+      {% trans "Convert to an organization" %}
+    </a>
+ {% endif %}
+{% endif %}
+
+
 
 <h2>{% trans "Aliases" %}</h2>
 <ul>{% for alias in membership.alias_set.all %}

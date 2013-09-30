@@ -42,6 +42,9 @@ urlpatterns = patterns('',
     url(r'memberships/duplicates/(\d+)/$', 'membership.views.membership_duplicates', name='membership_duplicates'),
 
     url(r'memberships/delete/(\d+)/$', 'membership.views.membership_delete', name='membership_delete'),
+    url(r'memberships/dissociate/(\d+)/$', 'membership.views.membership_dissociate', name='membership_dissociate'),
+    url(r'memberships/request_dissociation/(\d+)/$', 'membership.views.membership_request_dissociation', name='membership_request_dissociation'),
+    url(r'memberships/cancel_dissociation_request/(\d+)/$', 'membership.views.membership_cancel_dissociation_request', name='membership_cancel_dissociation_request'),
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
@@ -81,6 +84,18 @@ urlpatterns = patterns('',
          'template_name': 'membership/membership_list.html',
          'template_object_name': 'member',
          'paginate_by': ENTRIES_PER_PAGE}, name='approved_memberships'),
+    url(r'memberships/dissociation_requested/$', 'membership.views.member_object_list',
+        {'queryset': Membership.objects.filter(status__exact='S').
+            order_by('person__last_name', 'person__first_name', 'id'),
+         'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member',
+         'paginate_by': ENTRIES_PER_PAGE}, name='dissociation_requested_memberships'),
+    url(r'memberships/dissociated/$', 'membership.views.member_object_list',
+        {'queryset': Membership.objects.filter(status__exact='I').
+            order_by('person__last_name', 'person__first_name', 'id'),
+         'template_name': 'membership/membership_list.html',
+         'template_object_name': 'member',
+         'paginate_by': ENTRIES_PER_PAGE}, name='dissociated_memberships'),
     url(r'memberships/approved-emails/$', 'membership.views.member_object_list',
         {'queryset': Membership.objects.filter(status__exact='A').
             order_by('id').values('person__email', 'organization__email'),

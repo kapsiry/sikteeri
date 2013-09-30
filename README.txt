@@ -27,13 +27,20 @@ source env/bin/activate
 # Compile translations
 ./run-sikteeri.sh
 
-MIGRATIONS INITIALIZATION
-=========================
+RUNNING MIGRATIONS IN PRODUCTION
+================================
 
-pip install -r ../requirements.txt                        # install South
-PYTHONPATH=.. ./manage.py syncdb                          # South's tables initialized
-PYTHONPATH=.. ./manage.py migrate services 0001 --fake    # This needs to be done for each app.
-PYTHONPATH=.. ./manage.py migrate membership 0001 --fake
+./manage.py migrate       # Migrate all installed apps.
+./manage.py syncdb --all  # Ensure that permissions are there.
+
+MIGRATIONS INITIALIZATION FOR DEPLOYMENTS < 1.2.4
+=================================================
+
+pip install -r ../requirements.txt            # Install South.
+./manage.py syncdb                            # Initialize South tables.
+./manage.py migrate services 0001 --fake      # Fake initial migration.
+./manage.py migrate membership 0001 --fake    # Fake initial migration.
+
 
 Static assets URLs
 ==================

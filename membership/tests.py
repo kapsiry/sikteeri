@@ -980,6 +980,112 @@ class MemberDeletionTest(TestCase):
         self.assertEquals(Alias.objects.all().count(), 1)
         self.assertFalse(Alias.objects.all()[0].is_valid())
 
+class MemberDissociationRequestedTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_request_dissociation(self):
+        m = create_dummy_member('N')
+        self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
+
+    def test_preapproved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
+
+    def test_approved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+
+        self.assertIsNone(m.dissociation_requested)
+        before = datetime.now()
+        m.request_dissociation(self.user)
+        after = datetime.now()
+
+        self.assertIsNotNone(m.dissociation_requested)
+        self.assertTrue(m.dissociation_requested > before)
+        self.assertTrue(m.dissociation_requested < after)
+
+    def test_dissociated_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
+
+class MemberCancelDissociationRequestTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_request_dissociation(self):
+        m = create_dummy_member('N')
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_preapproved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_approved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+    def test_approved_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.cancel_dissociation_request(self.user)
+        self.assertIsNone(m.dissociation_requested)
+
+    def test_dissociated_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
+
+class MemberDissociationTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+    def test_application_dissociation(self):
+        m = create_dummy_member('N')
+        self.assertRaises(MembershipOperationError, m.dissociate, self.user)
+
+    def test_preapproved_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.dissociate, self.user)
+
+    def test_dissociation_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+
+    def test_approved_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+
+        self.assertIsNone(m.dissociated)
+        before = datetime.now()
+        m.dissociate(self.user)
+        after = datetime.now()
+
+        self.assertIsNotNone(m.dissociated)
+        self.assertTrue(m.dissociated > before)
+        self.assertTrue(m.dissociated < after)
 
 class MetricsInterfaceTest(TestCase):
     def setUp(self):
