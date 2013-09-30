@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load comments %}
+
+{% block content %}
+<p>
+  {% trans "Dissociating membership" %} <strong>{{ membership }} ({{ membership.id }})</strong>.
+</p>
+<form method="POST">{% csrf_token %}
+{{ form.as_p }}
+{% if not membership.dissociation_requested %}
+<p>
+  <strong>{% trans "Member has not requested for dissociation. Do you still want to dissociate them?" %}</strong>
+</p>
+{% endif %}
+<p>
+  <input id="submit_button" type="submit" value="{% trans "Dissociate member" %}" />
+</p>
+
+</form>
+{% endblock %}

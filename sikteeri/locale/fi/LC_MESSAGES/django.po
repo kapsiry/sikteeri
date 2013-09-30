@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-07 19:29+0300\n"
+"POT-Creation-Date: 2013-09-29 14:29+0300\n"
 "PO-Revision-Date: 2013-02-18 22:58+0300\n"
 "Last-Translator: Atte Hinkka <gua@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -92,55 +92,63 @@ msgstr "Jäsenet"
 msgid "emails"
 msgstr "emailit"
 
-#: templates/menu.html:27
+#: templates/menu.html:30
+msgid "Members that have requested dissociation"
+msgstr "Eroavat jäsenet"
+
+#: templates/menu.html:36
+msgid "Dissociated members"
+msgstr "Eronneet jäsenet"
+
+#: templates/menu.html:40
 msgid "Deleted members"
 msgstr "Poistetut jäsenet"
 
-#: templates/menu.html:28
+#: templates/menu.html:41
 msgid "All membership entities"
 msgstr "Kaikki jäsentietueet"
 
-#: templates/menu.html:32
+#: templates/menu.html:45
 msgid "Search memberships"
 msgstr "Hae jäsentietoja"
 
-#: templates/menu.html:39
+#: templates/menu.html:52
 msgid "List of unpaid bills"
 msgstr "Lista avoimista laskuista"
 
-#: templates/menu.html:40
+#: templates/menu.html:53
 msgid "Unpaid paper reminders"
 msgstr "Maksamattomat paperimuistutukset"
 
-#: templates/menu.html:42
+#: templates/menu.html:55
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:43
+#: templates/menu.html:56
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:44
+#: templates/menu.html:57
 msgid "Ignored payments"
 msgstr "Huomiotta jätetyt maksut"
 
-#: templates/menu.html:45
+#: templates/menu.html:58
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:46
+#: templates/menu.html:59
 msgid "Print reminders"
 msgstr "Tulosta muistutukset"
 
-#: templates/menu.html:48
+#: templates/menu.html:61
 msgid "Import payments"
 msgstr "Tuo maksut"
 
-#: templates/menu.html:53
+#: templates/menu.html:66
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:58
+#: templates/menu.html:71
 msgid "Admin"
 msgstr "Ylläpito"
 

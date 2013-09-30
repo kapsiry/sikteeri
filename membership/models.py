@@ -38,6 +38,8 @@ MEMBER_TYPES_DICT = tupletuple_to_dict(MEMBER_TYPES)
 MEMBER_STATUS = (('N', _('New')),
                  ('P', _('Pre-approved')),
                  ('A', _('Approved')),
+                 ('S', _('Dissociation requested')),
+                 ('I', _('Dissociated')),
                  ('D', _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
@@ -169,6 +171,8 @@ class Membership(models.Model):
             ("read_members", "Can read member details"),
             ("manage_members", "Can change details, pre-/approve"),
             ("delete_members", "Can delete members"),
+            ("dissociate_members", "Can dissociate members"),
+            ("request_dissociation_for_member", "Can request dissociation for member"),
         )
 
     logs = property(_get_logs)
@@ -193,6 +197,8 @@ class Membership(models.Model):
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
     locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
+    dissociation_requested = models.DateTimeField(blank=True, null=True, verbose_name=_('Dissociation requested'))
+    dissociated = models.DateTimeField(blank=True, null=True, verbose_name=_('Member dissociated'))
 
     objects = MembershipManager()
 
@@ -295,6 +301,48 @@ class Membership(models.Model):
         self.approved = datetime.now()
         self.save()
         log_change(self, user, change_message="Approved")
+
+    def request_dissociation(self, user):
+        if self.status != 'A':
+            raise MembershipOperationError("A membership from other state than approved can't be requested for dissociation.")
+        if user == None:
+            msg = "Membership.request_dissociation() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
+
+        self.status = 'S'
+        self.dissociation_requested = datetime.now()
+        self.save()
+        log_change(self, user, change_message="Dissociation requested")
+
+    def cancel_dissociation_request(self, user):
+        if self.status != 'S':
+            raise MembershipOperationError("A membership has to be in dissociation requested state for the state to be canceled.")
+        if user == None:
+            msg = "Membership.cancel_dissociation_request() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
+
+        self.status = 'A'
+        self.dissociation_requested = None
+        self.save()
+        log_change(self, user, change_message="Dissociation request state reverted")
+
+    def dissociate(self, user):
+        if self.status not in ('A', 'S'):
+            raise MembershipOperationError("A membership from other state than dissociation requested or approved can't be dissociated.")
+        if user == None:
+            msg = "Membership.dissociate() needs user object as a parameter"
+            logger.critical("%s" % traceback.format_exc())
+            logger.critical(msg)
+            raise MembershipOperationError(msg)
+
+        self.status = 'I'
+        self.dissociated = datetime.now()
+        self.save()
+        log_change(self, user, change_message="Dissociated")
 
     def delete_membership(self, user):
         if self.status == 'D':
