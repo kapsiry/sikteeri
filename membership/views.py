@@ -811,6 +811,26 @@ def membership_duplicates(request, id):
 
     return member_object_list(request, **view_params)
 
+@permission_required('membership.read_members')
+def unpaid_paper_reminded(request):
+    view_params = {'queryset': Membership.paper_reminder_sent_unpaid_after(),
+                   'template_name': 'membership/membership_list.html',
+                   'template_object_name': 'member',
+                   'paginate_by': ENTRIES_PER_PAGE
+                   }
+
+    return member_object_list(request, **view_params)
+
+@permission_required('membership.read_members')
+def unpaid_paper_reminded_plain(request):
+    view_params = {'queryset': Membership.paper_reminder_sent_unpaid_after().order_by('id'),
+                   'template_name': 'membership/membership_list_plaintext.html',
+                   'template_object_name': 'member'
+                   }
+
+    return member_object_list(request, **view_params)
+
+
 @permission_required('membership.delete_members')
 @transaction.commit_on_success
 def membership_delete(request, id, template_name='membership/membership_delete.html'):
