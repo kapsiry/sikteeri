@@ -1285,3 +1285,33 @@ class MembershipPaperReminderSentTest(TestCase):
         self.assertEquals(2, len(qs))
         self.assertIn(self.m, qs)
         self.assertIn(self.m2, qs)
+
+
+class CorrectVatAmountInBillTest(TestCase):
+    """
+    Test with cycle starting in 2013 and 2014. 2013 should have VAT 0% while
+    2013 24%.
+
+    SingleMemberBillingTest has an example of how to catch e-mails.
+    """
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    # def setUp(self):
+    #     self.user = User.objects.get(id=1)
+
+    #     self.m = create_dummy_member('N')
+    #     self.m.save()
+    #     self.m.preapprove(self.user)
+    #     self.m.approve(self.user)
+
+    #     cycle_start = datetime.now() - timedelta(days=60)
+    #     cycle = BillingCycle(membership=self.m, start=cycle_start)
+    #     cycle.save()
+    #     self.bill = Bill(billingcycle=cycle, type='P',
+    #                      due_date=datetime.now() - timedelta(days=20))
+
+    # def test_should_contain_vat_percentage(self):
+    #     self.assertIn("24%", self.bill.render_as_text(test_year=2014))
+
+    # def test_should_not_contain_vat_percentage(self):
+    #     self.assertNotIn("24%", self.bill.render_as_text(test_year=2013))

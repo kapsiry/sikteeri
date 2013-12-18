@@ -19,7 +19,8 @@ PL 11
 
 Laskun erittely
 ----------------------------------------------------------------------
-Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}             {{ sum|rjust:"5"}} e
+Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}             {{ non_vat_amount|rjust:"5"}} e
+Arvonlisävero {{ vat_percentage|ljust:"3" }}                                              {{ vat_amount|rjust:"5" }} e
 ----------------------------------------------------------------------
 Loppusumma yhteensä                                            {{ sum|rjust:"5"}} e
 
@@ -45,6 +46,7 @@ PL 11
 90571 OULU
 Sähköposti: laskutus@tuki.kapsi.fi
 Yhdistysrekisterinumero: 187.418
+Y-tunnus: 2447894-9
 
 Huomautukset laskusta on tehtävä kirjallisesti kahdeksan (8) päivän
 kuluessa laskun päivämäärästä. Maksun suorittamatta jättäminen
