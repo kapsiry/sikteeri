@@ -255,20 +255,32 @@ class MembershipFeeTest(TestCase):
         H_FEE=0
         soon = datetime.now() + timedelta(hours=1)
         # Old fees
-        Fee.objects.create(type='P', start=week_ago, sum=P_FEE/2)
-        Fee.objects.create(type='O', start=week_ago, sum=O_FEE/2)
-        Fee.objects.create(type='S', start=week_ago, sum=S_FEE/2)
-        Fee.objects.create(type='H', start=week_ago, sum=H_FEE/2)
+        Fee.objects.create(type='P', start=week_ago, sum=P_FEE/2,
+                           vat_percentage=24)
+        Fee.objects.create(type='O', start=week_ago, sum=O_FEE/2,
+                           vat_percentage=24)
+        Fee.objects.create(type='S', start=week_ago, sum=S_FEE/2,
+                           vat_percentage=24)
+        Fee.objects.create(type='H', start=week_ago, sum=H_FEE/2,
+                           vat_percentage=24)
         # Real fees
-        p_fee = Fee.objects.create(type='P', start=now, sum=P_FEE)
-        o_fee = Fee.objects.create(type='O', start=now, sum=O_FEE)
-        s_fee = Fee.objects.create(type='S', start=now, sum=S_FEE)
-        h_fee = Fee.objects.create(type='H', start=now, sum=H_FEE)
+        p_fee = Fee.objects.create(type='P', start=now, sum=P_FEE,
+                                   vat_percentage=24)
+        o_fee = Fee.objects.create(type='O', start=now, sum=O_FEE,
+                                   vat_percentage=24)
+        s_fee = Fee.objects.create(type='S', start=now, sum=S_FEE,
+                                   vat_percentage=24)
+        h_fee = Fee.objects.create(type='H', start=now, sum=H_FEE,
+                                   vat_percentage=24)
         # Future fees that must not interfere
-        Fee.objects.create(type='P', start=soon, sum=P_FEE*2)
-        Fee.objects.create(type='O', start=soon, sum=O_FEE*2)
-        Fee.objects.create(type='S', start=soon, sum=S_FEE*2)
-        Fee.objects.create(type='H', start=soon, sum=H_FEE*2)
+        Fee.objects.create(type='P', start=soon, sum=P_FEE*2,
+                           vat_percentage=24)
+        Fee.objects.create(type='O', start=soon, sum=O_FEE*2,
+                           vat_percentage=24)
+        Fee.objects.create(type='S', start=soon, sum=S_FEE*2,
+                           vat_percentage=24)
+        Fee.objects.create(type='H', start=soon, sum=H_FEE*2,
+                           vat_percentage=24)
         makebills()
         c_p = BillingCycle.objects.get(membership__type='P')
         c_o = BillingCycle.objects.get(membership__type='O')
@@ -861,11 +873,11 @@ class PhoneNumberFieldTest(TestCase):
 class OrganizationRegistratioTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
-    
+
     def test_valid(self):
         self.assertEqual(u"1.11", self.field.clean(u"1.11"))
         self.assertEqual(u"123.123", self.field.clean(u"123.123"))
-        
+
     def test_invalid(self):
         self.assertRaises(ValidationError, self.field.clean, "str.str")
         self.assertRaises(ValidationError, self.field.clean, "11111")
@@ -1296,22 +1308,38 @@ class CorrectVatAmountInBillTest(TestCase):
     """
     fixtures = ['membership_fees.json', 'test_user.json']
 
-    # def setUp(self):
-    #     self.user = User.objects.get(id=1)
+    def setUp(self):
+        #settings.BILLING_CC_EMAIL = None
+        self.user = User.objects.get(id=1)
 
-    #     self.m = create_dummy_member('N')
-    #     self.m.save()
-    #     self.m.preapprove(self.user)
-    #     self.m.approve(self.user)
+        self.m = create_dummy_member('N')
+        self.m.save()
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
 
-    #     cycle_start = datetime.now() - timedelta(days=60)
-    #     cycle = BillingCycle(membership=self.m, start=cycle_start)
-    #     cycle.save()
-    #     self.bill = Bill(billingcycle=cycle, type='P',
-    #                      due_date=datetime.now() - timedelta(days=20))
+        cycle_start = datetime(year=2012, month=10, day=10)
+        self.cycle = BillingCycle(membership=self.m, start=cycle_start)
+        self.cycle.save()
+        cycle_start_2014 = datetime(year=2014, month=1, day=10)
+        self.cycle_2014 = BillingCycle(membership=self.m,
+                                       start=cycle_start_2014)
+        self.cycle_2014.save()
+        self.bill_2013 = Bill(billingcycle=self.cycle, type='P',
+                         due_date=cycle_start)
+        self.bill_2014 = Bill(billingcycle=self.cycle_2014, type='P',
+                         due_date=cycle_start_2014)
+        #mail.outbox = []
 
-    # def test_should_contain_vat_percentage(self):
-    #     self.assertIn("24%", self.bill.render_as_text(test_year=2014))
+    def tearDown(self):
 
-    # def test_should_not_contain_vat_percentage(self):
-    #     self.assertNotIn("24%", self.bill.render_as_text(test_year=2013))
+        #self.bill_2014.delete()
+        #self.bill_2013.delete()
+        self.cycle.delete()
+        self.cycle_2014.delete()
+        self.m.delete()
+
+    def test_should_contain_vat_percentage(self):
+        self.assertIn("vero 24", self.bill_2014.render_as_text())
+
+    def test_should_not_contain_vat_percentage(self):
+        self.assertNotIn("vero 24", self.bill_2013.render_as_text())
