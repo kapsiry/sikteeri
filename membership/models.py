@@ -490,9 +490,11 @@ class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
     start = models.DateTimeField(_('Valid from date'))
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2)
+    vat_percentage = models.IntegerField(_('VAT percentage'))
 
     def __unicode__(self):
-        return "Fee for %s, %s euros, %s--" % (self.get_type_display(), str(self.sum), str(self.start))
+        return "Fee for %s, %s euros, %s%% VAT, %s--" % \
+               (self.get_type_display(), str(self.sum), str(self.vat_percentage), str(self.start))
 
 
 class BillingCycleManager(models.Manager):
@@ -609,6 +611,13 @@ class BillingCycle(models.Model):
         valid_fee = fees.latest('start').sum
         return valid_fee
 
+    def get_vat_percentage(self):
+        for_this_type = Q(type=self.membership.type)
+        not_before_start = Q(start__lte=self.start)
+        fees = Fee.objects.filter(for_this_type, not_before_start)
+        vat_percentage = fees.latest('start').vat_percentage
+        return vat_percentage
+
     def __unicode__(self):
         return str(self.start.date()) + "--" + str(self.end.date())
 
@@ -651,8 +660,13 @@ class Bill(models.Model):
 
     # FIXME: different template based on class? should this code be here?
     def render_as_text(self):
+        """
+        Renders the object as text suitable for sending as e-mail.
+        """
         membership = self.billingcycle.membership
+        vat = Decimal(self.billingcycle.get_vat_percentage()) / Decimal(100)
         if not self.is_reminder():
+            non_vat_amount = (self.billingcycle.sum / (Decimal(1) + vat))
             return render_to_string('membership/bill.txt', {
                 'membership_type' : MEMBER_TYPES_DICT[membership.type],
                 'membership_type_raw' : membership.type,
@@ -672,6 +686,9 @@ class Bill(models.Model):
                 'today': datetime.now(),
                 'reference_number': group_right(self.billingcycle.reference_number),
                 'sum': self.billingcycle.sum,
+                'vat_amount': vat * non_vat_amount,
+                'non_vat_amount': non_vat_amount,
+                'vat_percentage': self.billingcycle.get_vat_percentage(),
                 'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
                                      refnum = self.billingcycle.reference_number,
                                      duedate = self.due_date,
@@ -680,6 +697,7 @@ class Bill(models.Model):
         else:
             amount_paid = self.billingcycle.amount_paid()
             sum = self.billingcycle.sum - amount_paid
+            non_vat_sum = sum / (Decimal(1) + vat)
             return render_to_string('membership/reminder.txt', {
                 'membership_type' : MEMBER_TYPES_DICT[membership.type],
                 'membership_type_raw' : membership.type,
@@ -703,6 +721,9 @@ class Bill(models.Model):
                 'original_sum': self.billingcycle.sum,
                 'amount_paid': amount_paid,
                 'sum': sum,
+                'vat_amount': vat * non_vat_sum,
+                'non_vat_amount':   non_vat_sum,
+                'vat_percentage': self.billingcycle.get_vat_percentage(),
                 'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
                                      refnum = self.billingcycle.reference_number,
                                      duedate = None,
