@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from datetime import datetime, timedelta
+import calendar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import NoArgsCommand
@@ -90,6 +91,8 @@ def makebills():
     logger.info("Running makebills...")
     latest_recorded_payment = Payment.latest_payment_date()
 
+    dt = datetime.now()
+    last_of_month = datetime(dt.year, dt.month, calendar.monthrange(dt.year, dt.month)[1], 23, 59, 59)
     for member in Membership.objects.filter(status='A').filter(id__gt=0):
         # Billing cycles and bills
         cycles = member.billingcycle_set
@@ -100,7 +103,7 @@ def makebills():
             latest_cycle = cycles.latest("end")
             if latest_cycle.end < datetime.now():
                 logger.warning("no new billing cycle created for %s after an expired one!" % repr(member))
-            if latest_cycle.end < datetime.now() + timedelta(days=settings.BILL_DAYS_BEFORE_CYCLE):
+            if latest_cycle.end <= last_of_month:
                 cycle = create_billingcycle(member)
                 logger.info("Created billing cycle %s for %s" %
                             (repr(cycle), repr(member)))
