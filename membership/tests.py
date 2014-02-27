@@ -9,6 +9,7 @@ logger = logging.getLogger("membership.tests")
 from decimal import Decimal
 from datetime import datetime, timedelta
 from random import randint
+import calendar
 import json
 
 from django.contrib.auth.models import User
@@ -481,18 +482,19 @@ class SingleMemberBillingTest(TestCase):
         self.assertEqual(len(m.billingcycle_set.all()), 1)
         self.assertEqual(len(mail.outbox), 1)
 
+        dt = datetime.now()
         c = m.billingcycle_set.all()[0]
-        c.end = datetime.now() + timedelta(days=5)
+        c.end = datetime(dt.year, dt.month, calendar.monthrange(dt.year, dt.month)[1], 23, 59, 59)
         c.save()
         b = c.last_bill()
-        b.due_date = datetime.now() + timedelta(days=9)
+        b.due_date = datetime(dt.year, dt.month, 1) + timedelta(days = 7)
         b.save()
         b.billingcycle.is_paid = True
         b.billingcycle.save()
 
         makebills()
 
-        self.assertTrue(len(m.billingcycle_set.all()), 2)
+        self.assertEqual(len(m.billingcycle_set.all()), 2)
         self.assertEqual(len(mail.outbox), 2)
 
 class SingleMemberBillingModelsTest(TestCase):
