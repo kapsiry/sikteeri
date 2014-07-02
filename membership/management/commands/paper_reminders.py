@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from string import Template
 from optparse import make_option
+from tempfile import mkdtemp
 
 from django.db.models import Count
 from django.core.management.base import BaseCommand, CommandError
@@ -24,7 +25,7 @@ from membership.utils import log_change
 from membership.reference_numbers import barcode_4
 
 logger = logging.getLogger("paper_bills")
-TMPDIR = '/tmp/sikteeritex'
+TMPDIR = mkdtemp('sikteeritex')
 
 class LatexTemplate(Template):
     delimiter = '\$'
