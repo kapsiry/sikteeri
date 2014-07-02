@@ -66,8 +66,9 @@ def tex_sanitize(input_string):
 
 def prettyname(cycle):
     # TODO: use translations
-    return u"%d & Jäsenmaksu kaudelle & %s - %s \\\\\n" % (1, 
-                    cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y'))
+    return u"%d & Jäsenmaksu kaudelle & %s - %s & %s \\\\\n" % (1,
+                    cycle.start.strftime('%d.%m.%Y'),
+                    cycle.end.strftime('%d.%m.%Y'), cycle.sum)
 
 def data2pdf(data):
     # TODO: use Django templates, use with-statement
@@ -102,11 +103,16 @@ def create_datalist(memberid=None):
             continue
 
         membercontact = cycle.membership.get_billing_contact()
+        full = Decimal(100.0)
+        vat = (cycle.sum * (cycle.get_vat_percentage() / full))
+        amount = cycle.sum - vat
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
             'JASENNRO'  : cycle.membership.id,
             'NIMI'      : tex_sanitize(cycle.membership.name()),
-            'SUMMA'     : cycle.sum,
+            'AMOUNT'    : "%.2f" % amount,
+            'SUM'       : "%.2f" % cycle.sum,
+            'VAT'       : "%.2f" % vat,
             'VIITENRO'  : cycle.reference_number,
             'MAKSUDATA' : prettyname(cycle),
             'EMAIL'     : tex_sanitize(membercontact.email.replace("_", "\_")),
@@ -121,8 +127,10 @@ def generate_pdf(latexfile):
     # TODO: with_timeouting_process(...)
     # set umask to 0077
     oldumask = os.umask(63)
+    penv = os.environ.copy()
     pid = Popen(['pdflatex', '-interaction=batchmode', '-output-directory=%s' % TMPDIR, 
-                '-no-file-line-error','-halt-on-error','-output-format','pdf',latexfile])
+        '-no-file-line-error','-halt-on-error','-output-format','pdf',latexfile],
+        env=penv, cwd=os.path.dirname(os.path.realpath(settings.PAPER_REMINDER_TEMPLATE)))
     # wait until process ends
     pid.wait()
     try:
