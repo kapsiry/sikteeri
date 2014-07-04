@@ -104,7 +104,7 @@ def create_datalist(memberid=None):
             continue
 
         membercontact = cycle.membership.get_billing_contact()
-        full = Decimal(100.0)
+        full = Decimal(100)
         vat = (cycle.sum * (cycle.get_vat_percentage() / full))
         amount = cycle.sum - vat
         data = {
