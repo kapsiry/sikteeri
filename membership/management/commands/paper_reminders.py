@@ -105,7 +105,8 @@ def create_datalist(memberid=None):
 
         membercontact = cycle.membership.get_billing_contact()
         full = Decimal(100)
-        vat = (cycle.sum * (cycle.get_vat_percentage() / full))
+        vatp = cycle.get_vat_percentage() / full
+        vat = (cycle.sum / (Decimal(1) + vatp)) * vatp
         amount = cycle.sum - vat
         data = {
             'DATE'      : datetime.now().strftime("%d.%m.%Y"),
