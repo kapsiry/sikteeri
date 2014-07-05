@@ -17,28 +17,22 @@ logger = logging.getLogger("sikteeri.generate_test_data")
 
 from datetime import datetime
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
-sys.path.insert(0, '..')
-
 from django.core import management
 from django.db import transaction
 from django.contrib.auth.models import User
 
 from membership.models import Contact, Membership, Fee, Payment
-
 from membership.management.commands.csvbills import attach_payment_to_cycle
-
 from membership.reference_numbers import generate_membership_bill_reference_number
-
 from services.models import Alias, Service, ServiceType
 
 if Fee.objects.all().count() == 0:
     sys.exit("No fees in the database. Did you load fixtures into the " +
-	     "database first?\n (./manage.py loaddata test_data.json)")
+             "database first?\n (./manage.py loaddata membership/fixtures/membership_fees.json)")
 
 user = User.objects.get(id=1)
 
-@transaction.commit_manually
+@transaction.atomic
 def create_dummy_member(i, duplicate_of=None):
     fname = random_first_name()
     d = {
@@ -61,7 +55,6 @@ def create_dummy_member(i, duplicate_of=None):
 
     person = Contact(**d)
     person.save()
-    transaction.commit()
     membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
@@ -70,18 +63,15 @@ def create_dummy_member(i, duplicate_of=None):
 
     print unicode(person)
     membership.save()
-    transaction.commit()
 
     forward_alias = Alias(owner=membership,
                           name=Alias.email_forwards(membership)[0])
     forward_alias.save()
 
 
-    transaction.commit()
     login_alias = Alias(owner=membership, account=True,
                         name=choice(Alias.unix_logins(membership)))
     login_alias.save()
-    transaction.commit()
 
     # Services
     forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
@@ -100,7 +90,6 @@ def create_dummy_member(i, duplicate_of=None):
         postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                      alias=login_alias, owner=membership, data=login_alias.name)
         postgresql_service.save()
-    transaction.commit()
     # End of services
 
     logger.info("New application %s from %s:." % (str(person), '::1'))
@@ -111,12 +100,12 @@ def create_payment(membership):
         amount = "35.0"
         if random() < 0.2:
             amount = "30.0"
-            
+
         ref = generate_membership_bill_reference_number(membership.id, datetime.now().year)
         if random() < 0.2:
             ref = str(randint(1000, 1000000))
         p = Payment(reference_number=ref,
-                    transaction_id=str(uuid4()),
+                    transaction_id=str(uuid4())[:29],
                     payment_day=datetime.now(),
                     amount=Decimal(amount),
                     type="XYZ",
@@ -125,7 +114,7 @@ def create_payment(membership):
         return p
 
 
-@transaction.commit_manually
+@transaction.atomic
 def main():
     if Membership.objects.count() > 0 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
@@ -136,31 +125,26 @@ def main():
         membership.preapprove(user)
         membership.approve(user)
         create_payment(membership)
-        transaction.commit()
 
     # Pre-approved members
     for i in xrange(1000,1100):
-        membership = create_dummy_member(i)
-        membership.preapprove(user)
-        transaction.commit()
+        with transaction.atomic():
+            membership = create_dummy_member(i)
+            membership.preapprove(user)
 
     # New applications
     for i in xrange(1100,1190):
         membership = create_dummy_member(i)
-        transaction.commit()
 
     # Make a few duplicates for duplicate detection GUI testing
     for i in xrange(1190,1200):
         duplicate_of = Membership.objects.get(id=i-10)
         membership = create_dummy_member(i + 10, duplicate_of=duplicate_of)
-        transaction.commit()
 
     management.call_command('makebills')
-    transaction.commit()
     for payment in Payment.objects.all():
         try:
             attach_payment_to_cycle(payment)
-            transaction.commit()
         except:
             pass
 
