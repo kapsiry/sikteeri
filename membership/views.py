@@ -984,8 +984,8 @@ def membership_detail_json(request, id):
 
 # Public access
 def handle_json(request):
-    logger.debug("RAW POST DATA: %s" % request.raw_post_data)
-    msg = json.loads(request.raw_post_data)
+    logger.debug("RAW POST DATA: %s" % request.body)
+    msg = json.loads(request.body)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
              'MEMBERSHIP_DETAIL': membership_detail_json,
