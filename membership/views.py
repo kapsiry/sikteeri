@@ -12,16 +12,17 @@ import traceback
 from django.db.models.aggregates import Sum
 logger = logging.getLogger("membership.views")
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import send_mail
+from django.db import transaction
+from django.forms import ModelForm, Form, EmailField, BooleanField
+from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput, FileField
-from django.contrib.auth.decorators import login_required, permission_required
-from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponse, HttpResponseForbidden
-from django.contrib import messages
-
+from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
 
 from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
@@ -38,7 +39,6 @@ from management.commands.paper_reminders import get_reminders, get_data as get_p
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
-import django.views.generic.list_detail
 from sikteeri.settings import ENTRIES_PER_PAGE
 
 # Public access
@@ -802,7 +802,7 @@ def membership_duplicates(request, id):
 
     view_params = {'queryset': membership.duplicates(),
                    'template_name': 'membership/membership_list.html',
-                   'template_object_name': 'member',
+                   'context_object_name': 'member_list',
                    'extra_context': {'header':
                                      _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
                                                                                "membership":unicode(membership)}),
@@ -815,7 +815,7 @@ def membership_duplicates(request, id):
 def unpaid_paper_reminded(request):
     view_params = {'queryset': Membership.paper_reminder_sent_unpaid_after(),
                    'template_name': 'membership/membership_list.html',
-                   'template_object_name': 'member',
+                   'context_object_name': 'member_list',
                    'paginate_by': ENTRIES_PER_PAGE
                    }
 
@@ -825,7 +825,7 @@ def unpaid_paper_reminded(request):
 def unpaid_paper_reminded_plain(request):
     view_params = {'queryset': Membership.paper_reminder_sent_unpaid_after().order_by('id'),
                    'template_name': 'membership/membership_list_plaintext.html',
-                   'template_object_name': 'member'
+                   'context_object_name': 'member_list'
                    }
 
     return member_object_list(request, **view_params)
@@ -1077,12 +1077,12 @@ def admtool_lookup_alias_json(request, alias):
 @permission_required('membership.read_members')
 def member_object_list(request, **kwargs):
     kwargs = sort_objects(request,**kwargs)
-    return django.views.generic.list_detail.object_list(request, **kwargs)
+    return ListView.as_view(**kwargs)(request)
 
 @permission_required('membership.read_bills')
 def billing_object_list(request, **kwargs):
     kwargs = sort_objects(request,**kwargs)
-    return django.views.generic.list_detail.object_list(request, **kwargs)
+    return ListView.as_view(**kwargs)(request)
 
 # This should list any bills/cycles that were forcefully set as paid even
 # though insufficient payments were paid.
@@ -1091,7 +1091,7 @@ def billing_object_list(request, **kwargs):
 #     paid_q = Q(is_paid__exact=True)
 #     payments_sum_q = Q(payment_set.aggregate(Sum('amount'))__lt=sum)
 #     qs = BillingCycle.objects.filter(paid_q, payments_sum_q)
-#     return django.views.generic.list_detail.object_list(request, queryset=qs, *args, **kwargs)
+#     return ListView.as_view(**kwargs, queryset=qs)(request))
 
 @permission_required('membership.read_members')
 def search(request, **kwargs):
@@ -1122,4 +1122,4 @@ def search(request, **kwargs):
                      "person__last_name",
                      "person__first_name")
     kwargs = sort_objects(request,**kwargs)
-    return django.views.generic.list_detail.object_list(request, **kwargs)
+    return ListView.as_view(**kwargs)(request)
