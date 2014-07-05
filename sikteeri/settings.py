@@ -143,6 +143,7 @@ INSTALLED_APPS = (
     'membership',
     'services',
     'south',
+    'debug_toolbar',
 )
 
 # A sample logging configuration. The only tangible logging
