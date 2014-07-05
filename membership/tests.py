@@ -796,7 +796,6 @@ class MemberApplicationTest(TestCase):
         self.post_data['unix_login'] = 'fnamelname'
         self.post_data['email_forward'] = 'fname.lname'
         response = self.client.post('/membership/application/person/', self.post_data)
-        print("%s" % response)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
