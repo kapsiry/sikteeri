@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from django.contrib.auth.decorators import permission_required
 from django.shortcuts import redirect
 from django.db.models import Count

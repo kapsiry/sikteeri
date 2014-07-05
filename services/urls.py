@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('',
     url(r'aliases/edit/(\d+)/$', 'services.views.alias_edit', name='alias_edit'),
