@@ -5,15 +5,15 @@
 
 {% block content %}
 {% if memberid != None and not bill and not payment %}
-<a href="{% url membership_edit memberid %}">{% trans "Back to member overview" %}</a>
+<a href="{% url "membership_edit" memberid %}">{% trans "Back to member overview" %}</a>
 <hr />
 {% endif %}
 {% if cycle %}
-<h2>{% trans "Billing cycle for member" %} <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }}</a>,
+<h2>{% trans "Billing cycle for member" %} <a href="{% url "membership_edit" cycle.membership.id %}">{{ cycle.membership }}</a>,
   {{ cycle }}, {{ cycle.sum }} EUR</h2>
 <ul>
     {% for bill in cycle.bill_set.all %}
-    <li><a href="{% url bill_edit bill.id %}"
+    <li><a href="{% url "bill_edit" bill.id %}"
       >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}}){% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
      {% trans "sent" %} {{ bill.created|naturalday }},
      {% trans "due on" %} {{ bill.due_date|naturalday }}
@@ -22,7 +22,7 @@
     {% endfor %}
 
     {% for payment in cycle.payment_set.all %}
-    <li><a href="{% url payment_edit payment.id %}">{% trans "Payment" %}</a> {% trans "paid on" %}
+    <li><a href="{% url "payment_edit" payment.id %}">{% trans "Payment" %}</a> {% trans "paid on" %}
         {{ payment.payment_day|naturalday }}
         ({{payment.amount}} &euro;,
         <small>{{payment.reference_number}}</small>)
@@ -33,14 +33,14 @@
 {% endif %}
 
 {% if bill %}
-<h2>{% trans "Bill for member" %} <a href="{% url membership_edit bill.billingcycle.membership.id %}">{{ bill.billingcycle.membership }}</a>,
-   <a href="{% url billingcycle_edit bill.billingcycle.id %}">{{ bill.billingcycle }}</a> ({{bill.billingcycle.sum}} EUR)</h2>
+<h2>{% trans "Bill for member" %} <a href="{% url "membership_edit" bill.billingcycle.membership.id %}">{{ bill.billingcycle.membership }}</a>,
+   <a href="{% url "billingcycle_edit" bill.billingcycle.id %}">{{ bill.billingcycle }}</a> ({{bill.billingcycle.sum}} EUR)</h2>
 {% endif %}
 
 {% if payment %}
 <h2>{% trans "Payer" %} {{ payment.payer_name }}</h2>
 {% if payment.billingcycle %}
-<p>{% trans "Payment assigned to" %} <a href="{% url membership_edit payment.billingcycle.membership.id %}">{{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }}</a> {{ payment.billingcycle }}</p>
+<p>{% trans "Payment assigned to" %} <a href="{% url "membership_edit" payment.billingcycle.membership.id %}">{{ payment.billingcycle.membership.id }} {{ payment.billingcycle.membership }}</a> {{ payment.billingcycle }}</p>
 {% endif %}
 {% endif %}
 
@@ -58,13 +58,13 @@
 {% if payment and perms.membership.manage_bills %}
 {% if not payment.billingcycle and payment.comment = 'duplikaattimaksu' %}
 <h2>Actions</h2>
-<a href="{% url payment_send_duplicate_notification payment.id %}">{% trans "Send duplicate payment notice" %}</a>
+<a href="{% url "payment_send_duplicate_notification" payment.id %}">{% trans "Send duplicate payment notice" %}</a>
 {% endif %}
 {% endif %}
 {% if cycle and perms.membership.manage_bills %}
 {% if not cycle.is_paid or not cycle.amount_paid %}
 <h2>Actions</h2>
-<a href="{% url billingcycle_connect_payment cycle.id %}">{% trans "Assign a payment to this billing cycle" %}</a>
+<a href="{% url "billingcycle_connect_payment" cycle.id %}">{% trans "Assign a payment to this billing cycle" %}</a>
 {% endif %}
 {% endif %}
 

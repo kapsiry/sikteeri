@@ -6,20 +6,20 @@
 <h2>#{{ membership.id}} {{ membership.name }}</h2>
 
 {% if membership.person %}
-<a href="{% url contact_edit membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
+<a href="{% url "contact_edit" membership.person.id %}">{% trans "Edit person contact" %} ({{ membership.person }})</a><br />
 {% endif %}
 {% if membership.billing_contact %}
-<a href="{% url contact_edit membership.billing_contact.id %}">{% trans "Edit billing contact" %} ({{ membership.billing_contact }})</a><br />
+<a href="{% url "contact_edit" membership.billing_contact.id %}">{% trans "Edit billing contact" %} ({{ membership.billing_contact }})</a><br />
 {% else%}
-<a href="{% url contact_add "billing_contact" membership.id %}">{% trans "Add billing contact" %} </a><br />
+<a href="{% url "contact_add" "billing_contact" membership.id %}">{% trans "Add billing contact" %} </a><br />
 {% endif %}
 {% if membership.tech_contact %}
-<a href="{% url contact_edit membership.tech_contact.id %}">{% trans "Edit technical contact" %} ({{ membership.tech_contact }})</a><br />
+<a href="{% url "contact_edit" membership.tech_contact.id %}">{% trans "Edit technical contact" %} ({{ membership.tech_contact }})</a><br />
 {% elif not membership.person %}
-<a href="{% url contact_add "tech_contact" membership.id %}">{% trans "Add technical contact" %}</a><br />
+<a href="{% url "contact_add" "tech_contact" membership.id %}">{% trans "Add technical contact" %}</a><br />
 {% endif %}
 {% if membership.organization %}
-<a href="{% url contact_edit membership.organization.id %}">{% trans "Edit organization contact" %} ({{ membership.organization }})</a><br />
+<a href="{% url "contact_edit" membership.organization.id %}">{% trans "Edit organization contact" %} ({{ membership.organization }})</a><br />
 {% endif %}
 <hr />
 
@@ -38,34 +38,34 @@
 <h2>{% trans "Actions" %}</h2>
 {% if perms.services.manage_aliases %}
   {% if membership.status == "P" or membership.status == "A" %}
-    <a href="{% url services.views.alias_add_for_member membership.id %}">{% trans "Add an alias" %}</a>
+    <a href="{% url "services.views.alias_add_for_member" membership.id %}">{% trans "Add an alias" %}</a>
   {% endif %}
 {% endif %}
 
 {% if perms.membership.request_dissociation_for_member %}
   {% if membership.status == "A" %}
-    <a href="{% url membership_request_dissociation membership.id %}">{% trans "Request dissociation" %}</a>
+    <a href="{% url "membership_request_dissociation" membership.id %}">{% trans "Request dissociation" %}</a>
   {% endif %}
 
   {% if membership.status == "S" %}
-    <a href="{% url membership_cancel_dissociation_request membership.id %}">{% trans "Cancel dissociation request" %}</a>
+    <a href="{% url "membership_cancel_dissociation_request" membership.id %}">{% trans "Cancel dissociation request" %}</a>
   {% endif %}
 {% endif %}
 
 
 {% if perms.membership.dissociate_members %}
   {% if membership.status == "A" or membership.status == "S" %}
-    <a href="{% url membership_dissociate membership.id %}">{% trans "Dissociate" %}</a>
+    <a href="{% url "membership_dissociate" membership.id %}">{% trans "Dissociate" %}</a>
   {% endif %}
 {% endif %}
 
 {% if perms.membership.delete_members and membership.status != "D" %}
-  <a href="{% url membership_delete membership.id %}">{% trans "Delete" %}</a>
+  <a href="{% url "membership_delete" membership.id %}">{% trans "Delete" %}</a>
 {% endif %}
 
 {% if perms.membership.manage_members %}
   {% if membership.status == "A" and not membership.organization %}
-    <a href="{% url membership_convert_to_organization membership.id %}">
+    <a href="{% url "membership_convert_to_organization" membership.id %}">
       {% trans "Convert to an organization" %}
     </a>
  {% endif %}
@@ -77,9 +77,9 @@
 <ul>{% for alias in membership.alias_set.all %}
     <li>
     {% if alias.is_valid %}
-    <a href="{% url alias_edit alias.id %}">{{ alias.name }}</a>
+    <a href="{% url "alias_edit" alias.id %}">{{ alias.name }}</a>
     {% else %}
-    <s><a href="{% url alias_edit alias.id %}">{{ alias.name }}</a></s>
+    <s><a href="{% url "alias_edit" alias.id %}">{{ alias.name }}</a></s>
     {% endif %}
     <span class="comment">{{ alias.comment }}</span>
     <span class="expiration_date">{{alias.expiration_date|date:"j.n.Y"}}</span>
@@ -95,11 +95,11 @@
 
 <h2>{% trans "Billing information" %}</h2>
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
-    <li><a href="{% url billingcycle_edit billingcycle.id%}">{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}</a>
+    <li><a href="{% url "billingcycle_edit" billingcycle.id%}">{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}</a>
         <ul>
             {% for bill in billingcycle.bill_set.all %}
             <li>
-        <a href="{% url bill_edit bill.id %}">
+        <a href="{% url "bill_edit" bill.id %}">
     {% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}})
     {% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
               <small>({{bill.reference_number|fref:"0"}})</small>
@@ -111,7 +111,7 @@
             {% endfor %}
 
             {% for payment in billingcycle.payment_set.all %}
-            <li><a href="{% url payment_edit payment.id %}">
+            <li><a href="{% url "payment_edit" payment.id %}">
               {% trans "Payment" %}</a>
               {% trans "paid on" %}
               {{ payment.payment_day|naturalday }}
@@ -162,7 +162,7 @@
     {{ commentform.timestamp }}
 
     {{ commentform.security_hash }}
-    <input type="hidden" name="next" value="{% url membership_edit membership.id %}" />
+    <input type="hidden" name="next" value="{% url "membership_edit" membership.id %}" />
     <tr>
         <td></td>
         <td><input type="submit" class="submit-post" value="{% trans "Comment on membership" %}"></td>

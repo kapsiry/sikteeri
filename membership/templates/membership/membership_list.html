@@ -36,9 +36,9 @@
       <span class="member_id">#{{ member.id }}</span>
     {% endif %}
     {% if member.status != "D" %}
-      <span class="name"><a href="{% url membership_edit member.id %}">{{ member.name }}</a></span>
+      <span class="name"><a href="{% url "membership_edit" member.id %}">{{ member.name }}</a></span>
     {% else %}
-      <span class="name"><a href="{% url membership_edit member.id %}">{% trans "&lt; membership deleted &gt;" %}</a></span>
+      <span class="name"><a href="{% url "membership_edit" member.id %}">{% trans "&lt; membership deleted &gt;" %}</a></span>
     {% endif %}
     {% if member.comment %}
       <span class="comment">{{ member.comment }}</span>
@@ -46,7 +46,7 @@
 	{% if member.status == "N" %}
 		{% if not disable_duplicates_header %}
 		{% if member.duplicates %}
-			<a href="{% url membership_duplicates member.id %}">{% trans "show possible duplicates" %}</a>
+			<a href="{% url "membership_duplicates" member.id %}">{% trans "show possible duplicates" %}</a>
 		{% endif %}
 		{% endif %}
 	{% endif %}

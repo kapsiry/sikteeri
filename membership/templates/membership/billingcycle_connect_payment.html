@@ -9,7 +9,7 @@
 {% endif %}
 
 <p>{% trans "Billing Cycle" %} {{ cycle }} ({{ cycle.sum }} EUR), {% trans "for membership" %}
-  <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }} {{cycle.membership.id }}</a>.</p>
+  <a href="{% url "membership_edit" cycle.membership.id %}">{{ cycle.membership }} {{cycle.membership.id }}</a>.</p>
 
 <form method="POST">{% csrf_token %}
 {{ form.as_p }}

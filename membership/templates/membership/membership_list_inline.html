@@ -13,7 +13,7 @@
   {% else %}
     <li id="{{ member.id }}">
   {% endif %}
-      <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
+      <span class="name"><a href="{% url "membership_edit" member.id %}">{{ member }}</a></span>
       <span class="status">{{ member.get_status_display }}</span>
     </li>
 {% empty %}

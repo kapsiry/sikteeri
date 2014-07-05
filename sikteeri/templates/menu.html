@@ -2,45 +2,45 @@
 <ul>
    <li>
      {% if user.is_authenticated %}
-     <a href="{% url logout %}">{% trans "Logout" %}</a>
+     <a href="{% url "logout" %}">{% trans "Logout" %}</a>
      {% else %}
-     <a href="{% url login %}">{% trans "Login" %}</a>
+     <a href="{% url "login" %}">{% trans "Login" %}</a>
      {% endif %}
    </li>
 </ul>
 <h3>{% trans "Public" %}</h3>
 <ul>
-   <li><a href="{% url frontpage %}">{% trans "Frontpage" %}</a></li>
-   <li><a href="{% url new_application %}">{% trans "New application" %}</a></li>
+   <li><a href="{% url "frontpage" %}">{% trans "Frontpage" %}</a></li>
+   <li><a href="{% url "new_application" %}">{% trans "New application" %}</a></li>
 </ul>
 {% if user.is_authenticated %}
 {% if perms.membership.read_members %}
 <h3>{% trans "Membership management" %}</h3>
 <ul>
-   <li><a href="{% url new_memberships %}">{% trans "Member applications" %}</a></li>
-   <li><a href="{% url preapproved_memberships %}">{% trans "Preapproved applications" %}</a>
-     <small><a href="{% url preapproved_memberships_plain %}">txt</a></small>
+   <li><a href="{% url "new_memberships" %}">{% trans "Member applications" %}</a></li>
+   <li><a href="{% url "preapproved_memberships" %}">{% trans "Preapproved applications" %}</a>
+     <small><a href="{% url "preapproved_memberships_plain" %}">txt</a></small>
    </li>
-   <li><a href="{% url approved_memberships %}">{% trans "Members" %}</a>
-     <small><a href="{% url approved_memberships_emails %}">{% trans "emails" %}</a></small>
+   <li><a href="{% url "approved_memberships" %}">{% trans "Members" %}</a>
+     <small><a href="{% url "approved_memberships_emails" %}">{% trans "emails" %}</a></small>
    </li>
 
    <li>
-     <a href="{% url dissociation_requested_memberships %}">
+     <a href="{% url "dissociation_requested_memberships" %}">
        {% trans "Members that have requested dissociation" %}
      </a>
    </li>
 
    <li>
-     <a href="{% url dissociated_memberships %}">
+     <a href="{% url "dissociated_memberships" %}">
        {% trans "Dissociated members" %}
      </a>
    </li>
 
-   <li><a href="{% url deleted_memberships %}">{% trans "Deleted members" %}</a></li>
-   <li><small><a href="{% url all_memberships %}">{% trans "All membership entities" %}</a></small></li>
+   <li><a href="{% url "deleted_memberships" %}">{% trans "Deleted members" %}</a></li>
+   <li><small><a href="{% url "all_memberships" %}">{% trans "All membership entities" %}</a></small></li>
    <li>
-     <form action="{% url membership_search %}">
+     <form action="{% url "membership_search" %}">
        <input name="query" type="text">
        <input type="submit" value="{% trans "Search memberships" %}">
      </form>
@@ -49,25 +49,25 @@
 {% endif %}
 {% if perms.membership.read_bills %}
 <ul>
-   <li><a href="{% url unpaid_cycle_list %}">{% trans "List of unpaid bills" %}</a></li>
-   <li><a href="{% url unpaid_paper_reminded_memberships %}">{% trans "Unpaid paper reminders" %}</a>
-		<small><a href="{% url unpaid_paper_reminded_memberships_plain %}">txt</a></small></li>
-   <li><a href="{% url cycle_list %}">{% trans "All bills" %}</a></li>
-   <li><a href="{% url unknown_payment_list %}">{% trans "Unknown payments" %}</a></li>
-   <li><a href="{% url ignored_payment_list %}">{% trans "Ignored payments" %}</a></li>
-   <li><a href="{% url payment_list %}">{% trans "All payments" %}</a></li>
-   <li><a href="{% url print_reminders %}">{% trans "Print reminders" %}</a></li>
+   <li><a href="{% url "unpaid_cycle_list" %}">{% trans "List of unpaid bills" %}</a></li>
+   <li><a href="{% url "unpaid_paper_reminded_memberships" %}">{% trans "Unpaid paper reminders" %}</a>
+		<small><a href="{% url "unpaid_paper_reminded_memberships_plain" %}">txt</a></small></li>
+   <li><a href="{% url "cycle_list" %}">{% trans "All bills" %}</a></li>
+   <li><a href="{% url "unknown_payment_list" %}">{% trans "Unknown payments" %}</a></li>
+   <li><a href="{% url "ignored_payment_list" %}">{% trans "Ignored payments" %}</a></li>
+   <li><a href="{% url "payment_list" %}">{% trans "All payments" %}</a></li>
+   <li><a href="{% url "print_reminders" %}">{% trans "Print reminders" %}</a></li>
    {% if perms.membership.can_import_payments %}
-   <li><a href="{% url import_payments %}">{% trans "Import payments" %}</a></li>
+   <li><a href="{% url "import_payments" %}">{% trans "Import payments" %}</a></li>
    {% endif %}
 </ul>
 {% endif %}
 <ul>
-   <li><a href="{% url test_email %}">{% trans "Send test e-mail" %}</a></li>
+   <li><a href="{% url "test_email" %}">{% trans "Send test e-mail" %}</a></li>
 </ul>
 
 <h3>Django</h3>
 <ul>
-   <li><a href="{% url admin:index %}">{% trans "Admin" %}</a></li>
+   <li><a href="{% url "admin:index" %}">{% trans "Admin" %}</a></li>
 </ul>
 {% endif %}

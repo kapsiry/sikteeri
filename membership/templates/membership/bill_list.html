@@ -23,8 +23,8 @@
   {% with cycle.membership as member %}
   {% with cycle.last_bill as last_bill %}
   <li class="list_item" {% if cycle.is_first_bill_late %}style="color: red"{% endif %}>
-    <span class="name"><a href="{% url membership_edit member.id %}">{{ member }}</a></span>
-    <span class="cycle"><a href="{% url billingcycle_edit cycle.id %}">{{ cycle }}</a></span>
+    <span class="name"><a href="{% url "membership_edit" member.id %}">{{ member }}</a></span>
+    <span class="cycle"><a href="{% url "billingcycle_edit" cycle.id %}">{{ cycle }}</a></span>
     <span class="sum">{{ cycle.sum }} {% trans "euros" %},
 {% if not last_bill.is_reminder %}
 {% trans "bill" %} {{last_bill.id}} {% else %}
@@ -33,7 +33,7 @@
 	</span>
 	{% if not cycle.is_paid %}
     <span class="due">
-      <a{% if last_bill.is_due %} style="color:red; text-weigt: bold"{% endif %} href="{% url bill_edit last_bill.id %}">{{ last_bill.due_date|date:"j.n.Y" }}</a>
+      <a{% if last_bill.is_due %} style="color:red; text-weigt: bold"{% endif %} href="{% url "bill_edit" last_bill.id %}">{{ last_bill.due_date|date:"j.n.Y" }}</a>
     </span>
 	{% endif %}
     <span class="paid">

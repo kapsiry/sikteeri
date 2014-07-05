@@ -6,8 +6,8 @@
 <p>
   {% for msg in import_messages %}
   {{ msg.2 }}
-  {% if msg.0 %}<a href="{% url billingcycle_edit msg.0 %}">{% trans "Cycle" %}</a>{% endif %}
-  {% if msg.1 %}<a href="{% url payment_edit msg.1 %}">{% trans "Payment" %}</a>{% endif %}
+  {% if msg.0 %}<a href="{% url "billingcycle_edit" msg.0 %}">{% trans "Cycle" %}</a>{% endif %}
+  {% if msg.1 %}<a href="{% url "payment_edit" msg.1 %}">{% trans "Payment" %}</a>{% endif %}
   <br />
   {% endfor %}
 </p>
