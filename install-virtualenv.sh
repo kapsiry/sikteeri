@@ -3,48 +3,50 @@
 # install-virtualenv.sh
 #
 # Install virtualenv environment for sikteeri development
-# to "env/" if it doesn't exist already
+# to "~/env/sikteeri" if it doesn't exist already
+# Feel free to create virtualenv manually if you prefer.
 
 VIRTUALENV=${1-virtualenv}
-ENVDIR=env
-
-if [[ ! -x "$VIRTUALENV" ]]; then
-	VIRTUALENV=`which $VIRTUALENV`
-fi
-
-if [[ ! -x "$VIRTUALENV" ]]; then
-
-    echo "Please install virtualenv first."
-    echo
-    echo "  sudo apt-get install python-virtualenv (Debian/Ubuntu)"
-    echo "  sudo easy_install virtualenv (OS X, others?)"
-    echo
-    echo "If you have installed it already, try running"
-    echo
-    echo "$(basename $0) <path-to-virtualenv>"
-    exit 1
-fi
+ENVDIR="$HOME/env/sikteeri"
 
 function fatal () {
     echo $*
     exit 1
 }
 
-test -a $ENVDIR && fatal "$ENVDIR already exists"
+# Check requirements
+type "$VIRTUALENV" >/dev/null 2>&1 || fatal "Python virtualenv required. Maybe pip install virtualenv?"
+test -a "$ENVDIR" && fatal "$ENVDIR already exists"
 
-$VIRTUALENV $ENVDIR --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
+# Prepare virtualenv
+(
+    set -x
+    "$VIRTUALENV" --python=python2.7 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
+)
 
-source $ENVDIR/bin/activate
+# OS X: Use homebrew gettext if no system gettext installed
+(
+    [[ `uname` == "Darwin" ]] || exit
+    # Do nothing if msgfmt in path
+    type msgfmt >/dev/null 2>&1 && exit
+    # If we can find homebrew gettext, use that instead
+    test -a /usr/local/Cellar/gettext || exit
+    gettext_brew_version=$(ls -t1 /usr/local/Cellar/gettext/ | head -n1)
+    gettext_brew_path="/usr/local/Cellar/gettext/${gettext_brew_version}/bin"
+    echo "export PATH=\"\$PATH:${gettext_brew_path}\"" >> "$ENVDIR/bin/activate"
+)
 
-if [[ ! -a $ENVDIR/bin/pip ]]; then
-    $ENVDIR/bin/easy_install pip || fatal "Could not install pip in virtualenv"
-fi
 
-pip install -r requirements.txt
+# In virtualenv target
+source "${ENVDIR}/bin/activate"
+(
+    echo "In virtualenv $ENVDIR"
+    set -x
+    pip install --quiet -r requirements.txt
+)
 
-echo "export PYTHONPATH=.." >> $ENVDIR/bin/activate
 
 echo "Virtualenv environment $ENVDIR done"
 echo "To later activate the environment, type"
-echo "  . env/bin/activate"
+echo "  source ~/env/bin/activate"
 exit 0
