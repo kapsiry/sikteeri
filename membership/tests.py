@@ -1145,7 +1145,7 @@ class IpRangeListTest(TestCase):
 
 @trusted_host_required
 def dummyView(request, *args, **kwargs):
-    return HttpResponse('OK', mimetype='text/plain')
+    return HttpResponse('OK', content_type='text/plain')
 
 class DecoratorTest(TestCase):
     def setUp(self):

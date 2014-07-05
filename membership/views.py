@@ -964,13 +964,13 @@ def membership_convert_to_organization(request, id, template_name='membership/me
 @transaction.commit_on_success
 def membership_preapprove_json(request, id):
     get_object_or_404(Membership, id=id).preapprove(request.user)
-    return HttpResponse(id, mimetype='text/plain')
+    return HttpResponse(id, content_type='text/plain')
 
 @permission_required('membership.manage_members')
 @transaction.commit_on_success
 def membership_approve_json(request, id):
     get_object_or_404(Membership, id=id).approve(request.user)
-    return HttpResponse(id, mimetype='text/plain')
+    return HttpResponse(id, content_type='text/plain')
 
 @permission_required('membership.read_members')
 def membership_detail_json(request, id):
@@ -978,9 +978,9 @@ def membership_detail_json(request, id):
     #sleep(1)
     json_obj = serializable_membership_info(membership)
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='application/json')
+                        content_type='application/json')
     # return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-    #                     mimetype='text/plain')
+    #                     content_type='text/plain')
 
 # Public access
 def handle_json(request):
@@ -1042,35 +1042,35 @@ def membership_metrics(request):
           },
          }
     return HttpResponse(json.dumps(d, sort_keys=True, indent=4),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 @trusted_host_required
 def public_memberlist(request):
     template_name = 'membership/public_memberlist.xml'
     data = public_memberlist_data()
-    return render_to_response(template_name, data, mimetype='text/xml')
+    return render_to_response(template_name, data, content_type='text/xml')
 
 @trusted_host_required
 def unpaid_members(request):
     json_obj = unpaid_members_data()
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     json_obj = admtool_membership_details(membership)
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 @trusted_host_required
 def admtool_lookup_alias_json(request, alias):
     aliases = Alias.objects.filter(name__iexact=alias)
     if len(aliases) == 1:
-        return HttpResponse(aliases[0].owner.id, mimetype='text/plain')
+        return HttpResponse(aliases[0].owner.id, content_type='text/plain')
     elif not aliases:
-        return HttpResponse("No match", mimetype='text/plain')
-    return HttpResponse("Too many matches", mimetype='text/plain')
+        return HttpResponse("No match", content_type='text/plain')
+    return HttpResponse("Too many matches", content_type='text/plain')
 
 
 

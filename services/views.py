@@ -94,8 +94,8 @@ def alias_add_for_member(request, id, template_name='membership/membership_add_a
 # This is called from membership.views.handle_json!
 def check_alias_availability(request, alias):
     if Alias.objects.filter(name__iexact=alias).count() == 0:
-        return HttpResponse("true", mimetype='text/plain')
-    return HttpResponse("false", mimetype='text/plain')
+        return HttpResponse("true", content_type='text/plain')
+    return HttpResponse("false", content_type='text/plain')
 
 # This is called from membership.views.handle_json!
 # Public access
@@ -108,4 +108,4 @@ def validate_alias(request, alias):
         valid = False
     json_obj = {'exists' : exists, 'valid' : valid}
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-                        mimetype='application/json')
+                        content_type='application/json')
