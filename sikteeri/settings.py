@@ -175,6 +175,8 @@ LOGGING = {
     }
 }
 
+LOGIN_URL = 'login'
+
 SOUTH_TESTS_MIGRATE = False
 
 # If set, this string will be displayed and sikteeri is disabled
