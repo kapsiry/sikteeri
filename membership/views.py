@@ -1095,16 +1095,10 @@ def billing_object_list(request, **kwargs):
 
 @permission_required('membership.read_members')
 def search(request, **kwargs):
-    try:
-        query = kwargs['query']
-        del kwargs['query']
-        if not query:
-            raise KeyError()
-    except KeyError, ke:
-        query = request.REQUEST.get("query", None)
-        extra = kwargs.get('extra_context', {})
-        extra['search_query'] = query
-        kwargs['extra_context'] = extra
+    query = request.GET.get('query')
+    if not query:
+        raise KeyError()
+
 
     # Shorthand for viewing a membership by giving # and the id
     if query.startswith("#"):
