@@ -187,6 +187,8 @@ EMAIL_SUBJECT_PREFIX = '[sikteeri-TEST] '
 # Paper reminder templates
 PAPER_REMINDER_TEMPLATE = '/dev/null'
 
+LOGIN_REDIRECT_URL = 'frontpage'
+
 # When PRODUCTION is true, show production graphics and colours.
 # Otherwise indicate that this is a development environment (logo, colour)
 PRODUCTION = False
