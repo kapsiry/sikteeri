@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.contrib.comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldError
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
@@ -319,18 +320,14 @@ def sort_objects(request, **kwargs):
     try:
         sort = kwargs['sort']
         del kwargs['sort']
-        if not sort:
-            raise KeyError()
     except KeyError, ke:
         sort = request.GET.get("sort", None)
 
     if 'queryset' in kwargs and sort:
         if len(sort) is 0:
             return kwargs
-        extra = kwargs.get('extra_context', {})
-        extra['sort'] = sort
+        kwargs['sort'] = sort
         sort = sort.strip().lower()
-        kwargs['extra_context'] = extra
         try:
             kwargs['queryset'] = kwargs['queryset'].sort(sort)
         except AttributeError:

@@ -18,7 +18,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.forms import ModelForm, Form, EmailField, BooleanField
 from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, Http404
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
@@ -40,6 +40,26 @@ from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
 from sikteeri.settings import ENTRIES_PER_PAGE
+
+
+# Class based views
+
+class SortListView(ListView):
+    """ListView with search query parameter"""
+    search_query = ''
+    sort = None
+    header = ''
+    disable_duplicates_header = ''
+
+    def get_context_data(self, **kwargs):
+        context = super(SortListView, self).get_context_data(**kwargs)
+        print("query = " + self.search_query)
+        context['search_query'] = self.search_query
+        context['sort'] = self.sort
+        context['header'] = self.header
+        context['disable_duplicates_header'] = self.disable_duplicates_header
+        return context
+
 
 # Public access
 def new_application(request, template_name='membership/choose_membership_type.html'):
@@ -803,10 +823,9 @@ def membership_duplicates(request, id):
     view_params = {'queryset': membership.duplicates(),
                    'template_name': 'membership/membership_list.html',
                    'context_object_name': 'member_list',
-                   'extra_context': {'header':
-                                     _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
+                   'header':  _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
                                                                                "membership":unicode(membership)}),
-                                     'disable_duplicates_header': True},
+                   'disable_duplicates_header': True,
                    'paginate_by': ENTRIES_PER_PAGE}
 
     return member_object_list(request, **view_params)
@@ -1077,12 +1096,12 @@ def admtool_lookup_alias_json(request, alias):
 @permission_required('membership.read_members')
 def member_object_list(request, **kwargs):
     kwargs = sort_objects(request,**kwargs)
-    return ListView.as_view(**kwargs)(request)
+    return SortListView.as_view(**kwargs)(request)
 
 @permission_required('membership.read_bills')
 def billing_object_list(request, **kwargs):
     kwargs = sort_objects(request,**kwargs)
-    return ListView.as_view(**kwargs)(request)
+    return SortListView.as_view(**kwargs)(request)
 
 # This should list any bills/cycles that were forcefully set as paid even
 # though insufficient payments were paid.
@@ -1093,12 +1112,10 @@ def billing_object_list(request, **kwargs):
 #     qs = BillingCycle.objects.filter(paid_q, payments_sum_q)
 #     return ListView.as_view(**kwargs, queryset=qs)(request))
 
+
 @permission_required('membership.read_members')
 def search(request, **kwargs):
-    query = request.GET.get('query')
-    if not query:
-        raise KeyError()
-
+    query = request.GET.get('query', '')
 
     # Shorthand for viewing a membership by giving # and the id
     if query.startswith("#"):
@@ -1115,5 +1132,6 @@ def search(request, **kwargs):
     kwargs['queryset'] = qs.order_by("organization__organization_name",
                      "person__last_name",
                      "person__first_name")
+    kwargs['search_query'] = query
     kwargs = sort_objects(request,**kwargs)
-    return ListView.as_view(**kwargs)(request)
+    return SortListView.as_view(**kwargs)(request)
