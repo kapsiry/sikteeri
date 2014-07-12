@@ -53,7 +53,6 @@ class SortListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(SortListView, self).get_context_data(**kwargs)
-        print("query = " + self.search_query)
         context['search_query'] = self.search_query
         context['sort'] = self.sort
         context['header'] = self.header

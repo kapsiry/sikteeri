@@ -27,7 +27,6 @@ class SortUrl(template.Node):
         sort_cycle = None
         if self.field in sort_cycles:
             sort_cycle = sort_cycles[self.field]
-            print("SORT: %s" % sort)
             if sort in sort_cycle:
                 if sort_cycle.index(sort) == (len(sort_cycle) - 1):
                     sort = sort_cycle[0]
