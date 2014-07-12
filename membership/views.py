@@ -832,7 +832,6 @@ def unpaid_paper_reminded_plain(request):
 
 
 @permission_required('membership.delete_members')
-@transaction.commit_on_success
 def membership_delete(request, id, template_name='membership/membership_delete.html'):
     membership = get_object_or_404(Membership, id=id)
     class ConfirmForm(Form):
@@ -857,7 +856,6 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
                               context_instance=RequestContext(request))
 
 @permission_required('membership.dissociate_members')
-@transaction.commit_on_success
 def membership_dissociate(request, id, template_name='membership/membership_dissociate.html'):
     membership = get_object_or_404(Membership, id=id)
     class ConfirmForm(Form):
@@ -882,7 +880,6 @@ def membership_dissociate(request, id, template_name='membership/membership_diss
                               context_instance=RequestContext(request))
 
 @permission_required('membership.request_dissociation_for_member')
-@transaction.commit_on_success
 def membership_request_dissociation(request, id, template_name='membership/membership_request_dissociation.html'):
     membership = get_object_or_404(Membership, id=id)
     class ConfirmForm(Form):
@@ -907,7 +904,6 @@ def membership_request_dissociation(request, id, template_name='membership/membe
                               context_instance=RequestContext(request))
 
 @permission_required('membership.request_dissociation_for_member')
-@transaction.commit_on_success
 def membership_cancel_dissociation_request(request, id, template_name='membership/membership_cancel_dissociation_request.html'):
     membership = get_object_or_404(Membership, id=id)
     class ConfirmForm(Form):
@@ -932,7 +928,6 @@ def membership_cancel_dissociation_request(request, id, template_name='membershi
                               context_instance=RequestContext(request))
 
 @permission_required('membership.manage_members')
-@transaction.commit_on_success
 def membership_convert_to_organization(request, id, template_name='membership/membership_convert_to_organization.html'):
     membership = get_object_or_404(Membership, id=id)
     class ConfirmForm(Form):
@@ -961,13 +956,11 @@ def membership_convert_to_organization(request, id, template_name='membership/me
                               context_instance=RequestContext(request))
 
 @permission_required('membership.manage_members')
-@transaction.commit_on_success
 def membership_preapprove_json(request, id):
     get_object_or_404(Membership, id=id).preapprove(request.user)
     return HttpResponse(id, content_type='text/plain')
 
 @permission_required('membership.manage_members')
-@transaction.commit_on_success
 def membership_approve_json(request, id):
     get_object_or_404(Membership, id=id).approve(request.user)
     return HttpResponse(id, content_type='text/plain')

@@ -61,7 +61,6 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
 
 
 @permission_required('services.manage_aliases')
-@transaction.commit_on_success
 def alias_add_for_member(request, id, template_name='membership/membership_add_alias.html'):
     membership = get_object_or_404(Membership, id=id)
     class Form(ModelForm):

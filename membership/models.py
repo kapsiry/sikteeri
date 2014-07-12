@@ -10,6 +10,7 @@ import traceback
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -344,6 +345,7 @@ class Membership(models.Model):
         self.save()
         log_change(self, user, change_message="Dissociated")
 
+    @transaction.atomic
     def delete_membership(self, user):
         if self.status == 'D':
             raise MembershipOperationError("A deleted membership can't be deleted.")

@@ -19,7 +19,6 @@ logger = logging.getLogger("membership.makebills")
 
 class MembershipNotApproved(Exception): pass
 
-@transaction.commit_manually
 def create_billingcycle(membership):
     """
     Creates a new billing cycle for a membership.
@@ -46,18 +45,17 @@ def create_billingcycle(membership):
             logger.critical("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
             raise MembershipNotApproved("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
 
-        billing_cycle = BillingCycle(membership=membership, start=cycle_start)
-        billing_cycle.save()
-        bill = Bill(billingcycle=billing_cycle)
-        bill.save()
+        with transaction.atomic():
+            billing_cycle = BillingCycle(membership=membership, start=cycle_start)
+            billing_cycle.save()
+            bill = Bill(billingcycle=billing_cycle)
+            bill.save()
         bill.send_as_email()
-        transaction.commit()
+        return billing_cycle
     except Exception, e:
-        transaction.rollback()
         logger.critical("%s" % traceback.format_exc())
         logger.critical("Transaction rolled back, billing cycle not created!")
-        raise e
-    return billing_cycle
+        raise
 
 def can_send_reminder(last_due_date, latest_recorded_payment):
     """
