@@ -48,5 +48,5 @@ source "${ENVDIR}/bin/activate"
 
 echo "Virtualenv environment $ENVDIR done"
 echo "To later activate the environment, type"
-echo "  source ~/env/bin/activate"
+echo "  source ~/env/sikteeri/bin/activate"
 exit 0
