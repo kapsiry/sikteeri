@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load staticfiles %}
 
 {% block extra_head %}
-    <script type="text/javascript" src="{{ STATIC_URL }}membership/js/application.js"></script>
+    <script type="text/javascript" src="{% static 'js/application.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -327,7 +328,7 @@ $(document).ready(function () {
     var t = this;
     if (this.value != this.lastValue) {
       if (this.timer) clearTimeout(this.timer);
-      validateUsername.removeClass('error').html('<img src="{{ MEDIA_URL }}/static/images/ajax-loader.gif" height="16" width="16" /> Tarkistetaan...');
+      validateUsername.removeClass('error').html('<img src="{% static 'images/ajax-loader.gif' %}" height="16" width="16" /> Tarkistetaan...');
 
       this.timer = setTimeout(function () {
         $.ajax({

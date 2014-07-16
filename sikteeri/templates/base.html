@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load staticfiles %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
@@ -7,20 +8,20 @@
     <meta content="Kapsi Internet-käyttäjät ry" name="Author">
     <link href="http://www.kapsi.fi/favicon.ico" type="image/x-icon" rel="shortcut icon">
     <style media="screen" type="text/css">
-        @import "{{ STATIC_URL }}css/screen.css";
-        @import "{{ STATIC_URL }}css/content.css";
-        @import "{{ STATIC_URL }}css/form.css";{% if user.is_authenticated %}
-        @import "{{ STATIC_URL }}css/blue.css";{% endif %}
-        {% if not is_production %}@import "{{ STATIC_URL }}css/devel.css";
+        @import "{% static 'css/screen.css' %}";
+        @import "{% static 'css/content.css' %}";
+        @import "{% static 'css/form.css' %}";{% if user.is_authenticated %}
+        @import "{% static 'css/blue.css' %}";{% endif %}
+        {% if not is_production %}@import "{% static 'css/devel.css' %}";
         {% endif %}
     </style>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/django-csrf.js"></script>
+    <script type="text/javascript" src="{% static 'js/jquery-1.4.2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/django-csrf.js' %}"></script>
     <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
     {% block extra_head %}{% endblock %}
   </head>
   <body>
-    <img src="{{ MEDIA_URL }}/static/images/logo.png" alt="Kapsin logo" style="display: none" />
+    <img src="{% static "images/logo.png" %}" alt="Kapsin logo" style="display: none" />
     <div class="otsikko_wrapper">
     <h1 class="otsikko">
       <span class="kapsi">Kapsi</span> <span class="ikry">Internet-käyttäjät ry</span>
@@ -52,7 +53,14 @@
       </div>
      </div>
      {% block footer %}
-     <div class="footer">Copyright © Kapsi Internet-käyttäjät ry 2006–2013 ☕ {% if user.is_authenticated %}<div style="float: right; position: relative; bottom: 34px"><a href="http://djangopony.com/" class="ponybadge" title="Magic! Ponies! Django! Whee!"><img src="{{ MEDIA_URL }}/static/images/djangopony.png" width="210" height="65" alt="pony powered"></a>{% endif %}</div></div>
+     <div class="footer">
+       Copyright © Kapsi Internet-käyttäjät ry 2006–2014 ☕
+       {% if user.is_authenticated %}
+     <div style="float: right; position: relative; bottom: 34px">
+       <a href="http://djangopony.com/" class="ponybadge" title="Magic! Ponies! Django! Whee!">
+       <img src="{% static 'images/djangopony.png' %}" width="210" height="65" alt="pony powered"></a>
+       {% endif %}
+     </div></div>
      {% endblock %}
   </body>
 </html>
