@@ -26,14 +26,13 @@ test -a "$ENVDIR" && fatal "$ENVDIR already exists"
 
 # OS X: Use homebrew gettext if no system gettext installed
 (
-    [[ `uname` == "Darwin" ]] || exit
-    # Do nothing if msgfmt in path
-    type msgfmt >/dev/null 2>&1 && exit
+    [[ `uname` == "Darwin" ]] || exit   # Only on OS X
+    type msgfmt >/dev/null 2>&1 && exit # skip if msgfmt in path
     # If we can find homebrew gettext, use that instead
-    test -a /usr/local/Cellar/gettext || exit
-    gettext_brew_version=$(ls -t1 /usr/local/Cellar/gettext/ | head -n1)
-    gettext_brew_path="/usr/local/Cellar/gettext/${gettext_brew_version}/bin"
-    echo "export PATH=\"\$PATH:${gettext_brew_path}\"" >> "$ENVDIR/bin/activate"
+    if [ -f "$(brew --prefix gettext)/bin/msgfmt" ]; then
+        set -x
+        echo "export PATH=\"\$PATH:$(brew --prefix gettext)/bin\"" >> "$ENVDIR/bin/activate"
+    fi
 )
 
 
