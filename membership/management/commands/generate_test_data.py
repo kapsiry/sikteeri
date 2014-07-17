@@ -180,19 +180,21 @@ class Command(BaseCommand):
         return membership
 
     def create_payment(self, membership):
-        if random() < 0.7:
-            amount = "35.0"
-            if random() < 0.2:
-                amount = "30.0"
+        if random() < 0.3:
+            return # do nothing
 
-            ref = generate_membership_bill_reference_number(membership.id, datetime.now().year)
-            if random() < 0.2:
-                ref = str(randint(1000, 1000000))
-            p = Payment(reference_number=ref,
-                        transaction_id=str(uuid4())[:29],
-                        payment_day=datetime.now(),
-                        amount=Decimal(amount),
-                        type="XYZ",
-                        payer_name=membership.name())
-            p.save()
-            return p
+        amount = "35.0"
+        if random() < 0.2:
+            amount = "30.0"
+
+        ref = generate_membership_bill_reference_number(membership.id, datetime.now().year)
+        if random() < 0.2:
+            ref = str(randint(1000, 1000000))
+        p = Payment(reference_number=ref,
+                    transaction_id=str(uuid4())[:29],
+                    payment_day=datetime.now(),
+                    amount=Decimal(amount),
+                    type="XYZ",
+                    payer_name=membership.name())
+        p.save()
+        return p
