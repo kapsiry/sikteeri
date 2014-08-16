@@ -7,6 +7,7 @@
 *.log
 .todo.*
 *.mo
+.env
 /env
 /ve
 django.wsgi
