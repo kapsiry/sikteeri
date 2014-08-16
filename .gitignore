@@ -8,5 +8,6 @@
 .todo.*
 *.mo
 /env
+/ve
 django.wsgi
 muistutusviesti.tex
