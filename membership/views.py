@@ -4,7 +4,7 @@ import logging
 import json
 from os import remove as remove_file
 from os import path
-from sikteeri import settings
+from django.conf import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
@@ -39,8 +39,8 @@ from management.commands.paper_reminders import get_reminders, get_data as get_p
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
-from sikteeri.settings import ENTRIES_PER_PAGE
 
+ENTRIES_PER_PAGE = settings.ENTRIES_PER_PAGE
 
 # Class based views
 

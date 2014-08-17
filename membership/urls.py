@@ -5,12 +5,13 @@ from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 
 from membership.models import Contact, Membership, Payment, BillingCycle
-from sikteeri.settings import ENTRIES_PER_PAGE
+from django.conf import settings
 # TODO: urls shouldn't depend on management commands; needs to be factored into models
 from management.commands.paper_reminders import get_data as get_paper_reminders
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
+ENTRIES_PER_PAGE = settings.ENTRIES_PER_PAGE
 
 urlpatterns = patterns('',
     (r'jsi18n/$', 'django.views.i18n.javascript_catalog', {'packages': ('membership')}),
