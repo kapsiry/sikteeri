@@ -121,7 +121,10 @@ from os.path import exists as path_exists
 
 assert(IBAN_ACCOUNT_NUMBER != None)
 assert(BIC_CODE != None)
+assert(BUSINESS_ID != None)
+assert(ORGANIZATIO_REGISTER_NUMBER != None)
 assert(BILLING_FROM_EMAIL != None)
+assert(BANK_OPERATOR != None)
 BILLING_CC_EMAIL
 assert(FROM_EMAIL != None)
 assert(SYSADMIN_EMAIL != None)
@@ -132,6 +135,4 @@ assert(REMINDER_GRACE_DAYS != None)
 assert(BILL_DAYS_BEFORE_CYCLE != None)
 assert(BILL_DAYS_TO_DUE != None)
 assert(TRUSTED_HOSTS != None)
-
-assert 'PAPER_REMINDER_TEMPLATE' in locals(), "Paper reminder template should be defined"
-assert path_exists(PAPER_REMINDER_TEMPLATE), "Paper reminder LaTeX template file should exist"
+assert(PDF_BILLS != None)
