@@ -568,8 +568,8 @@ class BillingCycle(models.Model):
 
     def first_bill(self):
         try:
-            return self.bill_set.first("due_date")
-        except ObjectDoesNotExist:
+            return self.bill_set.order_by('due_date')[0]
+        except IndexError:
             return None
 
     def is_first_bill_late(self):

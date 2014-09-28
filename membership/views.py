@@ -502,6 +502,22 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
         'logentries': logentries,'memberid': bill.billingcycle.membership.id},
         context_instance=RequestContext(request))
 
+@permission_required('membership.read_bills')
+def bill_pdf(request, bill_id):
+    output_messages = []
+
+    bill = get_object_or_404(Bill, id=bill_id)
+    try:
+        pdf = bill.generate_pdf()
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=bill_%s.pdf' % bill.id
+            return response
+    except Exception as e:
+        logger.exception("Failed to generate pdf for bill %s" % bill.id)
+    response = HttpResponse("Failed to generate pdf", content_type='plain/text')
+    return response
+
 @permission_required('membership.manage_bills')
 def billingcycle_connect_payment(request, id, template_name='membership/billingcycle_connect_payment.html'):
     billingcycle = get_object_or_404(BillingCycle, id=id)

@@ -12,12 +12,13 @@
 <h2>{% trans "Billing cycle for member" %} <a href="{% url membership_edit cycle.membership.id %}">{{ cycle.membership }}</a>,
   {{ cycle }}, {{ cycle.sum }} EUR</h2>
 <ul>
-    {% for bill in cycle.bill_set.all %}
+    {% for bill in cycle.bill_set.all|dictsort:"id" %}
     <li><a href="{% url bill_edit bill.id %}"
       >{% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}}){% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
      {% trans "sent" %} {{ bill.created|naturalday }},
      {% trans "due on" %} {{ bill.due_date|naturalday }}
      ({% if cycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
+     <a href="{% url bill_pdf bill.id %}">pdf</a>
     </li>
     {% endfor %}
 
