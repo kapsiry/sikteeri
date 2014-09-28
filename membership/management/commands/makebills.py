@@ -13,8 +13,6 @@ from django.conf import settings
 from membership.models import *
 from membership.utils import *
 
-from paper_reminders import generate_reminders
-
 logger = logging.getLogger("membership.makebills")
 
 class MembershipNotApproved(Exception): pass
@@ -124,9 +122,3 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         translation.activate(settings.LANGUAGE_CODE)
         makebills()
-        if settings.PDF_BILLS:
-            # create paper-reminders
-            try:
-                generate_reminders()
-            except RuntimeError:
-                pass

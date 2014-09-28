@@ -36,18 +36,30 @@ def bill_sender(sender, instance=None, **kwargs):
         local_email = unix_email(membership)
         if local_email:
             to.append(local_email)
+
+    if settings.PDF_BILLS:
+        pdf = instance.generate_pdf()
+        if instance.is_reminder():
+            attachments = [("Kapsi_muistutuslasku_%s.pdf" % instance.billingcycle.reference_number, pdf, "application/pdf")]
+        else:
+            attachments = [("kapsi_jasenlasku_%s.pdf" % instance.billingcycle.reference_number, pdf, "application/pdf")]
+    else:
+        attachments = []
+
     if settings.BILLING_CC_EMAIL != None:
         email = EmailMessage(instance.bill_subject(),
                              instance.render_as_text(),
                              settings.BILLING_FROM_EMAIL,
                              to,
                              [settings.BILLING_CC_EMAIL],
+                             attachments=attachments,
                              headers={'CC': settings.BILLING_CC_EMAIL})
     else:
         email = EmailMessage(instance.bill_subject(),
                              instance.render_as_text(),
                              settings.BILLING_FROM_EMAIL,
-                             to)
+                             to,
+                             attachments=attachments)
     connection = mail.get_connection()
     connection.send_messages([email])
     logger.info(u'A bill sent as email to %s: %s' % (",".join(to),

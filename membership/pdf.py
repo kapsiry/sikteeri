@@ -191,6 +191,7 @@ class PDFTemplate(object):
         self.c.drawText(textobject)
 
     def createData(self):
+        # TODO: use Django SHORT_DATE_FORMAT
         membercontact = self.cycle.membership.get_billing_contact()
         # Calculate proper vat percentages
         full = Decimal(100)
@@ -210,6 +211,11 @@ class PDFTemplate(object):
                       "%.2f €" % amount,
                       "%.2f €" % vat,
                       "%.2f €" % self.cycle.sum])
+        first_bill = self.cycle.last_bill()
+        if first_bill:
+            bill_id = first_bill.id
+        else:
+            bill_id = None
         self.data = {'name': self.cycle.membership.name(),
                 'address': membercontact.street_address,
                 'postal_code':membercontact.postal_code,
@@ -218,6 +224,7 @@ class PDFTemplate(object):
                 'member_id': self.cycle.membership.id,
                 'due_date': due_date,
                 'email': membercontact.email,
+                'bill_id': bill_id,
                 'amount': amount,
                 'vat': vat,
                 'sum': self.cycle.sum,
@@ -227,6 +234,7 @@ class PDFTemplate(object):
         }
 
     def addTemplate(self):
+        # Logo to upper left corner
         self.drawImage(0.2, 0, 5, 2.5, LOGO)
         self.drawString(10.5, 3, "%(date)s" % self.data, aligment="center", size=12)
         self.drawString(1.5, 3, "Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
@@ -284,10 +292,7 @@ class PDFTemplate(object):
         self.drawText(1,25.4, "Alle-\nkirjoitus\nYnderskrift", size=6)
         self.drawText(1,26.5, "Tililtä nro\nFrån konto nr", size=6)
 
-        #self.drawText(11.2,20, "IBAN", size=7)
-        #self.drawText(11.2, 20.8, "IBAN FI16 5741 3620 4069 56", size=9)
-        #self.drawText(16,20, "BIC", size=7)
-        #self.drawText(16,20.8, "OKOYFIHH", size=9)
+        self.drawText(2.9,20, "IBAN", size=7)
 
         self.drawText(11.15,25.6, "Viitenro\nRef.nr", size=7)
         self.drawText(13.15,25.7, "%(reference_number)s" % self.data, size=9)
@@ -300,7 +305,6 @@ class PDFTemplate(object):
 
 
         # Lines on bottom part
-        #self.drawHorizontalStroke(1,21, 18.5, width=6)
         self.drawHorizontalStroke(1,21, 10, width=6)
         self.drawHorizontalStroke(1,22.5, 10, width=6)
         self.drawVerticalStroke(2.5,22.5, 2.8, width=6)
@@ -308,25 +312,26 @@ class PDFTemplate(object):
         self.drawVerticalStroke(2.5,27, 0.9, width=6)
         self.drawHorizontalStroke(11,25.2, 8.5, width=6)
         self.drawHorizontalStroke(1,26.1, 18.5, width=6)
-        self.drawHorizontalStroke(3,25.8, 8, width=2)
+        self.drawHorizontalStroke(3,25.8, 7.5, width=2)
         self.drawVerticalStroke(12.3,27, 1.8, width=6)
         self.drawVerticalStroke(15.8,27, 0.9, width=6)
         self.drawHorizontalStroke(1,27, 18.5, width=6)
-        #self.drawVerticalStroke(15.8,21, 1.3, width=2)
 
-        self.drawText(14, 28, "Maksu välitetään saajalle vain Suomessa Kotimaan maksujenvälityksen\nyleisten ehtojen mukaisesti ja vain maksajan ilmoittaman tilinumeron\nperusteella.", size=5)
-        self.drawText(14, 28.7, "Betalningen förmedlas till mottagare endast i Finland enligt Allmänna\nvillkor för inrikes betalningsförmedling och endast till det\nkontonummer betalaren angivit.", size=5)
-        self.drawText(17.8, 29.5, "PANKKI BANKEN", size=6)
+        self.drawText(14, 27.6, "Maksu välitetään saajalle vain Suomessa Kotimaan maksujenvälityksen\nyleisten ehtojen mukaisesti ja vain maksajan ilmoittaman tilinumeron\nperusteella.", size=5)
+        self.drawText(14, 28.3, "Betalningen förmedlas till mottagare endast i Finland enligt Allmänna\nvillkor för inrikes betalningsförmedling och endast till det\nkontonummer betalaren angivit.", size=5)
+        self.drawText(17.8, 29.1, "PANKKI BANKEN", size=6)
 
-        barcode_string = barcode_4(settings.IBAN_ACCOUNT_NUMBER, self.data['reference_number'], None, self.data['sum'])
-        barcode = code128.Code128(str(barcode_string), barWidth=0.12*cm, barHeight=4*cm)
-        barcode.drawOn(self.c, self.real_x(1), self.real_y(29))
+        due_date = None
+        if self.__type__ != 'reminder':
+            due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
+        barcode_string = barcode_4(settings.IBAN_ACCOUNT_NUMBER, self.data['reference_number'], due_date, self.data['sum'])
+        barcode = code128.Code128(str(barcode_string), barWidth=0.12*cm, barHeight=4.5*cm)
+        barcode.drawOn(self.c, self.real_x(2), self.real_y(28.7))
 
     def addContent(self):
         pass
 
     def generate(self):
-        # Logo to upper left corner
         self.c.save()
 
 
@@ -351,7 +356,8 @@ voi kestää tavallista pidempään.
 
         self.drawText(1,16, "<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
         self.drawText(1,17, "Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(date)s asti." % self.data, size=10)
-
+        if self.data['bill_id']:
+            self.drawText(11.5,23.4, "Muistutus laskulle numero %s" % self.data['bill_id'], size=10)
 
 class PDFInvoice(PDFTemplate):
     __type__ = 'invoice'
@@ -366,6 +372,8 @@ class PDFInvoice(PDFTemplate):
 voit ottaa yhteyttä sähköpostitse laskuun liittyvissä asioissa laskutus@tuki.kapsi.fi tai eroamisasioissa
 hallitus@tuki.kapsi.fi.
 """, size=10)
+        if self.data['bill_id']:
+            self.drawText(11.5,23.4, "Laskunumero %s" % self.data['bill_id'], size=10)
 
 
 if __name__ == '__main__':

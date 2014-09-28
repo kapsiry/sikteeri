@@ -5,8 +5,7 @@ from django.db.models import Count
 import django.views.generic.list_detail
 from membership.models import Contact, Membership, Payment, BillingCycle
 from sikteeri.settings import ENTRIES_PER_PAGE
-# TODO: urls shouldn't depend on management commands; needs to be factored into models
-from management.commands.paper_reminders import get_data as get_paper_reminders
+from membership.bulk_utils import get_reminder_billingcycles as get_paper_reminders
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
