@@ -1,11 +1,6 @@
 from django.conf.urls.defaults import patterns, url
-from django.contrib.auth.decorators import permission_required
-from django.shortcuts import redirect
-from django.db.models import Count
-import django.views.generic.list_detail
-from membership.models import Contact, Membership, Payment, BillingCycle
+from membership.models import Membership, Payment, BillingCycle
 from sikteeri.settings import ENTRIES_PER_PAGE
-from membership.bulk_utils import get_reminder_billingcycles as get_paper_reminders
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
@@ -138,7 +133,7 @@ urlpatterns = patterns('',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_cycle_list'),
     url(r'bills/locked/$', 'membership.views.billing_object_list',
-        {'queryset': get_paper_reminders(),
+        {'queryset': BillingCycle.get_reminder_billingcycles(),
          'template_name': 'membership/bill_list.html',
          'template_object_name': 'cycle',
          'paginate_by': ENTRIES_PER_PAGE}, name='locked_cycle_list'),

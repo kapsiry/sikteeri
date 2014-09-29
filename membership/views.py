@@ -2,14 +2,14 @@
 
 import logging
 import json
-from os import remove as remove_file
-from os import path
+import traceback
+
 from sikteeri import settings
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
-import traceback
 from django.db.models.aggregates import Sum
+
 logger = logging.getLogger("membership.views")
 
 from django.core.mail import send_mail
@@ -24,7 +24,7 @@ from django.contrib import messages
 
 from services.models import Alias, Service, ServiceType
 
-from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, LoginField, ServiceForm
+from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm
 from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
@@ -33,10 +33,9 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_csv as payment_csv_import
-from bulk_utils import get_pdf_reminders, get_reminder_billingcycles as get_paper_reminders
+from membership.billing.pdf_utils import get_pdf_reminders
 from decorators import trusted_host_required
 
-from django.db.models.query_utils import Q
 import django.views.generic.list_detail
 from sikteeri.settings import ENTRIES_PER_PAGE
 
@@ -598,7 +597,7 @@ def print_reminders(request, **kwargs):
     if request.method == 'POST':
         try:
             if 'marksent' in request.POST:
-                for billing_cycle in get_paper_reminders().all():
+                for billing_cycle in BillingCycle.get_reminder_billingcycles().all():
                     bill = Bill(billingcycle=billing_cycle, type='P')
                     bill.reminder_count = billing_cycle.bill_set.count()
                     bill.save()
@@ -618,7 +617,7 @@ def print_reminders(request, **kwargs):
     return render_to_response('membership/print_reminders.html',
     {'title': _("Print paper reminders"),
      'output_messages': output_messages,
-     'count': get_paper_reminders().count()},
+     'count': BillingCycle.get_reminder_billingcycles().count()},
      context_instance=RequestContext(request))
 
 @permission_required('membership.manage_bills')

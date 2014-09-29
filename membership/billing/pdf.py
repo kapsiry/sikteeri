@@ -21,7 +21,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Table
 from reportlab.graphics.barcode import code128
 
-PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
 pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(PROJECT_PATH, 'media/fonts/IstokWeb-Regular.ttf')))
 pdfmetrics.registerFont(TTFont('IstokWeb-Bold', os.path.join(PROJECT_PATH, 'media/fonts/IstokWeb-Bold.ttf')))
@@ -73,6 +73,10 @@ class PDFTemplate(object):
         self.addContent()
         self.c.showPage()
         self.page_count += 1
+
+    def addCycles(self, cycles):
+        for cycle in cycles:
+            self.addCycle(cycle)
 
     def real_y(self, y):
         y = self.scale(y)
