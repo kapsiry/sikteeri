@@ -336,3 +336,19 @@ def sort_objects(request, **kwargs):
         except AttributeError:
             kwargs['queryset'] = kwargs['queryset'].order_by(sort)
     return kwargs
+
+def humanize_string(string):
+    """
+    Split string to have space after ever fourth character.
+    :param string: input string
+    :return: modifed string
+    """
+    out = []
+    string = ''.join(string.split())
+    i = 0
+    for char in string:
+        if (i % 4) == 0:
+            out.append(" ")
+        out.append(char)
+        i += 1
+    return ''.join(out)
