@@ -5,6 +5,7 @@ Code to make pdf bills and reminders
 """
 
 from membership.reference_numbers import barcode_4
+from membership.utils import humanize_string
 
 from django.conf import settings
 
@@ -21,6 +22,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Table
 from reportlab.graphics.barcode import code128
 
+import locale
+
+
+locale.setlocale(locale.LC_ALL, 'fi_FI')
+
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
 pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(PROJECT_PATH, 'media/fonts/IstokWeb-Regular.ttf')))
@@ -32,8 +38,6 @@ LOGO = os.path.join(PROJECT_PATH, 'media/img/kapsi-logo.jpg')
 
 # TODO: use the tempfile library http://docs.python.org/2/library/tempfile.html
 # TODO: Unittests for pdf
-
-
 
 class PDFTemplate(object):
     __type__ = 'invoice'
@@ -212,9 +216,9 @@ class PDFTemplate(object):
         bills.append(['1',
                       "Jäsenmaksu",
                       "%s - %s" % (self.cycle.start.strftime('%d.%m.%Y'), self.cycle.end.strftime('%d.%m.%Y')),
-                      "%.2f €" % amount,
-                      "%.2f €" % vat,
-                      "%.2f €" % self.cycle.sum])
+                      "%s €" % locale.format("%.2f", amount),
+                      "%s €" % locale.format("%.2f", vat),
+                      "%s €" % locale.format("%.2f", self.cycle.sum)])
         first_bill = self.cycle.first_bill()
         if first_bill:
             bill_id = first_bill.id
@@ -230,11 +234,13 @@ class PDFTemplate(object):
                 'email': membercontact.email,
                 'bill_id': bill_id,
                 'amount': amount,
+                'pretty_amount': locale.format('%.2f', amount),
                 'vat': vat,
                 'sum': self.cycle.sum,
-                'notify_period': '%dvrk' % (settings.REMINDER_GRACE_DAYS,),
+                'pretty_sum': locale.format('%.2f', self.cycle.sum),
+                'notify_period': '%d vrk' % (settings.REMINDER_GRACE_DAYS,),
                 'bills': bills,
-                'reference_number': self.cycle.reference_number
+                'reference_number': humanize_string(self.cycle.reference_number)
         }
 
     def addTemplate(self):
@@ -255,11 +261,11 @@ class PDFTemplate(object):
 
         xtable = [1,1.5,7,13,15,17]
         #self.drawString(xtable[0],6.5, "Rivinumero", size=9)
-        self.drawString(xtable[1],6.5, "Laskutettava asia", size=9)
+        self.drawString(xtable[1],6.5, "Selite", size=9)
         self.drawString(xtable[2],6.5, "Aikaväli", size=9)
-        self.drawString(xtable[3],6.5, "ALV 0", size=9)
-        self.drawString(xtable[4],6.5, "ALV", size=9)
-        self.drawString(xtable[5],6.5, "Euroa", size=9)
+        self.drawString(xtable[3],6.5, "alv 0 %", size=9)
+        self.drawString(xtable[4],6.5, "alv 24 %", size=9)
+        self.drawString(xtable[5],6.5, "Yhteensä", size=9)
         self.drawHorizontalStroke(1,6.6, 18.5)
 
         y = 7
@@ -271,7 +277,7 @@ class PDFTemplate(object):
         self.drawHorizontalStroke(1,y, 18.5)
         y += 0.4
         self.drawString(xtable[3],y, "Maksettavaa yhteensä:" % self.data, size=10)
-        self.drawString(xtable[5],y, "<b>%(sum).2f €</b>" % self.data, size=10)
+        self.drawString(xtable[5],y, "<b>%(pretty_sum)s €</b>" % self.data, size=10)
 
 
 
@@ -281,17 +287,17 @@ class PDFTemplate(object):
         self.drawText(5.5,18.5, "Kotipaikka Oulu\nhttp://www.kapsi.fi/", size=7)
         self.drawText(9.5,18.5, "Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.FROM_EMAIL,
                                              settings.BUSINESS_ID, settings.ORGANIZATIO_REGISTER_NUMBER), size=7)
-        self.drawText(14,18.5, "Tilinumero: %s\nBIC: %s" % (settings.IBAN_ACCOUNT_NUMBER,
+        self.drawText(14,18.5, "Tilinumero: %s\nBIC: %s" % (humanize_string(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
 
         # Bill part
 
         self.drawText(1,20, "Saajan\ntilinumero\nMottagarens\nkontonummer", size=6)
-        self.drawText(3.1, 20.6, "%s   %s   %s" % (settings.BANK_OPERATOR, settings.IBAN_ACCOUNT_NUMBER,settings.BIC_CODE),
-                      size=9)
+        self.drawText(3.1, 20.6, "%s   %s   %s" % (settings.BANK_OPERATOR, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
+                                                   settings.BIC_CODE), size=9)
         self.drawText(1,21.8, "Saaja\nMottagaren", size=6)
         self.drawText(3.1, 21.5, "Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
-        self.drawText(1,23, "Maksajan\nnimi\nja\nosoite\nBetalarens\nnamn\noch\nadress", size=6)
+        self.drawText(1,23, "Maksajan\nnimi ja\nosoite\n\nBetalarens\nnamn och\nadress", size=6)
         self.drawText(3.1, 23.5, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(email)s" % self.data, size=9)
         self.drawText(1,25.4, "Alle-\nkirjoitus\nYnderskrift", size=6)
         self.drawText(1,26.5, "Tililtä nro\nFrån konto nr", size=6)
@@ -303,7 +309,7 @@ class PDFTemplate(object):
         self.drawText(11.15,26.5, "Eräpäivä\nFörf.dag", size=7)
         self.drawText(13.15,26.65, "%(due_date)s" % self.data, size=9)
         self.drawText(15.9,26.4, "Euro", size=7)
-        self.drawText(16.9,26.65, "%(sum).2f" % self.data, size=9)
+        self.drawText(16.9,26.65, "%(pretty_sum)s" % self.data, size=9)
 
 
 
@@ -344,18 +350,17 @@ class PDFReminder(PDFTemplate):
     def addContent(self):
         self.drawString(10.5, 2, "<b>MUISTUTUS</b>", aligment="center")
         self.drawText(1, 10, """Hei!
+
 Tämä on muistutus puuttuvasta jäsenmaksusuorituksesta. Alkuperäinen lasku on lähetetty ainoastaan sähköpostitse.
 Mikäli et ole saanut sitä, tarkistathan että sähköpostiosoitteesi on oikein jäsenrekisterissä (listattu maksajan tiedoissa
 alla).
-Jos...
-   1. tämä muistutus on sinusta virheellinen
-   2. haluat erota yhdistyksestä
-   3. haluat muuttaa yhteystietojasi
-   4. haluat sopia tai olet jos opinut maksuaikataulusta
-   5. sinulla on muuta kysyttävää jäsenasioista
-voit ottaa yhteyttä sähköpostitse laskuun liittyvissä asioissa laskutus@tuki.kapsi.fi tai yhteystietopäivitys- ja eroamis-
-asioissa hallitus@tuki.kapsi.fi. Huomaathan, että muistutusten käsittelyn aikana vastauksen saaminen näistä osoitteista
-voi kestää tavallista pidempään.
+
+Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esimerkiksi seuraavissa tilanteissa:
+- jos tämä lasku on mielestäsi virheellinen
+- haluat erota yhdistyksestä
+- haluat muuttaa yhteystietojasi
+- haluat sopia maksuaikataulusta
+- sinulla on muuta kysyttävää jäsenasioista.
 """, size=10)
 
         self.drawText(1,16, "<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
@@ -367,14 +372,13 @@ class PDFInvoice(PDFTemplate):
     __type__ = 'invoice'
     def addContent(self):
         self.drawString(10.5, 2, "<b>LASKU</b>", aligment="center")
-        self.drawText(1, 10, """Jos...
-   1. tämä lasku on sinusta virheellinen
-   2. haluat erota yhdistyksestä
-   3. haluat muuttaa yhteystietojasi
-   4. haluat sopia maksuaikataulusta
-   5. sinulla on muuta kysyttävää jäsenasioista
-voit ottaa yhteyttä sähköpostitse laskuun liittyvissä asioissa laskutus@tuki.kapsi.fi tai eroamisasioissa
-hallitus@tuki.kapsi.fi.
+        self.drawText(1, 10, """
+Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esimerkiksi seuraavissa tilanteissa:
+   - tämä lasku on sinusta virheellinen
+   - haluat erota yhdistyksestä
+   - haluat muuttaa yhteystietojasi
+   - haluat sopia maksuaikataulusta
+   - sinulla on muuta kysyttävää jäsenasioista
 """, size=10)
         if self.data['bill_id']:
             self.drawText(11.5,23.4, "Laskunumero %s" % self.data['bill_id'], size=10)
