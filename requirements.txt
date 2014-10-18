@@ -2,3 +2,4 @@ Django==1.6.7
 gunicorn==19.1.1
 South==1.0
 django-debug-toolbar==1.2.1
+dj-database-url==0.3.0

@@ -1,0 +1,29 @@
+{
+  "SECRET_KEY": "insecure dev only",
+  "ALLOWED_HOSTS": [],
+  "TRUSTED_HOSTS": ["127.0.0.1", "::1"],
+  "DATABASE_URL": "sqlite:///sikteeri-test.sqlite3",
+  "PRODUCTION": false,
+  "EMAIL_SUBJECT_PREFIX": "[sikteeri-dev] ",
+
+  "STATIC_ROOT": "",
+  "STATIC_URL": "/static/",
+
+  "TIME_ZONE": "Europe/Helsinki",
+  "ENTRIES_PER_PAGE": 30,
+
+  "FROM_EMAIL": "from.nonbill@example.com",
+  "SYSADMIN_EMAIL": "admins@example.com",
+
+  "IBAN_ACCOUNT_NUMBER": "FI00 0000 0000 0000 00",
+  "BIC_CODE": "AAAAAAAA",
+  "BILL_DAYS_BEFORE_CYCLE": 14,
+  "BILL_DAYS_TO_DUE": 14,
+  "BILLING_FROM_EMAIL": "from@example.com",
+  "BILLING_CC_EMAIL": null,
+  "BILL_SUBJECT": "Test bill, ignore",
+  "ENABLE_REMINDERS": false,
+  "REMINDER_GRACE_DAYS": 14,
+  "REMINDER_SUBJECT": "Test reminder, ignore",
+  "UNIX_EMAIL_DOMAIN": "example.com"
+}
