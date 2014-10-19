@@ -42,8 +42,10 @@ from management.commands.makebills import send_reminder
 from management.commands.makebills import can_send_reminder
 from management.commands.makebills import MembershipNotApproved
 
-from management.commands.csvbills import process_csv
+from management.commands.csvbills import process_op_csv
 from management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
+
+from membership.billing.tests import *
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -613,7 +615,7 @@ class CSVNoMembersTest(TestCase):
     def test_file_reading(self):
         "csvbills: test data should have 3 payments, none of which match"
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
 
         payment_count = Payment.objects.count()
         error = "There should be 3 non-negative payments in the testdata"
@@ -642,7 +644,7 @@ class CSVReadingTest(TestCase):
         no_cycle_q = Q(billingcycle=None)
 
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
         payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_count, 1, error)
@@ -655,7 +657,7 @@ class CSVReadingTest(TestCase):
         no_cycle_q = Q(billingcycle=None)
 
         with open("../membership/fixtures/csv-test-duplicate.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
         payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_match_count, 1, error)
@@ -668,15 +670,15 @@ class CSVReadingTest(TestCase):
     def test_future_payment(self):
         error = "Should fail on payment in the future"
         with open("../membership/fixtures/csv-future.txt", 'r') as f:
-            self.assertRaises(PaymentFromFutureException, process_csv, f)
+            self.assertRaises(PaymentFromFutureException, process_op_csv, f)
 
     def test_csv_header_processing(self):
         error = "Should fail on invalid header"
         with open("../membership/fixtures/csv-invalid.txt", 'r') as f:
-            self.assertRaises(RequiredFieldNotFoundException, process_csv, f)
+            self.assertRaises(RequiredFieldNotFoundException, process_op_csv, f)
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
             try:
-                process_csv(f)
+                process_op_csv(f)
             except RequiredFieldNotFoundException:
                 self.fail("Valid csv should not raise header error.")
 

@@ -18,6 +18,8 @@ from django.contrib.auth.models import User
 from membership.models import Bill, BillingCycle, Payment
 from membership.utils import log_change
 
+from optparse import make_option
+
 logger = logging.getLogger("membership.csvbills")
 
 class UTF8Recoder:
@@ -71,7 +73,55 @@ class RequiredFieldNotFoundException(Exception): pass
 class DuplicateColumnException(Exception): pass
 class PaymentFromFutureException(Exception): pass
 
-class OpDictReader(UnicodeDictReader):
+
+class BillDictReader(UnicodeDictReader):
+    REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
+    CSV_TRANSLATION = {}
+
+    def __init__(self, f, delimiter=';', encoding="iso8859-1", *args, **kw):
+        UnicodeDictReader.__init__(self, f, delimiter=delimiter,
+            encoding=encoding, *args, **kw)
+        # Translate headers
+        h = self.headers
+        for i in xrange(0, len(h)):
+            self.headers[i] = self._get_translation(h[i])
+        # Check that all required columns exist in the header
+        for name in self.REQUIRED_COLUMNS:
+            if name not in self.headers:
+                error = "CSV format is invalid: missing field '%s'." % name
+                raise RequiredFieldNotFoundException(error)
+        # Check that each field is unique
+        for name in self.headers:
+            if self.headers.count(name) != 1:
+                error = "The field '%s' occurs multiple times in the header"
+                raise DuplicateColumnException(error)
+
+
+    def _get_translation(self, h):
+        """
+        Function for custom translations
+        """
+        return self.CSV_TRANSLATION.get(h, h)
+
+    def _get_row(self, row):
+        """
+        Function for custom data processing
+        """
+        return row
+
+    def next(self):
+        row = self._get_row(UnicodeDictReader.next(self))
+        if len(row) == 0:
+            return None
+        row['amount'] = Decimal(row['amount'].replace(",", "."))
+        row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
+        row['reference'] = row['reference'].replace(' ', '').lstrip('0')
+        row['transaction'] = row['transaction'].replace(' ', '').replace('/', '')
+        if row.has_key('value_date'):
+            row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
+        return row
+
+class OpDictReader(BillDictReader):
     '''Reader for Osuuspankki CSV file format
 
     The module converts Osuuspankki CSV format data into a more usable form.'''
@@ -95,39 +145,37 @@ class OpDictReader(UnicodeDictReader):
                           u'Arkistotunnus'      : 'transaction', # old format
                           u'Arkistointitunnus'  : 'transaction'}
 
-    def __init__(self, f, delimiter=';', encoding="iso8859-1", *args, **kw):
-        UnicodeDictReader.__init__(self, f, delimiter=delimiter,
-            encoding=encoding, *args, **kw)
-        # Translate headers
-        h = self.headers
-        for i in xrange(0, len(h)):
-            # Quick and dirty, OP changes this field name too often!
-            if h[i].startswith(u"Määrä"):
-                self.headers[i] = "amount"
-                continue
-            self.headers[i] = self.OP_CSV_TRANSLATION.get(h[i], h[i])
-        # Check that all required columns exist in the header
-        for name in self.REQUIRED_COLUMNS:
-            if name not in self.headers:
-                error = "CSV format is invalid: missing field '%s'." % name
-                raise RequiredFieldNotFoundException(error)
-        # Check that each field is unique
-        for name in self.headers:
-            if self.headers.count(name) != 1:
-                error = "The field '%s' occurs multiple times in the header"
-                raise DuplicateColumnException(error)
+    def _get_translation(self, h):
+        # Quick and dirty, OP changes this field name too often!
+        if h.startswith(u"Määrä"):
+            return "amount"
+        return self.OP_CSV_TRANSLATION.get(h, h)
 
-    def next(self):
-        row = UnicodeDictReader.next(self)
-        if len(row) == 0:
-            return None
-        row['amount'] = Decimal(row['amount'].replace(",", "."))
-        row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
-        row['reference'] = row['reference'].replace(' ', '').lstrip('0')
-        row['transaction'] = row['transaction'].replace(' ', '').replace('/', '')
-        if row.has_key('value_date'):
-            row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
+
+class ProcountorDictReader(BillDictReader):
+
+    REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
+
+    CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
+                       u'Arvopäivä'          : 'value_date',
+                       u'Maksupäivä'         : 'date',
+                       u'Maksu'              : 'amount',
+                       u'Summa'              : 'amount',
+                       u'Kirjausselite'      : 'event_type_description',
+                       u'Maksaja'            : 'fromto',
+                       u'Nimi'               : 'fromto',
+                       u'Tilinro'            : 'account',
+                       u'Viesti'             : 'message',
+                       u'Viitenumero'        : 'reference',
+                       u'Arkistointitunnus'  : 'transaction',
+                       u'Oikea viite'        : 'real_reference',
+                     }
+
+    def _get_row(self, row):
+        if 'real_reference' in row:
+            row['reference'] = row['real_reference']
         return row
+
 
 def row_to_payment(row):
     try:
@@ -142,6 +190,7 @@ def row_to_payment(row):
                     message=row['message'],
                     transaction_id=row['transaction'])
     return p
+
 
 def attach_payment_to_cycle(payment, user=None):
     """
@@ -163,14 +212,14 @@ def attach_payment_to_cycle(payment, user=None):
         return None
     return cycle
 
-def process_csv(file_handle, user=None):
-    """Actual CSV file processing logic
+
+def process_payments(reader, user=None):
     """
-    logger.info("Starting payment CSV processing...")
+    Actual CSV file processing logic
+    """
     return_messages = []
     num_attached = num_notattached = 0
     sum_attached = sum_notattached = 0
-    reader = OpDictReader(file_handle)
     for row in reader:
         if row == None:
             continue
@@ -218,9 +267,28 @@ def process_csv(file_handle, user=None):
     return return_messages
 
 
+def process_op_csv(file_handle, user=None):
+    logger.info("Starting OP payment CSV processing...")
+    reader = OpDictReader(file_handle)
+    return process_payments(reader)
+
+
+def process_procountor_csv(file_handle, user=None):
+    logger.info("Starting procountor payment CSV processing...")
+    reader = ProcountorDictReader(file_handle)
+    return process_payments(reader)
+
+
 class Command(BaseCommand):
     args = '<csvfile> [<csvfile> ...]'
     help = 'Read a CSV list of payment transactions'
+    option_list = BaseCommand.option_list + (
+        make_option('--procountor',
+            dest='procountor',
+            default=None,
+            action="store_true",
+            help='Use procountor import csv format'),
+        )
 
     def handle(self, *args, **options):
         for csvfile in args:
@@ -228,5 +296,8 @@ class Command(BaseCommand):
                 os.path.abspath(csvfile))
             # Exceptions of process_csv are fatal in command line run
             with open(csvfile, 'r') as file_handle:
-                process_csv(file_handle)
+                if options['procountor']:
+                    process_procountor_csv(file_handle)
+                else:
+                    process_op_csv(file_handle)
             logger.info("Done processing file %s." % os.path.abspath(csvfile))

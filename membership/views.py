@@ -32,7 +32,7 @@ from unpaid_members import unpaid_members_data
 
 from services.views import check_alias_availability, validate_alias
 
-from management.commands.csvbills import process_csv as payment_csv_import
+from management.commands.csvbills import process_op_csv as payment_csv_import
 from management.commands.paper_reminders import get_reminders, get_data as get_paper_reminders
 # TODO: urls shouldn't depend on mgmt cmd get_reminders; can be refactored into models
 from decorators import trusted_host_required
