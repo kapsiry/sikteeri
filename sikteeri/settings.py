@@ -109,10 +109,6 @@ PRODUCTION = config.get('PRODUCTION', False)
 # operational configuration
 ######################################################
 
-# Don't really send email messages, only show them on console
-# FIXME! Production needs emails.
-EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
-
 LOGIN_REDIRECT_URL = 'frontpage'
 
 # Always 1 - sites not implemented
@@ -183,17 +179,35 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+# This shouldn't have to be configurable. Why would anyone run
+# non-TLS non-debug site? Or run debug over TLS...
+if DEBUG:
+    SESSION_COOKIE_SECURE = False
+else:
+    SESSION_COOKIE_SECURE = True
+
+# No need for javascript to access the session cookie
+SESSION_COOKIE_HTTPONLY = True
+
 ROOT_URLCONF = 'sikteeri.urls'
 
 WSGI_APPLICATION = 'sikteeri.wsgi.application'
 
 LOGIN_URL = 'login'
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+SOUTH_TESTS_MIGRATE = False
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+# Paper reminder templates
+PAPER_REMINDER_TEMPLATE = '/dev/null'
+
+#####################################################
+## Logging configuration
+#####################################################
+
+## FIXME: should be configured from configuration file
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -218,9 +232,82 @@ LOGGING = {
     }
 }
 
-SOUTH_TESTS_MIGRATE = False
 
-MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+#####################################################
+## Email configuration
+#####################################################
 
-# Paper reminder templates
-PAPER_REMINDER_TEMPLATE = '/dev/null'
+## FIXME: email configuration to be done
+
+print "FIXME: email configuration to be done"
+
+# Don't really send email messages, only show them on console
+# FIXME! Production needs emails.
+EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+
+#####################################################
+## LDAP support
+#####################################################
+
+from django_auth_ldap.config import LDAPSearch
+from django_auth_ldap.config import GroupOfNamesType
+import ldap
+
+AUTH_USE_LDAP = config.get('AUTH_USE_LDAP', False)
+
+if AUTH_USE_LDAP:
+    AUTHENTICATION_BACKENDS = (
+        'django_auth_ldap.backend.LDAPBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    AUTH_LDAP_SERVER_URI = config.get('AUTH_LDAP_SERVER_URI')
+    AUTH_LDAP_START_TLS = config.get('AUTH_LDAP_START_TLS', False)
+
+    # Use anonymous binding
+    AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = config.get(
+        'AUTH_LDAP_BIND_AS_AUTHENTICATING_USER', True)
+    AUTH_LDAP_BIND_DN = config.get('AUTH_LDAP_BIND_DN', '')
+    AUTH_LDAP_BIND_PASSWORD = config.get('AUTH_LDAP_BIND_PASSWORD', '')
+
+    # direct search for users
+    AUTH_LDAP_USER_DN_TEMPLATE = config.get('AUTH_LDAP_USER_DN_TEMPLATE')
+    assert AUTH_LDAP_USER_DN_TEMPLATE is None or \
+           '%(user)s' in AUTH_LDAP_USER_DN_TEMPLATE, \
+           "AUTH_LDAP_USER_DN_TEMPLATE must contain %(user)s"
+
+    AUTH_LDAP_USER_ATTR_MAP = config.get('AUTH_LDAP_USER_ATTR_MAP',
+        { "first_name": "givenName", "last_name": "sn" })
+
+    # Get groups from ldap
+    AUTH_LDAP_FIND_GROUP_PERMS = config.get('AUTH_LDAP_FIND_GROUP_PERMS', False)
+    if AUTH_LDAP_FIND_GROUP_PERMS:
+        AUTH_LDAP_GROUP_SEARCH_DN = config.get('AUTH_LDAP_GROUP_SEARCH_DN')
+        assert AUTH_LDAP_GROUP_SEARCH_DN, \
+               "Need AUTH_LDAP_GROUP_SEARCH_DN to find groups"
+
+        AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+            AUTH_LDAP_GROUP_SEARCH_DN,
+            ldap.SCOPE_ONELEVEL,
+            "(objectClass=groupOfNames)")
+        # set ldap groups type to GroupOfNames
+        AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
+
+        # map groups to permissions
+        AUTH_LDAP_USER_FLAGS_BY_GROUP = config.get(
+            'AUTH_LDAP_USER_FLAGS_BY_GROUP',
+            {})
+
+    AUTH_LDAP_PROFILE_FLAGS_BY_GROUP = config.get(
+        'AUTH_LDAP_PROFILE_FLAGS_BY_GROUP',
+        {})
+
+    # update permissions on every login
+    AUTH_LDAP_ALWAYS_UPDATE_USER = config.get('AUTH_LDAP_ALWAYS_UPDATE_USER',
+                                              True)
+
+    # cache groups for 5 minutes by default
+    AUTH_LDAP_CACHE_GROUPS = config.get('AUTH_LDAP_CACHE_GROUPS', True)
+    AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get('AUTH_LDAP_GROUP_CACHE_TIMEOUT',
+                                               300)
+
