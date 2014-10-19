@@ -1,0 +1,2 @@
+Arvopäivä;Maksupäivä;Summa;Kirjausselite;Nimi;Tilinro;Viitenumero;Viesti;Kohdistettu;Arkistointitunnus
+01.10.2060;01.10.2060;40,00;Viitemaksu;TEST PERSON;;2800002;;Myyntilasku 123457;1001553397672112
