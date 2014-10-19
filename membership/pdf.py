@@ -211,7 +211,7 @@ class PDFTemplate(object):
                       "%.2f €" % amount,
                       "%.2f €" % vat,
                       "%.2f €" % self.cycle.sum])
-        first_bill = self.cycle.last_bill()
+        first_bill = self.cycle.first_bill()
         if first_bill:
             bill_id = first_bill.id
         else:
