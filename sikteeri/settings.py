@@ -26,6 +26,9 @@ if CONFIGURATION == 'dev':
     #DEBUG_TOOLBAR_PATCH_SETTINGS = False
     CONFIGURATION = os.path.join(BASE_DIR, 'config-dev.json')
     config = {}
+else:
+    DEBUG = False
+    TEMPLATE_DEBUG = False
 
 with open(CONFIGURATION, 'rb') as f:
     try:
@@ -164,8 +167,11 @@ INSTALLED_APPS = (
     'membership',
     'services',
     'south',
-    'debug_toolbar',
 )
+
+if DEBUG:
+    INSTALLED_APPS += ('debug_toolbar',)
+
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
