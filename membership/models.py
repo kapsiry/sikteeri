@@ -3,14 +3,20 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
+
+from membership.billing import pdf
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
+
 logger = logging.getLogger("membership.models")
 import traceback
 
+from cStringIO import StringIO
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
+
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -24,6 +30,7 @@ from utils import log_change, tupletuple_to_dict
 
 from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
 from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
+
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -562,6 +569,12 @@ class BillingCycle(models.Model):
         except ObjectDoesNotExist:
             return None
 
+    def first_bill(self):
+        try:
+            return self.bill_set.order_by('due_date')[0]
+        except IndexError:
+            return None
+
     def is_first_bill_late(self):
         if self.is_paid:
             return False
@@ -617,6 +630,58 @@ class BillingCycle(models.Model):
         fees = Fee.objects.filter(for_this_type, not_before_start)
         vat_percentage = fees.latest('start').vat_percentage
         return vat_percentage
+
+    @classmethod
+    def get_reminder_billingcycles(cls, memberid=None):
+        """
+        Get queryset for BillingCycles with missing payments and witch have 2 or more bills already sent.
+        :param memberid:
+        :return:
+        """
+        if not settings.ENABLE_REMINDERS:
+            return cls.objects.none()
+
+        qs = cls.objects
+
+        # Single membership case
+        if memberid:
+            logger.info('memberid: %s' % memberid)
+            qs = qs.filter(membership__id=memberid)
+            qs = qs.exclude(bill__type='P')
+            return qs
+
+        # For all memberships in Approved state
+        qs = qs.annotate(bills=Count('bill'))
+        qs = qs.filter(bills__gt=2,
+                       is_paid__exact=False,
+                       membership__status='A',
+                       membership__id__gt=-1)
+        qs = qs.exclude(bill__type='P')
+        qs = qs.order_by('start')
+
+        return qs
+
+    @classmethod
+    def create_paper_remainder_list(cls, memberid=None):
+        """
+        Create list of BillingCycles with missing payments and which already don't have paper bill.
+        :param memberid: optional member id
+        :return: list of billingcycles
+        """
+        datalist = []
+        for cycle in cls.get_reminder_billingcycles(memberid).all():
+            # check if paper reminder already sent
+            cont = False
+            for bill in cycle.bill_set.all():
+                if bill.type == 'P':
+                    cont=True
+                    break
+            if cont:
+                continue
+
+            datalist.append(cycle)
+        return datalist
+
 
     def __unicode__(self):
         return str(self.start.date()) + "--" + str(self.end.date())
@@ -745,6 +810,23 @@ class Bill(models.Model):
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.save()
+
+
+    def generate_pdf(self):
+        """
+        Generate pdf and return pdf content
+        """
+        buffer = StringIO()
+        if self.is_reminder():
+            # This is reminder
+            p = pdf.PDFReminder(buffer)
+        else:
+            p = pdf.PDFInvoice(buffer)
+        p.addCycle(self.billingcycle)
+        p.generate()
+        response = buffer.getvalue()
+        buffer.close()
+        return response
 
     def bill_subject(self):
         if not self.is_reminder():

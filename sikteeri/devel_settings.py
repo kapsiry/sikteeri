@@ -23,9 +23,12 @@ DATABASES = {
 # Hosts allowed to fetch statistics etc. without authentication
 TRUSTED_HOSTS = ['127.0.0.1', '::1']
 
+BUSINESS_ID = "1111111-1"
 # Billing settings
+BANK_OPERATOR="OP"
 IBAN_ACCOUNT_NUMBER = 'FI00 0000 0000 0000 00'
 BIC_CODE = 'AAAAAAAA'
+ORGANIZATIO_REGISTER_NUMBER = "111.111"
 BILLING_FROM_EMAIL = 'from@example.com'
 BILLING_CC_EMAIL = None
 BILL_SUBJECT = 'Test bill, ignore'
@@ -48,12 +51,12 @@ SYSADMIN_EMAIL = 'admins@example.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[sikteeri-TEST] '
 
-# Paper reminder templates
-PAPER_REMINDER_TEMPLATE = '/tmp/paper_reminder.tex'
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # When PRODUCTION is true, show final graphics and colours.
 # Otherwise indicate that this is a development environment (logo, colour)
 PRODUCTION = False
+
+# Generate pdf reminders and bills
+PDF_BILLS = True
