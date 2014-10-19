@@ -246,11 +246,11 @@ class PDFTemplate(object):
     def addTemplate(self):
         # Logo to upper left corner
         self.drawImage(0.2, 0, 5, 2.5, LOGO)
-        self.drawString(10.5, 3, "%(date)s" % self.data, aligment="center", size=12)
-        self.drawString(1.5, 3, "Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
+        self.drawString(10.5, 3, u"%(date)s" % self.data, aligment="center", size=12)
+        self.drawString(1.5, 3, u"Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
                       size=8)
         # Address block
-        self.drawText(1.5, 4, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s" % self.data, size=12)
+        self.drawText(1.5, 4, u"%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s" % self.data, size=12)
         #self.drawHorizontalStroke()
 
         self.drawBox(14.5, 3.5, 5, 1.7)
@@ -261,11 +261,11 @@ class PDFTemplate(object):
 
         xtable = [1,1.5,7,13,15,17]
         #self.drawString(xtable[0],6.5, "Rivinumero", size=9)
-        self.drawString(xtable[1],6.5, "Selite", size=9)
-        self.drawString(xtable[2],6.5, "Aikaväli", size=9)
-        self.drawString(xtable[3],6.5, "alv 0 %", size=9)
-        self.drawString(xtable[4],6.5, "alv 24 %", size=9)
-        self.drawString(xtable[5],6.5, "Yhteensä", size=9)
+        self.drawString(xtable[1],6.5, u"Selite", size=9)
+        self.drawString(xtable[2],6.5, u"Aikaväli", size=9)
+        self.drawString(xtable[3],6.5, u"alv 0 %", size=9)
+        self.drawString(xtable[4],6.5, u"alv 24 %", size=9)
+        self.drawString(xtable[5],6.5, u"Yhteensä", size=9)
         self.drawHorizontalStroke(1,6.6, 18.5)
 
         y = 7
@@ -276,40 +276,40 @@ class PDFTemplate(object):
         y -= 0.3
         self.drawHorizontalStroke(1,y, 18.5)
         y += 0.4
-        self.drawString(xtable[3],y, "Maksettavaa yhteensä:" % self.data, size=10)
-        self.drawString(xtable[5],y, "<b>%(pretty_sum)s €</b>" % self.data, size=10)
+        self.drawString(xtable[3],y, u"Maksettavaa yhteensä:" % self.data, size=10)
+        self.drawString(xtable[5],y, u"<b>%(pretty_sum)s €</b>" % self.data, size=10)
 
 
 
         self.drawHorizontalStroke(1,18, 18.5)
 
-        self.drawText(1,18.5, "<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
-        self.drawText(5.5,18.5, "Kotipaikka Oulu\nhttp://www.kapsi.fi/", size=7)
-        self.drawText(9.5,18.5, "Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.FROM_EMAIL,
+        self.drawText(1,18.5, u"<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
+        self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttp://www.kapsi.fi/", size=7)
+        self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.FROM_EMAIL,
                                              settings.BUSINESS_ID, settings.ORGANIZATIO_REGISTER_NUMBER), size=7)
-        self.drawText(14,18.5, "Tilinumero: %s\nBIC: %s" % (humanize_string(settings.IBAN_ACCOUNT_NUMBER),
+        self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (humanize_string(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
 
         # Bill part
 
-        self.drawText(1,20, "Saajan\ntilinumero\nMottagarens\nkontonummer", size=6)
-        self.drawText(3.1, 20.6, "%s   %s   %s" % (settings.BANK_OPERATOR, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
+        self.drawText(1,20, u"Saajan\ntilinumero\nMottagarens\nkontonummer", size=6)
+        self.drawText(3.1, 20.6, u"%s   %s   %s" % (settings.BANK_OPERATOR, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
                                                    settings.BIC_CODE), size=9)
-        self.drawText(1,21.8, "Saaja\nMottagaren", size=6)
-        self.drawText(3.1, 21.5, "Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
-        self.drawText(1,23, "Maksajan\nnimi ja\nosoite\n\nBetalarens\nnamn och\nadress", size=6)
-        self.drawText(3.1, 23.5, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(email)s" % self.data, size=9)
-        self.drawText(1,25.4, "Alle-\nkirjoitus\nYnderskrift", size=6)
-        self.drawText(1,26.5, "Tililtä nro\nFrån konto nr", size=6)
+        self.drawText(1,21.8, u"Saaja\nMottagaren", size=6)
+        self.drawText(3.1, 21.5, u"Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
+        self.drawText(1,23, u"Maksajan\nnimi ja\nosoite\n\nBetalarens\nnamn och\nadress", size=6)
+        self.drawText(3.1, 23.5, u"%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(email)s" % self.data, size=9)
+        self.drawText(1,25.4, u"Alle-\nkirjoitus\nYnderskrift", size=6)
+        self.drawText(1,26.5, u"Tililtä nro\nFrån konto nr", size=6)
 
-        self.drawText(2.9,20, "IBAN", size=7)
+        self.drawText(2.9,20, u"IBAN", size=7)
 
-        self.drawText(11.15,25.6, "Viitenro\nRef.nr", size=7)
-        self.drawText(13.15,25.7, "%(reference_number)s" % self.data, size=9)
-        self.drawText(11.15,26.5, "Eräpäivä\nFörf.dag", size=7)
-        self.drawText(13.15,26.65, "%(due_date)s" % self.data, size=9)
-        self.drawText(15.9,26.4, "Euro", size=7)
-        self.drawText(16.9,26.65, "%(pretty_sum)s" % self.data, size=9)
+        self.drawText(11.15,25.6, u"Viitenro\nRef.nr", size=7)
+        self.drawText(13.15,25.7, u"%(reference_number)s" % self.data, size=9)
+        self.drawText(11.15,26.5, u"Eräpäivä\nFörf.dag", size=7)
+        self.drawText(13.15,26.65, u"%(due_date)s" % self.data, size=9)
+        self.drawText(15.9,26.4, u"Euro", size=7)
+        self.drawText(16.9,26.65, u"%(pretty_sum)s" % self.data, size=9)
 
 
 
@@ -327,9 +327,9 @@ class PDFTemplate(object):
         self.drawVerticalStroke(15.8,27, 0.9, width=6)
         self.drawHorizontalStroke(1,27, 18.5, width=6)
 
-        self.drawText(14, 27.6, "Maksu välitetään saajalle vain Suomessa Kotimaan maksujenvälityksen\nyleisten ehtojen mukaisesti ja vain maksajan ilmoittaman tilinumeron\nperusteella.", size=5)
-        self.drawText(14, 28.3, "Betalningen förmedlas till mottagare endast i Finland enligt Allmänna\nvillkor för inrikes betalningsförmedling och endast till det\nkontonummer betalaren angivit.", size=5)
-        self.drawText(17.8, 29.1, "PANKKI BANKEN", size=6)
+        self.drawText(14, 27.6, u"Maksu välitetään saajalle vain Suomessa Kotimaan maksujenvälityksen\nyleisten ehtojen mukaisesti ja vain maksajan ilmoittaman tilinumeron\nperusteella.", size=5)
+        self.drawText(14, 28.3, u"Betalningen förmedlas till mottagare endast i Finland enligt Allmänna\nvillkor för inrikes betalningsförmedling och endast till det\nkontonummer betalaren angivit.", size=5)
+        self.drawText(17.8, 29.1, u"PANKKI BANKEN", size=6)
 
         due_date = None
         if self.__type__ != 'reminder':

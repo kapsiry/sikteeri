@@ -18,7 +18,7 @@
      {% trans "sent" %} {{ bill.created|naturalday }},
      {% trans "due on" %} {{ bill.due_date|naturalday }}
      ({% if cycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
-     <a href="{% url bill_pdf bill.id %}">pdf</a>
+     <a href="{% url "bill_pdf" bill.id %}">pdf</a>
     </li>
     {% endfor %}
 
