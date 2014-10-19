@@ -5,12 +5,7 @@
   "DATABASE_URL": "sqlite:///sikteeri-test.sqlite3",
   "PRODUCTION": false,
   "EMAIL_SUBJECT_PREFIX": "[sikteeri-dev] ",
-
   "STATIC_ROOT": "",
-  "STATIC_URL": "/static/",
-
-  "TIME_ZONE": "Europe/Helsinki",
-  "ENTRIES_PER_PAGE": 30,
 
   "FROM_EMAIL": "from.nonbill@example.com",
   "SYSADMIN_EMAIL": "admins@example.com",
