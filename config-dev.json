@@ -10,7 +10,7 @@
   "FROM_EMAIL": "from.nonbill@example.com",
   "SYSADMIN_EMAIL": "admins@example.com",
 
-  "BUSINESS_ID: "1111111-1",
+  "BUSINESS_ID": "1111111-1",
   "ORGANIZATIO_REGISTER_NUMBER": "111.111",
 
   "PDF_BILLS": true,
