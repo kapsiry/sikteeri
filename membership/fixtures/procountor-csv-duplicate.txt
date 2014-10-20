@@ -1,0 +1,3 @@
+Arvopäivä;Maksupäivä;Summa;Kirjausselite;Nimi;Tilinro;Viitenumero;Viesti;Kohdistettu;Arkistointitunnus
+30.09.2014;30.09.2014;40,00;Viitemaksu;TEST PERSON;;1114018;;Myyntilasku 123456;0930553397672111
+01.10.2014;01.10.2014;40,00;Viitemaksu;TEST PERSON DOUPLE;;1114018;;Myyntilasku 123456;1001553397672111

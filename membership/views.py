@@ -15,7 +15,7 @@ logger = logging.getLogger("membership.views")
 from django.core.mail import send_mail
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
-from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput, FileField
+from django.forms import ModelForm, Form, EmailField, BooleanField, ModelChoiceField, CharField, Textarea, HiddenInput, FileField, ChoiceField
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
@@ -32,7 +32,7 @@ from unpaid_members import unpaid_members_data
 
 from services.views import check_alias_availability, validate_alias
 
-from management.commands.csvbills import process_csv as payment_csv_import
+from management.commands.csvbills import process_op_csv, process_procountor_csv
 from management.commands.paper_reminders import get_reminders, get_data as get_paper_reminders
 # TODO: urls shouldn't depend on mgmt cmd get_reminders; can be refactored into models
 from decorators import trusted_host_required
@@ -554,6 +554,8 @@ def import_payments(request, template_name='membership/import_payments.html'):
     class PaymentCSVForm(Form):
         csv = FileField(label=_('CSV File'),
                          help_text=_('Choose CSV file to upload'))
+        format = ChoiceField(choices=(('op', 'Osuuspankki'), ('procountor', 'Procountor')),
+                           help_text=_("File type"))
 
     if request.method == 'POST':
         form = PaymentCSVForm(request.POST, request.FILES)
@@ -561,7 +563,10 @@ def import_payments(request, template_name='membership/import_payments.html'):
             try:
                 in_memory_file = request.FILES['csv']
                 logger.info("Beginning payment import.")
-                import_messages = payment_csv_import(in_memory_file, user=request.user)
+                if form.cleaned_data['format'] == 'op':
+                    import_messages = process_op_csv(in_memory_file, user=request.user)
+                elif form.cleaned_data['format'] == 'procountor':
+                    import_messages = process_procountor_csv(in_memory_file, user=request.user)
                 messages.success(request, unicode(_("Payment import succeeded!")))
             except:
                   logger.error("%s" % traceback.format_exc())

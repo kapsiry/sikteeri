@@ -42,8 +42,9 @@ from management.commands.makebills import send_reminder
 from management.commands.makebills import can_send_reminder
 from management.commands.makebills import MembershipNotApproved
 
-from management.commands.csvbills import process_csv
+from management.commands.csvbills import process_op_csv, process_procountor_csv
 from management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
+
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -613,7 +614,7 @@ class CSVNoMembersTest(TestCase):
     def test_file_reading(self):
         "csvbills: test data should have 3 payments, none of which match"
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
 
         payment_count = Payment.objects.count()
         error = "There should be 3 non-negative payments in the testdata"
@@ -642,7 +643,7 @@ class CSVReadingTest(TestCase):
         no_cycle_q = Q(billingcycle=None)
 
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
         payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_count, 1, error)
@@ -655,7 +656,7 @@ class CSVReadingTest(TestCase):
         no_cycle_q = Q(billingcycle=None)
 
         with open("../membership/fixtures/csv-test-duplicate.txt", 'r') as f:
-            process_csv(f)
+            process_op_csv(f)
         payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
         self.assertEqual(payment_match_count, 1, error)
@@ -668,17 +669,92 @@ class CSVReadingTest(TestCase):
     def test_future_payment(self):
         error = "Should fail on payment in the future"
         with open("../membership/fixtures/csv-future.txt", 'r') as f:
-            self.assertRaises(PaymentFromFutureException, process_csv, f)
+            self.assertRaises(PaymentFromFutureException, process_op_csv, f)
 
     def test_csv_header_processing(self):
         error = "Should fail on invalid header"
         with open("../membership/fixtures/csv-invalid.txt", 'r') as f:
-            self.assertRaises(RequiredFieldNotFoundException, process_csv, f)
+            self.assertRaises(RequiredFieldNotFoundException, process_op_csv, f)
         with open("../membership/fixtures/csv-test.txt", 'r') as f:
             try:
-                process_csv(f)
+                process_op_csv(f)
             except RequiredFieldNotFoundException:
                 self.fail("Valid csv should not raise header error.")
+
+
+class ProcountorCSVNoMembersTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def test_file_reading(self):
+        "csvbills: test data should have 3 payments, none of which match"
+        with open("../membership/fixtures/procountor-csv-test.txt", 'r') as f:
+            process_procountor_csv(f)
+
+        payment_count = Payment.objects.count()
+        error = "There should be 3 non-negative payments in the testdata"
+        self.assertEqual(payment_count, 3, error)
+
+        no_cycle_q = Q(billingcycle=None)
+        nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
+        error = "No payments should match without any members in db"
+        self.assertEqual(nomatch_payments, 0, error)
+
+class ProcountorCSVReadingTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        membership = create_dummy_member('N', mid=11)
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        cycle_start = datetime(2014, 9, 6)
+        self.cycle = BillingCycle(membership=membership, start=cycle_start)
+        self.cycle.save()
+        self.bill = Bill(billingcycle=self.cycle)
+        self.bill.save()
+
+    def test_import_data(self):
+        no_cycle_q = Q(billingcycle=None)
+
+        with open("../membership/fixtures/procountor-csv-test.txt", 'r') as f:
+            process_procountor_csv(f)
+        payment_count = Payment.objects.filter(~no_cycle_q).count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_count, 1, error)
+        payment = Payment.objects.filter(billingcycle=self.cycle).latest("payment_day")
+        cycle = BillingCycle.objects.get(pk=self.cycle.pk)
+        self.assertEqual(cycle.reference_number, payment.reference_number)
+        self.assertTrue(cycle.is_paid)
+
+    def test_duplicate_payment(self):
+        no_cycle_q = Q(billingcycle=None)
+
+        with open("../membership/fixtures/procountor-csv-duplicate.txt", 'r') as f:
+            process_procountor_csv(f)
+        payment_match_count = Payment.objects.filter(~no_cycle_q).count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_match_count, 1, error)
+        self.assertEqual(Payment.objects.count(), 2)
+        payment = Payment.objects.filter(billingcycle=self.cycle).latest("payment_day")
+        cycle = BillingCycle.objects.get(pk=self.cycle.pk)
+        self.assertEqual(cycle.reference_number, payment.reference_number)
+        self.assertTrue(cycle.is_paid)
+
+    def test_future_payment(self):
+        error = "Should fail on payment in the future"
+        with open("../membership/fixtures/procountor-csv-future.txt", 'r') as f:
+            self.assertRaises(PaymentFromFutureException, process_procountor_csv, f)
+
+    def test_csv_header_processing(self):
+        error = "Should fail on invalid header"
+        with open("../membership/fixtures/procountor-csv-invalid.txt", 'r') as f:
+            self.assertRaises(RequiredFieldNotFoundException, process_procountor_csv, f)
+        with open("../membership/fixtures/procountor-csv-test.txt", 'r') as f:
+            try:
+                process_procountor_csv(f)
+            except RequiredFieldNotFoundException:
+                self.fail("Valid csv should not raise header error.")
+
 
 class LoginRequiredTest(TestCase):
     fixtures = ['membpership_fees.json', 'test_user.json']
