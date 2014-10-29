@@ -255,13 +255,13 @@ EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 ## LDAP support
 #####################################################
 
-from django_auth_ldap.config import LDAPSearch
-from django_auth_ldap.config import GroupOfNamesType
-import ldap
-
 AUTH_USE_LDAP = config.get('AUTH_USE_LDAP', False)
 
 if AUTH_USE_LDAP:
+    from django_auth_ldap.config import LDAPSearch
+    from django_auth_ldap.config import GroupOfNamesType
+    import ldap
+
     AUTHENTICATION_BACKENDS = (
         'django_auth_ldap.backend.LDAPBackend',
         'django.contrib.auth.backends.ModelBackend',
