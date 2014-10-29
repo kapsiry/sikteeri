@@ -103,8 +103,6 @@ UNIX_EMAIL_DOMAIN = config.get('UNIX_EMAIL_DOMAIN', None)
 FROM_EMAIL = get_required('FROM_EMAIL')
 SYSADMIN_EMAIL = get_required('SYSADMIN_EMAIL')
 
-EMAIL_SUBJECT_PREFIX = get_required('EMAIL_SUBJECT_PREFIX')
-
 # When PRODUCTION is true, show production graphics and colours.
 # Otherwise indicate that this is a development environment (logo, colour)
 PRODUCTION = config.get('PRODUCTION', False)
@@ -245,13 +243,17 @@ LOGGING = {
 ## Email configuration
 #####################################################
 
-## FIXME: email configuration to be done
+EMAIL_SUBJECT_PREFIX = get_required('EMAIL_SUBJECT_PREFIX')
+EMAIL_MBOX_FILE_PATH = config.get('EMAIL_MBOX_FILE_PATH', None)
 
-print "FIXME: email configuration to be done"
-
-# Don't really send email messages, only show them on console
-# FIXME! Production needs emails.
-EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+if EMAIL_MBOX_FILE_PATH:
+    print "Emails redirected to {0}".format(EMAIL_MBOX_FILE_PATH)
+    EMAIL_BACKEND = 'sikteeri.mboxemailbackend.EmailBackend'
+elif not PRODUCTION:
+    print "Console email backend in use"
+    EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+else:
+    raise NotImplementedError("Production email configuration to be verified")
 
 #####################################################
 ## LDAP support
