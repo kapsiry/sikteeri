@@ -12,10 +12,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CONFIGURATION = environ.get('SIKTEERI_CONFIGURATION', '')
 if not CONFIGURATION:
     msg = """No configuration found.
-	Set environment variable SIKTEERI_CONFIGURATION to a json
+        Set environment variable SIKTEERI_CONFIGURATION to a json
         config file path or 'dev' for development.
 
-	export SIKTEERI_CONFIGURATION=dev"""
+        export SIKTEERI_CONFIGURATION=dev"""
     raise SystemExit(msg)
 
 if CONFIGURATION == 'dev':
@@ -212,6 +212,9 @@ PAPER_REMINDER_TEMPLATE = '/dev/null'
 ## Logging configuration
 #####################################################
 
+ADMINS = config.get('ADMINS')
+MANAGERS = config.get('MANAGERS')
+
 ## FIXME: should be configured from configuration file
 
 LOGGING = {
@@ -219,10 +222,21 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {
         'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
     },
     'handlers': {
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -230,14 +244,27 @@ LOGGING = {
         }
     },
     'loggers': {
+        'django': {
+            'handlers': ['console'],
+        },
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
-            'propagate': True,
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'py.warnings': {
+            'handlers': ['console'],
+        },
+        'sikteeri': {
+            'handlers': ['console'],
         },
     }
 }
-
 
 #####################################################
 ## Email configuration
