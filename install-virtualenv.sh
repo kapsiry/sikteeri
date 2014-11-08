@@ -7,7 +7,7 @@
 # Feel free to create virtualenv manually if you prefer.
 
 VIRTUALENV=${1-virtualenv}
-ENVDIR="$HOME/env/sikteeri"
+ENVDIR="env"
 
 function fatal () {
     echo $*
