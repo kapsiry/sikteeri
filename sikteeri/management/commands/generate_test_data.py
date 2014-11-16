@@ -1,44 +1,35 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 generate_test_data.py
 
-Copyright (c) 2010 Kapsi Internet-käyttäjät ry. All rights reserved.
+Copyright (c) 2010-2013 Kapsi Internet-käyttäjät ry. All rights reserved.
 """
 
 import sys
 import os
+import logging
+
 from random import random, randint, choice
 from uuid import uuid4
 from decimal import Decimal
-import logging
-from membership.test_utils import random_first_name, random_last_name
-logger = logging.getLogger("sikteeri.generate_test_data")
-
 from datetime import datetime
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'sikteeri.settings'
-sys.path.insert(0, '..')
-
+from django.core.management.base import NoArgsCommand
+from django.utils import translation
+from django.conf import settings
 from django.core import management
-from django.db import transaction
 from django.contrib.auth.models import User
 
+from membership.test_utils import random_first_name, random_last_name
 from membership.models import Contact, Membership, Fee, Payment
-
 from membership.management.commands.csvbills import attach_payment_to_cycle
-
 from membership.reference_numbers import generate_membership_bill_reference_number
+from membership.test_utils import random_first_name, random_last_name
 
 from services.models import Alias, Service, ServiceType
 
-if Fee.objects.all().count() == 0:
-    sys.exit("No fees in the database. Did you load fixtures into the " +
-	     "database first?\n (./manage.py loaddata test_data.json)")
+logger = logging.getLogger("sikteeri.generate_test_data")
 
-user = User.objects.get(id=1)
-
-@transaction.commit_manually
 def create_dummy_member(i, duplicate_of=None):
     fname = random_first_name()
     d = {
@@ -61,7 +52,6 @@ def create_dummy_member(i, duplicate_of=None):
 
     person = Contact(**d)
     person.save()
-    transaction.commit()
     membership = Membership(type='P', status='N',
                             person=person,
                             nationality='Finnish',
@@ -70,18 +60,15 @@ def create_dummy_member(i, duplicate_of=None):
 
     print unicode(person)
     membership.save()
-    transaction.commit()
 
     forward_alias = Alias(owner=membership,
                           name=Alias.email_forwards(membership)[0])
     forward_alias.save()
 
 
-    transaction.commit()
     login_alias = Alias(owner=membership, account=True,
                         name=choice(Alias.unix_logins(membership)))
     login_alias.save()
-    transaction.commit()
 
     # Services
     forward_alias_service = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
@@ -100,7 +87,6 @@ def create_dummy_member(i, duplicate_of=None):
         postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                      alias=login_alias, owner=membership, data=login_alias.name)
         postgresql_service.save()
-    transaction.commit()
     # End of services
 
     logger.info("New application %s from %s:." % (str(person), '::1'))
@@ -125,44 +111,49 @@ def create_payment(membership):
         return p
 
 
-@transaction.commit_manually
-def main():
-    if Membership.objects.count() > 0 or Payment.objects.count() > 0:
+def generate_test_data():
+    if Fee.objects.all().count() == 0:
+        sys.exit("No fees in the database. Did you load fixtures into the " +
+                 "database first?\n (./manage.py loaddata test_data.json)")
+    if Membership.objects.count() > 1 or Payment.objects.count() > 0:
         print "Database not empty, refusing to generate test data"
         sys.exit(1)
+
+    user = User.objects.get(id=1)
+
     # Approved members
     for i in xrange(1,1000):
         membership = create_dummy_member(i)
         membership.preapprove(user)
         membership.approve(user)
         create_payment(membership)
-        transaction.commit()
 
     # Pre-approved members
     for i in xrange(1000,1100):
         membership = create_dummy_member(i)
         membership.preapprove(user)
-        transaction.commit()
 
     # New applications
     for i in xrange(1100,1190):
         membership = create_dummy_member(i)
-        transaction.commit()
 
     # Make a few duplicates for duplicate detection GUI testing
     for i in xrange(1190,1200):
         duplicate_of = Membership.objects.get(id=i-10)
         membership = create_dummy_member(i + 10, duplicate_of=duplicate_of)
-        transaction.commit()
 
     management.call_command('makebills')
-    transaction.commit()
+
     for payment in Payment.objects.all():
         try:
             attach_payment_to_cycle(payment)
-            transaction.commit()
         except:
             pass
 
-if __name__ == '__main__':
-    main()
+
+class Command(NoArgsCommand):
+    help = 'Generate test data'
+
+    def handle_noargs(self, **options):
+        translation.activate(settings.LANGUAGE_CODE)
+        generate_test_data()
