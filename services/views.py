@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.db import transaction
 from django.forms import ModelForm, ModelChoiceField
+from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
@@ -44,11 +45,11 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
 
     if request.method == 'POST':
         form = Form(request.POST, instance=alias)
-        before = alias.__dict__.copy()
+        before = model_to_dict(alias)
         form.disable_fields()
         if form.is_valid():
             form.save()
-            after = alias.__dict__
+            after = model_to_dict(alias)
             log_change(alias, request.user, before, after)
             return redirect('alias_edit', id) # form stays as POST otherwise if someone refreshes
     else:
@@ -76,7 +77,9 @@ def alias_add_for_member(request, id, template_name='membership/membership_add_a
             comment = f['comment']
             alias = Alias(owner=membership, name=name, comment=comment)
             alias.save()
-            messages.success(request, unicode(_('Alias %s successfully created for %s.') % (alias, membership)))
+            messages.success(request,
+                _('Alias {alias} successfully created for {membership}.'
+                  '').format(alias=alias, membership=membership))
             logger.info("Alias %s added by %s." % (alias, request.user.username))
             return redirect('membership_edit', membership.id)
     else:

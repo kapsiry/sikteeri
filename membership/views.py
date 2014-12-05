@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.forms import ChoiceField, ModelForm, Form, EmailField, BooleanField
 from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseForbidden, Http404
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
@@ -202,9 +203,9 @@ def organization_application(request, template_name='membership/new_organization
                                     public_memberlist=f['public_memberlist'])
 
             request.session.set_expiry(0) # make this expire when the browser exits
-            request.session['membership'] = membership.__dict__.copy()
-            organization_dict = organization.__dict__.copy()
-            del organization_dict['_state']
+            request.session['membership'] = model_to_dict(membership)
+
+            organization_dict = model_to_dict(organization)
             request.session['organization'] = organization_dict
             return redirect('organization_application_add_contact', 'billing_contact')
     else:
@@ -230,8 +231,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
             if form.is_valid():
                 f = form.cleaned_data
                 contact = Contact(**f)
-                contact_dict = contact.__dict__.copy()
-                del contact_dict['_state']
+                contact_dict = model_to_dict(contact)
                 request.session[contact_type] = contact_dict
             else:
                 request.session[contact_type] = None
@@ -458,7 +458,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         class Meta:
             model = Contact
 
-    before = contact.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    before = model_to_dict(contact)  # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
             messages.error(request, unicode(_("You are not authorized to modify memberships.")))
@@ -468,7 +468,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 
         if form.is_valid():
             form.save()
-            after = contact.__dict__
+            after = model_to_dict(contact)
             log_change(contact, request.user, before, after)
             messages.success(request, unicode(_("Changes to contact %s saved.") % contact))
             return redirect('contact_edit', id) # form stays as POST otherwise if someone refreshes
@@ -504,12 +504,12 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
             else:
                 return self.cleaned_data['type']
 
-    before = bill.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    before = model_to_dict(bill) # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         form = Form(request.POST, instance=bill)
         if form.is_valid():
             form.save()
-            after = bill.__dict__
+            after = model_to_dict(bill)
             log_change(bill, request.user, before, after)
             messages.success(request, unicode(_("Changes to bill %s saved.") % bill))
             return redirect('bill_edit', id) # form stays as POST otherwise if someone refreshes
@@ -541,19 +541,19 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
         if form.is_valid():
             f = form.cleaned_data
             payment = f['payment']
-            before = payment.__dict__.copy()
+            before = model_to_dict(payment)
             oldcycle = payment.billingcycle
             if oldcycle:
-                oldcycle_before = oldcycle.__dict__.copy()
+                oldcycle_before = model_to_dict(oldcycle)
                 payment.detach_from_cycle(user=request.user)
-                oldcycle_after = oldcycle.__dict__.copy()
+                oldcycle_after = model_to_dict(oldcycle)
                 log_change(oldcycle, request.user, oldcycle_before, oldcycle_after)
 
             newcycle = billingcycle
-            newcycle_before = newcycle.__dict__.copy()
+            newcycle_before = model_to_dict(newcycle)
             payment.attach_to_cycle(newcycle)
-            newcycle_after = newcycle.__dict__.copy()
-            after = payment.__dict__
+            newcycle_after = model_to_dict(newcycle)
+            after = model_to_dict(payment)
             log_change(payment, request.user, before, after)
             log_change(newcycle, request.user, newcycle_before, newcycle_after)
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
@@ -652,13 +652,13 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
             else:
                 return self.cleaned_data['is_paid']
 
-    before = cycle.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    before = model_to_dict(cycle) # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         form = Form(request.POST, instance=cycle)
         form.disable_fields()
         if form.is_valid():
             form.save()
-            after = cycle.__dict__
+            after = model_to_dict(cycle)
             log_change(cycle, request.user, before, after)
             messages.success(request, unicode(_("Changes to billing cycle %s saved.") % cycle))
             return redirect('billingcycle_edit', id) # form stays as POST otherwise if someone refreshes
@@ -735,7 +735,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
         def clean_payer_name(self):
             return payment.payer_name
 
-    before = payment.__dict__.copy() # Otherwise save() (or valid?) will change the dict, needs to be here
+    before = model_to_dict(payment) # Otherwise save() (or valid?) will change the dict, needs to be here
     oldcycle = payment.billingcycle
     if request.method == 'POST':
         form = Form(request.POST, instance=payment)
@@ -748,7 +748,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
                     oldcycle.update_is_paid()
             if newcycle:
               newcycle.update_is_paid()
-            after = payment.__dict__
+            after = model_to_dict(payment)
             log_change(payment, request.user, before, after)
             messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
             return redirect('payment_edit', id) # form stays as POST otherwise if someone refreshes
@@ -804,11 +804,11 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
         if not request.user.has_perm('membership.manage_members'):
             return HttpResponseForbidden(_("Permission manage required"))
         form = Form(request.POST, instance=membership)
-        before = membership.__dict__.copy()
+        before = model_to_dict(membership)
         form.disable_fields()
         if form.is_valid():
             form.save()
-            after = membership.__dict__
+            after = model_to_dict(membership)
             log_change(membership, request.user, before, after)
             return redirect('membership_edit', id) # form stays as POST otherwise if someone refreshes
     else:
