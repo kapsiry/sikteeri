@@ -266,7 +266,7 @@ class Membership(models.Model):
     def save(self, *args, **kwargs):
         try:
             self.full_clean()
-        except ValidationError, ve:
+        except ValidationError as ve:
             raise ve
 
         super(Membership, self).save(*args, **kwargs)

@@ -100,7 +100,7 @@ class Command(BaseCommand):
         try:
             pass
             #process_csv(csvfile)
-        except Exception, e:
+        except Exception as e:
             print "Fatal error: %s" % unicode(e)
             logger.error("process_csv failed: %s" % unicode(e))
             sys.exit(1)

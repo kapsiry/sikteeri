@@ -52,7 +52,7 @@ def create_billingcycle(membership):
             bill.save()
         bill.send_as_email()
         return billing_cycle
-    except Exception, e:
+    except Exception as e:
         logger.critical("%s" % traceback.format_exc())
         logger.critical("Transaction rolled back, billing cycle not created!")
         raise

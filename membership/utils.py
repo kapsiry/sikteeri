@@ -320,7 +320,7 @@ def sort_objects(request, **kwargs):
     try:
         sort = kwargs['sort']
         del kwargs['sort']
-    except KeyError, ke:
+    except KeyError as ke:
         sort = request.GET.get("sort", None)
 
     if 'queryset' in kwargs and sort:

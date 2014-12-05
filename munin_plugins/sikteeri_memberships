@@ -13,11 +13,11 @@ def httpreq(url):
     try:
         response = urllib2.urlopen(req)
         return (200, response.read())
-    except HTTPError, e:
+    except HTTPError as e:
         print 'The server couldn\'t fulfill the request.'
         print 'Error code: ', e.code
         return (e.code, e.read())
-    except URLError, e:
+    except URLError as e:
         print e.reason
         return (0, e.reason)
 

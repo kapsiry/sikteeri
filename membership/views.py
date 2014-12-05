@@ -165,7 +165,7 @@ def person_application(request, template_name='membership/new_person_application
                           settings.FROM_EMAIL,
                           [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
-            except Exception, e:
+            except Exception as e:
                 transaction.rollback()
                 logger.critical("%s" % traceback.format_exc())
                 logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
@@ -404,7 +404,7 @@ def organization_application_save(request):
             except:
                 pass
         return redirect('new_organization_application_success')
-    except Exception, e:
+    except Exception as e:
         transaction.rollback()
         logger.error("%s" % traceback.format_exc())
         logger.error("Transaction rolled back.")
@@ -1008,7 +1008,7 @@ def handle_json(request):
                                                  unicode(msg['payload'])))
     try:
         return funcs[msg['requestType']](request, msg['payload'])
-    except Exception, e:
+    except Exception as e:
         logger.critical("%s" % traceback.format_exc())
         raise e
 
@@ -1113,7 +1113,7 @@ def search(request, **kwargs):
     if query.startswith("#"):
         try:
             return redirect('membership_edit', int(query.lstrip("#")))
-        except ValueError, ve:
+        except ValueError as ve:
             pass
 
     qs = Membership.search(query)
