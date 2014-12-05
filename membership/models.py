@@ -500,9 +500,6 @@ class Fee(models.Model):
 
 
 class BillingCycleManager(models.Manager):
-    def sort(self, sortkey):
-        qs = BillingQuerySet(self.model)
-        return qs.sort(sortkey)
 
     def get_query_set(self):
         return BillingCycleQuerySet(self.model)
