@@ -57,7 +57,7 @@ DATABASES = dict(default=dj_database_url.parse(DATABASE_URL))
 # http://www.i18nguy.com/unicode/language-identifiers.html
 TIME_ZONE = config.get('TIME_ZONE', 'Europe/Helsinki')
 SHORT_DATE_FORMAT = config.get('SHORT_DATE_FORMAT', 'd.m.Y')
-LANGUAGE_CODE = config.get('LANGUAGE_CODE', 'fi-fi')
+LANGUAGE_CODE = config.get('LANGUAGE_CODE', 'fi_fi')
 
 # URL base for static files
 STATIC_URL = config.get('STATIC_URL', '/static/')
@@ -139,6 +139,11 @@ STATICFILES_FINDERS = (
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+)
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'sikteeri/locale'),
+    os.path.join(BASE_DIR, 'membership/locale'),
 )
 
 STATICFILES_DIRS = (
