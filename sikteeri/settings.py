@@ -313,37 +313,37 @@ if AUTH_USE_LDAP:
            "AUTH_LDAP_USER_DN_TEMPLATE must contain %(user)s"
 
     AUTH_LDAP_USER_ATTR_MAP = config.get('AUTH_LDAP_USER_ATTR_MAP',
-        { "first_name": "givenName", "last_name": "sn" })
+        {"first_name": "givenName",
+         "last_name": "sn",
+         "email": "mail",
+        })
 
     # Get groups from ldap
     AUTH_LDAP_FIND_GROUP_PERMS = config.get('AUTH_LDAP_FIND_GROUP_PERMS', False)
     if AUTH_LDAP_FIND_GROUP_PERMS:
         AUTH_LDAP_GROUP_SEARCH_DN = config.get('AUTH_LDAP_GROUP_SEARCH_DN')
+        AUTH_LDAP_GROUP_SEARCH_FILTER = config.get('AUTH_LDAP_GROUP_SEARCH_FILTER')
         assert AUTH_LDAP_GROUP_SEARCH_DN, \
                "Need AUTH_LDAP_GROUP_SEARCH_DN to find groups"
+        assert AUTH_LDAP_GROUP_SEARCH_FILTER, \
+               "Need AUTH_LDAP_GROUP_SEARCH_FILTER to find groups"
 
-        AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
-            AUTH_LDAP_GROUP_SEARCH_DN,
-            ldap.SCOPE_ONELEVEL,
-            "(objectClass=groupOfNames)")
-        # set ldap groups type to GroupOfNames
+        # The distinguished name of a group;
+        # Authentication will fail for any user that does not belong to
+        # this group; default None
+        AUTH_LDAP_REQUIRE_GROUP = config.get('AUTH_LDAP_REQUIRE_GROUP')
+
+        AUTH_LDAP_GROUP_SEARCH = LDAPSearch(AUTH_LDAP_GROUP_SEARCH_DN,
+                                            ldap.SCOPE_ONELEVEL,
+                                            AUTH_LDAP_GROUP_SEARCH_FILTER)
+        # Set ldap groups type to GroupOfNames
         AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
-
-        # map groups to permissions
-        AUTH_LDAP_USER_FLAGS_BY_GROUP = config.get(
-            'AUTH_LDAP_USER_FLAGS_BY_GROUP',
-            {})
-
-    AUTH_LDAP_PROFILE_FLAGS_BY_GROUP = config.get(
-        'AUTH_LDAP_PROFILE_FLAGS_BY_GROUP',
-        {})
-
+        # Get groups from LDAP and mirror to Django user groups
+        AUTH_LDAP_MIRROR_GROUPS = True
+        # cache groups for 5 minutes by default
+        AUTH_LDAP_CACHE_GROUPS = config.get('AUTH_LDAP_CACHE_GROUPS', True)
+        AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get('AUTH_LDAP_GROUP_CACHE_TIMEOUT',
+                                                   300)
     # update permissions on every login
     AUTH_LDAP_ALWAYS_UPDATE_USER = config.get('AUTH_LDAP_ALWAYS_UPDATE_USER',
                                               True)
-
-    # cache groups for 5 minutes by default
-    AUTH_LDAP_CACHE_GROUPS = config.get('AUTH_LDAP_CACHE_GROUPS', True)
-    AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get('AUTH_LDAP_GROUP_CACHE_TIMEOUT',
-                                               300)
-
