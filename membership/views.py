@@ -16,7 +16,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import send_mail
 from django.db import transaction
-from django.forms import ModelForm, Form, EmailField, BooleanField
+from django.forms import ChoiceField, ModelForm, Form, EmailField, BooleanField
 from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
 from django.http import HttpResponse, HttpResponseForbidden, Http404
 from django.shortcuts import render_to_response, get_object_or_404, redirect
@@ -33,7 +33,7 @@ from unpaid_members import unpaid_members_data
 
 from services.views import check_alias_availability, validate_alias
 
-from management.commands.csvbills import process_csv as payment_csv_import
+from management.commands.csvbills import process_op_csv, process_procountor_csv
 from management.commands.paper_reminders import get_reminders, get_data as get_paper_reminders
 # TODO: urls shouldn't depend on mgmt cmd get_reminders; can be refactored into models
 from decorators import trusted_host_required
@@ -486,7 +486,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
 def bill_edit(request, id, template_name='membership/entity_edit.html'):
     bill = get_object_or_404(Bill, id=id)
 
-    class Form(ModelForm):    
+    class Form(ModelForm):
         class Meta:
             model = Bill
             exclude = ('billingcycle', 'reminder_count')
@@ -496,7 +496,7 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
             instance = getattr(self, 'instance', None)
             if instance and instance.pk:
                 self.fields['type'].widget.attrs['readonly'] = True
-            
+
         def clean_type(self):
             instance = getattr(self, 'instance', None)
             if instance and instance.pk:
@@ -573,6 +573,8 @@ def import_payments(request, template_name='membership/import_payments.html'):
     class PaymentCSVForm(Form):
         csv = FileField(label=_('CSV File'),
                          help_text=_('Choose CSV file to upload'))
+        format = ChoiceField(choices=(('op', 'Osuuspankki'), ('procountor', 'Procountor')),
+                           help_text=_("File type"))
 
     if request.method == 'POST':
         form = PaymentCSVForm(request.POST, request.FILES)
@@ -580,7 +582,10 @@ def import_payments(request, template_name='membership/import_payments.html'):
             try:
                 in_memory_file = request.FILES['csv']
                 logger.info("Beginning payment import.")
-                import_messages = payment_csv_import(in_memory_file, user=request.user)
+                if form.cleaned_data['format'] == 'op':
+                    import_messages = process_op_csv(in_memory_file, user=request.user)
+                elif form.cleaned_data['format'] == 'procountor':
+                    import_messages = process_procountor_csv(in_memory_file, user=request.user)
                 messages.success(request, unicode(_("Payment import succeeded!")))
             except:
                   logger.error("%s" % traceback.format_exc())
