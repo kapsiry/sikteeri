@@ -322,7 +322,8 @@ if AUTH_USE_LDAP:
     AUTH_LDAP_FIND_GROUP_PERMS = config.get('AUTH_LDAP_FIND_GROUP_PERMS', False)
     if AUTH_LDAP_FIND_GROUP_PERMS:
         AUTH_LDAP_GROUP_SEARCH_DN = config.get('AUTH_LDAP_GROUP_SEARCH_DN')
-        AUTH_LDAP_GROUP_SEARCH_FILTER = config.get('AUTH_LDAP_GROUP_SEARCH_FILTER')
+        AUTH_LDAP_GROUP_SEARCH_FILTER = config.get(
+            'AUTH_LDAP_GROUP_SEARCH_FILTER')
         assert AUTH_LDAP_GROUP_SEARCH_DN, \
                "Need AUTH_LDAP_GROUP_SEARCH_DN to find groups"
         assert AUTH_LDAP_GROUP_SEARCH_FILTER, \
@@ -342,8 +343,11 @@ if AUTH_USE_LDAP:
         AUTH_LDAP_MIRROR_GROUPS = True
         # cache groups for 5 minutes by default
         AUTH_LDAP_CACHE_GROUPS = config.get('AUTH_LDAP_CACHE_GROUPS', True)
-        AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get('AUTH_LDAP_GROUP_CACHE_TIMEOUT',
-                                                   300)
+        AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get(
+            'AUTH_LDAP_GROUP_CACHE_TIMEOUT', 300)
+        AUTH_LDAP_USER_FLAGS_BY_GROUP = config.get(
+            'AUTH_LDAP_USER_FLAGS_BY_GROUP', {})
+
     # update permissions on every login
     AUTH_LDAP_ALWAYS_UPDATE_USER = config.get('AUTH_LDAP_ALWAYS_UPDATE_USER',
                                               True)
