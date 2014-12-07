@@ -15,12 +15,12 @@
 
   "BILL_ATTACH_PDF": true,
 
-  "IBAN_ACCOUNT_NUMBER": "FI00 0000 0000 0000 00",
-  "BIC_CODE": "AAAAAAAA",
+  "IBAN_ACCOUNT_NUMBER": "FI2112345600000785",
+  "BIC_CODE": "NDEAFIHH",
   "BANK_NAME": "OP",
   "BILL_DAYS_BEFORE_CYCLE": 14,
   "BILL_DAYS_TO_DUE": 14,
-  "BILLING_FROM_EMAIL": "from@example.com",
+  "BILLING_FROM_EMAIL": "billing@example.com",
   "BILLING_CC_EMAIL": null,
   "BILL_SUBJECT": "Test bill, ignore",
   "ENABLE_REMINDERS": false,

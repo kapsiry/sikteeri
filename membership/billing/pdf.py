@@ -5,7 +5,7 @@ Code to make pdf bills and reminders
 """
 
 from membership.reference_numbers import barcode_4
-from membership.utils import humanize_string
+from membership.utils import group_iban, group_reference
 
 from django.conf import settings
 
@@ -16,10 +16,9 @@ from datetime import datetime, timedelta
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, cm
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Table
 from reportlab.graphics.barcode import code128
 
 import locale
@@ -115,7 +114,7 @@ class PDFTemplate(object):
         length = self.scale(length)
         self.c.line(startx,starty,startx + length,starty)
 
-    def drawString(self, x, y, line, font=None, size=None, alignment="left"):
+    def drawString(self, x, y, line, font=None, size=None, alignment="left", flip=False):
         if font is None:
             font = self.font
         if size is None:
@@ -126,7 +125,11 @@ class PDFTemplate(object):
             self.c.setFont("%s-Bold" % font, size)
         else:
             self.c.setFont(font, size)
-        y = self.real_y(y)
+        if flip:
+            self.c.rotate(90)
+            y = -1 * self.scale(y)
+        else:
+            y = self.real_y(y)
         x = self.real_x(x)
         if alignment == 'left':
             self.c.drawString(x, y, line)
@@ -136,6 +139,8 @@ class PDFTemplate(object):
             self.c.drawRightString(x, y, line)
         else:
             raise RuntimeError("Invalid alignment %s" % alignment)
+        if flip:
+            self.c.rotate(-90)
 
     def drawBox(self, x, y, width, height, stroke=1):
         width = self.scale(width)
@@ -239,7 +244,7 @@ class PDFTemplate(object):
                 'pretty_sum': locale.format('%.2f', self.cycle.sum),
                 'notify_period': '%d vrk' % (settings.REMINDER_GRACE_DAYS,),
                 'bills': bills,
-                'reference_number': humanize_string(self.cycle.reference_number)
+                'reference_number': group_reference(self.cycle.reference_number)
         }
 
     def addTemplate(self):
@@ -282,25 +287,48 @@ class PDFTemplate(object):
         self.drawHorizontalStroke(1,18, 18.5)
 
         self.drawText(1,18.5, u"<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
-        self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttp://www.kapsi.fi/", size=7)
-        self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.FROM_EMAIL,
+        self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttps://www.kapsi.fi/", size=7)
+        self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.BILLING_FROM_EMAIL,
                                              settings.BUSINESS_ID, settings.ORGANIZATIO_REG_ID), size=7)
-        self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (humanize_string(settings.IBAN_ACCOUNT_NUMBER),
+        self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (group_iban(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
 
         # Bill part
 
-        self.drawText(1,20, u"Saajan\ntilinumero\nMottagarens\nkontonummer", size=6)
-        self.drawText(3.1, 20.6, u"%s   %s   %s" % (settings.BANK_NAME, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
-                                                   settings.BIC_CODE), size=9)
-        self.drawText(1,21.8, u"Saaja\nMottagaren", size=6)
-        self.drawText(3.1, 21.5, u"Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
-        self.drawText(1,23, u"Maksajan\nnimi ja\nosoite\n\nBetalarens\nnamn och\nadress", size=6)
-        self.drawText(3.1, 23.5, u"%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(email)s" % self.data, size=9)
-        self.drawText(1,25.4, u"Alle-\nkirjoitus\nYnderskrift", size=6)
-        self.drawText(1,26.5, u"Tililtä nro\nFrån konto nr", size=6)
+        self.drawString(2.3, 20, u"Saajan", size=6, alignment="right")
+        self.drawString(2.3, 20.2, u"tilinumero", size=6, alignment="right")
+        self.drawString(2.3, 20.5, u"Mottagarens", size=6, alignment="right")
+        self.drawString(2.3, 20.7, u"kontonummer", size=6, alignment="right")
 
-        self.drawText(2.9,20, u"IBAN", size=7)
+        self.drawText(3.0, 20.6, u"%s   %s   %s" % (settings.BANK_NAME, group_iban(settings.IBAN_ACCOUNT_NUMBER),
+                                                   settings.BIC_CODE), size=9)
+
+
+        self.drawString(2.3, 21.7, u"Saaja", size=6, alignment="right")
+        self.drawString(2.3, 22.0, u"Mottagaren", size=6, alignment="right")
+
+        self.drawText(3.0, 21.5, u"Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
+
+        self.drawString(2.4, 23, u"Maksajan", size=6, alignment="right")
+        self.drawString(2.4, 23.2, u"nimi ja", size=6, alignment="right")
+        self.drawString(2.4, 23.4, u"osoite", size=6, alignment="right")
+        self.drawString(2.4, 23.7, u"Betalarens", size=6, alignment="right")
+        self.drawString(2.4, 23.9, u"namn och", size=6, alignment="right")
+        self.drawString(2.4, 24.1, u"adress", size=6, alignment="right")
+
+        self.drawText(3.0, 23.5, u"%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(email)s" % self.data, size=9)
+
+
+        self.drawString(2.4, 25.6, u"Allekirjoitus", size=6, alignment="right")
+        #self.drawString(2.3, 25.6, u"", size=6, alignment="right")
+        self.drawString(2.4, 25.9, u"Ynderskrift", size=6, alignment="right")
+
+        self.drawString(2.3, 26.5, u"Tililtä", size=6, alignment="right")
+        self.drawString(2.3, 26.75, u"Från konto nr", size=6, alignment="right")
+
+        self.drawString(3.75, 1.4, u"<b>TILISIIRTO GIRERING</b>", size=8, flip=True)
+
+        self.drawText(3.0,20, u"IBAN", size=7)
 
         self.drawText(11.15,25.6, u"Viitenro\nRef.nr", size=7)
         self.drawText(13.15,25.7, u"%(reference_number)s" % self.data, size=9)
@@ -353,13 +381,13 @@ Tämä on muistutus puuttuvasta jäsenmaksusuorituksesta. Alkuperäinen lasku on
 Mikäli et ole saanut sitä, tarkistathan että sähköpostiosoitteesi on oikein jäsenrekisterissä (listattu maksajan tiedoissa
 alla).
 
-Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esimerkiksi seuraavissa tilanteissa:
+Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa tilanteissa:
 - jos tämä lasku on mielestäsi virheellinen
 - haluat erota yhdistyksestä
 - haluat muuttaa yhteystietojasi
 - haluat sopia maksuaikataulusta
 - sinulla on muuta kysyttävää jäsenasioista.
-""", size=10)
+""" % (settings.BILLING_FROM_EMAIL,), size=10)
 
         self.drawText(1,16, u"<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
         self.drawText(1,17, u"Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(date)s asti." % self.data, size=10)
@@ -371,13 +399,13 @@ class PDFInvoice(PDFTemplate):
     def addContent(self):
         self.drawString(10.5, 2, u"<b>LASKU</b>", alignment="center")
         self.drawText(1, 10, u"""
-Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esimerkiksi seuraavissa tilanteissa:
+Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa tilanteissa:
    - tämä lasku on sinusta virheellinen
    - haluat erota yhdistyksestä
    - haluat muuttaa yhteystietojasi
    - haluat sopia maksuaikataulusta
    - sinulla on muuta kysyttävää jäsenasioista
-""", size=10)
+""" % (settings.BILLING_FROM_EMAIL,), size=10)
         if self.data['bill_id']:
             self.drawText(11.5,23.4, u"Laskunumero %s" % self.data['bill_id'], size=10)
 

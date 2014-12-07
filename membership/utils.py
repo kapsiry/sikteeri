@@ -334,11 +334,23 @@ def sort_objects(request, **kwargs):
             kwargs['queryset'] = kwargs['queryset'].order_by(sort)
     return kwargs
 
-def humanize_string(string):
+def group_iban(string):
     """
-    Split string to have space after ever fourth character.
+    Split IBAN to have space after every fourth character.
+    e.g. 1111 1111 1111 1111 11
     :param string: input string
     :return: modified string
     """
     string = ''.join(string.split())
     return ''.join(e if (i+1) % 4 else e+" " for (i,e) in enumerate(string)).strip()
+
+
+def group_reference(string):
+    """
+    Group reference number to have space after every fifth number
+    e.g. 1 23456
+    :param string: input string
+    :return: modified string
+    """
+    string = ''.join(string.split())
+    return ''.join(e if (len(string) - i - 1) % 5 else e + " " for (i, e) in enumerate(string)).strip()
