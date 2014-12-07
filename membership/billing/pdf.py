@@ -29,14 +29,13 @@ locale.setlocale(locale.LC_ALL, 'fi_FI')
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
-pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(PROJECT_PATH, 'media/fonts/IstokWeb-Regular.ttf')))
-pdfmetrics.registerFont(TTFont('IstokWeb-Bold', os.path.join(PROJECT_PATH, 'media/fonts/IstokWeb-Bold.ttf')))
+pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(settings.FONT_PATH, 'IstokWeb-Regular.ttf')))
+pdfmetrics.registerFont(TTFont('IstokWeb-Bold', os.path.join(settings.FONT_PATH, 'IstokWeb-Bold.ttf')))
 
-LOGO = os.path.join(PROJECT_PATH, 'media/img/kapsi-logo.jpg')
+LOGO = os.path.join(settings.IMG_PATH, 'kapsi-logo.jpg')
 
 # Unit is centimeter from left upper corner of page
 
-# TODO: use the tempfile library http://docs.python.org/2/library/tempfile.html
 # TODO: Unittests for pdf
 
 class PDFTemplate(object):
@@ -116,7 +115,7 @@ class PDFTemplate(object):
         length = self.scale(length)
         self.c.line(startx,starty,startx + length,starty)
 
-    def drawString(self, x, y, line, font=None, size=None, aligment="left"):
+    def drawString(self, x, y, line, font=None, size=None, alignment="left"):
         if font is None:
             font = self.font
         if size is None:
@@ -129,14 +128,14 @@ class PDFTemplate(object):
             self.c.setFont(font, size)
         y = self.real_y(y)
         x = self.real_x(x)
-        if aligment == 'left':
+        if alignment == 'left':
             self.c.drawString(x, y, line)
-        elif aligment == 'center':
+        elif alignment == 'center':
             self.c.drawCentredString(x , y, line)
-        elif aligment == 'right':
+        elif alignment == 'right':
             self.c.drawRightString(x, y, line)
         else:
-            raise RuntimError("Invalid aligment %s" % aligment)
+            raise RuntimeError("Invalid alignment %s" % alignment)
 
     def drawBox(self, x, y, width, height, stroke=1):
         width = self.scale(width)
@@ -207,18 +206,18 @@ class PDFTemplate(object):
         vat = (self.cycle.sum / (Decimal(1) + vatp)) * vatp
         amount = self.cycle.sum - vat
         if self.__type__ == 'reminder':
-            due_date = "HETI"
+            due_date = u"HETI"
         else:
             due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
             due_date = due_date.strftime("%d.%m.%Y")
         bills = []
         # ['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €']
         bills.append(['1',
-                      "Jäsenmaksu",
-                      "%s - %s" % (self.cycle.start.strftime('%d.%m.%Y'), self.cycle.end.strftime('%d.%m.%Y')),
-                      "%s €" % locale.format("%.2f", amount),
-                      "%s €" % locale.format("%.2f", vat),
-                      "%s €" % locale.format("%.2f", self.cycle.sum)])
+                      u"Jäsenmaksu",
+                      u"%s - %s" % (self.cycle.start.strftime('%d.%m.%Y'), self.cycle.end.strftime('%d.%m.%Y')),
+                      u"%s €" % locale.format("%.2f", amount),
+                      u"%s €" % locale.format("%.2f", vat),
+                      u"%s €" % locale.format("%.2f", self.cycle.sum)])
         first_bill = self.cycle.first_bill()
         if first_bill:
             bill_id = first_bill.id
@@ -246,7 +245,7 @@ class PDFTemplate(object):
     def addTemplate(self):
         # Logo to upper left corner
         self.drawImage(0.2, 0, 5, 2.5, LOGO)
-        self.drawString(10.5, 3, u"%(date)s" % self.data, aligment="center", size=12)
+        self.drawString(10.5, 3, u"%(date)s" % self.data, alignment="center", size=12)
         self.drawString(1.5, 3, u"Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
                       size=8)
         # Address block
@@ -254,13 +253,12 @@ class PDFTemplate(object):
         #self.drawHorizontalStroke()
 
         self.drawBox(14.5, 3.5, 5, 1.7)
-        self.drawTable(14.9, 4, [['Jäsennumero:', '%(member_id)s' % self.data],
-                              ['Eräpäivä:', '%(due_date)s' % self.data],
-                              ['Huomautusaika:','%(notify_period)s' % self.data]
+        self.drawTable(14.9, 4, [[u'Jäsennumero:', '%(member_id)s' % self.data],
+                              [u'Eräpäivä:', '%(due_date)s' % self.data],
+                              [u'Huomautusaika:','%(notify_period)s' % self.data]
                               ], size=10)
 
         xtable = [1,1.5,7,13,15,17]
-        #self.drawString(xtable[0],6.5, "Rivinumero", size=9)
         self.drawString(xtable[1],6.5, u"Selite", size=9)
         self.drawString(xtable[2],6.5, u"Aikaväli", size=9)
         self.drawString(xtable[3],6.5, u"alv 0 %", size=9)
@@ -286,14 +284,14 @@ class PDFTemplate(object):
         self.drawText(1,18.5, u"<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
         self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttp://www.kapsi.fi/", size=7)
         self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.FROM_EMAIL,
-                                             settings.BUSINESS_ID, settings.ORGANIZATIO_REGISTER_NUMBER), size=7)
+                                             settings.BUSINESS_ID, settings.ORGANIZATIO_REG_ID), size=7)
         self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (humanize_string(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
 
         # Bill part
 
         self.drawText(1,20, u"Saajan\ntilinumero\nMottagarens\nkontonummer", size=6)
-        self.drawText(3.1, 20.6, u"%s   %s   %s" % (settings.BANK_OPERATOR, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
+        self.drawText(3.1, 20.6, u"%s   %s   %s" % (settings.BANK_NAME, humanize_string(settings.IBAN_ACCOUNT_NUMBER),
                                                    settings.BIC_CODE), size=9)
         self.drawText(1,21.8, u"Saaja\nMottagaren", size=6)
         self.drawText(3.1, 21.5, u"Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
@@ -348,8 +346,8 @@ class PDFTemplate(object):
 class PDFReminder(PDFTemplate):
     __type__ = 'reminder'
     def addContent(self):
-        self.drawString(10.5, 2, "<b>MUISTUTUS</b>", aligment="center")
-        self.drawText(1, 10, """Hei!
+        self.drawString(10.5, 2, u"<b>MUISTUTUS</b>", alignment="center")
+        self.drawText(1, 10, u"""Hei!
 
 Tämä on muistutus puuttuvasta jäsenmaksusuorituksesta. Alkuperäinen lasku on lähetetty ainoastaan sähköpostitse.
 Mikäli et ole saanut sitä, tarkistathan että sähköpostiosoitteesi on oikein jäsenrekisterissä (listattu maksajan tiedoissa
@@ -363,16 +361,16 @@ Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esi
 - sinulla on muuta kysyttävää jäsenasioista.
 """, size=10)
 
-        self.drawText(1,16, "<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
-        self.drawText(1,17, "Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(date)s asti." % self.data, size=10)
+        self.drawText(1,16, u"<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
+        self.drawText(1,17, u"Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(date)s asti." % self.data, size=10)
         if self.data['bill_id']:
-            self.drawText(11.5,23.4, "Muistutus laskulle numero %s" % self.data['bill_id'], size=10)
+            self.drawText(11.5,23.4, u"Muistutus laskulle numero %s" % self.data['bill_id'], size=10)
 
 class PDFInvoice(PDFTemplate):
     __type__ = 'invoice'
     def addContent(self):
-        self.drawString(10.5, 2, "<b>LASKU</b>", aligment="center")
-        self.drawText(1, 10, """
+        self.drawString(10.5, 2, u"<b>LASKU</b>", alignment="center")
+        self.drawText(1, 10, u"""
 Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esimerkiksi seuraavissa tilanteissa:
    - tämä lasku on sinusta virheellinen
    - haluat erota yhdistyksestä
@@ -381,64 +379,5 @@ Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen laskutus@tuki.kapsi.fi esi
    - sinulla on muuta kysyttävää jäsenasioista
 """, size=10)
         if self.data['bill_id']:
-            self.drawText(11.5,23.4, "Laskunumero %s" % self.data['bill_id'], size=10)
+            self.drawText(11.5,23.4, u"Laskunumero %s" % self.data['bill_id'], size=10)
 
-
-if __name__ == '__main__':
-    from membership.models import Contact, Membership, BillingCycle, Bill
-
-    contact = Contact()
-    contact.first_name = u"Antero"
-    contact.given_name = u"Antero Ilmari"
-    contact.last_name = u"Marttila"
-    contact.street_address = u'Läppäkuja 16 A 24'
-    contact.postal_code = '00500'
-    contact.post_office = 'Helsinki'
-    contact.country = "Suomi"
-    contact.phone = '40403123123'
-    contact.sms = '40403123123'
-    contact.email = "test@example.com"
-
-
-    member = Membership()
-    member.id = 4444
-    member.type = 'P'
-    member.status = 'A'
-    member.public_memberlist = True
-    member.municipality = 'Helsinki'
-    member.nationality = 'Suomi'
-    member.birth_year = 1990
-    member.person = contact
-    member.locked = False
-
-    cycle = BillingCycle()
-    cycle.membership = member
-    cycle.start = datetime.now()
-    cycle.end = datetime.now() + timedelta(seconds=31536000)
-    cycle.sum = Decimal(40.00)
-    cycle.is_paid = False
-    cycle.reference_number = "2600013"
-
-
-    p = PDFReminder('example_reminder.pdf', cycle)
-    p.addCycle(cycle)
-    p.generate()
-    PDFInvoice('example_invoice.pdf', cycle).generate()
-
-
-    """
-    PDFRemainder('ex.pdf').generate({'name': 'Antero Marttila', 'address': 'Läppäkuja 16 A 24',
-                   'postal_code':'00500', 'postal_office':'Helsinki',
-                   'date': '04.05.2011', 'member_id': '123456', 'due_date': 'HETI',
-                   'email': 'antero@kapsi.fi',
-                   'amount': 32.74, 'vat': 7.26, 'sum': 80.0,
-                   'notify_period': '8vrk', 'bills': [['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €'], ['2', 'Jäsenmaksu', '04.05.2011 - 04.05.2012', '32.74 €', '7.26 €','40.00 €']],
-                   'reference_number': "2600012"})
-    PDFInvoice('ex.pdf').generate({'name': 'Antero Marttila', 'address': 'Läppäkuja 16 A 24',
-                   'postal_code':'00500', 'postal_office':'Helsinki',
-                   'date': '04.05.2011', 'member_id': '123456', 'due_date': 'HETI',
-                   'email': 'antero@kapsi.fi',
-                   'amount': 32.74, 'vat': 7.26, 'sum': 80.0,
-                   'notify_period': '8vrk', 'bills': [['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €'], ['2', 'Jäsenmaksu', '04.05.2011 - 04.05.2012', '32.74 €', '7.26 €','40.00 €']],
-                   'reference_number': "2600012"})
-    """

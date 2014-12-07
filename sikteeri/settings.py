@@ -81,7 +81,7 @@ def get_required(key):
 # Billing settings
 IBAN_ACCOUNT_NUMBER = get_required('IBAN_ACCOUNT_NUMBER')
 BIC_CODE = get_required('BIC_CODE')
-BANK_OPERATOR = get_required('BANK_OPERATOR')
+BANK_NAME = get_required('BANK_NAME')
 BILLING_FROM_EMAIL = get_required('BILLING_FROM_EMAIL')
 BILLING_CC_EMAIL = config.get('BILLING_CC_EMAIL')
 BILL_SUBJECT = get_required('BILL_SUBJECT')
@@ -96,7 +96,7 @@ BILL_DAYS_TO_DUE = int(get_required('BILL_DAYS_TO_DUE'))
 # Send reminders how many days after previous due date?
 REMINDER_GRACE_DAYS = int(get_required('REMINDER_GRACE_DAYS'))
 ENABLE_REMINDERS = config.get('ENABLE_REMINDERS', False)
-PDF_BILLS = config.get('PDF_BILLS', False)
+BILL_ATTACH_PDF = config.get('BILL_ATTACH_PDF', True)
 # If set, a copy of reminders is sent to account@domain
 UNIX_EMAIL_DOMAIN = config.get('UNIX_EMAIL_DOMAIN', None)
 
@@ -105,8 +105,13 @@ FROM_EMAIL = get_required('FROM_EMAIL')
 SYSADMIN_EMAIL = get_required('SYSADMIN_EMAIL')
 
 # Organization information 
-ORGANIZATIO_REGISTER_NUMBER = get_required("ORGANIZATIO_REGISTER_NUMBER")
+ORGANIZATIO_REG_ID = get_required("ORGANIZATIO_REG_ID")
 BUSINESS_ID = get_required("BUSINESS_ID")
+
+# PDF settings
+
+FONT_PATH = os.path.join(BASE_DIR, 'external/fonts')
+IMG_PATH = os.path.join(BASE_DIR, 'external/img')
 
 # When PRODUCTION is true, show production graphics and colours.
 # Otherwise indicate that this is a development environment (logo, colour)

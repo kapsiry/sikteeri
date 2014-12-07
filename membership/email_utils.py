@@ -37,7 +37,7 @@ def bill_sender(sender, instance=None, **kwargs):
         if local_email:
             to.append(local_email)
 
-    if settings.PDF_BILLS:
+    if settings.BILL_ATTACH_PDF:
         pdf = instance.generate_pdf()
         if instance.is_reminder():
             attachments = [("Kapsi_muistutuslasku_%s.pdf" % instance.billingcycle.reference_number, pdf, "application/pdf")]

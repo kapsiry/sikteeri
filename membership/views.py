@@ -20,7 +20,7 @@ from django.db import transaction
 from django.forms import ChoiceField, ModelForm, Form, EmailField, BooleanField
 from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseForbidden, Http404
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
@@ -535,7 +535,7 @@ def bill_pdf(request, bill_id):
             return response
     except Exception as e:
         logger.exception("Failed to generate pdf for bill %s" % bill.id)
-    response = HttpResponse("Failed to generate pdf", content_type='plain/text')
+    response = HttpResponseServerError("Failed to generate pdf", content_type='plain/text', )
     return response
 
 @permission_required('membership.manage_bills')

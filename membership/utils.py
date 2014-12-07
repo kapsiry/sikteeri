@@ -338,14 +338,7 @@ def humanize_string(string):
     """
     Split string to have space after ever fourth character.
     :param string: input string
-    :return: modifed string
+    :return: modified string
     """
-    out = []
     string = ''.join(string.split())
-    i = 0
-    for char in string:
-        if (i % 4) == 0:
-            out.append(" ")
-        out.append(char)
-        i += 1
-    return ''.join(out)
+    return ''.join(e if (i+1) % 4 else e+" " for (i,e) in enumerate(string)).strip()
