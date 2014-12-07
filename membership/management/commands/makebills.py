@@ -122,7 +122,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         translation.activate(settings.LANGUAGE_CODE)
         makebills()
-        if settings.PAPER_REMINDER_TEMPLATE:
+        if settings.PDF_BILLS:
             # create paper-reminders
             try:
                 generate_reminders()
