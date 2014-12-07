@@ -8,6 +8,8 @@ from membership.reference_numbers import barcode_4, group_right,\
 logger = logging.getLogger("membership.models")
 import traceback
 
+from cStringIO import StringIO
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db import transaction
@@ -25,6 +27,8 @@ from utils import log_change, tupletuple_to_dict
 
 from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
 from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
+
+from membership import pdf
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
@@ -561,6 +565,12 @@ class BillingCycle(models.Model):
         except ObjectDoesNotExist:
             return None
 
+    def first_bill(self):
+        try:
+            return self.bill_set.first("due_date")
+        except ObjectDoesNotExist:
+            return None
+
     def is_first_bill_late(self):
         if self.is_paid:
             return False
@@ -744,6 +754,23 @@ class Bill(models.Model):
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.save()
+
+
+    def generate_pdf(self):
+        """
+        Generate pdf and return pdf content
+        """
+        buffer = StringIO()
+        if self.is_reminder():
+            # This is reminder
+            p = pdf.PDFReminder(buffer)
+        else:
+            p = pdf.PDFInvoice(buffer)
+        p.addCycle(self.billingcycle)
+        p.generate()
+        response = buffer.getvalue()
+        buffer.close()
+        return response
 
     def bill_subject(self):
         if not self.is_reminder():
