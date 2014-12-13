@@ -1,5 +1,5 @@
 #!/bin/bash
 
-for i in membership sikteeri ; do
+for i in membership sikteeri services; do
 	(cd $i && django-admin.py compilemessages)
 done

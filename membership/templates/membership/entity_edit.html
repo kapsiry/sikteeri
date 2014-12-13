@@ -58,19 +58,19 @@
 
 {% if payment and perms.membership.manage_bills %}
 {% if not payment.billingcycle and payment.comment = 'duplikaattimaksu' %}
-<h2>Actions</h2>
+<h2>{% trans "Actions"|capfirst %}</h2>
 <a href="{% url "payment_send_duplicate_notification" payment.id %}">{% trans "Send duplicate payment notice" %}</a>
 {% endif %}
 {% endif %}
 {% if cycle and perms.membership.manage_bills %}
 {% if not cycle.is_paid or not cycle.amount_paid %}
-<h2>Actions</h2>
+<h2>{% trans "Actions"|capfirst %}</h2>
 <a href="{% url "billingcycle_connect_payment" cycle.id %}">{% trans "Assign a payment to this billing cycle" %}</a>
 {% endif %}
 {% endif %}
 
 {% if payment and payment.billingcycle and perms.membership.manage_bills %}
-<h2>Actions</h2>
+<h2>{% trans "Actions"|capfirst %}</h2>
 {% trans "Unassign this payment from the current billing cycle" %}	
 {% endif %}
 

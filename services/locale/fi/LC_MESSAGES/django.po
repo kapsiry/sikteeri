@@ -1,0 +1,64 @@
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sikteeri 1.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-12-13 11:20+0200\n"
+"PO-Revision-Date: 2011-04-01 09:13+0300\n"
+"Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin.py:11
+msgid "Starts with"
+msgstr "Alkaa"
+
+#: models.py:38 models.py:60
+msgid "Service type"
+msgstr "Palvelutyyppi"
+
+#: models.py:39
+msgid "Related alias"
+msgstr "Palveluun liittyvä alias"
+
+#: models.py:40
+msgid "Service owner"
+msgstr "Palvelun omistaja"
+
+#: models.py:41
+msgid "Service specific data"
+msgstr "Palvelukohtainen tieto"
+
+#: models.py:69
+msgid "Alias owner"
+msgstr "Aliaksen omistaja"
+
+#: models.py:70
+msgid "Alias name"
+msgstr "Aliaksen nimi"
+
+#: models.py:71
+msgid "Is UNIX account"
+msgstr "On UNIX-tunnus"
+
+#: models.py:72
+msgid "Created"
+msgstr "Luotu"
+
+#: models.py:73
+msgid "Comment"
+msgstr "Kommentti"
+
+#: models.py:74
+msgid "Alias expiration date"
+msgstr "Aliaksen vanheneminen"
+
+#: views.py:81
+#, python-brace-format
+msgid "Alias {alias} successfully created for {membership}."
+msgstr "Alias {alias} onnistuneesti luotu jäsenelle {membership}"
