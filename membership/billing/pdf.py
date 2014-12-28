@@ -24,7 +24,7 @@ from reportlab.graphics.barcode import code128
 import locale
 
 
-locale.setlocale(locale.LC_ALL, 'fi_FI')
+locale.setlocale(locale.LC_ALL, 'fi_FI.UTF-8')
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
