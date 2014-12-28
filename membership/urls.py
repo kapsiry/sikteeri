@@ -6,8 +6,6 @@ from django.views.generic.base import TemplateView
 
 from membership.models import Contact, Membership, Payment, BillingCycle
 from django.conf import settings
-# TODO: urls shouldn't depend on management commands; needs to be factored into models
-from management.commands.paper_reminders import get_data as get_paper_reminders
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
@@ -50,6 +48,7 @@ urlpatterns = patterns('',
     url(r'memberships/convert_to_an_organization/(\d+)/$', 'membership.views.membership_convert_to_organization', name='membership_convert_to_organization'),
 
     url(r'bills/edit/(\d+)/$', 'membership.views.bill_edit', name='bill_edit'),
+    url(r'bills/pdf/(\d+)/$', 'membership.views.bill_pdf', name='bill_pdf'),
     url(r'billing_cycles/connect_payment/(\d+)/$', 'membership.views.billingcycle_connect_payment', name='billingcycle_connect_payment'),
     url(r'billing_cycles/edit/(\d+)/$', 'membership.views.billingcycle_edit', name='billingcycle_edit'),
 
@@ -139,7 +138,7 @@ urlpatterns = patterns('',
          'context_object_name': 'cycle_list',
          'paginate_by': ENTRIES_PER_PAGE}, name='unpaid_cycle_list'),
     url(r'bills/locked/$', 'membership.views.billing_object_list',
-        {'queryset': get_paper_reminders(),
+        {'queryset': BillingCycle.get_reminder_billingcycles(),
          'template_name': 'membership/bill_list.html',
          'context_object_name': 'cycle_list',
          'paginate_by': ENTRIES_PER_PAGE}, name='locked_cycle_list'),
