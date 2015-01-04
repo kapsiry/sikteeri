@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
 from django.core.files.storage import FileSystemStorage
+from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
 
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
@@ -28,7 +29,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
 
-from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
+from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
 from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
 
 
@@ -660,7 +661,18 @@ class BillingCycle(models.Model):
         return qs
 
     @classmethod
-    def create_paper_remainder_list(cls, memberid=None):
+    def get_pdf_reminders(cls, memberid=None):
+        buffer = StringIO()
+        cycles = cls.create_paper_reminder_list(memberid)
+        if len(cycles) == 0:
+            return None
+        create_reminder_pdf(cycles, buffer, payments=Payment)
+        pdf_content = buffer.getvalue()
+        buffer.close()
+        return pdf_content
+
+    @classmethod
+    def create_paper_reminder_list(cls, memberid=None):
         """
         Create list of BillingCycles with missing payments and which already don't have paper bill.
         :param memberid: optional member id
@@ -796,6 +808,13 @@ class Bill(models.Model):
                                      euros = sum)
                 })
 
+    def generate_pdf(self):
+        """
+        Generate pdf and return pdf content
+        """
+        return get_bill_pdf(self, payments=Payment)
+
+
     # FIXME: Should save sending date
     def send_as_email(self):
         membership = self.billingcycle.membership
@@ -805,6 +824,7 @@ class Bill(models.Model):
                 sender, error = item
                 if error != None:
                     logger.error("%s" % traceback.format_exc())
+                    logger.exception("Error while sending email")
                     raise error
         else:
             self.billingcycle.is_paid = True

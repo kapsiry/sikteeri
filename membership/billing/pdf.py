@@ -6,7 +6,6 @@ Code to make pdf bills and reminders
 
 from membership.reference_numbers import barcode_4
 from membership.utils import group_iban, group_reference
-from membership.models import Payment
 
 from django.conf import settings
 
@@ -70,25 +69,25 @@ class PDFTemplate(object):
         self.c = canvas.Canvas(self._filename, pagesize=A4,
                                bottomup = 1)
 
-    def addCycle(self, cycle):
+    def addCycle(self, cycle, payments=None):
         self.c.scale(72.0/self._dpi, 72.0/self._dpi)
-        self.createData(cycle)
+        self.createData(cycle, payments=payments)
         self.addTemplate()
         self.addContent()
         self.c.showPage()
         self.page_count += 1
 
-    def addBill(self, bill):
+    def addBill(self, bill, payments=None):
         self.c.scale(72.0/self._dpi, 72.0/self._dpi)
-        self.createData(cycle=bill.billingcycle, bill=bill)
+        self.createData(cycle=bill.billingcycle, bill=bill, payments=payments)
         self.addTemplate()
         self.addContent()
         self.c.showPage()
         self.page_count += 1
 
-    def addCycles(self, cycles):
+    def addCycles(self, cycles, payments=None):
         for cycle in cycles:
-            self.addCycle(cycle)
+            self.addCycle(cycle, payments=payments)
 
     def real_y(self, y):
         y = self.scale(y)
@@ -212,7 +211,7 @@ class PDFTemplate(object):
             self._add_text(line, textobject, font, size)
         self.c.drawText(textobject)
 
-    def createData(self, cycle, bill=None):
+    def createData(self, cycle, bill=None, payments=None):
         # TODO: use Django SHORT_DATE_FORMAT
         membercontact = cycle.membership.get_billing_contact()
         # Calculate proper vat percentages
@@ -247,12 +246,20 @@ class PDFTemplate(object):
             date = bill.created
         else:
             date = datetime.now()
+        if payments:
+            latest_payment_date = payments.latest_payment_date()
+            if latest_payment_date:
+                latest_payments = min([payments.latest_payment_date(), datetime.now()])
+            else:
+                latest_payments = datetime(year=2003,month=1, day=1)
+        else:
+            latest_payments = datetime.now()
         self.data = {'name': cycle.membership.name(),
                 'address': membercontact.street_address,
                 'postal_code':membercontact.postal_code,
                 'postal_office':membercontact.post_office,
                 'date': date.strftime("%d.%m.%Y"),
-                'latest_payment_date': min([Payment.latest_payment_date(), datetime.now()]),
+                'latest_payment_date': latest_payments,
                 'member_id': cycle.membership.id,
                 'due_date': due_date,
                 'email': membercontact.email,
