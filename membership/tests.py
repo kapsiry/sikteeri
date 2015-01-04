@@ -165,47 +165,6 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(code, '416574136204069560000350000000000000032287222051110312')
         self.assertEqual(len(code), 54)
 
-def create_dummy_member(status, type='P', mid=None):
-    if status not in ['N', 'P', 'A']:
-        raise Exception("Unknown membership status")
-    if type not in ['P', 'S', 'O', 'H']:
-        raise Exception("Unknown membership type")
-    i = randint(1, 300)
-    fname = random_first_name()
-    d = {
-        'street_address' : 'Testikatu %d'%i,
-        'postal_code' : '%d' % (i+1000),
-        'post_office' : 'Paska kaupunni',
-        'country' : 'Finland',
-        'phone' : "%09d" % (40123000 + i),
-        'sms' : "%09d" % (40123000 + i),
-        'email' : 'user%d@example.com' % i,
-        'homepage' : 'http://www.example.com/%d'%i,
-        'first_name' : fname,
-        'given_names' : '%s %s' % (fname, "Kapsi"),
-        'last_name' : random_last_name(),
-    }
-    contact = Contact(**d)
-    contact.save()
-    if type == 'O':
-        contact.organization_name = contact.name()
-        contact.first_name = u''
-        contact.last_name = u''
-        contact.save()
-        membership = Membership(id=mid, type=type, status=status,
-                                organization=contact,
-                                nationality='Finnish',
-                                municipality='Paska kaupunni',
-                                extra_info='Hintsunlaisesti semmoisia tietoja.')
-    else:
-        membership = Membership(id=mid, type=type, status=status,
-                                person=contact,
-                                nationality='Finnish',
-                                municipality='Paska kaupunni',
-                                extra_info='Hintsunlaisesti semmoisia tietoja.')
-    logger.info("New application %s from %s:." % (str(contact), '::1'))
-    membership.save()
-    return membership
 
 class MembershipStatusTest(TestCase):
     def setUp(self):

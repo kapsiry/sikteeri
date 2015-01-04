@@ -3,8 +3,8 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
+from django.core.files.storage import FileSystemStorage
 
-from membership.billing import pdf
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
 
@@ -696,6 +696,8 @@ class BillingCycle(models.Model):
             self.sum = self.get_fee()
         super(BillingCycle, self).save(*args, **kwargs)
 
+cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
+
 class Bill(models.Model):
     billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
@@ -703,6 +705,7 @@ class Bill(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
+    pdf_file = models.FileField(upload_to="bill_pdfs", storage=cache_storage, null=True)
     type = models.CharField(max_length=1, choices=BILL_TYPES, blank=False, null=False, verbose_name=_('Bill type'), default='E')
     logs = property(_get_logs)
 
@@ -809,23 +812,6 @@ class Bill(models.Model):
                 membership.email, repr(Bill)))
         self.billingcycle.save()
 
-
-    def generate_pdf(self):
-        """
-        Generate pdf and return pdf content
-        """
-        buffer = StringIO()
-        if self.is_reminder():
-            # This is reminder
-            p = pdf.PDFReminder(buffer)
-        else:
-            p = pdf.PDFInvoice(buffer)
-        p.addCycle(self.billingcycle)
-        p.generate()
-        response = buffer.getvalue()
-        buffer.close()
-        return response
-
     def bill_subject(self):
         if not self.is_reminder():
             subject = settings.BILL_SUBJECT
@@ -837,6 +823,7 @@ class Bill(models.Model):
 
     def reference_number(self):
         return self.billingcycle.reference_number
+
 
 class Payment(models.Model):
     class Meta:

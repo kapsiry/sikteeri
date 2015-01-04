@@ -40,9 +40,16 @@ assert config.__class__ == dict, "Config must be dictionary"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config.get('SECRET_KEY')
 
+DEBUG = config.get('DEBUG', DEBUG)
+TEMPLATE_DEBUG = config.get('TEMPLATE_DEBUG', TEMPLATE_DEBUG)
+
 # Where to put collectstatic output
 STATIC_ROOT = config.get('STATIC_ROOT', None)
 
+MEDIA_ROOT = config.get('MEDIA_ROOT', '')
+
+# Where to store cached PDFs
+CACHE_DIRECTORY = config.get('CACHE_DIRECTORY', 'cache')
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.6/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = config.get('ALLOWED_HOSTS', [])
@@ -275,6 +282,9 @@ LOGGING = {
         'sikteeri': {
             'handlers': ['console'],
         },
+        'membership': {
+            'handlers': ['console'],
+        }
     }
 }
 

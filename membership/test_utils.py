@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
-from random import choice
+from random import choice, randint
 import logging
 
+logger = logging.getLogger("membership.test_utils")
+
+
 # Finnish population register center's most popular first names for year 2009
+from membership.models import Membership, Contact
+
 first_names = [
     u"Maria", u"Juhani", u"Aino", u"Veeti", u"Emilia", u"Johannes", u"Venla",
     u"Eetu", u"Sofia", u"Mikael", u"Emma", u"Onni", u"Olivia", u"Matias",
@@ -154,6 +159,48 @@ def random_first_name():
 
 def random_last_name():
     return choice(last_names)
+
+def create_dummy_member(status, type='P', mid=None):
+    if status not in ['N', 'P', 'A']:
+        raise Exception("Unknown membership status")
+    if type not in ['P', 'S', 'O', 'H']:
+        raise Exception("Unknown membership type")
+    i = randint(1, 300)
+    fname = random_first_name()
+    d = {
+        'street_address' : 'Testikatu %d'%i,
+        'postal_code' : '%d' % (i+1000),
+        'post_office' : 'Paska kaupunni',
+        'country' : 'Finland',
+        'phone' : "%09d" % (40123000 + i),
+        'sms' : "%09d" % (40123000 + i),
+        'email' : 'user%d@example.com' % i,
+        'homepage' : 'http://www.example.com/%d'%i,
+        'first_name' : fname,
+        'given_names' : '%s %s' % (fname, "Kapsi"),
+        'last_name' : random_last_name(),
+    }
+    contact = Contact(**d)
+    contact.save()
+    if type == 'O':
+        contact.organization_name = contact.name()
+        contact.first_name = u''
+        contact.last_name = u''
+        contact.save()
+        membership = Membership(id=mid, type=type, status=status,
+                                organization=contact,
+                                nationality='Finnish',
+                                municipality='Paska kaupunni',
+                                extra_info='Hintsunlaisesti semmoisia tietoja.')
+    else:
+        membership = Membership(id=mid, type=type, status=status,
+                                person=contact,
+                                nationality='Finnish',
+                                municipality='Paska kaupunni',
+                                extra_info='Hintsunlaisesti semmoisia tietoja.')
+    logger.info("New application %s from %s:." % (str(contact), '::1'))
+    membership.save()
+    return membership
 
 
 class MockLoggingHandler(logging.Handler):

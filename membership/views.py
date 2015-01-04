@@ -36,7 +36,7 @@ from unpaid_members import unpaid_members_data
 from services.views import check_alias_availability, validate_alias
 
 from management.commands.csvbills import process_op_csv, process_procountor_csv
-from membership.billing.pdf_utils import get_pdf_reminders
+from membership.billing.pdf_utils import get_pdf_reminders, get_bill_pdf
 from decorators import trusted_host_required
 
 from django.db.models.query_utils import Q
@@ -528,10 +528,10 @@ def bill_pdf(request, bill_id):
 
     bill = get_object_or_404(Bill, id=bill_id)
     try:
-        pdf = bill.generate_pdf()
+        pdf = get_bill_pdf(bill)
         if pdf:
             response = HttpResponse(pdf, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=bill_%s.pdf' % bill.id
+            response['Content-Disposition'] = 'inline; filename=bill_%s.pdf' % bill.id
             return response
     except Exception as e:
         logger.exception("Failed to generate pdf for bill %s" % bill.id)
@@ -627,6 +627,7 @@ def print_reminders(request, **kwargs):
                     bill = Bill(billingcycle=billing_cycle, type='P')
                     bill.reminder_count = billing_cycle.bill_set.count()
                     bill.save()
+                    get_bill_pdf(bill)
                 output_messages.append(_('Reminders marked as sent'))
             else:
                 pdf = get_pdf_reminders()
