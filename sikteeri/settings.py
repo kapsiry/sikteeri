@@ -4,6 +4,7 @@ from os import environ
 import json
 import django.conf.global_settings as DEFAULT_SETTINGS
 import dj_database_url
+import locale
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -144,6 +145,8 @@ USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = False
+
+locale.setlocale(locale.LC_ALL, config.get("LOCALE", 'fi_FI.UTF-8'))
 
 # List of finder classes that know how to find static files in
 # various locations.

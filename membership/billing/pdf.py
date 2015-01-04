@@ -26,9 +26,6 @@ from email import utils as emailutils
 
 import locale
 
-
-locale.setlocale(locale.LC_ALL, 'fi_FI.UTF-8')
-
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
 pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(settings.FONT_PATH, 'IstokWeb-Regular.ttf')))
