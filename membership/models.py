@@ -3,8 +3,9 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
+from django.core.files.storage import FileSystemStorage
+from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
 
-from membership.billing import pdf
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
 
@@ -28,7 +29,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from utils import log_change, tupletuple_to_dict
 
-from email_utils import send_as_email, send_preapprove_email, send_duplicate_payment_notice
+from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
 from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
 
 
@@ -660,7 +661,18 @@ class BillingCycle(models.Model):
         return qs
 
     @classmethod
-    def create_paper_remainder_list(cls, memberid=None):
+    def get_pdf_reminders(cls, memberid=None):
+        buffer = StringIO()
+        cycles = cls.create_paper_reminder_list(memberid)
+        if len(cycles) == 0:
+            return None
+        create_reminder_pdf(cycles, buffer, payments=Payment)
+        pdf_content = buffer.getvalue()
+        buffer.close()
+        return pdf_content
+
+    @classmethod
+    def create_paper_reminder_list(cls, memberid=None):
         """
         Create list of BillingCycles with missing payments and which already don't have paper bill.
         :param memberid: optional member id
@@ -696,6 +708,8 @@ class BillingCycle(models.Model):
             self.sum = self.get_fee()
         super(BillingCycle, self).save(*args, **kwargs)
 
+cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
+
 class Bill(models.Model):
     billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
@@ -703,6 +717,7 @@ class Bill(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Last changed'))
+    pdf_file = models.FileField(upload_to="bill_pdfs", storage=cache_storage, null=True)
     type = models.CharField(max_length=1, choices=BILL_TYPES, blank=False, null=False, verbose_name=_('Bill type'), default='E')
     logs = property(_get_logs)
 
@@ -793,6 +808,13 @@ class Bill(models.Model):
                                      euros = sum)
                 })
 
+    def generate_pdf(self):
+        """
+        Generate pdf and return pdf content
+        """
+        return get_bill_pdf(self, payments=Payment)
+
+
     # FIXME: Should save sending date
     def send_as_email(self):
         membership = self.billingcycle.membership
@@ -802,29 +824,13 @@ class Bill(models.Model):
                 sender, error = item
                 if error != None:
                     logger.error("%s" % traceback.format_exc())
+                    logger.exception("Error while sending email")
                     raise error
         else:
             self.billingcycle.is_paid = True
             logger.info('Bill not sent: membership fee zero for %s: %s' % (
                 membership.email, repr(Bill)))
         self.billingcycle.save()
-
-
-    def generate_pdf(self):
-        """
-        Generate pdf and return pdf content
-        """
-        buffer = StringIO()
-        if self.is_reminder():
-            # This is reminder
-            p = pdf.PDFReminder(buffer)
-        else:
-            p = pdf.PDFInvoice(buffer)
-        p.addCycle(self.billingcycle)
-        p.generate()
-        response = buffer.getvalue()
-        buffer.close()
-        return response
 
     def bill_subject(self):
         if not self.is_reminder():
@@ -837,6 +843,7 @@ class Bill(models.Model):
 
     def reference_number(self):
         return self.billingcycle.reference_number
+
 
 class Payment(models.Model):
     class Meta:

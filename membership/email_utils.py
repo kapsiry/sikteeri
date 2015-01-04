@@ -4,16 +4,13 @@ import logging
 logger = logging.getLogger("membership.email_utils")
 
 from django.conf import settings
+
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.dispatch import Signal
 
-# Signals
-send_as_email = Signal(providing_args=["instance"])
-send_preapprove_email = Signal(providing_args=["instance", "user"])
-send_duplicate_payment_notice = Signal(providing_args=["instance","user","billingcycle"])
 
 # Address helper
 def unix_email(membership):
@@ -25,6 +22,7 @@ def unix_email(membership):
         except Alias.DoesNotExist:
             pass
     return None
+
 
 # Signal handlers
 def bill_sender(sender, instance=None, **kwargs):

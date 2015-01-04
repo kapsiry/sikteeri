@@ -12,3 +12,4 @@
 /ve
 django.wsgi
 muistutusviesti.tex
+cache/*

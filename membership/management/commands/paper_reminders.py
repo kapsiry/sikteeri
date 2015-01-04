@@ -3,8 +3,10 @@ from __future__ import with_statement
 
 import logging
 from optparse import make_option
+from tempfile import NamedTemporaryFile
 
 from django.core.management.base import BaseCommand, CommandError
+from membership.models import BillingCycle
 from membership.billing import pdf_utils
 
 logger = logging.getLogger("paper_bills")
@@ -21,7 +23,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            pdffile = pdf_utils.generate_pdf_reminders(memberid=options['member'])
+            with NamedTemporaryFile(suffix=".pdf", prefix='sikteeri', delete=False) as target_file:
+
+                pdfcontent = BillingCycle.get_pdf_reminders(memberid=options['member'])
+                target_file.write(pdfcontent)
+                target_file.close()
+                pdffile = target_file.name
+
             if pdffile:
                 print "pdf file created: %s" % pdffile
             else:

@@ -21,10 +21,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.graphics.barcode import code128
 
+from email import utils as emailutils
+
 import locale
-
-
-locale.setlocale(locale.LC_ALL, 'fi_FI')
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
@@ -36,6 +35,9 @@ LOGO = os.path.join(settings.IMG_PATH, 'kapsi-logo.jpg')
 # Unit is centimeter from left upper corner of page
 
 # TODO: Unittests for pdf
+
+def get_billing_email():
+    return emailutils.parseaddr(settings.BILLING_FROM_EMAIL)[1]
 
 class PDFTemplate(object):
     __type__ = 'invoice'
@@ -67,18 +69,25 @@ class PDFTemplate(object):
         self.c = canvas.Canvas(self._filename, pagesize=A4,
                                bottomup = 1)
 
-    def addCycle(self, cycle):
+    def addCycle(self, cycle, payments=None):
         self.c.scale(72.0/self._dpi, 72.0/self._dpi)
-        self.cycle = cycle
-        self.createData()
+        self.createData(cycle, payments=payments)
         self.addTemplate()
         self.addContent()
         self.c.showPage()
         self.page_count += 1
 
-    def addCycles(self, cycles):
+    def addBill(self, bill, payments=None):
+        self.c.scale(72.0/self._dpi, 72.0/self._dpi)
+        self.createData(cycle=bill.billingcycle, bill=bill, payments=payments)
+        self.addTemplate()
+        self.addContent()
+        self.c.showPage()
+        self.page_count += 1
+
+    def addCycles(self, cycles, payments=None):
         for cycle in cycles:
-            self.addCycle(cycle)
+            self.addCycle(cycle, payments=payments)
 
     def real_y(self, y):
         y = self.scale(y)
@@ -202,16 +211,18 @@ class PDFTemplate(object):
             self._add_text(line, textobject, font, size)
         self.c.drawText(textobject)
 
-    def createData(self):
+    def createData(self, cycle, bill=None, payments=None):
         # TODO: use Django SHORT_DATE_FORMAT
-        membercontact = self.cycle.membership.get_billing_contact()
+        membercontact = cycle.membership.get_billing_contact()
         # Calculate proper vat percentages
         full = Decimal(100)
-        vatp = self.cycle.get_vat_percentage() / full
-        vat = (self.cycle.sum / (Decimal(1) + vatp)) * vatp
-        amount = self.cycle.sum - vat
+        vatp = cycle.get_vat_percentage() / full
+        vat = (cycle.sum / (Decimal(1) + vatp)) * vatp
+        amount = cycle.sum - vat
         if self.__type__ == 'reminder':
             due_date = u"HETI"
+        elif bill:
+            due_date = bill.due_date.strftime("%d.%m.%Y")
         else:
             due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
             due_date = due_date.strftime("%d.%m.%Y")
@@ -219,32 +230,48 @@ class PDFTemplate(object):
         # ['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €']
         bills.append(['1',
                       u"Jäsenmaksu",
-                      u"%s - %s" % (self.cycle.start.strftime('%d.%m.%Y'), self.cycle.end.strftime('%d.%m.%Y')),
+                      u"%s - %s" % (cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y')),
                       u"%s €" % locale.format("%.2f", amount),
+                      u"%s %%" % locale.format("%d", vatp),
                       u"%s €" % locale.format("%.2f", vat),
-                      u"%s €" % locale.format("%.2f", self.cycle.sum)])
-        first_bill = self.cycle.first_bill()
-        if first_bill:
+                      u"%s €" % locale.format("%.2f", cycle.sum)])
+        first_bill = cycle.first_bill()
+        if bill:
+            bill_id = bill.id
+        elif first_bill:
             bill_id = first_bill.id
         else:
             bill_id = None
-        self.data = {'name': self.cycle.membership.name(),
+        if bill:
+            date = bill.created
+        else:
+            date = datetime.now()
+        if payments:
+            latest_payment_date = payments.latest_payment_date()
+            if latest_payment_date:
+                latest_payments = min([payments.latest_payment_date(), datetime.now()])
+            else:
+                latest_payments = datetime(year=2003,month=1, day=1)
+        else:
+            latest_payments = datetime.now()
+        self.data = {'name': cycle.membership.name(),
                 'address': membercontact.street_address,
                 'postal_code':membercontact.postal_code,
                 'postal_office':membercontact.post_office,
-                'date': datetime.now().strftime("%d.%m.%Y"),
-                'member_id': self.cycle.membership.id,
+                'date': date.strftime("%d.%m.%Y"),
+                'latest_payment_date': latest_payments,
+                'member_id': cycle.membership.id,
                 'due_date': due_date,
                 'email': membercontact.email,
                 'bill_id': bill_id,
                 'amount': amount,
                 'pretty_amount': locale.format('%.2f', amount),
                 'vat': vat,
-                'sum': self.cycle.sum,
-                'pretty_sum': locale.format('%.2f', self.cycle.sum),
+                'sum': cycle.sum,
+                'pretty_sum': locale.format('%.2f', cycle.sum),
                 'notify_period': '%d vrk' % (settings.REMINDER_GRACE_DAYS,),
                 'bills': bills,
-                'reference_number': group_reference(self.cycle.reference_number)
+                'reference_number': group_reference(cycle.reference_number)
         }
 
     def addTemplate(self):
@@ -258,17 +285,18 @@ class PDFTemplate(object):
         #self.drawHorizontalStroke()
 
         self.drawBox(14.5, 3.5, 5, 1.7)
-        self.drawTable(14.9, 4, [[u'Jäsennumero:', '%(member_id)s' % self.data],
+        self.drawTable(14.7, 4, [[u'Jäsennumero:', '%(member_id)s' % self.data],
                               [u'Eräpäivä:', '%(due_date)s' % self.data],
                               [u'Huomautusaika:','%(notify_period)s' % self.data]
                               ], size=10)
 
-        xtable = [1,1.5,7,13,15,17]
+        xtable = [1,1.5,7,12,13.5,15,17]
         self.drawString(xtable[1],6.5, u"Selite", size=9)
         self.drawString(xtable[2],6.5, u"Aikaväli", size=9)
-        self.drawString(xtable[3],6.5, u"alv 0 %", size=9)
-        self.drawString(xtable[4],6.5, u"alv 24 %", size=9)
-        self.drawString(xtable[5],6.5, u"Yhteensä", size=9)
+        self.drawString(xtable[3],6.5, u"ilman alv", size=9)
+        self.drawString(xtable[4],6.5, u"alv", size=9)
+        self.drawString(xtable[5],6.5, u"alv osuus", size=9)
+        self.drawString(xtable[6],6.5, u"Yhteensä", size=9)
         self.drawHorizontalStroke(1,6.6, 18.5)
 
         y = 7
@@ -280,7 +308,7 @@ class PDFTemplate(object):
         self.drawHorizontalStroke(1,y, 18.5)
         y += 0.4
         self.drawString(xtable[3],y, u"Maksettavaa yhteensä:" % self.data, size=10)
-        self.drawString(xtable[5],y, u"<b>%(pretty_sum)s €</b>" % self.data, size=10)
+        self.drawString(xtable[6],y, u"<b>%(pretty_sum)s €</b>" % self.data, size=10)
 
 
 
@@ -288,7 +316,7 @@ class PDFTemplate(object):
 
         self.drawText(1,18.5, u"<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
         self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttps://www.kapsi.fi/", size=7)
-        self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (settings.BILLING_FROM_EMAIL,
+        self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (get_billing_email(),
                                              settings.BUSINESS_ID, settings.ORGANIZATIO_REG_ID), size=7)
         self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (group_iban(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
@@ -387,10 +415,10 @@ Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa
 - haluat muuttaa yhteystietojasi
 - haluat sopia maksuaikataulusta
 - sinulla on muuta kysyttävää jäsenasioista.
-""" % (settings.BILLING_FROM_EMAIL,), size=10)
+""" % (get_billing_email(),), size=10)
 
         self.drawText(1,16, u"<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja erottamiseen yhdistyksestä!</b>", size=10)
-        self.drawText(1,17, u"Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(date)s asti." % self.data, size=10)
+        self.drawText(1,17, u"Jos olet jo maksanut muistutuksen, tämä viesti on aiheeton. Olemme huomioineet meille näkyvät jäsenmaksu-\nsuoritukset %(latest_payment_date)s asti." % self.data, size=10)
         if self.data['bill_id']:
             self.drawText(11.5,23.4, u"Muistutus laskulle numero %s" % self.data['bill_id'], size=10)
 
@@ -405,7 +433,7 @@ Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa
    - haluat muuttaa yhteystietojasi
    - haluat sopia maksuaikataulusta
    - sinulla on muuta kysyttävää jäsenasioista
-""" % (settings.BILLING_FROM_EMAIL,), size=10)
+""" % (get_billing_email(),), size=10)
         if self.data['bill_id']:
             self.drawText(11.5,23.4, u"Laskunumero %s" % self.data['bill_id'], size=10)
 
