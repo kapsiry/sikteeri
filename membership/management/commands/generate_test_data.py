@@ -190,11 +190,17 @@ class Command(BaseCommand):
         ref = generate_membership_bill_reference_number(membership.id, datetime.now().year)
         if random() < 0.2:
             ref = str(randint(1000, 1000000))
-        p = Payment(reference_number=ref,
-                    transaction_id=str(uuid4())[:29],
-                    payment_day=datetime.now(),
-                    amount=Decimal(amount),
-                    type="XYZ",
-                    payer_name=membership.name())
-        p.save()
+        payment_count = 1
+        if random() < 0.2:
+            payment_count = 2
+        elif random() < 0.2:
+            payment_count = 3
+        for i in range(payment_count):
+            p = Payment(reference_number=ref,
+                        transaction_id=str(uuid4())[:29],
+                        payment_day=datetime.now(),
+                        amount=Decimal(amount),
+                        type="XYZ",
+                        payer_name=membership.name())
+            p.save()
         return p
