@@ -7,145 +7,153 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sikteeri 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-13 11:20+0200\n"
+"POT-Creation-Date: 2015-05-14 18:33+0300\n"
 "PO-Revision-Date: 2011-04-01 09:13+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/js/member_list.js:39
+#: static/js/member_list.js:40
 msgid "Membership details"
 msgstr "Jäsenyystiedot"
 
-#: static/js/member_list.js:54
+#: static/js/member_list.js:55
 msgid "Type"
 msgstr "Tyyppi"
 
-#: static/js/member_list.js:55
+#: static/js/member_list.js:56
 msgid "Status"
 msgstr "Tila"
 
-#: static/js/member_list.js:56
+#: static/js/member_list.js:57
 msgid "Created"
 msgstr "Luotu"
 
-#: static/js/member_list.js:57
+#: static/js/member_list.js:58
 msgid "Last changed"
 msgstr "Muokattu"
 
-#: static/js/member_list.js:58
+#: static/js/member_list.js:59
 msgid "Home municipality"
 msgstr "Kotipaikka"
 
-#: static/js/member_list.js:59
+#: static/js/member_list.js:60
 msgid "Nationality"
 msgstr "Kansallisuus"
 
-#: static/js/member_list.js:60
+#: static/js/member_list.js:61
 msgid "Visible in the public memberlist"
 msgstr "Näkyvillä julkisessa jäsenluettelossa"
 
-#: static/js/member_list.js:61
+#: static/js/member_list.js:62
 msgid "Aliases"
 msgstr "Aliakset"
 
-#: static/js/member_list.js:62
+#: static/js/member_list.js:63
+msgid "Year of birth"
+msgstr "Syntymävuosi"
+
+#: static/js/member_list.js:64
+msgid "Organization registration number"
+msgstr "Yhdistysrekisterinumero"
+
+#: static/js/member_list.js:65
 msgid "Services"
 msgstr "Palvelut"
 
-#: static/js/member_list.js:63
+#: static/js/member_list.js:66
 msgid "Additional information"
 msgstr "Lisätietoja"
 
-#: static/js/member_list.js:73
+#: static/js/member_list.js:76
 msgid "Person contact"
 msgstr "Henkilöyhteystieto"
 
-#: static/js/member_list.js:74
+#: static/js/member_list.js:77
 msgid "Billing contact"
 msgstr "Laskutusyhteystieto"
 
-#: static/js/member_list.js:75
+#: static/js/member_list.js:78
 msgid "Technical contact"
 msgstr "Tekninen yhteystieto"
 
-#: static/js/member_list.js:76
+#: static/js/member_list.js:79
 msgid "Organization"
 msgstr "Yhteisö"
 
-#: static/js/member_list.js:109
+#: static/js/member_list.js:112
 msgid "First name"
 msgstr "Kutsumanimi"
 
-#: static/js/member_list.js:110
+#: static/js/member_list.js:113
 msgid "Given names"
 msgstr "Etunimet"
 
-#: static/js/member_list.js:111
+#: static/js/member_list.js:114
 msgid "Last name"
 msgstr "Sukunimi"
 
-#: static/js/member_list.js:112
+#: static/js/member_list.js:115
 msgid "Organization name"
 msgstr "Yhteisön nimi"
 
-#: static/js/member_list.js:113
+#: static/js/member_list.js:116
 msgid "Street address"
 msgstr "Katuosoite"
 
-#: static/js/member_list.js:114
+#: static/js/member_list.js:117
 msgid "Postal code"
 msgstr "Postinumero"
 
-#: static/js/member_list.js:115
+#: static/js/member_list.js:118
 msgid "Post office"
 msgstr "Postitoimipaikka"
 
-#: static/js/member_list.js:116
+#: static/js/member_list.js:119
 msgid "Country"
 msgstr "Maa"
 
-#: static/js/member_list.js:117
+#: static/js/member_list.js:120
 msgid "Phone number"
 msgstr "Puhelinnumero"
 
-#: static/js/member_list.js:118
+#: static/js/member_list.js:121
 msgid "SMS number"
 msgstr "Tekstiviestinumero"
 
-#: static/js/member_list.js:119
+#: static/js/member_list.js:122
 msgid "E-mail"
 msgstr "Sähköpostiosoite"
 
-#: static/js/member_list.js:120
+#: static/js/member_list.js:123
 msgid "Homepage"
 msgstr "Kotisivu"
 
-#: static/js/member_list.js:132
+#: static/js/member_list.js:135
 msgid "Events"
 msgstr "Tapahtumat"
 
-#: static/js/member_list.js:182
+#: static/js/member_list.js:185
 msgid "show details"
 msgstr "näytä lisätiedot"
 
-#: static/js/member_list.js:185
+#: static/js/member_list.js:188
 msgid "hide details"
 msgstr "piilota lisätiedot"
 
-#: static/js/member_list.js:234
+#: static/js/member_list.js:237
 msgid "add to pre-approve cart"
 msgstr "lisää esihyväksyntäkoriin"
 
-#: static/js/member_list.js:237
+#: static/js/member_list.js:240
 msgid "remove from pre-approve cart"
 msgstr "poista esihyväksyntäkorista"
 
-#: static/js/member_list.js:258
+#: static/js/member_list.js:261
 msgid "add to approve cart"
 msgstr "lisää hyväksyntäkoriin"
 
-#: static/js/member_list.js:261
+#: static/js/member_list.js:264
 msgid "remove from approve cart"
 msgstr "poista hyväksyntäkorista"
