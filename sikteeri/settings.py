@@ -57,8 +57,6 @@ ALLOWED_HOSTS = config.get('ALLOWED_HOSTS', [])
 
 USE_X_FORWARDED_HOST = bool(config.get('USE_X_FORWARDED_HOST', False))
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 # Database is configured from DATABASE_URL
 DATABASE_URL = config.get('DATABASE_URL', '')
 DATABASES = dict(default=dj_database_url.parse(DATABASE_URL))
