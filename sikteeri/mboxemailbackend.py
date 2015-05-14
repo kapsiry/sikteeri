@@ -40,8 +40,7 @@ class EmailBackend(BaseEmailBackend):
             with open(self.file_path, 'a') as f:
                 with file_lock(f):
                     for message in email_messages:
-                        f.write("From sikteeri {date}\n".format(
-                            date=email.utils.formatdate()))
+                        f.write("From sikteeri Mon Mar 23 08:36:59 2009\n")
                         f.write(message.message().as_string())
                         f.write('\n\n')
         except:
