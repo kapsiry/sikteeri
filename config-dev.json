@@ -11,7 +11,7 @@
   "SYSADMIN_EMAIL": "admins@example.com",
 
   "BUSINESS_ID": "1111111-1",
-  "ORGANIZATIO_REG_ID": "111.111",
+  "ORGANIZATION_REG_ID": "111.111",
 
   "BILL_ATTACH_PDF": true,
 

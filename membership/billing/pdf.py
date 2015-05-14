@@ -317,7 +317,7 @@ class PDFTemplate(object):
         self.drawText(1,18.5, u"<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
         self.drawText(5.5,18.5, u"Kotipaikka Oulu\nhttps://www.kapsi.fi/", size=7)
         self.drawText(9.5,18.5, u"Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (get_billing_email(),
-                                             settings.BUSINESS_ID, settings.ORGANIZATIO_REG_ID), size=7)
+            settings.BUSINESS_ID, settings.ORGANIZATION_REG_ID), size=7)
         self.drawText(14,18.5, u"Tilinumero: %s\nBIC: %s" % (group_iban(settings.IBAN_ACCOUNT_NUMBER),
                                                             settings.BIC_CODE), size=7)
 

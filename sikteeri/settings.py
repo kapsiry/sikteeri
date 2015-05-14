@@ -113,7 +113,7 @@ FROM_EMAIL = get_required('FROM_EMAIL')
 SYSADMIN_EMAIL = get_required('SYSADMIN_EMAIL')
 
 # Organization information 
-ORGANIZATIO_REG_ID = get_required("ORGANIZATIO_REG_ID")
+ORGANIZATION_REG_ID = get_required("ORGANIZATION_REG_ID")
 BUSINESS_ID = get_required("BUSINESS_ID")
 
 # PDF settings
