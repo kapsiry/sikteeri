@@ -102,6 +102,16 @@
         <a href="{% url "bill_edit" bill.id %}">
     {% if bill.is_reminder %}{% trans "Reminder" %} {{bill.id}} ({{bill.reminder_count}})
     {% else %}{% trans "Bill" %} {{bill.id}}{% endif %}</a>
+
+    {% if bill.type == 'E' %}
+                @
+    {% elif bill.type == 'S' %}
+                &#x1f4f1;
+    {% elif bill.type == 'P' %}
+                &#x2709;
+    {% endif %}
+
+
               <small>({{bill.reference_number|fref:"0"}})</small>
               {% trans "sent" %} {{ bill.created|naturalday }},
               {% trans "due on" %} {{ bill.due_date|naturalday }}
