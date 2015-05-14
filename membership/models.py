@@ -482,10 +482,9 @@ class Membership(models.Model):
         return Membership.objects.filter(id__in=membership_ids)
 
     def __repr__(self):
-        return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
+        plain_self = unicode(self).encode('ASCII', 'backslashreplace')
+        return "<Membership(%s): %s (%i)>" % (self.type, plain_self, self.id)
 
-    def __str__(self):
-        return unicode(self).encode('ASCII', 'backslashreplace')
     def __unicode__(self):
         if self.organization:
             return self.organization.__unicode__()
