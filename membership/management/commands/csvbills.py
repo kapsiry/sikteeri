@@ -206,6 +206,7 @@ def attach_payment_to_cycle(payment, user=None):
     else:
         # Don't attach a payment to a cycle with enough payments
         payment.comment = _('duplicate payment')
+        payment.duplicate = True
         log_user = User.objects.get(id=1)
         log_change(payment, log_user, change_message="Payment not attached due to duplicate payment")
         payment.save()
