@@ -19,7 +19,7 @@ PL 11
 
 Laskun erittely
 ----------------------------------------------------------------------
-Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end|date:"SHORT_DATE_FORMAT" }}         {{ non_vat_amount|rjust:"5"|floatformat:2 }} euroa
+Jäsenmaksu {{ membership_type|ljust:"15" }} {{ billingcycle.start|date:"SHORT_DATE_FORMAT" }} - {{ billingcycle.end_date|date:"SHORT_DATE_FORMAT" }}         {{ non_vat_amount|rjust:"5"|floatformat:2 }} euroa
 Arvonlisävero {{ vat_percentage|ljust:"3"|floatformat:0 }} %                                          {{ vat_amount|rjust:"5"|floatformat:2 }} euroa
 ----------------------------------------------------------------------
 Loppusumma yhteensä                                            {{ sum|rjust:"5"|floatformat:2 }} e

@@ -228,9 +228,11 @@ class PDFTemplate(object):
             due_date = due_date.strftime("%d.%m.%Y")
         bills = []
         # ['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €']
+        cycle_start_date = cycle.start.strftime('%d.%m.%Y')
+        cycle_end_date = cycle.end_date().strftime('%d.%m.%Y')
         bills.append(['1',
                       u"Jäsenmaksu",
-                      u"%s - %s" % (cycle.start.strftime('%d.%m.%Y'), cycle.end.strftime('%d.%m.%Y')),
+                      u"%s - %s" % (cycle_start_date, cycle_end_date),
                       u"%s €" % locale.format("%.2f", amount),
                       u"%s %%" % locale.format("%d", vatp),
                       u"%s €" % locale.format("%.2f", vat),

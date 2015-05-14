@@ -95,7 +95,7 @@
 
 <h2>{% trans "Billing information" %}</h2>
 <ul>{% for billingcycle in membership.billingcycle_set.all %}
-    <li><a href="{% url "billingcycle_edit" billingcycle.id%}">{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end|naturalday }}</a>
+    <li><a href="{% url "billingcycle_edit" billingcycle.id%}">{% trans "Cycle" %} {{ billingcycle.start|naturalday }}&mdash;{{ billingcycle.end_date|naturalday }}</a>
         <ul>
             {% for bill in billingcycle.bill_set.all %}
             <li>

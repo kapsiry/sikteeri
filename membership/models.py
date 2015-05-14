@@ -692,8 +692,18 @@ class BillingCycle(models.Model):
         return datalist
 
 
+    def end_date(self):
+        """Logical end date
+
+        This is one day before actual end since actual end is a timestamp.
+        The end date is the previous day.
+        E.g. 2015-01-01 -- 2015-12-31
+        """
+        day = timedelta(days=1)
+        return self.end.date()-day
+
     def __unicode__(self):
-        return str(self.start.date()) + "--" + str(self.end.date())
+        return str(self.start.date()) + "--" + str(self.end_date())
 
     def save(self, *args, **kwargs):
         if not self.end:
