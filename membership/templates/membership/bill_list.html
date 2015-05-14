@@ -39,7 +39,14 @@
     <span class="paid">
       {% if cycle.is_paid %} {% trans "paid" %} {% endif %}
     </span>
-    <ul>{% for payment in cycle.payment_set.all %}<li>{{ payment }}</li>{% endfor %}</ul>
+    <ul>
+      {% for payment in cycle.payment_set.all %}
+      <li>
+        {% trans "Payment" %}
+        {{ payment.amount }} {% trans "euros" %}
+        ({% trans "reference number" %} {{ payment.reference_number }})</li>
+      {% endfor %}
+    </ul>
   </li>
   {% endwith %}
   {% endwith %}
