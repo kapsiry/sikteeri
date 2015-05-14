@@ -13,3 +13,4 @@
 django.wsgi
 muistutusviesti.tex
 cache/*
+.idea
