@@ -3,19 +3,19 @@ from __future__ import with_statement
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_UN
 
-from datetime import datetime
+import email.utils
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 
+
 @contextmanager
 def file_lock(file_handle):
-    '''
-    Lock function for with-statement.
+    """Lock function for with-statement.
 
     See http://bugs.python.org/issue6194 to find out why
     http://docs.python.org/library/os.html#os.O_SHLOCK cannot be used.
-    '''
+    """
     return_value = flock(file_handle, LOCK_EX)
 
     try:
@@ -25,6 +25,7 @@ def file_lock(file_handle):
 
 
 class EmailBackend(BaseEmailBackend):
+
     def __init__(self, *args, **kwargs):
         self.file_path = getattr(settings, 'EMAIL_MBOX_FILE_PATH', None)
         with open(self.file_path, 'a') as f:
@@ -39,7 +40,8 @@ class EmailBackend(BaseEmailBackend):
             with open(self.file_path, 'a') as f:
                 with file_lock(f):
                     for message in email_messages:
-                        f.write("From sikteeri %s\n" % datetime.now().strftime("%a %b %d %H:%M:%S EET %Y"))
+                        f.write("From sikteeri {date}\n".format(
+                            date=email.utils.formatdate()))
                         f.write(message.message().as_string())
                         f.write('\n\n')
         except:
