@@ -488,7 +488,7 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Bill
-            exclude = ('billingcycle', 'reminder_count')
+            exclude = ('billingcycle', 'reminder_count', 'pdf_file')
 
         def __init__(self, *args, **kwargs):
             super(Form, self).__init__(*args, **kwargs)
