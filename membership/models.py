@@ -836,9 +836,7 @@ class Bill(models.Model):
             subject = settings.BILL_SUBJECT
         else:
             subject = settings.REMINDER_SUBJECT
-        if '%i' in subject:
-            subject = subject % self.id
-        return subject
+        return subject.format(id=self.id)
 
     def reference_number(self):
         return self.billingcycle.reference_number

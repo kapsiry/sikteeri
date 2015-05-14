@@ -22,9 +22,9 @@
   "BILL_DAYS_TO_DUE": 14,
   "BILLING_FROM_EMAIL": "billing@example.com",
   "BILLING_CC_EMAIL": null,
-  "BILL_SUBJECT": "Test bill, ignore",
+  "BILL_SUBJECT": "Test bill, ignore {id}",
   "ENABLE_REMINDERS": false,
   "REMINDER_GRACE_DAYS": 14,
-  "REMINDER_SUBJECT": "Test reminder, ignore",
+  "REMINDER_SUBJECT": "Test reminder {id}, ignore",
   "UNIX_EMAIL_DOMAIN": "example.com"
 }
