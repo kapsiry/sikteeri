@@ -327,6 +327,7 @@ $(document).ready(function () {
   $('#id_unix_login').keyup(function () {
     var t = this;
     if (this.value != this.lastValue) {
+      this.value = this.value.toLowerCase()
       if (this.timer) clearTimeout(this.timer);
       validateUsername.removeClass('error').html('<img src="{% static 'images/ajax-loader.gif' %}" height="16" width="16" /> Tarkistetaan...');
 
