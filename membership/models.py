@@ -30,7 +30,7 @@ from django.contrib.contenttypes.models import ContentType
 from utils import log_change, tupletuple_to_dict
 
 from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
-from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender
+from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
 
 
 class BillingEmailNotFound(Exception): pass
@@ -129,7 +129,7 @@ class Contact(models.Model):
 
     def email_to(self):
         if self.email:
-            return '%s <%s>' % (self.name(), self.email)
+            return format_email(name=self.name(), email=self.email)
         return None
 
     def name(self):

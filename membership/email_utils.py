@@ -12,13 +12,19 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
 
+def format_email(name, email):
+    clean_name = name.replace('"', '')  # Strip double quotes
+    return u'"{name}" <{email}>'.format(name=clean_name, email=email)
+
+
 # Address helper
 def unix_email(membership):
     if settings.UNIX_EMAIL_DOMAIN:
         from services.models import valid_aliases, Alias
         try:
             alias = valid_aliases(membership).filter(account=True).latest('created')
-            return "%s <%s@%s>" % (membership.name(), alias, settings.UNIX_EMAIL_DOMAIN)
+            email = u"{user}@{domain}".format(user=alias, domain=settings.UNIX_EMAIL_DOMAIN)
+            format_email(name=membership.name(), email=email)
         except Alias.DoesNotExist:
             pass
     return None

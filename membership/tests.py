@@ -16,10 +16,9 @@ import json
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
-from django.conf import settings
-from django.forms import ValidationError
 from django.http import HttpResponse, HttpRequest
 
+import email_utils
 from models import *
 from utils import *
 from forms import *
@@ -34,7 +33,6 @@ from reference_numbers import barcode_4, canonize_iban, canonize_refnum, canoniz
 from reference_numbers import ReferenceNumberException
 from reference_numbers import ReferenceNumberFormatException
 from reference_numbers import IBANFormatException, InvalidAmountException
-from reference_numbers import DueDateFormatException
 
 from management.commands.makebills import logger as makebills_logger
 from management.commands.makebills import makebills
@@ -1388,3 +1386,29 @@ class CorrectVatAmountInBillTest(TestCase):
 
     def test_should_not_contain_vat_percentage(self):
         self.assertNotIn("vero 24", self.bill_2013.render_as_text())
+
+
+class EmailUtilsTests(TestCase):
+    def test_unicode_in_name(self):
+        res = email_utils.format_email(u'räyh', 'foo@bar')
+        self.assertEqual(res, u'"räyh" <foo@bar>')
+
+    def test_clean_ascii_name(self):
+        res = email_utils.format_email('rauh', 'foo@bar')
+        self.assertEqual(res, u'"rauh" <foo@bar>')
+
+    def test_comma_in_name(self):
+        res = email_utils.format_email('rauh,joo', 'foo@bar')
+        self.assertEqual(res, u'"rauh,joo" <foo@bar>')
+
+    def test_semicolon_in_name(self):
+        res = email_utils.format_email('rauh;joo', 'foo@bar')
+        self.assertEqual(res, u'"rauh;joo" <foo@bar>')
+
+    def test_dquote_in_name(self):
+        res = email_utils.format_email('rauh\"joo', 'foo@bar')
+        self.assertEqual(res, u'"rauhjoo" <foo@bar>')
+
+    def test_quote_in_name(self):
+        res = email_utils.format_email('rauh\'joo', 'foo@bar')
+        self.assertEqual(res, u'"rauh\'joo" <foo@bar>')
