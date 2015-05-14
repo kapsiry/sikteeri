@@ -5,6 +5,7 @@
   "DATABASE_URL": "sqlite:///sikteeri-test.sqlite3",
   "PRODUCTION": false,
   "EMAIL_SUBJECT_PREFIX": "[sikteeri-dev] ",
+  "EMAIL_MBOX_FILE_PATH": "sikteeri.mbox",
   "STATIC_ROOT": "",
 
   "FROM_EMAIL": "from.nonbill@example.com",
