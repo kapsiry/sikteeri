@@ -7,7 +7,12 @@ fail () {
 
 
 # Run in virtualenv
-ENV="$HOME/env/sikteeri"
+
+# Path to virtualenv
+# default "env" or environment variable VIRTUALENV
+
+ENV="${VIRTUALENV:-env}"
+
 test -r "${ENV}/bin/activate" || fail "Virtualenv required in $ENV"
 
 # Build translations
