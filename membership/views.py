@@ -214,19 +214,24 @@ def organization_application(request, template_name='membership/new_organization
                               context_instance=RequestContext(request))
 
 # Public access
-def organization_application_add_contact(request, contact_type, template_name='membership/new_organization_application_add_contact.html'):
+def organization_application_add_contact(request, contact_type,
+                                         template_name='membership/new_organization_application_add_contact.html'):
     forms = ['billing_contact', 'tech_contact']
     if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
 
     if contact_type == 'billing_contact':
-        type_text = 'Billing contact'
+        type_text = unicode(_('Billing contact'))
     elif contact_type == 'tech_contact':
-        type_text = 'Technical contact'
+        type_text = unicode(_('Technical contact'))
 
     if request.method == 'POST':
         form = PersonContactForm(request.POST)
-        if form.is_valid() or len(form.changed_data) == 0:
+
+        if (form.is_valid() or                 # contact is actually filled
+            len(form.changed_data) == 0 or     # form is empty
+            form.changed_data == ['country']): # only the country field is filled (this comes from form defaults)
+
             if form.is_valid():
                 f = form.cleaned_data
                 contact = Contact(**f)
@@ -234,6 +239,7 @@ def organization_application_add_contact(request, contact_type, template_name='m
                 request.session[contact_type] = contact_dict
             else:
                 request.session[contact_type] = None
+
             next_idx = forms.index(contact_type) + 1
             if next_idx == len(forms):
                 return redirect('organization_application_services')
