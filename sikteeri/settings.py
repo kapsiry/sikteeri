@@ -320,7 +320,7 @@ elif not PRODUCTION:
     logger.info("Console email backend in use")
     EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 else:
-    raise NotImplementedError("Production email configuration to be verified")
+    pass
 
 #####################################################
 ## LDAP support
