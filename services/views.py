@@ -11,7 +11,6 @@ from membership.forms import VALID_USERNAME_RE
 from services.models import Alias
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
-from django.db import transaction
 from django.forms import ModelForm, ModelChoiceField
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
