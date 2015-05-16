@@ -271,7 +271,6 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-            'stream': sys.stdout,
         },
         'null': {
             'class': 'logging.NullHandler',
@@ -286,29 +285,24 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
         },
         'django.request': {
-            'handlers': ['mail_admins'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': False,
         },
         'django.security': {
-            'handlers': ['mail_admins'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': False,
         },
-        'py.warnings': {
-            'handlers': ['console'],
-        },
-        'sikteeri': {
-            'handlers': ['console'],
-        },
-        'membership': {
-            'handlers': ['console'],
-        },
-        'services': {
-            'handlers': ['console'],
-        },
+        'py.warnings': {'handlers': ['console'], 'level': 'INFO'},
+
+        'sikteeri': {'handlers': ['console'], 'level': 'INFO'},
+        'membership': {'handlers': ['console'], 'level': 'INFO'},
+        'services': {'handlers': ['console'], 'level': 'INFO'},
     }
 }
 
