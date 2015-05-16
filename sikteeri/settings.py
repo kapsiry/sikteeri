@@ -5,6 +5,10 @@ import json
 import django.conf.global_settings as DEFAULT_SETTINGS
 import dj_database_url
 import locale
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -243,6 +247,7 @@ MANAGERS = config.get('MANAGERS')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -251,10 +256,22 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
+
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)-8s %(name)-16s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+
     'handlers': {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'stream': sys.stdout,
         },
         'null': {
             'class': 'logging.NullHandler',
@@ -265,6 +282,7 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
+
     'loggers': {
         'django': {
             'handlers': ['console'],
@@ -287,7 +305,10 @@ LOGGING = {
         },
         'membership': {
             'handlers': ['console'],
-        }
+        },
+        'services': {
+            'handlers': ['console'],
+        },
     }
 }
 
@@ -299,10 +320,10 @@ EMAIL_SUBJECT_PREFIX = get_required('EMAIL_SUBJECT_PREFIX')
 EMAIL_MBOX_FILE_PATH = config.get('EMAIL_MBOX_FILE_PATH', None)
 
 if EMAIL_MBOX_FILE_PATH:
-    print "Emails redirected to {0}".format(EMAIL_MBOX_FILE_PATH)
+    logger.info("Emails redirected to {0}".format(EMAIL_MBOX_FILE_PATH))
     EMAIL_BACKEND = 'sikteeri.mboxemailbackend.EmailBackend'
 elif not PRODUCTION:
-    print "Console email backend in use"
+    logger.info("Console email backend in use")
     EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 else:
     raise NotImplementedError("Production email configuration to be verified")
