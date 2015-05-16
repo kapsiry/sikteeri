@@ -113,6 +113,7 @@ BILL_ATTACH_PDF = config.get('BILL_ATTACH_PDF', True)
 UNIX_EMAIL_DOMAIN = config.get('UNIX_EMAIL_DOMAIN', None)
 
 # Generic email settings
+SERVER_EMAIL = config.get('SERVER_EMAIL', 'root@localhost')
 FROM_EMAIL = get_required('FROM_EMAIL')
 SYSADMIN_EMAIL = get_required('SYSADMIN_EMAIL')
 
