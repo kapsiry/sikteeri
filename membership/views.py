@@ -333,52 +333,45 @@ def organization_application_save(request):
                                 organization_registration_number=request.session['membership']['organization_registration_number'])
 
         organization = Contact(**request.session['organization'])
-
-        try:
-            billing_contact = Contact(**request.session['billing_contact'])
-        except ObjectDoesNotExist:
-            billing_contact = None
-
-        try:
-            tech_contact = Contact(**request.session['tech_contact'])
-        except ObjectDoesNotExist:
-            tech_contact = None
-
         organization.save()
         membership.organization = organization
-        if billing_contact:
+
+        if request.session.get('billing_contact') is not None:
+            billing_contact = Contact(**request.session['billing_contact'])
             billing_contact.save()
             membership.billing_contact = billing_contact
-        if tech_contact:
+
+        if request.session.get('tech_contact') is not None:
+            tech_contact = Contact(**request.session['tech_contact'])
             tech_contact.save()
             membership.tech_contact = tech_contact
 
         membership.save()
 
         services = []
-        session = request.session
-        login_alias = Alias(owner=membership, name=session['services']['unix_login'], account=True)
+        services_request = request.session['services']
+        login_alias = Alias(owner=membership, name=services_request['unix_login'], account=True)
         login_alias.save()
         unix_account_service = Service(servicetype=ServiceType.objects.get(servicetype='UNIX account'),
-                                       alias=login_alias, owner=membership, data=session['services']['unix_login'])
+                                       alias=login_alias, owner=membership, data=services_request['unix_login'])
         unix_account_service.save()
         services.append(unix_account_service)
-        if session['services'].has_key('mysql_database'):
+        if 'mysql_database' in services_request:
             mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
                                     alias=login_alias, owner=membership,
-                                    data=session['services']['mysql_database'].replace('-', '_'))
+                                    data=services_request['mysql_database'].replace('-', '_'))
             mysql_service.save()
             services.append(mysql_service)
-        if session['services'].has_key('postgresql_database'):
+        if 'postgresql_database' in services_request:
             postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                          alias=login_alias, owner=membership,
-                                         data=session['services']['postgresql_database'])
+                                         data=services_request['postgresql_database'])
             postgresql_service.save()
             services.append(postgresql_service)
-        if session['services'].has_key('login_vhost'):
+        if 'login_vhost' in services_request:
             login_vhost_service = Service(servicetype=ServiceType.objects.get(servicetype='WWW vhost'),
                                           alias=login_alias, owner=membership,
-                                          data=session['services']['login_vhost'])
+                                          data=services_request['login_vhost'])
             login_vhost_service.save()
             services.append(login_vhost_service)
 
