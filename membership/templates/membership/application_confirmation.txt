@@ -77,6 +77,6 @@ osoitteeseen.
 
 -- 
 Kapsi Internet-käyttäjät ry
-http://www.kapsi.fi/
+https://www.kapsi.fi/
 
 Hakemus jätettiin IP-osoitteesta {{ ip }}.

@@ -15,5 +15,5 @@ Kapsin laskutus
    laskutus@tuki.kapsi.fi
 
    Kapsi Internet-käyttäjät ry
-   http://www.kapsi.fi/
-   http://tuki.kapsi.fi/
+   https://www.kapsi.fi/
+   https://www.kapsi.fi/tukipalvelut.html
