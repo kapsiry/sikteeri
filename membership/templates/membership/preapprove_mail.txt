@@ -29,14 +29,14 @@ Pyydetyt jäsenpalvelut:
 
 {% endif %}Tutustu myös:
 
-- Tekniset tiedotteet: http://list.kapsi.fi/kapsi-techinfo
+- Tekniset tiedotteet: https://list.kapsi.fi/listinfo/kapsi-techinfo
 - Kysymykset laskutukselle: laskutus@tuki.kapsi.fi
 - Kysymykset palveluiden käytöstä: helpdesk@tuki.kapsi.fi
 - Pyynnöt ylläpitotöistä: yllapito@tuki.kapsi.fi
-- Postituslistoja jäsenille: http://list.kapsi.fi/
-- Kapsin foorumi: http://forum.kapsi.fi/
-- Jäsenten IRC-kanava: http://www.kapsi.fi/irc/
-- Facebook-sivu: http://www.facebook.com/kapsi.fi
+- Postituslistoja jäsenille: https://www.kapsi.fi/jasentoiminta/postituslistat.html
+- Jäsenten IRC-kanava: https://www.kapsi.fi/jasentoiminta/irc.html
+- Kapsin tukifoorumi: https://ukk.kapsi.fi/
+- Facebook-sivu: https://www.facebook.com/kapsi.fi
 
 Tähän viestiin voi myös vastata ja se ohjataan edelleen oikeaan
 osoitteeseen.
@@ -44,4 +44,4 @@ osoitteeseen.
 -- 
 {{ user.get_full_name }}
 Kapsi Internet-käyttäjät ry
-http://www.kapsi.fi/
+https://www.kapsi.fi/

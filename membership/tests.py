@@ -836,7 +836,7 @@ class MemberApplicationTest(TestCase):
     def test_clean_ajax_output(self):
         post_data = self.post_data.copy()
         post_data['first_name'] = u'<b>Yrjö</b>'
-        post_data['extra_info'] = '<iframe src="http://www.kapsi.fi" width=200 height=100></iframe>'
+        post_data['extra_info'] = '<iframe src="https://www.kapsi.fi" width=200 height=100></iframe>'
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
@@ -852,7 +852,7 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_dict['contacts']['person']['first_name'],
                          u'&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
-                         '&lt;iframe src=&quot;http://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
+                         '&lt;iframe src=&quot;https://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
 
     def _validate_alias(self, alias):
