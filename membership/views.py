@@ -28,7 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
 
-from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm
+from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, ContactForm
 from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
@@ -407,10 +407,6 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
     membership = get_object_or_404(Membership, id=memberid)
     forms = ['billing_contact', 'tech_contact']
 
-    class Form(ModelForm):
-        class Meta:
-            model = Contact
-
     if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
 
@@ -420,7 +416,7 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
         return redirect('contact_edit',membership.tech_contact.id)
 
     if request.method == 'POST':
-        form = Form(request.POST)
+        form = ContactForm(request.POST)
         if form.is_valid():
             contact = Contact(**form.cleaned_data)
             contact.save()
@@ -437,7 +433,7 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
             messages.error(request,
                            unicode(_("New contact not saved.")))
     else:
-        form = Form()
+        form = ContactForm()
     return render_to_response(template_name,
                              {"form": form, 'memberid': memberid},
                              context_instance=RequestContext(request))
@@ -445,10 +441,6 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
-    # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
-    class Form(ModelForm):
-        class Meta:
-            model = Contact
 
     before = model_to_dict(contact)  # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
@@ -456,7 +448,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
             messages.error(request, unicode(_("You are not authorized to modify memberships.")))
             return redirect('contact_edit', id)
 
-        form = Form(request.POST, instance=contact)
+        form = ContactForm(request.POST, instance=contact)
 
         if form.is_valid():
             form.save()
@@ -467,8 +459,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         else:
             messages.error(request, unicode(_("Changes to contact %s not saved.") % contact))
     else:
-        form =  Form(instance=contact)
-        message = ""
+        form = ContactForm(instance=contact)
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
         'logentries': logentries, 'memberid': contact.find_memberid()},
@@ -694,10 +685,9 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Payment
-            #exclude = ('billingcycle')
+            fields = '__all__'
 
         billingcycle = CharField(widget=HiddenInput(), required=False)
-        #billingcycle = CharField(required=False)
         message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):

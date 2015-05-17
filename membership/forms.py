@@ -5,6 +5,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from services.models import Alias
+from membership.models import Contact
 
 from datetime import datetime, date, timedelta
 
@@ -157,6 +158,15 @@ class PersonBaseContactForm(forms.Form):
     last_name = forms.CharField(max_length=30, min_length=2,
                                 error_messages={'required': _('Last name required.')},
                                 label=_('Last name'))
+
+
+class ContactForm(forms.ModelForm):
+    """Contact editing form for authenticated users"""
+
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
 
 class OrganizationBaseContactForm(forms.Form):
     organization_name = forms.CharField(max_length=50, min_length=6, label=_('Organization name'))
