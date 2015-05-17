@@ -234,7 +234,7 @@ class PDFTemplate(object):
                       u"Jäsenmaksu",
                       u"%s - %s" % (cycle_start_date, cycle_end_date),
                       u"%s €" % locale.format("%.2f", amount),
-                      u"%s %%" % locale.format("%d", vatp),
+                      u"%s %%" % locale.format("%d", cycle.get_vat_percentage()),
                       u"%s €" % locale.format("%.2f", vat),
                       u"%s €" % locale.format("%.2f", cycle.sum)])
         first_bill = cycle.first_bill()
