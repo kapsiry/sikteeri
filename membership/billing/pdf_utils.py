@@ -6,9 +6,7 @@ Some functions that cannot be in pdf.py file to prevent import loop.
 
 from cStringIO import StringIO
 import logging
-from tempfile import NamedTemporaryFile
 
-from django.conf import settings
 from django.core.files import File
 from membership.billing import pdf
 
@@ -40,18 +38,27 @@ def get_bill_pdf(bill, payments=None):
     :param bill: Bill
     :return: pdf file content
     """
+
+    # Check if PDF cache is valid
+    if bill.pdf_file:
+        if not bill.pdf_file.storage.exists(bill.pdf_file):
+            bill.pdf_file = None
+
+    # If PDF does not exist, generate it
     if not bill.pdf_file:
-        buffer = StringIO()
+        pdf_fp = StringIO()
+
+        # Select template bill/reminder
         if bill.is_reminder():
-            # This is reminder
-            p = pdf.PDFReminder(buffer)
+            p = pdf.PDFReminder(pdf_fp)
         else:
-            p = pdf.PDFInvoice(buffer)
+            p = pdf.PDFInvoice(pdf_fp)
+
         p.addBill(bill, payments=payments)
         p.generate()
-        buffer.seek(0)
-        myfile = File(buffer)
-        bill.pdf_file.save('bill_%d.pdf' % bill.id, myfile)
-        buffer.close()
-    return bill.pdf_file.read()
+        pdf_fp.seek(0)
+        django_file = File(pdf_fp)
+        bill.pdf_file.save("bill_{id}.pdf".format(id=bill.id), django_file)
+        pdf_fp.close()
 
+    return bill.pdf_file.read()
