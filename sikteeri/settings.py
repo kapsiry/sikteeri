@@ -34,7 +34,7 @@ else:
     DEBUG = False
     TEMPLATE_DEBUG = False
 
-with open(CONFIGURATION, 'rb') as f:
+with open(CONFIGURATION, 'r') as f:
     try:
         config = json.load(f)
     except ValueError as ve:

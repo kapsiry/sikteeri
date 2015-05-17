@@ -3,7 +3,7 @@
 # install-virtualenv.sh
 #
 # Install virtualenv environment for sikteeri development
-# to "~/env/sikteeri" if it doesn't exist already
+# to "./env" if it doesn't exist already
 # Feel free to create virtualenv manually if you prefer.
 
 VIRTUALENV=${1-virtualenv}
@@ -21,7 +21,7 @@ test -a "$ENVDIR" && fatal "$ENVDIR already exists"
 # Prepare virtualenv
 (
     set -x
-    "$VIRTUALENV" --python=python2.7 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
+    "$VIRTUALENV" --python=python3 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
 )
 
 # OS X: Use homebrew gettext if no system gettext installed

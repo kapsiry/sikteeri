@@ -14,11 +14,7 @@ class StartsWithListFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         def first_two(s):
-            s = unicode(s)
-            if len(s) < 2:
-                return s
-            else:
-                return s[:2]
+            return str(s)[:2]
 
         prefixes = [first_two(alias.name)
                     for alias in model_admin.model.objects.only('name')]

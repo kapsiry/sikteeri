@@ -4,11 +4,12 @@ from datetime import datetime
 
 from django_comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldError
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
-from django.db.models import Sum
+
+unicode = str
+basestring = (str,bytes)
 
 # http://code.activestate.com/recipes/576644/
 
@@ -68,7 +69,7 @@ def log_change(object, user, before=None, after=None, change_message=None):
         user_id         = user.pk,
         content_type_id = ContentType.objects.get_for_model(object).pk,
         object_id       = object.pk,
-        object_repr     = force_unicode(object),
+        object_repr     = force_text(object),
         action_flag     = CHANGE,
         change_message  = change_message
     )
@@ -185,9 +186,9 @@ def serializable_membership_info(membership):
             return 0
         return -1
 
-    comment_list.sort(cmp_fun)
-    log_entry_list.sort(cmp_fun)
-    event_list.sort(cmp_fun)
+    comment_list.sort(key=cmp_fun)
+    log_entry_list.sort(key=cmp_fun)
+    event_list.sort(key=cmp_fun)
 
     def ctimeify(lst):
         for item in lst:

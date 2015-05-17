@@ -9,90 +9,42 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
-from membership.models import Bill, BillingCycle, Payment
+from membership.models import BillingCycle, Payment
 from membership.utils import log_change
 
 from optparse import make_option
 
 logger = logging.getLogger("membership.csvbills")
+unicode = str
 
-class UTF8Recoder:
-    """
-    Iterator that reads an encoded stream and reencodes the input to UTF-8
-
-    <http://docs.python.org/library/csv.html#examples>
-    """
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        return self.reader.next().encode("utf-8")
-
-
-class UnicodeReader:
-    """
-    A CSV reader which will iterate over lines in the CSV file "f",
-    which is encoded in the given encoding.
-
-    <http://docs.python.org/library/csv.html#examples>
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        f = UTF8Recoder(f, encoding)
-        self.reader = csv.reader(f, dialect=dialect, **kwds)
-
-    def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
-
-    def __iter__(self):
-        return self
-
-class UnicodeDictReader(UnicodeReader):
-    """A CSV reader which stores the headers from the first line
-    """
-    def __init__(self, *args, **kw):
-        UnicodeReader.__init__(self, *args, **kw)
-        # Read headers from first line
-        self.headers = map(lambda x: x.strip(), UnicodeReader.next(self))
-
-    def next(self):
-        row = UnicodeReader.next(self)
-        return dict(zip(self.headers, row))
 
 class RequiredFieldNotFoundException(Exception): pass
 class DuplicateColumnException(Exception): pass
 class PaymentFromFutureException(Exception): pass
 
 
-class BillDictReader(UnicodeDictReader):
+class BillDictReader(csv.DictReader):
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
     CSV_TRANSLATION = {}
 
-    def __init__(self, f, delimiter=';', encoding="iso8859-1", *args, **kw):
-        UnicodeDictReader.__init__(self, f, delimiter=delimiter,
-            encoding=encoding, *args, **kw)
+    def __init__(self, f, delimiter=';', *args, **kw):
+        csv.DictReader.__init__(self, f, delimiter=delimiter, *args, **kw)
         # Translate headers
-        h = self.headers
-        for i in xrange(0, len(h)):
-            self.headers[i] = self._get_translation(h[i])
+        h = self.fieldnames
+        for i in range(0, len(h)):
+            self.fieldnames[i] = self._get_translation(h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
-            if name not in self.headers:
+            if name not in self.fieldnames:
                 error = "CSV format is invalid: missing field '%s'." % name
                 raise RequiredFieldNotFoundException(error)
         # Check that each field is unique
-        for name in self.headers:
-            if self.headers.count(name) != 1:
+        for name in self.fieldnames:
+            if self.fieldnames.count(name) != 1:
                 error = "The field '%s' occurs multiple times in the header"
                 raise DuplicateColumnException(error)
 
@@ -109,15 +61,15 @@ class BillDictReader(UnicodeDictReader):
         """
         return row
 
-    def next(self):
-        row = self._get_row(UnicodeDictReader.next(self))
+    def __next__(self):
+        row = self._get_row(csv.DictReader.__next__(self))
         if len(row) == 0:
             return None
         row['amount'] = Decimal(row['amount'].replace(",", "."))
         row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
         row['reference'] = row['reference'].replace(' ', '').lstrip('0')
         row['transaction'] = row['transaction'].replace(' ', '').replace('/', '')
-        if row.has_key('value_date'):
+        if 'value_date' in row:
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
 
@@ -296,7 +248,7 @@ class Command(BaseCommand):
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
             # Exceptions of process_csv are fatal in command line run
-            with open(csvfile, 'r') as file_handle:
+            with open(csvfile, 'r', encoding='ISO-8859-1') as file_handle:
                 if options['procountor']:
                     process_procountor_csv(file_handle)
                 else:

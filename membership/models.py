@@ -1,37 +1,33 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
+import logging
+import traceback
+from io import StringIO
 from datetime import datetime, timedelta
 from decimal import Decimal
-import logging
-from django.core.files.storage import FileSystemStorage
-from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
 
-from membership.reference_numbers import barcode_4, group_right,\
-    generate_membership_bill_reference_number
-
-logger = logging.getLogger("membership.models")
-import traceback
-
-from cStringIO import StringIO
-
+import django.utils.timezone
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import FileSystemStorage
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db import transaction
 from django.db.models import Q, Sum, Count
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
-import django.utils.timezone
+from django.utils.encoding import smart_text
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.forms import ValidationError
 
-from django.db.models.query import QuerySet
-
-from django.contrib.contenttypes.models import ContentType
-
-from utils import log_change, tupletuple_to_dict
-
+from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
+from membership.email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
+from membership.reference_numbers import barcode_4, group_right, generate_membership_bill_reference_number
 from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
-from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
+from membership.utils import log_change, tupletuple_to_dict
+
+logger = logging.getLogger("membership.models")
 
 
 class BillingEmailNotFound(Exception): pass
@@ -112,7 +108,7 @@ class Contact(models.Model):
                 self.homepage = "http://{homepage}".format(homepage=self.homepage)
 
         if self.organization_name:
-            if len(self.organization_name) < 5:
+            if len(smart_text(self.organization_name)) < 5:
                 raise Exception("Organization's name should be at least 5 characters.")
         super(Contact, self).save(*args, **kwargs)
 
@@ -156,13 +152,15 @@ class Contact(models.Model):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.first_name, self.last_name)
+            return '{first_name} {last_name}'.format(first_name=self.first_name,
+                                                     last_name=self.last_name)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.last_name, self.first_name)
+            return "{last_name} {first_name}".format(last_name=self.last_name,
+                                                     first_name=self.first_name)
 
 
 class MembershipManager(models.Manager):
@@ -241,7 +239,7 @@ class Membership(models.Model):
         if self.primary_contact():
             return self.primary_contact().name()
         else:
-            return unicode(self)
+            return smart_text(self)
 
     def email(self):
         return self.primary_contact().email
@@ -265,9 +263,9 @@ class Membership(models.Model):
         for contact in contact_priority_list:
             if contact:
                 if contact.email:
-                    return unicode(contact.email_to())
-        raise BillingEmailNotFound("Neither billing or administrative contact "+
-            "has an email address")
+                    return smart_text(contact.email_to())
+        raise BillingEmailNotFound("Neither billing or administrative contact " +
+                                   "has an email address")
 
     # https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.clean
     def clean(self):
@@ -530,18 +528,16 @@ class Membership(models.Model):
 
         return Membership.objects.filter(id__in=membership_ids)
 
-    def __repr__(self):
-        plain_self = unicode(self).encode('ASCII', 'backslashreplace')
-        return "<Membership(%s): %s (%i)>" % (self.type, plain_self, self.id)
-
-    def __unicode__(self):
+    def __str__(self):
         if self.organization:
-            return self.organization.__unicode__()
+            return "{organization}".format(organization=self.organization)
         else:
             if self.person:
-                return self.person.__unicode__()
+                s = _("#{member_id} {person}")
             else:
-                return "#%d" % self.id
+                s = _("#{member_id}")
+            return s.format(member_id=self.pk, person=self.person)
+
 
 class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
@@ -549,9 +545,10 @@ class Fee(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2)
     vat_percentage = models.IntegerField(_('VAT percentage'))
 
-    def __unicode__(self):
-        return "Fee for %s, %s euros, %s%% VAT, %s--" % \
-               (self.get_type_display(), str(self.sum), str(self.vat_percentage), str(self.start))
+    def __str__(self):
+        return _("Fee for {type}, {fee_euro} euros (inc. VAT {vat_percentage}%), {start}--").format(
+            type=self.get_type_display(), fee_euro=self.sum,
+            vat_percentage=self.vat_percentage, start=self.start)
 
 
 class BillingCycleManager(models.Manager):
@@ -757,13 +754,15 @@ class BillingCycle(models.Model):
         day = timedelta(days=1)
         return self.end.date()-day
 
-    def __unicode__(self):
-        return str(self.start.date()) + "--" + str(self.end_date())
+    def __str__(self):
+        return "#{member_id} {start}--{end}".format(
+            member_id=self.membership.pk, start=self.start.date(), end=self.end_date())
 
     def save(self, *args, **kwargs):
         if not self.end:
+            # noinspection PyTypeChecker
             self.end = self.start + timedelta(days=365)
-            if (self.end.day != self.start.day):
+            if self.end.day != self.start.day:
                 # Leap day
                 self.end += timedelta(days=1)
         if not self.reference_number:
@@ -803,8 +802,9 @@ class Bill(models.Model):
     def is_due(self):
         return self.due_date < datetime.now()
 
-    def __unicode__(self):
-        return _('Sent on') + ' ' + str(self.created)
+    def __str__(self):
+        return _('Member: #{member_id} Bill sent: {created}').format(
+            member_id=self.billingcycle.membership.pk, created=self.created)
 
     def save(self, *args, **kwargs):
         if not self.due_date:
@@ -841,7 +841,7 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': smart_text(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
@@ -871,7 +871,7 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': smart_text(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
@@ -910,8 +910,7 @@ class Bill(models.Model):
             ret_items = send_as_email.send_robust(self.__class__, instance=self)
             for item in ret_items:
                 sender, error = item
-                if error != None:
-                    logger.error("%s" % traceback.format_exc())
+                if error is not None:
                     logger.exception("Error while sending email")
                     raise error
         else:
@@ -957,8 +956,9 @@ class Payment(models.Model):
     duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
     logs = property(_get_logs)
 
-    def __unicode__(self):
-        return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
+    def __str__(self):
+        return _("{amount_euro:.2f} euros on {payment_day}, reference {reference}").format(
+            amount_euro=self.amount, reference=self.reference_number, payment_day=self.payment_day.date())
 
     def attach_to_cycle(self, cycle, user=None):
         if self.billingcycle:

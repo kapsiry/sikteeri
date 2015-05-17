@@ -4,9 +4,11 @@
 Some functions that cannot be in pdf.py file to prevent import loop.
 """
 
-from cStringIO import StringIO
+from io import BytesIO
 import logging
+from tempfile import NamedTemporaryFile
 
+from django.conf import settings
 from django.core.files import File
 from membership.billing import pdf
 
@@ -46,19 +48,19 @@ def get_bill_pdf(bill, payments=None):
 
     # If PDF does not exist, generate it
     if not bill.pdf_file:
-        pdf_fp = StringIO()
+        buffer = BytesIO()
 
         # Select template bill/reminder
         if bill.is_reminder():
-            p = pdf.PDFReminder(pdf_fp)
+            # This is reminder
+            p = pdf.PDFReminder(buffer)
         else:
-            p = pdf.PDFInvoice(pdf_fp)
-
+            p = pdf.PDFInvoice(buffer)
         p.addBill(bill, payments=payments)
         p.generate()
-        pdf_fp.seek(0)
-        django_file = File(pdf_fp)
-        bill.pdf_file.save("bill_{id}.pdf".format(id=bill.id), django_file)
-        pdf_fp.close()
-
+        buffer.seek(0)
+        myfile = File(buffer)
+        bill.pdf_file.save('bill_{id}.pdf'.format(id=bill.id), myfile)
+        buffer.close()
     return bill.pdf_file.read()
+

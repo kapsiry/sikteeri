@@ -4,12 +4,12 @@ import logging
 logger = logging.getLogger("membership.email_utils")
 
 from django.conf import settings
-
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+
+unicode = str
 
 
 def format_email(name, email):
@@ -71,7 +71,7 @@ def bill_sender(sender, instance=None, **kwargs):
 
 def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
     from services.models import Service
-    from models import MEMBER_TYPES_DICT
+    from membership.models import MEMBER_TYPES_DICT
     # imported here since on top-level it would lead into a circular import
     email_body = render_to_string('membership/preapprove_mail.txt', {
         'membership': instance,

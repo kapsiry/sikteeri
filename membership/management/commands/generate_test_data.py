@@ -187,7 +187,7 @@ class Command(BaseCommand):
                                 public_memberlist=public_memberlist,
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
 
-        self.stdout.write(unicode(person))
+        self.stdout.write(str(person))
         membership.save()
 
         forward_alias = Alias(owner=membership,

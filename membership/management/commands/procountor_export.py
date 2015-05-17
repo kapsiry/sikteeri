@@ -73,7 +73,7 @@ Mukana myös uudet hyvityslaskut.
                 email.send()
                 message = "Sent Procountor bill list CSV by email"
             else:
-                self.stdout.write(content.decode("ISO-8859-1"))
+                self.stdout.write(content)
                 message = 'Wrote Procountor bill list CSV to console'
             logger.info(message)
         else:

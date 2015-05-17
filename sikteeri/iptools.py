@@ -27,7 +27,7 @@ def ipv4_to_long(ip):
     16909060L
     """
     ip_bytes_n = socket.inet_pton(socket.AF_INET, ip)
-    return long(struct.unpack('!I', ip_bytes_n)[0])
+    return int(struct.unpack('!I', ip_bytes_n)[0])
 
 def long_to_ipv4(ip_long):
     """Convert a long representation to a human readable IPv4 string
@@ -61,7 +61,7 @@ def ipv4_mask_to_long(mask):
     4278190080L
     """
     mask_binary = ("1" * mask) + ("0" * (32-mask))
-    return long(mask_binary, 2)
+    return int(mask_binary, 2)
 
 def ipv6_mask_to_long(mask):
     """Convert an IPv6 prefixlen to long
@@ -72,7 +72,7 @@ def ipv6_mask_to_long(mask):
     340282366920938463463374607431768211455L
     """
     mask_binary = ("1" * mask) + ("0" * (128-mask))
-    return long(mask_binary, 2)
+    return int(mask_binary, 2)
 
 def cidr_to_network(ip, prefixlen):
     """Calculate the network address for a CIDR notation network

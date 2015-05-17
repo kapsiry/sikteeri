@@ -1,9 +1,7 @@
-# encoding: UTF-8
-from __future__ import unicode_literals
 import csv
 import logging
 from datetime import datetime, timedelta
-from StringIO import StringIO
+from io import StringIO
 from decimal import Decimal
 
 from django.conf import settings
@@ -133,16 +131,13 @@ def create_csv(start=None, mark_cancelled=True):
         start = datetime(year=start.year, month=start.month, day=1)
 
     filehandle = StringIO()
-    output = csv.writer(filehandle, delimiter=b';', quoting=csv.QUOTE_NONE)
+    output = csv.writer(filehandle, delimiter=';', quoting=csv.QUOTE_NONE)
 
     for bill in Bill.objects.filter(created__gte=start, reminder_count=0).all():
         for row in _bill_to_rows(bill):
             row2 = []
             for v in row:
-                if type(v) == unicode:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
+                row2.append(v)
             output.writerow(row2)
 
     cancelled_bills = CancelledBill.objects.filter(exported=False)
@@ -150,10 +145,7 @@ def create_csv(start=None, mark_cancelled=True):
         for row in _bill_to_rows(cb.bill, cancel=True):
             row2 = []
             for v in row:
-                if type(v) == unicode:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
+                row2.append(v)
             output.writerow(row2)
     if mark_cancelled:
         cancelled_bills.update(exported=True)

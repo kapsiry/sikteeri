@@ -1,21 +1,14 @@
-# -*- coding: utf-8 -*-
-from __future__ import with_statement
-
 import calendar
-from datetime import datetime, timedelta
-from decimal import Decimal
-
-from StringIO import StringIO
-
+import json
+import logging
 import os
 import os.path
-import logging
-import json
+from datetime import datetime, timedelta
+from decimal import Decimal
+from io import StringIO
 
 from django.core.mail import EmailMessage
 from django.core.management import call_command
-
-logger = logging.getLogger("membership.tests")
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -54,6 +47,9 @@ from membership.management.commands.makebills import MembershipNotApproved
 from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
 from membership.management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
 
+logger = logging.getLogger("membership.tests")
+
+
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
 }
@@ -62,7 +58,7 @@ __test__ = {
 def open_test_data(file):
     basedir = os.path.dirname(__file__)
     data_file = os.path.join(basedir, 'test_data', file)
-    return open(data_file, 'r')
+    return open(data_file, 'r', encoding='ISO-8859-1')
 
 
 class ReferenceNumberTest(TestCase):
@@ -84,8 +80,8 @@ class ReferenceNumberTest(TestCase):
 
     def test_uniqueness_of_reference_numbers(self):
         numbers = set([])
-        for i in xrange(1, 100):
-            for j in xrange(datetime.now().year, datetime.now().year + 11):
+        for i in range(1, 100):
+            for j in range(datetime.now().year, datetime.now().year + 11):
                 number = generate_membership_bill_reference_number(i, j)
                 self.assertFalse(number in numbers)
                 numbers.add(number)
@@ -140,8 +136,8 @@ class ReferenceNumberTest(TestCase):
         self.assertRaises(InvalidAmountException, canonize_sum, 123456, 101)
 
     def test_canonize_duedate(self):
-        self.assertEquals(canonize_duedate(datetime(2011, 03 ,20)), '110320')
-        self.assertEquals(canonize_duedate(datetime(2011, 03, 31)), '110331')
+        self.assertEquals(canonize_duedate(datetime(2011, 3, 20)), '110320')
+        self.assertEquals(canonize_duedate(datetime(2011, 3, 31)), '110331')
         self.assertEquals(canonize_duedate(datetime(2021, 12, 31)), '211231')
         self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 16, 52, 30)), '101010')
         self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 23, 59, 59)), '101010')
@@ -339,7 +335,7 @@ class BillingTest(TestCase):
         bill = Bill.objects.latest('id')
         self.assertEquals(bill.billingcycle.sum, Decimal('0'))
 
-        from models import logger as models_logger
+        from membership.models import logger as models_logger
         models_logger.setLevel(level=logging.INFO)
         handler = MockLoggingHandler()
         models_logger.addHandler(handler)
@@ -1280,7 +1276,7 @@ class MemberApplicationTest(TestCase):
                                          json.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
                                          content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
-        json_dict = json.loads(json_response.content)
+        json_dict = json.loads(json_response.content.decode("UTF-8"))
         self.assertEqual(json_dict['contacts']['person']['first_name'],
                          u'&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
@@ -1292,7 +1288,7 @@ class MemberApplicationTest(TestCase):
             json.dumps({"requestType": "VALIDATE_ALIAS", "payload": alias}),
                        content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
-        json_dict = json.loads(json_response.content)
+        json_dict = json.loads(json_response.content.decode("UTF-8"))
         return json_dict
 
     def test_validate_alias_ajax(self):
@@ -1417,34 +1413,34 @@ class MemberListTest(TestCase):
 
     def test_renders_member_id(self):
         response = self.client.get('/membership/memberships/approved/')
+        response_content = response.content.decode("UTF-8")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response_content)
 
         response = self.client.get('/membership/memberships/preapproved/')
+        response_content = response.content.decode("UTF-8")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response_content)
 
         response = self.client.get('/membership/memberships/new/')
+        response_content = response.content.decode("UTF-8")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response_content)
 
     def test_memberlist_pagination(self):
         response = self.client.get('/membership/memberships/approved/?page=1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertContains(response, '<span class="member_id">#%i</span>' % self.m1.id, html=True, status_code=200)
 
         response = self.client.get('/membership/memberships/approved/?page=2')
         self.assertEqual(response.status_code, 404)
 
     def test_memberlist_sort_by_name(self):
         response = self.client.get('/membership/memberships/approved/?sort=name')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertContains(response, '<span class="member_id">#%i</span>' % self.m1.id, html=True, status_code=200)
 
     def test_memberlist_sort_by_id(self):
         response = self.client.get('/membership/memberships/approved/?sort=id')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertContains(response, '<span class="member_id">#%i</span>' % self.m1.id, html=True, status_code=200)
 
 
 class MemberDeletionTest(TestCase):
@@ -1654,13 +1650,13 @@ class MetricsInterfaceTest(TestCase):
     def test_membership_statuses(self):
         response = self.client.get('/membership/metrics/')
         self.assertEqual(response.status_code, 200)
-        d = json.loads(response.content)
-        self.assertTrue(d.has_key(u'memberships'))
+        d = json.loads(response.content.decode("UTF-8"))
+        self.assertTrue('memberships' in d)
         for key in [u'new', u'preapproved', u'approved', u'deleted']:
-            self.assertTrue(d[u'memberships'].has_key(key))
-        self.assertTrue(d.has_key(u'bills'))
+            self.assertTrue(key in d[u'memberships'])
+        self.assertTrue('bills' in d)
         for key in [u'unpaid_count', u'unpaid_sum']:
-            self.assertTrue(d[u'bills'].has_key(key))
+            self.assertTrue(key in d[u'bills'])
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):

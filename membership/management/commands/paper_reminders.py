@@ -31,8 +31,8 @@ class Command(BaseCommand):
                 pdffile = target_file.name
 
             if pdffile:
-                print "pdf file created: %s" % pdffile
+                print("pdf file created: {0}".format(pdffile))
             else:
-                print "Cannot create pdffile"
+                print("Cannot create pdffile")
         except RuntimeError as e:
             raise CommandError(e)

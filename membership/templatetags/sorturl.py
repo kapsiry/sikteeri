@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django import template
 from django.http import QueryDict
 
@@ -37,7 +35,7 @@ def lookup_sort(sort):
     """
     if sort is None:
         return None
-    assert isinstance(sort, unicode)
+    assert isinstance(sort, str)
     key, __, index = sort.partition(':')
     try:
         return sort_cycles[key][int(index)-1]
@@ -59,7 +57,7 @@ def next_sort(sort):
     """
     if sort is None:
         return None
-    assert isinstance(sort, unicode)
+    assert isinstance(sort, str)
     key, __, index = sort.partition(':')
     try:
         available_sorts = sort_cycles[key]

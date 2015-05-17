@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from models import BillingCycle
+from membership.models import BillingCycle
 
 def unpaid_members_data():
     unpaid_members = []

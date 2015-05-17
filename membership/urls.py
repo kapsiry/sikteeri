@@ -1,7 +1,4 @@
 from django.conf.urls import patterns, url
-from django.contrib.auth.decorators import permission_required
-from django.db.models import Count
-from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 
 from membership.models import Contact, Membership, Payment, BillingCycle
