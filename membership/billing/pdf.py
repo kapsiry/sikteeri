@@ -261,7 +261,7 @@ class PDFTemplate(object):
                 'postal_code':membercontact.postal_code,
                 'postal_office':membercontact.post_office,
                 'date': date.strftime("%d.%m.%Y"),
-                'latest_payment_date': latest_payments,
+                'latest_payment_date': latest_payments.strftime('%d.%m.%Y'),
                 'member_id': cycle.membership.id,
                 'due_date': due_date,
                 'email': membercontact.email,
