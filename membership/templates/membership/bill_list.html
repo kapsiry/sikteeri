@@ -17,7 +17,6 @@
 	<span class="paid">
 		<a href="{% sorturl "due_date" %}">&nbsp;&nbsp;{% trans "Due date" %}</a>
 	</span>
-	<span class="comment"><a href="{% sorturl "comment" %}">{% trans "Reminder count"|capfirst %}</a></span>
   </li>
   {% for cycle in cycle_list %}
   {% with cycle.membership as member %}
