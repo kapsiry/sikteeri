@@ -49,13 +49,10 @@ __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
 }
 
-MEMBERSHIP_FIXTURES = "membership/fixtures"
-
 def test_data_file(file):
-    return os.path.join(MEMBERSHIP_FIXTURES, file)
+    basedir = os.path.dirname(__file__)
+    return os.path.join(basedir, 'test_data', file)
 
-test_data_file("csv-test.txt")
-test_data_file("csv-test-duplicate.txt")
 
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
@@ -579,7 +576,7 @@ class CSVNoMembersTest(TestCase):
 
     def test_file_reading(self):
         "csvbills: test data should have 3 payments, none of which match"
-        with open(test_data_file("csv-test.txt"), 'r') as f:
+        with open(test_data_file("csv-test.csv"), 'r') as f:
             process_op_csv(f)
 
         payment_count = Payment.objects.count()
@@ -608,7 +605,7 @@ class CSVReadingTest(TestCase):
     def test_import_data(self):
         no_cycle_q = Q(billingcycle=None)
 
-        with open(test_data_file("csv-test.txt"), 'r') as f:
+        with open(test_data_file("csv-test.csv"), 'r') as f:
             process_op_csv(f)
         payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
@@ -621,7 +618,7 @@ class CSVReadingTest(TestCase):
     def test_duplicate_payment(self):
         no_cycle_q = Q(billingcycle=None)
 
-        with open(test_data_file("csv-test-duplicate.txt"), 'r') as f:
+        with open(test_data_file("csv-test-duplicate.csv"), 'r') as f:
             process_op_csv(f)
         payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
@@ -634,14 +631,14 @@ class CSVReadingTest(TestCase):
 
     def test_future_payment(self):
         error = "Should fail on payment in the future"
-        with open(test_data_file("csv-future.txt"), 'r') as f:
+        with open(test_data_file("csv-future.csv"), 'r') as f:
             self.assertRaises(PaymentFromFutureException, process_op_csv, f)
 
     def test_csv_header_processing(self):
         error = "Should fail on invalid header"
-        with open(test_data_file("csv-invalid.txt"), 'r') as f:
+        with open(test_data_file("csv-invalid.csv"), 'r') as f:
             self.assertRaises(RequiredFieldNotFoundException, process_op_csv, f)
-        with open(test_data_file("csv-test.txt"), 'r') as f:
+        with open(test_data_file("csv-test.csv"), 'r') as f:
             try:
                 process_op_csv(f)
             except RequiredFieldNotFoundException:
@@ -653,7 +650,7 @@ class ProcountorCSVNoMembersTest(TestCase):
 
     def test_file_reading(self):
         "csvbills: test data should have 3 payments, none of which match"
-        with open(test_data_file("procountor-csv-test.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-test.csv"), 'r') as f:
             process_procountor_csv(f)
 
         payment_count = Payment.objects.count()
@@ -682,7 +679,7 @@ class ProcountorCSVReadingTest(TestCase):
     def test_import_data(self):
         no_cycle_q = Q(billingcycle=None)
 
-        with open(test_data_file("procountor-csv-test.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-test.csv"), 'r') as f:
             process_procountor_csv(f)
         payment_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
@@ -695,7 +692,7 @@ class ProcountorCSVReadingTest(TestCase):
     def test_duplicate_payment(self):
         no_cycle_q = Q(billingcycle=None)
 
-        with open(test_data_file("procountor-csv-duplicate.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-duplicate.csv"), 'r') as f:
             process_procountor_csv(f)
         payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The payment in the sample file should have matched"
@@ -708,14 +705,14 @@ class ProcountorCSVReadingTest(TestCase):
 
     def test_future_payment(self):
         error = "Should fail on payment in the future"
-        with open(test_data_file("procountor-csv-future.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-future.csv"), 'r') as f:
             self.assertRaises(PaymentFromFutureException, process_procountor_csv, f)
 
     def test_csv_header_processing(self):
         error = "Should fail on invalid header"
-        with open(test_data_file("procountor-csv-invalid.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-invalid.csv"), 'r') as f:
             self.assertRaises(RequiredFieldNotFoundException, process_procountor_csv, f)
-        with open(test_data_file("procountor-csv-test.txt"), 'r') as f:
+        with open(test_data_file("procountor-csv-test.csv"), 'r') as f:
             try:
                 process_procountor_csv(f)
             except RequiredFieldNotFoundException:
