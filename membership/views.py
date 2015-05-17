@@ -289,33 +289,23 @@ def organization_application_services(request, template_name='membership/new_org
                                               "title": unicode(_('Choose services'))},
                               context_instance=RequestContext(request))
 
+
 # Public access
 def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
-    membership = Membership(type='O', status='N',
-                            nationality=request.session['membership']['nationality'],
-                            municipality=request.session['membership']['municipality'],
-                            extra_info=request.session['membership']['extra_info'])
-    organization = Contact(**request.session.get('organization'))
-
-    try:
-        billing_contact = Contact(**request.session['billing_contact'])
-    except:
-        billing_contact = None
-
-    try:
-        tech_contact = Contact(**request.session['tech_contact'])
-    except:
-        tech_contact = None
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('organization_application')
 
     forms = []
     combo_dict = request.session['membership']
     for k, v in request.session['organization'].items():
         combo_dict[k] = v
     forms.append(OrganizationApplicationForm(combo_dict))
-    if billing_contact:
+    if request.session.get('billing_contact') is not None:
         forms.append(PersonContactForm(request.session['billing_contact']))
         forms[-1].name = _("Billing contact")
-    if tech_contact:
+    if request.session.get('tech_contact') is not None:
         forms.append(PersonContactForm(request.session['tech_contact']))
         forms[-1].name = _("Technical contact")
     return render_to_response(template_name, {"forms": forms, "services": request.session['services'],
@@ -325,6 +315,11 @@ def organization_application_review(request, template_name='membership/new_organ
 
 # Public access
 def organization_application_save(request):
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('organization_application')
+
     with transaction.atomic():
         membership = Membership(type='O', status='N',
                                 nationality=request.session['membership']['nationality'],
