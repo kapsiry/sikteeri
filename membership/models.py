@@ -19,6 +19,7 @@ from django.db import models
 from django.db import transaction
 from django.db.models import Q, Sum, Count
 from django.utils.translation import ugettext_lazy as _
+import django.utils.timezone
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.forms import ValidationError
@@ -544,7 +545,7 @@ class BillingCycle(models.Model):
         )
 
     membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
-    start =  models.DateTimeField(default=datetime.now(), verbose_name=_('Start'))
+    start =  models.DateTimeField(default=django.utils.timezone.now, verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
