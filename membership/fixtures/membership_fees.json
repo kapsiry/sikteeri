@@ -1,122 +1,142 @@
 [
     {
-        "pk": 1,
-        "model": "membership.fee",
         "fields": {
-            "type": "P",
-            "start": "2003-01-01 00:00:00",
+            "start": "2003-01-01T00:00:00",
             "sum": "30.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 2,
-        "model": "membership.fee",
-        "fields": {
-            "type": "O",
-            "start": "2003-01-01 00:00:00",
-            "sum": "100.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 3,
-        "model": "membership.fee",
-        "fields": {
-            "type": "S",
-            "start": "2003-01-01 00:00:00",
-            "sum": "100.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 4,
-        "model": "membership.fee",
-        "fields": {
-            "type": "H",
-            "start": "2003-01-01 00:00:00",
-            "sum": "0.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 5,
-        "model": "membership.fee",
-        "fields": {
             "type": "P",
-            "start": "2011-01-01 00:00:00",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "start": "2003-01-01T00:00:00",
+            "sum": "100.00",
+            "type": "O",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "start": "2003-01-01T00:00:00",
+            "sum": "100.00",
+            "type": "S",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 3
+    },
+    {
+        "fields": {
+            "start": "2003-01-01T00:00:00",
+            "sum": "0.00",
+            "type": "H",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 4
+    },
+    {
+        "fields": {
+            "start": "2011-01-01T00:00:00",
             "sum": "35.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 6,
-        "model": "membership.fee",
-        "fields": {
-            "type": "O",
-            "start": "2011-01-01 00:00:00",
-            "sum": "60.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 7,
-        "model": "membership.fee",
-        "fields": {
-            "type": "S",
-            "start": "2011-01-01 00:00:00",
-            "sum": "250.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 8,
-        "model": "membership.fee",
-        "fields": {
-            "type": "H",
-            "start": "2011-01-01 00:00:00",
-            "sum": "0.00",
-            "vat_percentage": "0"
-        }
-    },
-    {
-        "pk": 9,
-        "model": "membership.fee",
-        "fields": {
             "type": "P",
-            "start": "2014-01-01 00:00:00",
-            "sum": "40.00",
-            "vat_percentage": "24"
-        }
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 5
     },
     {
-        "pk": 10,
-        "model": "membership.fee",
         "fields": {
-            "type": "O",
-            "start": "2014-01-01 00:00:00",
+            "start": "2011-01-01T00:00:00",
             "sum": "60.00",
-            "vat_percentage": "24"
-        }
+            "type": "O",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 6
     },
     {
-        "pk": 11,
-        "model": "membership.fee",
         "fields": {
-            "type": "S",
-            "start": "2014-01-01 00:00:00",
+            "start": "2011-01-01T00:00:00",
             "sum": "250.00",
-            "vat_percentage": "24"
-        }
+            "type": "S",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 7
     },
     {
-        "pk": 12,
-        "model": "membership.fee",
         "fields": {
-            "type": "H",
-            "start": "2014-01-01 00:00:00",
+            "start": "2011-01-01T00:00:00",
             "sum": "0.00",
-            "vat_percentage": "24"
-        }
+            "type": "H",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 8
+    },
+    {
+        "fields": {
+            "start": "2014-01-01T00:00:00",
+            "sum": "40.00",
+            "type": "P",
+            "vat_percentage": 24
+        },
+        "model": "membership.fee",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "start": "2014-01-01T00:00:00",
+            "sum": "70.00",
+            "type": "O",
+            "vat_percentage": 24
+        },
+        "model": "membership.fee",
+        "pk": 10
+    },
+    {
+        "fields": {
+            "start": "2014-01-01T00:00:00",
+            "sum": "250.00",
+            "type": "S",
+            "vat_percentage": 24
+        },
+        "model": "membership.fee",
+        "pk": 11
+    },
+    {
+        "fields": {
+            "start": "2015-01-01T00:00:01",
+            "sum": "40.00",
+            "type": "P",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 12
+    },
+    {
+        "fields": {
+            "start": "2015-01-01T00:00:01",
+            "sum": "250.00",
+            "type": "S",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 13
+    },
+    {
+        "fields": {
+            "start": "2015-01-01T00:00:01",
+            "sum": "70.00",
+            "type": "O",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 14
     }
 ]
