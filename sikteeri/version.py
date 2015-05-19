@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-VERSION = '''1.4-dev'''
+VERSION = '''1.4.0'''
