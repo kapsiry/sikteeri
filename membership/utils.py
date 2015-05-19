@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from django.contrib.comments.models import Comment
+from django_comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.utils.encoding import force_unicode

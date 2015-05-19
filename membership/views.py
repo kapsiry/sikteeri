@@ -6,6 +6,7 @@ from os import remove as remove_file
 from os import path
 from django.conf import settings
 import traceback
+from django.core.exceptions import ObjectDoesNotExist
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
     BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
@@ -27,7 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
 
-from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm
+from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, ContactForm
 from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
 from utils import bake_log_entries
 from public_memberlist import public_memberlist_data
@@ -65,8 +66,8 @@ def new_application(request, template_name='membership/choose_membership_type.ht
     return render_to_response(template_name, {},
                               context_instance=RequestContext(request))
 
+
 # Public access
-@transaction.commit_manually
 def person_application(request, template_name='membership/new_person_application.html'):
     if settings.MAINTENANCE_MESSAGE != None:
         return redirect('frontpage')
@@ -83,7 +84,7 @@ def person_application(request, template_name='membership/new_person_application
                 pass
         else:
             f = application_form.cleaned_data
-            try:
+            with transaction.atomic():
                 # Separate a contact dict from the other fields
                 contact_dict = {}
                 for k, v in f.items():
@@ -151,7 +152,6 @@ def person_application(request, template_name='membership/new_person_application
                                                  answer=answer)
                     pollanswer.save()
 
-                transaction.commit()
                 logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
                 send_mail(_('Membership application received'),
                           render_to_string('membership/application_confirmation.txt',
@@ -165,17 +165,12 @@ def person_application(request, template_name='membership/new_person_application
                           settings.FROM_EMAIL,
                           [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
-            except Exception as e:
-                transaction.rollback()
-                logger.critical("%s" % traceback.format_exc())
-                logger.critical("Transaction rolled back while trying to process %s." % repr(application_form.cleaned_data))
-                return redirect('new_application_error')
 
-    with transaction.autocommit():
-        return render_to_response(template_name, {"form": application_form,
-                                    "chosen_email_forward": chosen_email_forward,
-                                    "title": _("Person member application")},
-                                    context_instance=RequestContext(request))
+    return render_to_response(template_name, {"form": application_form,
+                                "chosen_email_forward": chosen_email_forward,
+                                "title": _("Person member application")},
+                                context_instance=RequestContext(request))
+
 
 # Public access
 def organization_application(request, template_name='membership/new_organization_application.html'):
@@ -294,43 +289,38 @@ def organization_application_services(request, template_name='membership/new_org
                                               "title": unicode(_('Choose services'))},
                               context_instance=RequestContext(request))
 
+
 # Public access
 def organization_application_review(request, template_name='membership/new_organization_application_review.html'):
-    membership = Membership(type='O', status='N',
-                            nationality=request.session['membership']['nationality'],
-                            municipality=request.session['membership']['municipality'],
-                            extra_info=request.session['membership']['extra_info'])
-    organization = Contact(**request.session.get('organization'))
-
-    try:
-        billing_contact = Contact(**request.session['billing_contact'])
-    except:
-        billing_contact = None
-
-    try:
-        tech_contact = Contact(**request.session['tech_contact'])
-    except:
-        tech_contact = None
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('organization_application')
 
     forms = []
     combo_dict = request.session['membership']
     for k, v in request.session['organization'].items():
         combo_dict[k] = v
     forms.append(OrganizationApplicationForm(combo_dict))
-    if billing_contact:
+    if request.session.get('billing_contact') is not None:
         forms.append(PersonContactForm(request.session['billing_contact']))
         forms[-1].name = _("Billing contact")
-    if tech_contact:
+    if request.session.get('tech_contact') is not None:
         forms.append(PersonContactForm(request.session['tech_contact']))
         forms[-1].name = _("Technical contact")
     return render_to_response(template_name, {"forms": forms, "services": request.session['services'],
                                               "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))},
                               context_instance=RequestContext(request))
 
+
 # Public access
-@transaction.commit_manually
 def organization_application_save(request):
-    try:
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('organization_application')
+
+    with transaction.atomic():
         membership = Membership(type='O', status='N',
                                 nationality=request.session['membership']['nationality'],
                                 municipality=request.session['membership']['municipality'],
@@ -338,56 +328,47 @@ def organization_application_save(request):
                                 organization_registration_number=request.session['membership']['organization_registration_number'])
 
         organization = Contact(**request.session['organization'])
-
-        try:
-            billing_contact = Contact(**request.session['billing_contact'])
-        except:
-            billing_contact = None
-
-        try:
-            tech_contact = Contact(**request.session['tech_contact'])
-        except:
-            tech_contact = None
-
         organization.save()
         membership.organization = organization
-        if billing_contact:
+
+        if request.session.get('billing_contact') is not None:
+            billing_contact = Contact(**request.session['billing_contact'])
             billing_contact.save()
             membership.billing_contact = billing_contact
-        if tech_contact:
+
+        if request.session.get('tech_contact') is not None:
+            tech_contact = Contact(**request.session['tech_contact'])
             tech_contact.save()
             membership.tech_contact = tech_contact
 
         membership.save()
 
         services = []
-        session = request.session
-        login_alias = Alias(owner=membership, name=session['services']['unix_login'], account=True)
+        services_request = request.session['services']
+        login_alias = Alias(owner=membership, name=services_request['unix_login'], account=True)
         login_alias.save()
         unix_account_service = Service(servicetype=ServiceType.objects.get(servicetype='UNIX account'),
-                                       alias=login_alias, owner=membership, data=session['services']['unix_login'])
+                                       alias=login_alias, owner=membership, data=services_request['unix_login'])
         unix_account_service.save()
         services.append(unix_account_service)
-        if session['services'].has_key('mysql_database'):
+        if 'mysql_database' in services_request:
             mysql_service = Service(servicetype=ServiceType.objects.get(servicetype='MySQL database'),
                                     alias=login_alias, owner=membership,
-                                    data=session['services']['mysql_database'].replace('-', '_'))
+                                    data=services_request['mysql_database'].replace('-', '_'))
             mysql_service.save()
             services.append(mysql_service)
-        if session['services'].has_key('postgresql_database'):
+        if 'postgresql_database' in services_request:
             postgresql_service = Service(servicetype=ServiceType.objects.get(servicetype='PostgreSQL database'),
                                          alias=login_alias, owner=membership,
-                                         data=session['services']['postgresql_database'])
+                                         data=services_request['postgresql_database'])
             postgresql_service.save()
             services.append(postgresql_service)
-        if session['services'].has_key('login_vhost'):
+        if 'login_vhost' in services_request:
             login_vhost_service = Service(servicetype=ServiceType.objects.get(servicetype='WWW vhost'),
                                           alias=login_alias, owner=membership,
-                                          data=session['services']['login_vhost'])
+                                          data=services_request['login_vhost'])
             login_vhost_service.save()
             services.append(login_vhost_service)
-
-        transaction.commit()
 
         send_mail(_('Membership application received'),
                   render_to_string('membership/application_confirmation.txt',
@@ -404,25 +385,15 @@ def organization_application_save(request):
         logger.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
         request.session.set_expiry(0) # make this expire when the browser exits
         for i in ['membership', 'billing_contact', 'tech_contact', 'services']:
-            try:
+            if i in request.session:
                 del request.session[i]
-            except:
-                pass
         return redirect('new_organization_application_success')
-    except Exception as e:
-        transaction.rollback()
-        logger.error("%s" % traceback.format_exc())
-        logger.error("Transaction rolled back.")
-        return redirect('new_application_error')
+
 
 @permission_required('membership.edit_members')
 def contact_add(request, contact_type, memberid, template_name='membership/entity_edit.html'):
     membership = get_object_or_404(Membership, id=memberid)
     forms = ['billing_contact', 'tech_contact']
-
-    class Form(ModelForm):
-        class Meta:
-            model = Contact
 
     if contact_type not in forms:
         return HttpResponseForbidden("Access denied")
@@ -433,7 +404,7 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
         return redirect('contact_edit',membership.tech_contact.id)
 
     if request.method == 'POST':
-        form = Form(request.POST)
+        form = ContactForm(request.POST)
         if form.is_valid():
             contact = Contact(**form.cleaned_data)
             contact.save()
@@ -450,7 +421,7 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
             messages.error(request,
                            unicode(_("New contact not saved.")))
     else:
-        form = Form()
+        form = ContactForm()
     return render_to_response(template_name,
                              {"form": form, 'memberid': memberid},
                              context_instance=RequestContext(request))
@@ -458,10 +429,6 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
     contact = get_object_or_404(Contact, id=id)
-    # XXX: I hate this. Wasn't there a shortcut for creating a form from instance?
-    class Form(ModelForm):
-        class Meta:
-            model = Contact
 
     before = model_to_dict(contact)  # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
@@ -469,7 +436,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
             messages.error(request, unicode(_("You are not authorized to modify memberships.")))
             return redirect('contact_edit', id)
 
-        form = Form(request.POST, instance=contact)
+        form = ContactForm(request.POST, instance=contact)
 
         if form.is_valid():
             form.save()
@@ -480,8 +447,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
         else:
             messages.error(request, unicode(_("Changes to contact %s not saved.") % contact))
     else:
-        form =  Form(instance=contact)
-        message = ""
+        form = ContactForm(instance=contact)
     logentries = bake_log_entries(contact.logs.all())
     return render_to_response(template_name, {'form': form, 'contact': contact,
         'logentries': logentries, 'memberid': contact.find_memberid()},
@@ -707,10 +673,9 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Payment
-            #exclude = ('billingcycle')
+            fields = '__all__'
 
         billingcycle = CharField(widget=HiddenInput(), required=False)
-        #billingcycle = CharField(required=False)
         message = CharField(widget=Textarea(attrs={'rows': 5, 'cols': 60}))
 
         def disable_fields(self):

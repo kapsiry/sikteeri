@@ -11,7 +11,6 @@ from membership.forms import VALID_USERNAME_RE
 from services.models import Alias
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
-from django.db import transaction
 from django.forms import ModelForm, ModelChoiceField
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
@@ -26,15 +25,17 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
     class Form(ModelForm):
         class Meta:
             model = Alias
-            # exclude = ('person', 'billing_contact', 'tech_contact', 'organization')
+            fields = '__all__'
+
         owner = ModelChoiceField(queryset=Membership.objects.filter(pk=alias.owner.id),
                                  empty_label=None)
 
-
-        def clean_name(self):
+        @staticmethod
+        def clean_name():
             return alias.name
 
-        def clean_owner(self):
+        @staticmethod
+        def clean_owner():
             return alias.owner
 
         def disable_fields(self):
@@ -64,6 +65,7 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
 @permission_required('services.manage_aliases')
 def alias_add_for_member(request, id, template_name='membership/membership_add_alias.html'):
     membership = get_object_or_404(Membership, id=id)
+
     class Form(ModelForm):
         class Meta:
             model = Alias

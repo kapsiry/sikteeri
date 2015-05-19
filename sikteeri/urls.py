@@ -10,7 +10,7 @@ urlpatterns = patterns('',
     # url(r'^sikteeri/', include('sikteeri.foo.urls')),
 
     url(r'^$', 'sikteeri.views.frontpage', name='frontpage'),
-    url(r'^comments/', include('django.contrib.comments.urls')),
+    url(r'^comments/', include('django_comments.urls')),
     url(r'^membership/', include('membership.urls')),
     url(r'^services/', include('services.urls')),
 

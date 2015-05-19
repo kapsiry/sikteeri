@@ -28,7 +28,6 @@ if CONFIGURATION == 'dev':
     # We don't make it possible to set DEBUG on from config file.
     DEBUG = True
     TEMPLATE_DEBUG = True
-    #DEBUG_TOOLBAR_PATCH_SETTINGS = False
     CONFIGURATION = os.path.join(BASE_DIR, 'config-dev.json')
     config = {}
 else:
@@ -192,16 +191,11 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.humanize',
-    'django.contrib.comments',
+    'django_comments',
     'django.contrib.staticfiles',
     'membership',
     'services',
-    'south',
 )
-
-if DEBUG:
-    INSTALLED_APPS += ('debug_toolbar',)
-
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
