@@ -24,7 +24,7 @@ def unix_email(membership):
         try:
             alias = valid_aliases(membership).filter(account=True).latest('created')
             email = u"{user}@{domain}".format(user=alias, domain=settings.UNIX_EMAIL_DOMAIN)
-            format_email(name=membership.name(), email=email)
+            return format_email(name=membership.name(), email=email)
         except Alias.DoesNotExist:
             pass
     return None
