@@ -10,8 +10,8 @@ Jos emme saa vastaustasi kahden viikon kuluessa, joudumme tulkitsemaan ylimäär
 
 
 Terveisin,
-{{ user.get_full_name }}
-Kapsin laskutus
+   {{ user.get_full_name }}
+   Kapsin laskutus
    laskutus@tuki.kapsi.fi
 
    Kapsi Internet-käyttäjät ry

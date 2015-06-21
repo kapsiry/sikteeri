@@ -14,5 +14,5 @@ django.wsgi
 muistutusviesti.tex
 cache/*
 .idea
-
+*.pdf
 *.mbox
