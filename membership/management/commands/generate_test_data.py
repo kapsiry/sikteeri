@@ -139,10 +139,15 @@ class Command(BaseCommand):
 
         person = Contact(**d)
         person.save()
+        if random() < 0.2:
+            public_memberlist = True
+        else:
+            public_memberlist = False
         membership = Membership(type='P', status='N',
                                 person=person,
                                 nationality='Finnish',
                                 municipality='Paska kaupunni',
+                                public_memberlist=public_memberlist,
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
 
         self.stdout.write(unicode(person))
