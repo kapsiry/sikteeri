@@ -12,4 +12,4 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         template_name = 'membership/public_memberlist.xml'
         data = public_memberlist_data()
-        return render_to_string(template_name, data).encode('utf-8')
+        return render_to_string(template_name, data)
