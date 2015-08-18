@@ -822,6 +822,27 @@ class MemberApplicationTest(TestCase):
         self.assertEquals(new.person.first_name, u"Yrjö")
 
 
+    def test_do_application_with_short_homepage(self):
+        self.post_data['homepage'] = 'www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+
+    def test_do_application_with_proper_homepage(self):
+        self.post_data['homepage'] = 'http://www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+
+    def test_do_application_with_proper_secure_homepage(self):
+        self.post_data['homepage'] = 'https://www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"https://www.kapsi.fi")
+
     def test_redundant_email_alias(self):
         self.post_data['unix_login'] = 'fnamelname'
         self.post_data['email_forward'] = 'fname.lname'
