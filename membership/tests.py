@@ -787,6 +787,34 @@ class TrustedHostTest(TestCase):
                 continue
             self.assertEqual(response.status_code, 200)
 
+
+class ContactTest(TestCase):
+
+    def test_short_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_short_homepage_create(self):
+        c = Contact.objects.create(first_name="Aa", given_names="Aa",
+            last_name="Bb", homepage = "www.kapsi.fi")
+        c = Contact.objects.get(pk=c.pk)
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_proper_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "http://www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_proper_secure_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "https://www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "https://www.kapsi.fi")
+
+
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
