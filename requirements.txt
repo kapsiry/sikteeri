@@ -1,10 +1,10 @@
 dj-database-url==0.3.0
-Django==1.8.1
+Django>=1.8.0,<1.9.0
 django-auth-ldap==1.2.6
 django-contrib-comments==1.6.1
-gunicorn==19.3.0
-Pillow==2.8.1
-psycopg2==2.6
-python-ldap==2.4.19
-reportlab==3.1.44
-sqlparse==0.1.15
+gunicorn>=19.3.0,<19.4.0
+Pillow==2.9.0
+psycopg2>=2.6,<2.7
+python-ldap==2.4.20
+reportlab==3.2.0
+sqlparse==0.1.16
