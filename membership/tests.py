@@ -787,6 +787,34 @@ class TrustedHostTest(TestCase):
                 continue
             self.assertEqual(response.status_code, 200)
 
+
+class ContactTest(TestCase):
+
+    def test_short_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_short_homepage_create(self):
+        c = Contact.objects.create(first_name="Aa", given_names="Aa",
+            last_name="Bb", homepage = "www.kapsi.fi")
+        c = Contact.objects.get(pk=c.pk)
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_proper_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "http://www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "http://www.kapsi.fi")
+
+    def test_proper_secure_homepage(self):
+        c = Contact(first_name="Aa", given_names="Aa", last_name="Bb")
+        c.homepage = "https://www.kapsi.fi"
+        c.save()
+        self.assertEqual(c.homepage, "https://www.kapsi.fi")
+
+
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
@@ -821,6 +849,27 @@ class MemberApplicationTest(TestCase):
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.first_name, u"Yrjö")
 
+
+    def test_do_application_with_short_homepage(self):
+        self.post_data['homepage'] = 'www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+
+    def test_do_application_with_proper_homepage(self):
+        self.post_data['homepage'] = 'http://www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+
+    def test_do_application_with_proper_secure_homepage(self):
+        self.post_data['homepage'] = 'https://www.kapsi.fi'
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.person.homepage, u"https://www.kapsi.fi")
 
     def test_redundant_email_alias(self):
         self.post_data['unix_login'] = 'fnamelname'

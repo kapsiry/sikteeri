@@ -92,6 +92,10 @@ class Contact(models.Model):
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
 
     def save(self, *args, **kwargs):
+        if self.homepage:
+            if '://' not in self.homepage:
+                self.homepage = "http://{homepage}".format(homepage=self.homepage)
+
         if self.organization_name:
             if len(self.organization_name) < 5:
                 raise Exception("Organization's name should be at least 5 characters.")

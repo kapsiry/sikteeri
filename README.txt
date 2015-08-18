@@ -19,8 +19,8 @@ HOW TO RUN
 source ~/env/sikteeri/bin/activate
 
 # Initialize development database
-./manage.py syncdb && \
 ./manage.py migrate && \
+./manage.py createsuperuser && \
 ./manage.py loaddata membership/fixtures/membership_fees.json && \
 ./manage.py generate_test_data
 
