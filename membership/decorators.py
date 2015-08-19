@@ -9,18 +9,11 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 
+from membership.utils import get_client_ip
+
 from sikteeri.iptools import IpRangeList
 
 import base64
-
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 def trusted_host_required(view_func):

@@ -335,3 +335,12 @@ def group_reference(string):
     """
     string = ''.join(string.split())
     return ''.join(e if (len(string) - i - 1) % 5 else e + " " for (i, e) in enumerate(string)).strip()
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
