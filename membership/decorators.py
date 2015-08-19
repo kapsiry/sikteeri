@@ -13,16 +13,25 @@ from sikteeri.iptools import IpRangeList
 
 import base64
 
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 def trusted_host_required(view_func):
     """ decorator which checks remote address """
     def decorator(request, *args, **kwargs):
         if not hasattr(settings, 'TRUSTED_HOSTS') or not settings.TRUSTED_HOSTS:
             settings.TRUSTED_HOSTS = []
-        if 'REMOTE_ADDR' in request.META:
-            ip = request.META['REMOTE_ADDR']
-            allowed = IpRangeList(*settings.TRUSTED_HOSTS)
-            if ip in allowed:
-                return view_func(request, *args, **kwargs)
+        ip = get_client_ip(request)
+        allowed = IpRangeList(*settings.TRUSTED_HOSTS)
+        if ip in allowed:
+            return view_func(request, *args, **kwargs)
         response = HttpResponseForbidden("Access denied")
         return response
     return decorator
