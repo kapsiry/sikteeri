@@ -27,7 +27,7 @@ from membership.decorators import trusted_host_required
 from membership.forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, \
     ContactForm
 from membership.utils import log_change, serializable_membership_info, admtool_membership_details, \
-    bake_log_entries
+    get_client_ip, bake_log_entries
 from membership.public_memberlist import public_memberlist_data
 from membership.unpaid_members import unpaid_members_data
 from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
@@ -156,7 +156,7 @@ def person_application(request, template_name='membership/new_person_application
                                                  answer=answer)
                     pollanswer.save()
 
-                logger.info("New application %s from %s:." % (str(person), request.META['REMOTE_ADDR']))
+                logger.info("New application {person} from {ip}:.".format(person=person, ip=get_client_ip(request)))
                 send_mail(_('Membership application received'),
                           render_to_string('membership/application_confirmation.txt',
                                            { 'membership': membership,
@@ -164,7 +164,7 @@ def person_application(request, template_name='membership/new_person_application
                                              'person': membership.person,
                                              'billing_contact': membership.billing_contact,
                                              'tech_contact': membership.tech_contact,
-                                             'ip': request.META['REMOTE_ADDR'],
+                                             'ip': get_client_ip(request),
                                              'services': services}),
                           settings.FROM_EMAIL,
                           [membership.email_to()], fail_silently=False)
@@ -381,13 +381,13 @@ def organization_application_save(request):
                                      'organization': membership.organization,
                                      'billing_contact': membership.billing_contact,
                                      'tech_contact': membership.tech_contact,
-                                     'ip': request.META['REMOTE_ADDR'],
+                                     'ip': get_client_ip(request),
                                      'services': services}),
                   settings.FROM_EMAIL,
                   [membership.email_to()], fail_silently=False)
 
-        logger.info("New application %s from %s:." % (unicode(organization), request.META['REMOTE_ADDR']))
-        request.session.set_expiry(0) # make this expire when the browser exits
+        logger.info("New application {organization} from {ip}:.".format(organization=organization, ip=get_client_ip(request)))
+        request.session.set_expiry(0)  # make this expire when the browser exits
         for i in ['membership', 'billing_contact', 'tech_contact', 'services']:
             if i in request.session:
                 del request.session[i]
