@@ -36,6 +36,11 @@ from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_
 
 class BillingEmailNotFound(Exception): pass
 class MembershipOperationError(Exception): pass
+
+
+class MembershipAlreadyStatus(MembershipOperationError): pass
+
+
 class PaymentAttachedError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
@@ -44,12 +49,19 @@ MEMBER_TYPES = (('P', _('Person')),
                 ('H', _('Honorary')))
 MEMBER_TYPES_DICT = tupletuple_to_dict(MEMBER_TYPES)
 
-MEMBER_STATUS = (('N', _('New')),
-                 ('P', _('Pre-approved')),
-                 ('A', _('Approved')),
-                 ('S', _('Dissociation requested')),
-                 ('I', _('Dissociated')),
-                 ('D', _('Deleted')))
+
+STATUS_NEW = 'N'
+STATUS_PREAPPROVED = 'P'
+STATUS_APPROVED = 'A'
+STATUS_DIS_REQUESTED = 'S'
+STATUS_DISASSOCIATED = 'I'
+STATUS_DELETED = 'D'
+MEMBER_STATUS = ((STATUS_NEW, _('New')),
+                 (STATUS_PREAPPROVED, _('Pre-approved')),
+                 (STATUS_APPROVED, _('Approved')),
+                 (STATUS_DIS_REQUESTED, _('Dissociation requested')),
+                 (STATUS_DISASSOCIATED, _('Dissociated')),
+                 (STATUS_DELETED, _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
 BILL_TYPES = (
@@ -191,7 +203,7 @@ class Membership(models.Model):
     logs = property(_get_logs)
 
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Membership type'))
-    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default='N', verbose_name=_('Membership status'))
+    status = models.CharField(max_length=1, choices=MEMBER_STATUS, default=STATUS_NEW, verbose_name=_('Membership status'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Membership created'))
     approved = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership approved'))
     last_changed = models.DateTimeField(auto_now=True, verbose_name=_('Membership changed'))
@@ -260,7 +272,7 @@ class Membership(models.Model):
             raise ValidationError("Illegal member type '%s'" % self.type)
         if self.status not in MEMBER_STATUS_DICT.keys():
             raise ValidationError("Illegal member status '%s'" % self.status)
-        if self.status != 'D':
+        if self.status != STATUS_DELETED:
             if self.type == 'O' and self.person:
                 raise ValidationError("Organization may not have a person contact.")
             if self.type != 'O' and self.organization:
@@ -284,85 +296,101 @@ class Membership(models.Model):
 
         super(Membership, self).save(*args, **kwargs)
 
+    def _change_status(self, new_status):
+        # Allowed transitions From State: [TO STATES]
+        _allowed_transitions = {
+            STATUS_NEW: [
+                STATUS_PREAPPROVED,
+                STATUS_DELETED
+            ],
+            STATUS_PREAPPROVED: [
+                STATUS_APPROVED,
+                STATUS_DELETED
+            ],
+            STATUS_APPROVED: [
+                STATUS_DIS_REQUESTED,
+                STATUS_DISASSOCIATED
+            ],
+            STATUS_DISASSOCIATED: [
+                STATUS_DELETED
+            ],
+            STATUS_DIS_REQUESTED: [
+                STATUS_DISASSOCIATED,
+                STATUS_APPROVED
+            ],
+        }
+        with transaction.atomic():
+            me = Membership.objects.select_for_update().filter(pk=self.pk)[0]
+            current_status = me.status
+            if new_status == current_status:
+                raise MembershipAlreadyStatus("Membership is already {status}".format(status=new_status))
+            elif new_status not in _allowed_transitions[current_status]:
+                raise MembershipOperationError("Membership status can't change from {current} to {new}".format(
+                    current=current_status, new=new_status))
+            me.status = new_status
+            if new_status == STATUS_APPROVED:
+                # Preserve original approve time (cancel dissociation)
+                if not me.approved:
+                    me.approved = datetime.now()
+                me.dissociation_requested = None
+            elif new_status == STATUS_DIS_REQUESTED:
+                me.dissociation_requested = datetime.now()
+            elif new_status == STATUS_DISASSOCIATED:
+                me.dissociated = datetime.now()
+            elif new_status == STATUS_DELETED:
+                me.person = None
+                me.billing_contact = None
+                me.tech_contact = None
+                me.organization = None
+                me.municipality = ''
+                me.birth_year = None
+                me.organization_registration_number = ''
+
+            me.save()
+            self.refresh_from_db()
+
     def preapprove(self, user):
-        if self.status != 'N':
-            raise MembershipOperationError("A membership from other state than new can't be preapproved.")
-        if user == None:
-            msg = "Membership.preapprove() needs user object as a parameter"
-            logger.critical("%s" % traceback.format_exc())
-            logger.critical(msg)
-            raise MembershipOperationError(msg)
-        self.status = 'P'
-        self.save()
+        assert user is not None
+        self._change_status(new_status=STATUS_PREAPPROVED)
         log_change(self, user, change_message="Preapproved")
 
         ret_items = send_preapprove_email.send_robust(self.__class__, instance=self, user=user)
         for item in ret_items:
             sender, error = item
-            if error != None:
+            if error is not None:
                 raise error
-        logger.info("Membership %s preapproved." % self)
+        logger.info("Membership {membership} preapproved.".format(membership=self))
 
     def approve(self, user):
-        if self.status != 'P':
-            raise MembershipOperationError("A membership from other state than preapproved can't be approved.")
-        if user == None:
-            msg = "Membership.approve() needs user object as a parameter"
-            logger.critical("%s" % traceback.format_exc())
-            logger.critical(msg)
-            raise MembershipOperationError(msg)
-        self.status = 'A'
-        self.approved = datetime.now()
-        self.save()
+        assert user is not None
+        self._change_status(new_status=STATUS_APPROVED)
         log_change(self, user, change_message="Approved")
 
     def request_dissociation(self, user):
-        if self.status != 'A':
-            raise MembershipOperationError("A membership from other state than approved can't be requested for dissociation.")
-        if user == None:
-            msg = "Membership.request_dissociation() needs user object as a parameter"
-            logger.critical("%s" % traceback.format_exc())
-            logger.critical(msg)
-            raise MembershipOperationError(msg)
-
-        self.status = 'S'
-        self.dissociation_requested = datetime.now()
-        self.save()
+        assert user is not None
+        self._change_status(new_status='S')
         log_change(self, user, change_message="Dissociation requested")
 
     def cancel_dissociation_request(self, user):
-        if self.status != 'S':
-            raise MembershipOperationError("A membership has to be in dissociation requested state for the state to be canceled.")
-        if user == None:
-            msg = "Membership.cancel_dissociation_request() needs user object as a parameter"
-            logger.critical("%s" % traceback.format_exc())
-            logger.critical(msg)
-            raise MembershipOperationError(msg)
-
-        self.status = 'A'
-        self.dissociation_requested = None
-        self.save()
+        assert user is not None
+        if not self.approved:
+            raise MembershipOperationError("Can't cancel dissociation request unless approved as member")
+        self._change_status(new_status=STATUS_APPROVED)
         log_change(self, user, change_message="Dissociation request state reverted")
 
     def dissociate(self, user):
-        if self.status not in ('A', 'S'):
-            raise MembershipOperationError("A membership from other state than dissociation requested or approved can't be dissociated.")
-        if user == None:
-            msg = "Membership.dissociate() needs user object as a parameter"
-            logger.critical("%s" % traceback.format_exc())
-            logger.critical(msg)
-            raise MembershipOperationError(msg)
-
-        self.status = 'I'
-        self.dissociated = datetime.now()
-        self.save()
+        assert user is not None
+        self._change_status(new_status=STATUS_DISASSOCIATED)
         log_change(self, user, change_message="Dissociated")
 
     @transaction.atomic
     def delete_membership(self, user):
-        if self.status == 'D':
-            raise MembershipOperationError("A deleted membership can't be deleted.")
-        elif self.status == 'N':
+        assert user is not None
+
+        me = Membership.objects.select_for_update().filter(pk=self.pk)[0]
+        if me.status == STATUS_DELETED:
+            raise MembershipAlreadyStatus("Membership already deleted")
+        elif me.status == STATUS_NEW:
             # must be imported here due to cyclic imports
             from services.models import Service
             logger.info("Deleting services of the membership application %s." % repr(self))
@@ -377,19 +405,13 @@ class Membership(models.Model):
             for alias in self.alias_set.all():
                 alias.expire()
 
-        self.status = 'D'
         contacts = [self.person, self.billing_contact, self.tech_contact,
                     self.organization]
-        self.person = None
-        self.billing_contact = None
-        self.tech_contact = None
-        self.organization = None
-        self.municipality = ''
-        self.birth_year = None
-        self.organization_registration_number = ''
-        self.save()
+
+        self._change_status(new_status=STATUS_DELETED)
+
         for contact in contacts:
-            if contact != None:
+            if contact is not None:
                 contact.delete_if_no_references(user)
         log_change(self, user, change_message="Deleted")
 
@@ -477,7 +499,7 @@ class Membership(models.Model):
         unpaid_filter = Q(billingcycle__is_paid=False)
         type_filter = Q(type='P')
         date_filter = Q(due_date__lt=datetime.now() - timedelta(days=days))
-        not_deleted_filter = Q(billingcycle__membership__status__exact='A')
+        not_deleted_filter = Q(billingcycle__membership__status__exact=STATUS_APPROVED)
         bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter,
                                       not_deleted_filter)
 
@@ -658,7 +680,7 @@ class BillingCycle(models.Model):
         qs = qs.annotate(bills=Count('bill'))
         qs = qs.filter(bills__gt=2,
                        is_paid__exact=False,
-                       membership__status='A',
+                       membership__status=STATUS_APPROVED,
                        membership__id__gt=-1)
         qs = qs.exclude(bill__type='P')
         qs = qs.order_by('start')
