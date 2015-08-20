@@ -2,13 +2,8 @@
 
 import logging
 import json
-from os import remove as remove_file
-from os import path
 from django.conf import settings
 import traceback
-from django.core.exceptions import ObjectDoesNotExist
-from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill,\
-    BillingCycle, Payment, ApplicationPoll
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
 
@@ -28,18 +23,18 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
 
-from forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, ContactForm
-from utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects
-from utils import bake_log_entries
-from public_memberlist import public_memberlist_data
-from unpaid_members import unpaid_members_data
-
+from membership.decorators import trusted_host_required
+from membership.forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, \
+    ContactForm
+from membership.utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects, \
+    bake_log_entries
+from membership.public_memberlist import public_memberlist_data
+from membership.unpaid_members import unpaid_members_data
+from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
+from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill, BillingCycle, Payment, ApplicationPoll, \
+    MembershipAlreadyStatus
 from services.views import check_alias_availability, validate_alias
 
-from management.commands.csvbills import process_op_csv, process_procountor_csv
-from decorators import trusted_host_required
-
-from django.db.models.query_utils import Q
 
 ENTRIES_PER_PAGE = settings.ENTRIES_PER_PAGE
 
@@ -967,23 +962,28 @@ def membership_convert_to_organization(request, id, template_name='membership/me
 
 @permission_required('membership.manage_members')
 def membership_preapprove_json(request, id):
-    get_object_or_404(Membership, id=id).preapprove(request.user)
+    m = get_object_or_404(Membership, id=id)
+    try:
+        m.preapprove(request.user)
+    except MembershipAlreadyStatus:
+        pass  # Success if we didn't do anything
     return HttpResponse(id, content_type='text/plain')
 
 @permission_required('membership.manage_members')
 def membership_approve_json(request, id):
-    get_object_or_404(Membership, id=id).approve(request.user)
+    m = get_object_or_404(Membership, id=id)
+    try:
+        m.approve(request.user)
+    except MembershipAlreadyStatus:
+        pass  # Success if we didn't do anything
     return HttpResponse(id, content_type='text/plain')
 
 @permission_required('membership.read_members')
 def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
-    #sleep(1)
     json_obj = serializable_membership_info(membership)
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         content_type='application/json')
-    # return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
-    #                     content_type='text/plain')
 
 # Public access
 def handle_json(request):
