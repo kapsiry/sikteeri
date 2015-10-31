@@ -1,4 +1,4 @@
-# Travis-CI https://travis-ci.org/kapsiry/sikteeri
+# Travis-CI: https://travis-ci.org/kapsiry/sikteeri
 language: python
 python:
   - "2.7"
