@@ -337,6 +337,7 @@ class Membership(models.Model):
                 me.dissociation_requested = datetime.now()
             elif new_status == STATUS_DISASSOCIATED:
                 me.dissociated = datetime.now()
+                me.cancel_outstanding_bills()
             elif new_status == STATUS_DELETED:
                 me.person = None
                 me.billing_contact = None
@@ -382,6 +383,16 @@ class Membership(models.Model):
         assert user is not None
         self._change_status(new_status=STATUS_DISASSOCIATED)
         log_change(self, user, change_message="Dissociated")
+
+    def cancel_outstanding_bills(self):
+        try:
+            latest_billingcycle = self.billingcycle_set.latest('start')
+            if not latest_billingcycle.is_paid:
+                bill = latest_billingcycle.first_bill()
+                if not bill.is_reminder():
+                    CancelledBill.objects.get_or_create(bill=bill)
+        except ObjectDoesNotExist:
+            return  # No billing cycle, no need to cancel bills
 
     @transaction.atomic
     def delete_membership(self, user):
@@ -751,6 +762,21 @@ class BillingCycle(models.Model):
         super(BillingCycle, self).save(*args, **kwargs)
 
 cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
+
+
+class CancelledBill(models.Model):
+    """List of bills that have been cancelled"""
+    bill = models.OneToOneField('Bill', verbose_name=_('Original bill'))
+    created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
+    exported = models.BooleanField(default=False)
+
+    logs = property(_get_logs)
+
+    def save(self, *args, **kwargs):
+        if self.bill.is_reminder():
+            raise ValueError("Can not cancel reminder bills")
+        super(CancelledBill, self).save(*args, **kwargs)
+
 
 class Bill(models.Model):
     billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
