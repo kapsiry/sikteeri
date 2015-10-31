@@ -312,8 +312,7 @@ class BillingTest(TestCase):
         log_change(membership, self.user, change_message="Approved")
         approve_entries = membership.logs.filter(change_message="Approved")
 
-        t = membership.approved
-        self.assertTrue(t != None)
+        self.assertIsNotNone(membership.approved)
 
     def test_no_email_if_membership_fee_zero(self):
         membership = create_dummy_member('N', type='H')
@@ -1056,6 +1055,7 @@ class MemberDeletionTest(TestCase):
         self.assertEquals(Alias.objects.all().count(), 1)
         self.assertFalse(Alias.objects.all()[0].is_valid())
 
+
 class MemberDissociationRequestedTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
     def setUp(self):
@@ -1070,6 +1070,11 @@ class MemberDissociationRequestedTest(TestCase):
         m.preapprove(self.user)
         self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
 
+    def test_preapprove_twice(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        self.assertRaises(MembershipOperationError, m.preapprove, self.user)
+
     def test_approved_request_dissociation(self):
         m = create_dummy_member('N')
         m.preapprove(self.user)
@@ -1083,6 +1088,23 @@ class MemberDissociationRequestedTest(TestCase):
         self.assertIsNotNone(m.dissociation_requested)
         self.assertTrue(m.dissociation_requested > before)
         self.assertTrue(m.dissociation_requested < after)
+
+    def test_approved_request_dissociate_delete(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        m.delete_membership(self.user)
+
+    def test_approved_request_dissociate_delete_twice(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        m.delete_membership(self.user)
+        self.assertRaises(MembershipAlreadyStatus, m.delete_membership, self.user)
 
     def test_dissociated_request_dissociation(self):
         m = create_dummy_member('N')
