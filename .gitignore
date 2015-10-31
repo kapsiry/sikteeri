@@ -1,5 +1,6 @@
 *.pyc
 *.swp
+.coverage
 *~
 *.sqlite
 *.sqlite3
@@ -12,7 +13,8 @@
 /ve
 django.wsgi
 muistutusviesti.tex
-cache/*
+cache
+.cache
 .idea
 *.pdf
 *.mbox

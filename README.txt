@@ -47,6 +47,10 @@ source env/bin/activate
 
 ./manage.py test
 
+OR with py.test: (requires pip install pytest pytest-cov pytest-django)
+
+./test.sh
+
 If you want to override settings, create a local settings
 file which has "import * from sikteeri.settings" and
 export DJANGO_SETTINGS_FILE=production_settings or similar
