@@ -4,6 +4,7 @@ REQUIREMENTS
 * Django 1.6
 * Python 2.7
 * gettext
+* openldap and sasl dev for LDAP support
 
 For production, additionally:
 * gunicorn
@@ -15,8 +16,15 @@ HOW TO RUN
 # Create virtualenv environment
 ./install-virtualenv.sh
 
+(
+If it fails with installing python-ldap on OS X, check that you have the
+requirements (SASL, openldap). Hint:
+  source env/bin/activate
+  pip install -r requirements.txt --global-option=build_ext --global-option="-I$(xcrun --show-sdk-path)/usr/include/sasl"
+)
+
 # Activate virtualenv
-source ~/env/sikteeri/bin/activate
+source env/bin/activate
 
 # Initialize development database
 ./manage.py migrate && \
