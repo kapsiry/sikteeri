@@ -4,7 +4,9 @@ python:
 env:
   - SIKTEERI_CONFIGURATION=dev
 # command to install dependencies
-install: "pip install -r requirements.txt"
+install:
+ - "pip install -r requirements.txt"
+ - "sudo locale-gen fi_FI.UTF-8"
 # command to run tests
 script: "./manage.py test"
-sudo: false
+sudo: true
