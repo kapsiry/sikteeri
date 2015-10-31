@@ -1,6 +1,8 @@
 language: python
 python:
   - "2.7"
+env:
+  - SIKTEERI_CONFIGURATION=dev
 # command to install dependencies
 install: "pip install -r requirements.txt"
 # command to run tests
