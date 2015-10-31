@@ -385,7 +385,7 @@ def organization_application_save(request):
         return redirect('new_organization_application_success')
 
 
-@permission_required('membership.edit_members')
+@permission_required('membership.manage_members')
 def contact_add(request, contact_type, memberid, template_name='membership/entity_edit.html'):
     membership = get_object_or_404(Membership, id=memberid)
     forms = ['billing_contact', 'tech_contact']
