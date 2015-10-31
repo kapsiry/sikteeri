@@ -393,31 +393,6 @@ class SingleMemberBillingTest(TestCase):
         self.assertEquals(len(mail.outbox), 1)
         self.assertFalse(cycle.last_bill().is_reminder())
 
-    def test_no_cycle_created(self):
-        "makebills: no cycles after an expired membership, should log a warning"
-        m = self.membership
-        makebills()
-
-        c = m.billingcycle_set.all()[0]
-        c.end = datetime.now() - timedelta(hours=1)
-        c.save()
-
-        handler = MockLoggingHandler()
-        makebills_logger.addHandler(handler)
-        makebills()
-        makebills_logger.removeHandler(handler)
-
-        warnings = handler.messages["warning"]
-        self.assertTrue(len(warnings) > 0)
-
-        logged = False
-        for warning in warnings:
-            if "no new billing cycle created for" in warning:
-                logged = True
-                break
-
-        self.assertTrue(logged)
-
     def test_approved_cycle_and_bill_creation(self):
         "makebills: cycle and bill creation"
         makebills()
