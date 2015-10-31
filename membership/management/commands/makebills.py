@@ -97,8 +97,6 @@ def makebills():
             logger.info("Created billing cycle %s for %s" % (repr(cycle), repr(member)))
         else:
             latest_cycle = cycles.latest("end")
-            if latest_cycle.end < datetime.now():
-                logger.warning("no new billing cycle created for %s after an expired one!" % repr(member))
             if latest_cycle.end <= last_of_month:
                 cycle = create_billingcycle(member)
                 logger.info("Created billing cycle %s for %s" %
