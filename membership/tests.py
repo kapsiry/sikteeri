@@ -3,13 +3,9 @@ from __future__ import with_statement
 
 import os
 import os.path
-import tempfile
 import logging
 logger = logging.getLogger("membership.tests")
 
-from decimal import Decimal
-from datetime import datetime, timedelta
-from random import randint
 import calendar
 import json
 
@@ -613,10 +609,7 @@ class CSVReadingTest(TestCase):
         with open(data_file("csv-invalid.csv"), 'r') as f:
             self.assertRaises(RequiredFieldNotFoundException, process_op_csv, f)
         with open(data_file("csv-test.csv"), 'r') as f:
-            try:
-                process_op_csv(f)
-            except RequiredFieldNotFoundException:
-                self.fail("Valid csv should not raise header error.")
+            process_op_csv(f)  # Valid csv should not raise error
 
 
 class ProcountorCSVNoMembersTest(TestCase):
@@ -1128,7 +1121,7 @@ class MemberCancelDissociationRequestTest(TestCase):
         m.preapprove(self.user)
         self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
 
-    def test_approved_request_dissociation(self):
+    def test_approved_request_cancel_dissociation_before_dissociation(self):
         m = create_dummy_member('N')
         m.preapprove(self.user)
         m.approve(self.user)

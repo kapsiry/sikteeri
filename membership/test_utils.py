@@ -170,9 +170,9 @@ def random_last_name():
 
 def create_dummy_member(status, type='P', mid=None):
     if status not in ['N', 'P', 'A']:
-        raise Exception("Unknown membership status")
+        raise Exception("Unknown membership status")  # pragma: no cover
     if type not in ['P', 'S', 'O', 'H']:
-        raise Exception("Unknown membership type")
+        raise Exception("Unknown membership type")  # pragma: no cover
     i = random.randint(1, 300)
     fname = random_first_name()
     d = {
