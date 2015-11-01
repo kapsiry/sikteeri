@@ -609,10 +609,7 @@ class CSVReadingTest(TestCase):
         with open(data_file("csv-invalid.csv"), 'r') as f:
             self.assertRaises(RequiredFieldNotFoundException, process_op_csv, f)
         with open(data_file("csv-test.csv"), 'r') as f:
-            try:
-                process_op_csv(f)
-            except RequiredFieldNotFoundException:
-                self.fail("Valid csv should not raise header error.")
+            process_op_csv(f)  # Valid csv should not raise error
 
 
 class ProcountorCSVNoMembersTest(TestCase):
