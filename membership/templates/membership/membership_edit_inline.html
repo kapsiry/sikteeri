@@ -59,8 +59,10 @@
   {% endif %}
 {% endif %}
 
-{% if perms.membership.delete_members and membership.status != "D" %}
+{% if perms.membership.delete_members %}
+{% if membership.status == "N" or membership.status == "P" or membership.status == "I" %}
   <a href="{% url "membership_delete" membership.id %}">{% trans "Delete" %}</a>
+{% endif %}
 {% endif %}
 
 {% if perms.membership.manage_members %}
