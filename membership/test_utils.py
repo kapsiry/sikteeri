@@ -8,9 +8,13 @@ random.seed(1)
 
 logger = logging.getLogger("membership.test_utils")
 
-# Finnish population register center's most popular first names for year 2009
 from membership.models import Membership, Contact
 
+
+# We use realistic names in test data so that it is feasible to test
+# duplicate member detection code locally without using production data.
+
+# Finnish population register center's most popular first names for year 2009
 first_names = [
     u"Maria", u"Juhani", u"Aino", u"Veeti", u"Emilia", u"Johannes", u"Venla",
     u"Eetu", u"Sofia", u"Mikael", u"Emma", u"Onni", u"Olivia", u"Matias",
