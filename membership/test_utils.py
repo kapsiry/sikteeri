@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-from random import choice, randint
 import logging
+from random import Random
+
+# Use predictable random for consistent tests
+random = Random()
+random.seed(1)
 
 logger = logging.getLogger("membership.test_utils")
-
 
 # Finnish population register center's most popular first names for year 2009
 from membership.models import Membership, Contact
@@ -155,17 +158,18 @@ last_names = [
     u"Äijänen", u"Ärmänen"]
 
 def random_first_name():
-    return choice(first_names)
+    return random.choice(first_names)
 
 def random_last_name():
-    return choice(last_names)
+    return random.choice(last_names)
+
 
 def create_dummy_member(status, type='P', mid=None):
     if status not in ['N', 'P', 'A']:
         raise Exception("Unknown membership status")
     if type not in ['P', 'S', 'O', 'H']:
         raise Exception("Unknown membership type")
-    i = randint(1, 300)
+    i = random.randint(1, 300)
     fname = random_first_name()
     d = {
         'street_address' : 'Testikatu %d'%i,
