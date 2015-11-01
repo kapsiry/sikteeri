@@ -1,10 +1,10 @@
 # Travis-CI: https://travis-ci.org/kapsiry/sikteeri
 language: python
+cache: pip
 python:
   - "2.7"
-install:
+before_install:
  - "sudo locale-gen fi_FI.UTF-8"
- - "pip install -r requirements.txt"
  - "pip install pytest-coverage pytest-django"
 script: "./test.sh"
 sudo: true
