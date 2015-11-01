@@ -767,7 +767,9 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if not self.due_date:
             self.due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
-            self.due_date = self.due_date.replace(hour=23, minute=59, second=59)
+            # Second is from reminder_count so that tests can assume due_date
+            # is monotonically increasing
+            self.due_date = self.due_date.replace(hour=23, minute=59, second=self.reminder_count % 60)
         super(Bill, self).save(*args, **kwargs)
 
     def is_reminder(self):
