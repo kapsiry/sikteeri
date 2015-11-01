@@ -3,13 +3,9 @@ from __future__ import with_statement
 
 import os
 import os.path
-import tempfile
 import logging
 logger = logging.getLogger("membership.tests")
 
-from decimal import Decimal
-from datetime import datetime, timedelta
-from random import randint
 import calendar
 import json
 
