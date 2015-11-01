@@ -225,8 +225,6 @@ WSGI_APPLICATION = 'sikteeri.wsgi.application'
 
 LOGIN_URL = 'login'
 
-SOUTH_TESTS_MIGRATE = False
-
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 
