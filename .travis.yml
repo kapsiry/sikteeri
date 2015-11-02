@@ -1,12 +1,14 @@
 # Travis-CI: https://travis-ci.org/kapsiry/sikteeri
 language: python
-cache: pip
+cache:
+  directories:
+    - $HOME/.cache/pip
 python:
   - "2.7"
-before_install:
+before_script:
  - "sudo locale-gen fi_FI.UTF-8"
  - "pip install pytest-coverage pytest-django codecov"
 script: "./test.sh"
-sudo: true
+sudo: required
 after_success:
     codecov
