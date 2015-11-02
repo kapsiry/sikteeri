@@ -1,3 +1,6 @@
+![codecov.io](https://codecov.io/github/kapsiry/sikteeri/branch.svg?branch=master)
+[![Build Status](https://travis-ci.org/kapsiry/sikteeri.svg?branch=master)](https://travis-ci.org/kapsiry/sikteeri)
+
 REQUIREMENTS
 ============
 
