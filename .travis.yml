@@ -5,6 +5,8 @@ python:
   - "2.7"
 before_install:
  - "sudo locale-gen fi_FI.UTF-8"
- - "pip install pytest-coverage pytest-django"
+ - "pip install pytest-coverage pytest-django codecov"
 script: "./test.sh"
 sudo: true
+after_success:
+    codecov
