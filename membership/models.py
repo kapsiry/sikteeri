@@ -98,7 +98,7 @@ class Contact(models.Model):
     postal_code = models.CharField(max_length=10, verbose_name=_('Postal code'))
     post_office = models.CharField(max_length=128, verbose_name=_('Post office'))
     country = models.CharField(max_length=128, verbose_name=_('Country'))
-    phone = models.CharField(max_length=64, verbose_name=_('Phone'))
+    phone = models.CharField(max_length=64, blank=True, verbose_name=_('Phone'))
     sms = models.CharField(max_length=64, blank=True, verbose_name=_('SMS number'))
     email = models.EmailField(blank=True, verbose_name=_('E-mail'))
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
