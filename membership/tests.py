@@ -1296,6 +1296,19 @@ class DuplicateMembershipDetectionTest(TestCase):
 
         self.assertEquals(len(m1.duplicates()), 1)
 
+    def test_empty_phone_is_not_duplicate(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+        m1.person.phone = ''
+        m1.person.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.phone = ''
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 0)
+
 
 class MembershipSearchTest(TestCase):
     def setUp(self):
