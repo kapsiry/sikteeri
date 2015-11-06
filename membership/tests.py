@@ -1,51 +1,55 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
 
+import calendar
+from datetime import datetime, timedelta
+from decimal import Decimal
 import os
 import os.path
 import logging
-logger = logging.getLogger("membership.tests")
-
-import calendar
 import json
+
+logger = logging.getLogger("membership.tests")
 
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.db.models import Q
 from django.test import TestCase
 from django.http import HttpResponse, HttpRequest
 from django.utils.translation import ugettext_lazy as _
 
-import email_utils
-from models import *
-from utils import *
-from forms import *
-from test_utils import *
-from decorators import trusted_host_required
+from membership import email_utils
+from membership.models import (Bill, BillingCycle, Contact, CancelledBill, Membership,
+                               MembershipOperationError, MembershipAlreadyStatus,
+                               Fee, Payment, PaymentAttachedError, MEMBER_STATUS)
 from membership.models import logger as models_logger
+from membership.utils import tupletuple_to_dict, log_change
+from membership.forms import LoginField, PhoneNumberField, OrganizationRegistrationNumber
+from membership.test_utils import create_dummy_member, MockLoggingHandler
+from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
-from services.models import *
-
-from reference_numbers import generate_membership_bill_reference_number
-from reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
-from reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
-from reference_numbers import ReferenceNumberException
-from reference_numbers import ReferenceNumberFormatException
-from reference_numbers import IBANFormatException, InvalidAmountException
-
-from management.commands.makebills import logger as makebills_logger
-from management.commands.makebills import makebills
-from management.commands.makebills import create_billingcycle
-from management.commands.makebills import send_reminder
-from management.commands.makebills import can_send_reminder
-from management.commands.makebills import MembershipNotApproved
-
-from management.commands.csvbills import process_op_csv, process_procountor_csv
-from management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
-
+from services.models import Service, ServiceType, Alias
+from membership.reference_numbers import generate_membership_bill_reference_number
+from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
+from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
+from membership.reference_numbers import ReferenceNumberException
+from membership.reference_numbers import ReferenceNumberFormatException
+from membership.reference_numbers import IBANFormatException, InvalidAmountException
+from membership.management.commands.makebills import logger as makebills_logger
+from membership.management.commands.makebills import makebills
+from membership.management.commands.makebills import create_billingcycle
+from membership.management.commands.makebills import send_reminder
+from membership.management.commands.makebills import can_send_reminder
+from membership.management.commands.makebills import MembershipNotApproved
+from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
+from membership.management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
 }
+
 
 def data_file(file):
     basedir = os.path.dirname(__file__)
@@ -55,8 +59,10 @@ def data_file(file):
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
         self.failUnlessEqual(generate_checknumber("1234"), 4)
+
     def test_1234_add(self):
         self.assertEqual(add_checknumber("1234"), "12344")
+
     def test_666666_add(self):
         self.assertEqual(add_checknumber("666666"), "6666668")
 
