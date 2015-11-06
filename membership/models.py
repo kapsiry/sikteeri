@@ -828,7 +828,6 @@ class Bill(models.Model):
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
-                'billing_contact': membership.billing_contact,
                 'billingcycle': self.billingcycle,
                 'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
                 'bic_code': settings.BIC_CODE,
