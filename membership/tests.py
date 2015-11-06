@@ -21,6 +21,7 @@ from utils import *
 from forms import *
 from test_utils import *
 from decorators import trusted_host_required
+from membership.models import logger as models_logger
 from sikteeri.iptools import IpRangeList
 from services.models import *
 
@@ -366,6 +367,7 @@ class SingleMemberBillingTest(TestCase):
         m = mail.outbox[0]
         self.assertEquals(m.to[0], self.membership.billing_email())
         self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
+        self.assertEquals(CancelledBill.objects.count(), 0)
 
     def test_sending_with_cc(self):
         settings.BILLING_CC_EMAIL = "test@example.com"
@@ -408,6 +410,7 @@ class SingleMemberBillingTest(TestCase):
         c = membership2.billingcycle_set.all()[0]
         self.assertEqual(c.bill_set.count(), 1)
         self.assertEqual(c.last_bill().reminder_count, 0)
+        self.assertEquals(CancelledBill.objects.count(), 0)
 
     def test_new_billing_cycle_with_previous_paid(self):
         "makebills: new billing cycle with previous already paid"
@@ -1064,6 +1067,7 @@ class MemberDeletionTest(TestCase):
 
 class MemberDissociationRequestedTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1103,6 +1107,33 @@ class MemberDissociationRequestedTest(TestCase):
         m.dissociate(self.user)
         m.delete_membership(self.user)
 
+    def test_disassociation_cancels_outstanding_bills_db(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 0)
+        m.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1,
+                          "Outstanding bills are cancelled")
+
+    def test_disassociation_cancels_outstanding_bills_logging(self):
+        handler = MockLoggingHandler()
+        models_logger.addHandler(handler)
+
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+
+        canceled_msg = 'Created CancelledBill for Member'
+        message_logged = any([canceled_msg in x for x in handler.messages['info']])
+        self.assertTrue(message_logged)
+        makebills_logger.removeHandler(handler)
+
     def test_approved_request_dissociate_delete_twice(self):
         m = create_dummy_member('N')
         m.preapprove(self.user)
@@ -1119,6 +1150,7 @@ class MemberDissociationRequestedTest(TestCase):
         m.request_dissociation(self.user)
         m.dissociate(self.user)
         self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
+
 
 class MemberCancelDissociationRequestTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
