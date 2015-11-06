@@ -391,6 +391,8 @@ class Membership(models.Model):
                 bill = latest_billingcycle.first_bill()
                 if not bill.is_reminder():
                     CancelledBill.objects.get_or_create(bill=bill)
+                    logger.info("Created CancelledBill for Member #{member.pk} bill {bill.pk}".format(
+                        bill=bill, member=bill.billingcycle.membership))
         except ObjectDoesNotExist:
             return  # No billing cycle, no need to cancel bills
 
