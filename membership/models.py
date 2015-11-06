@@ -98,7 +98,7 @@ class Contact(models.Model):
     postal_code = models.CharField(max_length=10, verbose_name=_('Postal code'))
     post_office = models.CharField(max_length=128, verbose_name=_('Post office'))
     country = models.CharField(max_length=128, verbose_name=_('Country'))
-    phone = models.CharField(max_length=64, verbose_name=_('Phone'))
+    phone = models.CharField(max_length=64, blank=True, verbose_name=_('Phone'))
     sms = models.CharField(max_length=64, blank=True, verbose_name=_('SMS number'))
     email = models.EmailField(blank=True, verbose_name=_('E-mail'))
     homepage = models.URLField(blank=True, verbose_name=_('Homepage'))
@@ -421,26 +421,31 @@ class Membership(models.Model):
         numbers and contact details.  Returns a QuerySet object that doesn't
         include the membership of which duplicates are search for itself.
         """
-        qs = Membership.objects
+        matches = Membership.objects.none()
 
         if self.person and not self.organization:
-            name_q = Q(person__first_name__icontains=self.person.first_name.strip(),
-                       person__last_name__icontains=self.person.last_name.strip())
+            # Matches by first or last name
+            matches |= Membership.objects.filter(
+                person__first_name__icontains=self.person.first_name.strip(),
+                person__last_name__icontains=self.person.last_name.strip())
 
-            email_q = Q(person__email__contains=self.person.email.strip())
-            phone_q = Q(person__phone__icontains=self.person.phone.strip())
-            sms_q = Q(person__sms__icontains=self.person.sms.strip())
-            # don't match empty sms string
-            if self.person.sms.strip():
-                contacts_q = email_q | phone_q | sms_q
-            else:
-                contacts_q = email_q | phone_q
+            # Matches by email address
+            matches |= Membership.objects.filter(
+                person__email__contains=self.person.email.strip())
 
-            qs = qs.filter(name_q | contacts_q)
+            # Matches by phone or SMS number
+            phone_number = self.person.phone.strip()
+            sms_number = self.person.sms.strip()
+            if phone_number:
+                matches |= Membership.objects.filter(person__phone__icontains=phone_number)
+            if sms_number:
+                matches |= Membership.objects.filter(person__sms__icontains=sms_number)
         elif self.organization and not self.person:
-            qs = qs.filter(organization__organization_name__icontains=self.organization.organization_name.strip())
+            organization_name = self.organization.organization_name.strip()
+            matches = Membership.objects.filter(
+                organization__organization_name__icontains=organization_name)
 
-        return qs.exclude(id__exact=self.id)
+        return matches.exclude(id=self.id)
 
     @classmethod
     def search(cls, query):

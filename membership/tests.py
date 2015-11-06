@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from django.http import HttpResponse, HttpRequest
+from django.utils.translation import ugettext_lazy as _
 
 import email_utils
 from models import *
@@ -824,6 +825,18 @@ class MemberApplicationTest(TestCase):
         new = Membership.objects.latest("id")
         self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
 
+    def test_do_application_with_empty_phone_number(self):
+        self.post_data['phone'] = ''
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertEquals(response.status_code, 200)
+        self.assertFormError(response, 'form', 'phone', _('This field is required.'))
+
+    def test_do_application_with_empty_sms_number(self):
+        self.post_data['sms'] = ''
+        response = self.client.post('/membership/application/person/', self.post_data)
+        self.assertEquals(response.status_code, 200)
+        self.assertFormError(response, 'form', 'sms', _('This field is required.'))
+
     def test_do_application_with_proper_homepage(self):
         self.post_data['homepage'] = 'http://www.kapsi.fi'
         response = self.client.post('/membership/application/person/', self.post_data)
@@ -1282,6 +1295,19 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.save()
 
         self.assertEquals(len(m1.duplicates()), 1)
+
+    def test_empty_phone_is_not_duplicate(self):
+        m1 = create_dummy_member('N')
+        m1.save()
+        m1.person.phone = ''
+        m1.person.save()
+
+        m2 = create_dummy_member('N')
+        m2.save()
+        m2.person.phone = ''
+        m2.person.save()
+
+        self.assertEquals(len(m1.duplicates()), 0)
 
 
 class MembershipSearchTest(TestCase):
