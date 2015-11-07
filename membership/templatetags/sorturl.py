@@ -8,6 +8,10 @@ register = template.Library()
 sort_cycles = {
     'id': ['id', '-id'],
     'status': ['status', '-status'],
+    'bill_name': ['membership__person__first_name',
+                  'membership__person__last_name',
+                  '-membership__person__first_name',
+                  '-membership__person__last_name'],
     'name': ['person__first_name', 'person__last_name', '-person__first_name', '-person__last_name'],
     'payer_name': ['payer_name', '-payer_name'],
     'amount': ['amount', '-amount'],
