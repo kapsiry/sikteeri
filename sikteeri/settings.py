@@ -97,6 +97,7 @@ BILLING_FROM_EMAIL = get_required('BILLING_FROM_EMAIL')
 BILLING_CC_EMAIL = config.get('BILLING_CC_EMAIL')
 BILL_SUBJECT = get_required('BILL_SUBJECT')
 REMINDER_SUBJECT = get_required('REMINDER_SUBJECT')
+BILLING_ACCOUNTING_MAP = get_required('BILLING_ACCOUNTING_MAP')
 
 # Send bills how many days before new cycle starts
 BILL_DAYS_BEFORE_CYCLE = int(get_required('BILL_DAYS_BEFORE_CYCLE'))

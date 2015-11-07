@@ -11,12 +11,6 @@ from membership.models import Bill, CancelledBill
 
 logger = logging.getLogger("membership.billing.procountor")
 
-type_mappings = {
-    'P': ['HJ', '9039'],
-    'O': ['YJ', '9037'],
-    'S': ['KJ', '9038']
-}
-
 
 def finnish_timeformat(t):
     return t.strftime("%d.%m.%Y")
@@ -84,7 +78,7 @@ def _bill_to_rows(bill, cancel=False):
         '0',  # Käteisalennuksen päivien lukumäärä
         '0'  # Käteisalennuksen prosentti
     ])
-    member_type = type_mappings[c.membership.type]
+    member_type = settings.BILLING_ACCOUNTING_MAP[c.membership.type]
     r2 = ['',  # TYHJÄ
           '',  # Tuotteen kuvaus
           '%s%s' % (member_type[0], c.start.strftime("%y")),  # Tuotteen koodi

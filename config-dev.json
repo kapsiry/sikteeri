@@ -16,6 +16,11 @@
 
   "BILL_ATTACH_PDF": true,
 
+  "BILLING_ACCOUNTING_MAP": {
+    "P": ["HJ", "9039"],
+    "O": ["YJ", "9037"],
+    "S": ["KJ", "9038"]
+  },
   "IBAN_ACCOUNT_NUMBER": "FI2112345600000785",
   "BIC_CODE": "NDEAFIHH",
   "BANK_NAME": "OP",
