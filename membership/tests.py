@@ -521,6 +521,31 @@ class ProcountorExportTest(TestCase):
         csv_data = self.get_procountor_console()
         self.check_procountor_csv_format(csv_data)
 
+    def test_procountor_csv_format_organization_member(self):
+        membership = create_dummy_member('N', type='O')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        makebills()
+        csv_data = self.get_procountor_console()
+        self.check_procountor_csv_format(csv_data)
+
+    def test_procountor_csv_format_supporting_member(self):
+        membership = create_dummy_member('N', type='S')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        makebills()
+        csv_data = self.get_procountor_console()
+        self.check_procountor_csv_format(csv_data)
+
+    def test_procountor_csv_format_honorary_member(self):
+        membership = create_dummy_member('N', type='H')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        makebills()
+        csv_data = self.get_procountor_console()
+        self.check_procountor_csv_format(csv_data)
+
+
     def check_procountor_csv_format(self, csv_data):
         bill_amounts = {}
         lineitem_totals = {}
