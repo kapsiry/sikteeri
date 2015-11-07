@@ -23,20 +23,14 @@ class Page(template.Node):
             querystring = querystring.dict()
         page_obj = context.get('page_obj')
         if page_obj is None:
-            querystring['page'] = self
+            querystring['page'] = unicode(self.page)
         elif self.page == 'previous':
             querystring['page'] = str(page_obj.previous_page_number())
         elif self.page == 'next':
             querystring['page'] = str(page_obj.next_page_number())
         else:
             querystring['page'] = str(context.get(self.page))
-        return "?" + "&".join(["=".join(map(unicode,k)) for k in querystring.items()])
-
-    def __unicode__(self):
-        return unicode(self.page)
-
-    def __str__(self):
-        return str(self.page)
+        return "?" + "&".join(["=".join(k) for k in querystring.items()])
 
 
 def do_page(parser, token):
