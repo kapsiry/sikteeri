@@ -4,10 +4,9 @@ import logging
 import json
 from django.conf import settings
 import traceback
+
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
-
-logger = logging.getLogger("membership.views")
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -23,10 +22,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
 
+from membership.templatetags.sorturl import lookup_sort
 from membership.decorators import trusted_host_required
 from membership.forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, \
     ContactForm
-from membership.utils import log_change, serializable_membership_info, admtool_membership_details, sort_objects, \
+from membership.utils import log_change, serializable_membership_info, admtool_membership_details, \
     bake_log_entries
 from membership.public_memberlist import public_memberlist_data
 from membership.unpaid_members import unpaid_members_data
@@ -35,10 +35,12 @@ from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill, Bill
     MembershipAlreadyStatus
 from services.views import check_alias_availability, validate_alias
 
+logger = logging.getLogger("membership.views")
 
 ENTRIES_PER_PAGE = settings.ENTRIES_PER_PAGE
 
 # Class based views
+
 
 class SortListView(ListView):
     """ListView with search query parameter"""
@@ -49,11 +51,18 @@ class SortListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(SortListView, self).get_context_data(**kwargs)
-        context['search_query'] = self.search_query
-        context['sort'] = self.sort
+        context['querystring'] = self.request.GET
         context['header'] = self.header
         context['disable_duplicates_header'] = self.disable_duplicates_header
         return context
+
+    def get_queryset(self):
+        qs = super(SortListView, self).get_queryset()
+        ordering = lookup_sort(self.request.GET.get('sort'))
+        if ordering is not None:
+            return qs.order_by(ordering)
+        else:
+            return qs
 
 
 # Public access
@@ -1079,12 +1088,10 @@ def admtool_lookup_alias_json(request, alias):
 
 @permission_required('membership.read_members')
 def member_object_list(request, **kwargs):
-    kwargs = sort_objects(request,**kwargs)
     return SortListView.as_view(**kwargs)(request)
 
 @permission_required('membership.read_bills')
 def billing_object_list(request, **kwargs):
-    kwargs = sort_objects(request,**kwargs)
     return SortListView.as_view(**kwargs)(request)
 
 # This should list any bills/cycles that were forcefully set as paid even
@@ -1117,5 +1124,4 @@ def search(request, **kwargs):
                      "person__last_name",
                      "person__first_name")
     kwargs['search_query'] = query
-    kwargs = sort_objects(request,**kwargs)
     return SortListView.as_view(**kwargs)(request)

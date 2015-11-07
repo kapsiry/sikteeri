@@ -314,25 +314,6 @@ def tupletuple_to_dict(tupletuple):
         d[key] = value
     return d
 
-def sort_objects(request, **kwargs):
-    '''Sorting function for views
-    '''
-    try:
-        sort = kwargs['sort']
-        del kwargs['sort']
-    except KeyError as ke:
-        sort = request.GET.get("sort", None)
-
-    if 'queryset' in kwargs and sort:
-        if len(sort) is 0:
-            return kwargs
-        kwargs['sort'] = sort
-        sort = sort.strip().lower()
-        try:
-            kwargs['queryset'] = kwargs['queryset'].sort(sort)
-        except AttributeError:
-            kwargs['queryset'] = kwargs['queryset'].order_by(sort)
-    return kwargs
 
 def group_iban(string):
     """

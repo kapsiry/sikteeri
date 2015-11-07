@@ -1373,6 +1373,7 @@ class LoginFieldTest(TestCase):
 
 class MemberListTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
         self.m1 = create_dummy_member('N')
@@ -1381,14 +1382,10 @@ class MemberListTest(TestCase):
         self.m2 = create_dummy_member('N')
         self.m2.preapprove(self.user)
         self.m3 = create_dummy_member('N')
-
-    def tearDown(self):
-        pass
-
-    def test_renders_member_id(self):
         login = self.client.login(username='admin', password='dhtn')
         self.failUnless(login, 'Could not log in')
 
+    def test_renders_member_id(self):
         response = self.client.get('/membership/memberships/approved/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
@@ -1400,6 +1397,25 @@ class MemberListTest(TestCase):
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+
+    def test_memberlist_pagination(self):
+        response = self.client.get('/membership/memberships/approved/?page=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+
+        response = self.client.get('/membership/memberships/approved/?page=2')
+        self.assertEqual(response.status_code, 404)
+
+    def test_memberlist_sort_by_name(self):
+        response = self.client.get('/membership/memberships/approved/?sort=name')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+
+    def test_memberlist_sort_by_id(self):
+        response = self.client.get('/membership/memberships/approved/?sort=id')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+
 
 class MemberDeletionTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
