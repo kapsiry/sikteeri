@@ -36,7 +36,7 @@ def _bill_to_rows(bill, cancel=False):
         return rows
     rows.append([
         'M',  # laskutyyppi
-        'EUR',  # valututakoodi
+        'EUR',  # valuuttakoodi
         c.reference_number,  # viitenumero
         settings.IBAN_ACCOUNT_NUMBER,  # pankkitili
         '',  # Y-tunnus/HETU/ALV-tunnus
