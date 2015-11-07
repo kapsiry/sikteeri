@@ -4,10 +4,16 @@ from __future__ import with_statement
 import calendar
 from datetime import datetime, timedelta
 from decimal import Decimal
+
+from StringIO import StringIO
+
 import os
 import os.path
 import logging
 import json
+
+from django.core.mail import EmailMessage
+from django.core.management import call_command
 
 logger = logging.getLogger("membership.tests")
 
@@ -25,6 +31,7 @@ from membership.models import (Bill, BillingCycle, Contact, CancelledBill, Membe
                                MembershipOperationError, MembershipAlreadyStatus,
                                Fee, Payment, PaymentAttachedError, MEMBER_STATUS)
 from membership.models import logger as models_logger
+from membership import reference_numbers
 from membership.utils import tupletuple_to_dict, log_change
 from membership.forms import LoginField, PhoneNumberField, OrganizationRegistrationNumber
 from membership.test_utils import create_dummy_member, MockLoggingHandler
@@ -440,6 +447,322 @@ class SingleMemberBillingTest(TestCase):
 
         self.assertEqual(len(m.billingcycle_set.all()), 2)
         self.assertEqual(len(mail.outbox), 2)
+
+
+class ProcountorExportTest(TestCase):
+    # Allowable bookkeeping account ids
+    BOOK_ACCOUNTS = ['9039', '9037', '9038']
+
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        settings.BILLING_CC_EMAIL = None
+        self.user = User.objects.get(id=1)
+        membership = create_dummy_member('N')
+        membership.preapprove(self.user)
+        membership.approve(self.user)
+        self.membership = membership
+        mail.outbox = []
+        makebills()
+        self.assertEquals(len(mail.outbox), 1)
+
+    def get_procountor_email(self):
+        mail_count = len(mail.outbox)
+        call_command('procountor_export', stdout=StringIO())
+        self.assertEquals(len(mail.outbox), mail_count + 1)
+        message = mail.outbox[-1]
+        return message
+
+    def test_procountor_export_email_contains_csv_attachment(self):
+        message = self.get_procountor_email()
+        self.assertIsInstance(message, EmailMessage)
+        self.assertTrue('Sikteerin Procountor-vienti' in message.subject)
+        self.assertEquals(len(message.attachments), 1)
+        attach_name, attach_content, attach_mime = message.attachments[0]
+        self.assertTrue(attach_name.endswith(".csv"))
+        self.assertEquals(attach_mime, 'text/csv')
+
+    def check_procountor_csv_contains_two_lines_per_bill(self):
+        message = self.get_procountor_email()
+        __, attach_content, __ = message.attachments[0]
+        # For every one non-reminder billing cycle we expect two lines of CSV
+        billingcycle_count = BillingCycle.objects.count()
+        csv_lines = attach_content.splitlines()
+        self.assertEqual(len(csv_lines), billingcycle_count * 2)
+
+    def test_procountor_csv_contains_bill(self):
+        self.assertEquals(Bill.objects.count(), 1)
+        self.check_procountor_csv_contains_two_lines_per_bill()
+
+    def test_procountor_csv_contains_bill_only_and_not_reminder(self):
+        self.assertEquals(Bill.objects.count(), 1)
+        self.check_procountor_csv_contains_two_lines_per_bill()
+        send_reminder(self.membership)
+        self.assertEquals(Bill.objects.count(), 2)
+        self.assertEquals(BillingCycle.objects.count(), 1)
+        self.check_procountor_csv_contains_two_lines_per_bill()
+
+    def test_procountor_csv_format(self):
+        message = self.get_procountor_email()
+        __, attach_content, __ = message.attachments[0]
+        bill_amounts = {}
+        lineitem_totals = {}
+        current_bill_id = None
+        for csv_line in attach_content.splitlines():
+            columns = csv_line.split(";")
+            self.assertEquals(len(columns), 44)
+            if columns[1-1] != '':
+                # Laskutietue
+
+                # Format validity checks first
+                (
+                    bill_type,                  # 1     X
+                    currency_code,              # 2
+                    reference_number,           # 3
+                    iban_account,               # 4
+                    organization_id,            # 5
+                    payment_type,               # 6
+                    other_party_name,           # 7     (X)
+                    delivery_method,            # 8
+                    discount_percentage,        # 9
+                    includes_vat_code,          # 10
+                    cancel_bill_code,           # 11
+                    interest_percentage,        # 12
+                    bill_date,                  # 13
+                    delivery_date,              # 14
+                    due_date,                   # 15
+                    other_party_address,        # 16
+                    billing_address,            # 17    (X)
+                    delivery_address,           # 18
+                    bill_notes_public,          # 19
+                    bill_notes_private,         # 20
+                    email_address,              # 21
+                    payment_date,               # 22
+                    currency_rate,              # 23
+                    bill_amount,                # 24
+                    vat_percentage,             # 25
+                    billing_channel,            # 26
+                    e_bill_id,                  # 27    (X)
+                    order_reference,            # 28
+                    book_by_rows_code,          # 29
+                    deprecated_1,               # 30  DEPRECATED Finvoice address
+                    deprecated_2,               # 31  DEPRECATED Finvoice address2
+                    customer_id,                # 32
+                    automatic_billing_code,     # 33
+                    attachment_file_name,       # 34
+                    contact_person,             # 35
+                    other_party_swift,          # 36    (X)
+                    e_bill_operator,            # 37    (X)
+                    other_party_ovt,            # 38    (X)
+                    billing_id,                 # 39
+                    factoring_finance_id,       # 40
+                    vat_country_code,           # 41
+                    language_code,              # 42
+                    cash_discount_days,         # 43
+                    cash_discount_percentage,   # 44
+                    ) = columns
+                # 1
+                self.assertTrue(bill_type in ['O', 'M', 'T', 'K', 'N'], "Bill type is required")
+                # 2
+                if currency_code != '':
+                    self.assertEqual(currency_code, 'EUR')
+                # 3
+                if reference_number != '':
+                    self.assertTrue(reference_numbers.check_checknumber(reference_number))
+                    self.assertTrue(len(reference_number) <= 20)
+                # 4
+                if iban_account != '':
+                    self.assertEqual(iban_account, settings.IBAN_ACCOUNT_NUMBER)
+                # 5
+                if organization_id != '':
+                    self.assertTrue(len(organization_id) <= 40)
+                # 6
+                if payment_type != '':
+                    self.assertTrue(
+                        payment_type in ['tilisiirto', 'suoraveloitus', 'suoramaksu', 'clearing',
+                                         'luottokorttiveloitus', 'ulkomaanmaksu'])
+                # 7
+                self.assertTrue(0 < len(other_party_name) <= 80,
+                                "Business partner name non-empty")
+                # 8
+                if delivery_method != '':
+                    self.assertTrue(
+                        delivery_method in ['postitus', 'verkossa', 'rahtikuljetus', 'kuriiripalvelu', 'vr cargo',
+                                            'linja-auto', 'noudettava']
+                    )
+                # 9
+                if discount_percentage != '':
+                    self.assertTrue(0 <= float(discount_percentage) <= 100)
+                # 10
+                if includes_vat_code != '':
+                    self.assertTrue(includes_vat_code in ['t', 'f'])
+                # 11
+                if cancel_bill_code != '':
+                    self.assertTrue(cancel_bill_code in ['t', 'f'])
+                # 12
+                if interest_percentage != '':
+                    self.assertTrue(0 <= float(interest_percentage) <= 100)
+                # 13
+                if bill_date != '':
+                    bill_date = datetime.strptime(bill_date, "%d.%m.%Y")
+                # 14
+                if delivery_date != '':
+                    delivery_date = datetime.strptime(delivery_date, "%d.%m.%Y")
+                # 15
+                if due_date != '':
+                    due_date = datetime.strptime(due_date, "%d.%m.%Y")
+                # 16
+                if other_party_address != '':
+                    self.assertTrue(len(other_party_address) <= 255)
+                    _parts = other_party_address.split("\\")
+                    if len(_parts) == 5:
+                        _tarkenne, _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                    elif len(_parts) == 4:
+                        _tarkenne = None
+                        _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                # 17
+                if billing_channel == '2' or billing_address != '':
+                    self.assertTrue(len(billing_address) <= 255)
+                    _parts = billing_address.split("\\")
+                    if len(_parts) == 6:
+                        _nimi, _tarkenne, _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                    elif len(_parts) == 5:
+                        _tarkenne = None
+                        _nimi, _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                # 18
+                if delivery_address != '':
+                    self.assertTrue(len(delivery_address) <= 255)
+                    _parts = delivery_address.split("\\")
+                    if len(_parts) == 6:
+                        _nimi, _tarkenne, _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                    elif len(_parts) == 5:
+                        _tarkenne = None
+                        _nimi, _katuosoite, _postinumero, _kaupunki, _maakoodi = _parts
+                # 19
+                if bill_notes_public != '':
+                    self.assertTrue(len(bill_notes_public) <= 500)
+                # 20
+                if bill_notes_private != '':
+                    self.assertTrue(len(bill_notes_private) <= 500)
+                # 21
+                if email_address != '':
+                    self.assertTrue('@' in email_address)
+                    self.assertTrue(len(email_address) <= 80)
+                # 22
+                if payment_date != '':
+                    payment_date = datetime.strptime(bill_date, "%d.m.%Y")
+                # 23
+                if currency_rate != '':
+                    float(currency_rate)
+                # 24
+                self.assertTrue(len(bill_amount) > 0, "Bill total amount non-empty")
+                bill_amount = float(bill_amount)
+                # 25
+                if vat_percentage != '':
+                    int(vat_percentage)
+                # 26
+                if billing_channel != '':
+                    self.assertTrue(billing_channel in ['1', '2', '3', '6'],
+                                    "Billing channel type known integer")
+                else:
+                    billing_channel = None
+                # 27
+                if billing_channel == '3':  # Verkkolasku
+                    self.assertTrue(len(e_bill_id) > 0)
+                # 28
+                self.assertTrue(len(order_reference) <= 255)
+                # 29
+                if book_by_rows_code != '':
+                    self.assertTrue(book_by_rows_code in ['t', 'f'])
+                # 30, 31
+                self.assertEqual(deprecated_1, '', "Legacy columns, empty")
+                self.assertEqual(deprecated_2, '', "Legacy columns, empty")
+                # 32
+                if customer_id != '':
+                    self.assertTrue(len(customer_id) <= 40)
+                # 33
+                if automatic_billing_code != '':
+                    self.assertTrue(automatic_billing_code in ['X', 'M'])
+                # 34
+                self.assertEquals(attachment_file_name, '', 'Attachments not supported')
+                # 35
+                if contact_person != '':
+                    self.assertTrue(len(contact_person) < 255)
+                # 36
+                if payment_type == 'ulkomaanmaksu' or other_party_swift != '':
+                    self.assertTrue(8 <= len(other_party_swift) <= 11)
+                # 37, 38
+                if billing_channel == '3' or other_party_ovt:
+                    self.assertTrue(12 <= len(other_party_ovt) <= 17)
+                    self.assertTrue(e_bill_operator)
+                # 39
+                self.assertTrue(billing_id)
+                # 40 factoring financing ignored
+                # 41
+                self.assertEqual(vat_country_code, '')
+                # 42
+                if language_code != '':
+                    self.assertTrue(language_code in ['1', '2', '3', '4'])
+                # 43
+                if cash_discount_days != '':
+                    self.assertEqual(cash_discount_days, '0')
+                # 44
+                if cash_discount_percentage != '':
+                    self.assertEqual(cash_discount_percentage, '0')
+
+
+                # Specific checks
+                current_bill_id = billing_id
+                if cancel_bill_code == 't':
+                    # bill
+                    self.assertIsNone(bill_amounts.get(billing_id),
+                                      "Same bill id occurs twice")
+                    self.assertTrue(float(bill_amount) > 0, "Total amount is positive")
+                    bill_amounts[current_bill_id] = bill_amount
+                else:
+                    # cancel bill
+                    self.assertTrue(float(bill_amount) < 0, "Total amount is negative")
+                self.assertEquals(billing_channel, '6', "Billing channel is 6: do not send")
+                self.assertTrue(Bill.objects.filter(id=int(current_bill_id)).exists(),
+                                "Bill for bill ID exists")
+            else:
+                # Laskurivitietue
+                (
+                    empty,                      # 1
+                    product_description,        # 2
+                    product_code,               # 3
+                    unit_count,                 # 4
+                    unit_type,                  # 5
+                    unit_price,                 # 6
+                    discount_percentage,        # 7
+                    vat_percentage,             # 8
+                    line_comment,               # 9
+                    order_reference,            # 10
+                    customer_order_reference,   # 11
+                    order_confirmation,         # 12
+                    shipping_list_number,       # 13
+                    book_account                # 14
+                ) = columns[:14]
+                # 1
+                self.assertEqual(empty, '')
+                self.assertTrue(len(product_description) <= 80)
+                self.assertTrue(len(product_code) <= 80)
+                unit_count = float(unit_count)
+                unit_price = float(unit_price)
+                discount_percentage = float(discount_percentage)*0.01 if discount_percentage else 0
+                vat_percentage = int(vat_percentage) if columns[8-1] else 0
+                self.assertTrue(book_account in self.BOOK_ACCOUNTS)
+                line_amount = unit_count * unit_price * (1.0-discount_percentage)
+                if unit_count > 0:  # Ignore cancel bills
+                    lineitem_totals[current_bill_id] = lineitem_totals.get(current_bill_id, 0.0) + line_amount
+        items_for_wrong_bill = set(bill_amounts.keys()).difference(lineitem_totals.keys())
+        self.assertEqual(len(items_for_wrong_bill), 0, "Line item bill IDs must match bill IDs")
+        for bill_id, amount in bill_amounts.items():
+            self.assertEqual(amount, lineitem_totals[bill_id])
+
+    def test_procountor_csv_format_cancelled_bill(self):
+        self.membership.dissociate(self.user)
+        self.test_procountor_csv_format()
 
 class SingleMemberBillingModelsTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']

@@ -56,7 +56,7 @@ Mukana myös uudet hyvityslaskut.
             subject='Sikteerin Procountor-vienti {date}'.format(date=self.date_human()),
             body=self.email_body(),
             from_email=settings.FROM_EMAIL,
-            to=[settings.BILLING_CC_EMAIL],
+            to=[settings.BILLING_FROM_EMAIL],
             bcc=[])
 
         # Send only if needed
