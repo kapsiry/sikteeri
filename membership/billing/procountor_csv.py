@@ -105,7 +105,7 @@ def _bill_to_rows(bill, cancel=False):
     return rows
 
 
-def create_csv(start=None):
+def create_csv(start=None, mark_cancelled=True):
     """
     Create procountor bill export csv
     :return: path to csv file
@@ -138,7 +138,8 @@ def create_csv(start=None):
                 else:
                     row2.append(v)
             output.writerow(row2)
-    cancelled_bills.update(exported=True)
-    logger.info("Marked all cancelled bills as exported.")
+    if mark_cancelled:
+        cancelled_bills.update(exported=True)
+        logger.info("Marked all cancelled bills as exported.")
 
     return filehandle.getvalue()

@@ -37,6 +37,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-s', "--startdate", help="Start Date (YYYY-MM-DD)",
                             default=None, type=valid_date)
+        parser.add_argument('-e', "--email", help="Send CSV by email (default stdout)",
+                            default=None)
 
     def email_body(self):
         return """Hei,
@@ -51,23 +53,31 @@ Mukana myös uudet hyvityslaskut.
 
     def handle(self, *args, **options):
         start = options['startdate'] or datetime.now()
-        content = create_csv(datetime(year=start.year, month=start.month, day=start.day))
-        email = mail.EmailMessage(
-            subject='Sikteerin Procountor-vienti {date}'.format(date=self.date_human()),
-            body=self.email_body(),
-            from_email=settings.FROM_EMAIL,
-            to=[settings.BILLING_FROM_EMAIL],
-            bcc=[])
+
+        # Mark cancelled bills exported only when they are sent by email
+        mark_cancelled = bool(options['email'])
+
+        content = create_csv(start=datetime(year=start.year, month=start.month, day=start.day),
+                             mark_cancelled=mark_cancelled)
 
         # Send only if needed
         if content:
-            email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content, 'text/csv')
-            email.send()
-            message = "Sent Procountor bill list CSV by email"
+            if options['email']:
+                email = mail.EmailMessage(
+                    subject='Sikteerin Procountor-vienti {date}'.format(date=self.date_human()),
+                    body=self.email_body(),
+                    from_email=settings.FROM_EMAIL,
+                    to=[options['email']],
+                    bcc=[])
+                email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content, 'text/csv')
+                email.send()
+                message = "Sent Procountor bill list CSV by email"
+            else:
+                self.stdout.write(content.decode("ISO-8859-1"))
+                message = 'Wrote Procountor bill list CSV to console'
             logger.info(message)
-            self.stdout.write(message)
         else:
-            message = "No messages to send"
+            message = "No bills to send"
             logger.info(message)
             self.stdout.write(message)
-        self.stdout.write("\n")
+            self.stdout.write("\n")

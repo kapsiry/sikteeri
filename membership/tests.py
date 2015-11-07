@@ -467,11 +467,21 @@ class ProcountorExportTest(TestCase):
         self.assertEquals(len(mail.outbox), 1)
 
     def get_procountor_email(self):
+        TARGET_EMAIL = 'test@example.com'
         mail_count = len(mail.outbox)
-        call_command('procountor_export', stdout=StringIO())
+        call_command('procountor_export', '--email', TARGET_EMAIL,
+                     stdout=StringIO())
         self.assertEquals(len(mail.outbox), mail_count + 1)
+        self.assertListEqual(mail.outbox[-1].to, [TARGET_EMAIL])
         message = mail.outbox[-1]
         return message
+
+    def get_procountor_console(self):
+        mail_count = len(mail.outbox)
+        out = StringIO()
+        call_command('procountor_export', stdout=out)
+        self.assertEquals(len(mail.outbox), mail_count)
+        return out.getvalue()
 
     def test_procountor_export_email_contains_csv_attachment(self):
         message = self.get_procountor_email()
@@ -502,13 +512,20 @@ class ProcountorExportTest(TestCase):
         self.assertEquals(BillingCycle.objects.count(), 1)
         self.check_procountor_csv_contains_two_lines_per_bill()
 
-    def test_procountor_csv_format(self):
+    def test_procountor_csv_format_email(self):
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
+        self.check_procountor_csv_format(attach_content)
+
+    def test_procountor_csv_format_console(self):
+        csv_data = self.get_procountor_console()
+        self.check_procountor_csv_format(csv_data)
+
+    def check_procountor_csv_format(self, csv_data):
         bill_amounts = {}
         lineitem_totals = {}
         current_bill_id = None
-        for csv_line in attach_content.splitlines():
+        for csv_line in csv_data.splitlines():
             columns = csv_line.split(";")
             self.assertEquals(len(columns), 44)
             if columns[1-1] != '':
@@ -762,7 +779,9 @@ class ProcountorExportTest(TestCase):
 
     def test_procountor_csv_format_cancelled_bill(self):
         self.membership.dissociate(self.user)
-        self.test_procountor_csv_format()
+        message = self.get_procountor_email()
+        __, attach_content, __ = message.attachments[0]
+        self.check_procountor_csv_format(attach_content)
 
 class SingleMemberBillingModelsTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
