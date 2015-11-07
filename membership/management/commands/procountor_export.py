@@ -20,7 +20,7 @@ from django.conf import settings
 from membership.billing.procountor_csv import create_csv
 
 
-logger = logging.getLogger("procountor")
+logger = logging.getLogger("membership.billing.procountor")
 
 
 def valid_date(s):

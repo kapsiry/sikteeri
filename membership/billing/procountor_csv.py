@@ -9,7 +9,7 @@ from decimal import Decimal
 from django.conf import settings
 from membership.models import Bill, CancelledBill
 
-logger = logging.getLogger("procountor")
+logger = logging.getLogger("membership.billing.procountor")
 
 type_mappings = {
     'P': ['HJ', '9039'],
