@@ -38,6 +38,7 @@ from membership.test_utils import create_dummy_member, MockLoggingHandler
 from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
+from membership.billing.procountor_csv import create_csv
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
@@ -545,7 +546,6 @@ class ProcountorExportTest(TestCase):
         csv_data = self.get_procountor_console()
         self.check_procountor_csv_format(csv_data)
 
-
     def check_procountor_csv_format(self, csv_data):
         bill_amounts = {}
         lineitem_totals = {}
@@ -807,6 +807,26 @@ class ProcountorExportTest(TestCase):
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
         self.check_procountor_csv_format(attach_content)
+
+    def test_send_cancelledbill_deleted_member(self):
+        self.membership.request_dissociation(self.user)
+        self.membership.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        self.membership.delete_membership(self.user)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
+        self.check_procountor_csv_format(result_csv)
+
+    def test_send_cancelledbill_dissociated_member(self):
+        self.membership.request_dissociation(self.user)
+        self.membership.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
+        self.check_procountor_csv_format(result_csv)
+
 
 class SingleMemberBillingModelsTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1611,6 +1631,7 @@ class MemberDissociationTest(TestCase):
         self.assertIsNotNone(m.dissociated)
         self.assertTrue(m.dissociated > before)
         self.assertTrue(m.dissociated < after)
+
 
 class MetricsInterfaceTest(TestCase):
     def setUp(self):

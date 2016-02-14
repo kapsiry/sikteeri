@@ -12,6 +12,13 @@ from membership.models import Bill, CancelledBill
 logger = logging.getLogger("membership.billing.procountor")
 
 
+class ProcountorBillDelivery(object):
+    EMAIL = 1
+    POST = 2
+    EBILL = 3
+    NO_DELIVERY = 6
+
+
 def finnish_timeformat(t):
     return t.strftime("%d.%m.%Y")
 
@@ -28,6 +35,25 @@ def _bill_to_rows(bill, cancel=False):
     c = bill.billingcycle
     if c.membership.type in ['H']:
         return rows
+
+    bill_delivery = ProcountorBillDelivery.NO_DELIVERY
+
+    if c.membership.get_billing_contact():
+        billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
+                            c.membership.get_billing_contact().street_address,
+                            c.membership.get_billing_contact().postal_code,
+                            c.membership.get_billing_contact().post_office,
+                            'FI')
+        billing_email = c.membership.get_billing_contact().email
+    else:
+        billing_email = ""
+        billing_address = ""
+        if bill_delivery == ProcountorBillDelivery.POST:
+            logger.critical("No billing contact found for member {member}".format(member=str(c.membership)))
+            return []
+        else:
+            logger.warn("No billing contact found for member {member}".format(member=str(c.membership)))
+
     rows.append([
         'M',  # laskutyyppi
         'EUR',  # valuuttakoodi
@@ -45,20 +71,17 @@ def _bill_to_rows(bill, cancel=False):
         ft(bill.created),  # Toimituspäivämäärä
         ft(bill.created + timedelta(days=settings.BILL_DAYS_TO_DUE)),  # Eräpäivämäärä
         '',  # Liikekumppanin osoite
-        '%s\%s\%s\%s\%s' % (c.membership.name(),
-                            c.membership.get_billing_contact().street_address,
-                            c.membership.get_billing_contact().postal_code,
-                            c.membership.get_billing_contact().post_office,
-                            'FI'),  # Laskutusosoite
+        billing_address,  # Laskutusosoite
         '',  # Toimitusosoite
         '',  # Laskun lisätiedot
-        'Lasku %d sikteerissä, tuotu %s, jäsen %d' % (bill.id, ft(datetime.now()), c.membership.id),  # Muistiinpanto
-        c.membership.get_billing_contact().email,  # Sähköpostiosoite
+        '%s %d sikteerissä, tuotu %s, jäsen %d' % ('Hyvityslasku' if cancel else 'Lasku', bill.id, ft(datetime.now()),
+                                                        c.membership.id),  # Muistiinpanot
+        billing_email,  # Sähköpostiosoite
         '',  # Maksupäivämäärä
         '',  # Valuuttakurssi
         "%.2f" % Decimal.copy_negate(c.get_fee()) if cancel else c.get_fee(),  # Laskun loppusumma
         "%d" % c.get_vat_percentage(),  # ALV-%
-        '6',  # Laskukanava
+        '%d' % bill_delivery,  # Laskukanava
         '',  # Verkkolaskutunnus
         '%d' % bill.id,  # Tilausviite
         't',  # Kirjanpito riveittäin -koodi)
@@ -107,7 +130,7 @@ def create_csv(start=None, mark_cancelled=True):
 
     if start is None:
         start = datetime.now()
-        start = datetime(year=start.year, month=start.month(), day=1)
+        start = datetime(year=start.year, month=start.month, day=1)
 
     filehandle = StringIO()
     output = csv.writer(filehandle, delimiter=b';', quoting=csv.QUOTE_NONE)
