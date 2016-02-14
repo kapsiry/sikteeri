@@ -546,7 +546,6 @@ class ProcountorExportTest(TestCase):
         csv_data = self.get_procountor_console()
         self.check_procountor_csv_format(csv_data)
 
-
     def check_procountor_csv_format(self, csv_data):
         bill_amounts = {}
         lineitem_totals = {}
@@ -808,6 +807,26 @@ class ProcountorExportTest(TestCase):
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
         self.check_procountor_csv_format(attach_content)
+
+    def test_send_cancelledbill_deleted_member(self):
+        self.membership.request_dissociation(self.user)
+        self.membership.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        self.membership.delete_membership(self.user)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
+        self.check_procountor_csv_format(result_csv)
+
+    def test_send_cancelledbill_dissociated_member(self):
+        self.membership.request_dissociation(self.user)
+        self.membership.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
+        self.check_procountor_csv_format(result_csv)
+
 
 class SingleMemberBillingModelsTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1613,37 +1632,6 @@ class MemberDissociationTest(TestCase):
         self.assertTrue(m.dissociated > before)
         self.assertTrue(m.dissociated < after)
 
-
-class ProcountorExportTest(TestCase):
-    fixtures = ['membership_fees.json', 'test_user.json']
-    def setUp(self):
-        self.user = User.objects.get(id=1)
-        mail.outbox = []
-
-    def test_send_cancelledbill_deleted_member(self):
-        m = create_dummy_member('N')
-        m.preapprove(self.user)
-        m.approve(self.user)
-        makebills()
-        m.request_dissociation(self.user)
-        m.dissociate(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 1)
-        m.delete_membership(self.user)
-        makebills()
-        result_csv = create_csv(mark_cancelled=True)
-        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
-
-    def test_send_cancelledbill_dissociated_member(self):
-        m = create_dummy_member('N')
-        m.preapprove(self.user)
-        m.approve(self.user)
-        makebills()
-        m.request_dissociation(self.user)
-        m.dissociate(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 1)
-        makebills()
-        result_csv = create_csv(mark_cancelled=True)
-        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
 
 class MetricsInterfaceTest(TestCase):
     def setUp(self):
