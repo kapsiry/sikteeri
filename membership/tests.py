@@ -895,6 +895,15 @@ class SingleMemberBillingModelsTest(TestCase):
         p1.detach_from_cycle()
         p1.detach_from_cycle() # Nop
 
+    def test_billingcycle_is_cancelled(self):
+        self.assertEqual(self.membership.billingcycle_set.first().is_cancelled(), False,
+                         "Member billingcycle.is_cancelled didn't return False")
+        self.membership.request_dissociation(self.user)
+        self.membership.dissociate(self.user)
+        self.assertEqual(self.membership.billingcycle_set.first().is_cancelled(), True,
+                         "Member billingcycle.is_cancelled returned didn't return True")
+
+
 class CanSendReminderTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
@@ -1526,8 +1535,6 @@ class MemberDissociationRequestedTest(TestCase):
         m.dissociate(self.user)
         self.assertEquals(CancelledBill.objects.count(), 1,
                           "Outstanding bills are cancelled")
-        self.assertEqual(m.billingcycle_set.first().is_cancelled(), True,
-                         "Member billingcycle.is_cancelled returned False")
 
     def test_disassociation_cancels_outstanding_bills_logging(self):
         handler = MockLoggingHandler()
