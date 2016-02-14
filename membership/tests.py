@@ -1714,10 +1714,13 @@ class DuplicateMembershipDetectionTest(TestCase):
     def test_same_last_name(self):
         m1 = create_dummy_member('N')
         m1.save()
+        m1.person.first_name = "Aino"
+        m1.person.save()
 
         m2 = create_dummy_member('N')
         m2.save()
         m2.person.last_name = m1.person.last_name
+        m2.person.first_name = "Esko"
         m2.person.save()
 
         self.assertEquals(len(m1.duplicates()), 0)
