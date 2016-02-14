@@ -12,6 +12,13 @@ from membership.models import Bill, CancelledBill
 logger = logging.getLogger("membership.billing.procountor")
 
 
+class ProcountorBillDelivery(object):
+    EMAIL = 1
+    POST = 2
+    EBILL = 3
+    NO_DELIVERY = 6
+
+
 def finnish_timeformat(t):
     return t.strftime("%d.%m.%Y")
 
@@ -29,7 +36,7 @@ def _bill_to_rows(bill, cancel=False):
     if c.membership.type in ['H']:
         return rows
 
-
+    bill_delivery = ProcountorBillDelivery.NO_DELIVERY
 
     if c.membership.get_billing_contact():
         billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
@@ -40,17 +47,12 @@ def _bill_to_rows(bill, cancel=False):
         billing_email = c.membership.get_billing_contact().email
     else:
         billing_email = ""
-        if not cancel:
-            logger.error("No billing contact found for member %s" % (str(c.membership),))
-            # Make dummy billing contact
-            billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
-                            "None",
-                            "None",
-                            "None",
-                            'FI')
+        billing_address = ""
+        if bill_delivery == ProcountorBillDelivery.POST:
+            logger.critical("No billing contact found for member {member}".format(member=str(c.membership)))
+            return []
         else:
-            # Billing address is not mandatory for cancel bill
-            billing_address = ""
+            logger.warn("No billing contact found for member {member}".format(member=str(c.membership)))
 
     rows.append([
         'M',  # laskutyyppi
@@ -79,7 +81,7 @@ def _bill_to_rows(bill, cancel=False):
         '',  # Valuuttakurssi
         "%.2f" % Decimal.copy_negate(c.get_fee()) if cancel else c.get_fee(),  # Laskun loppusumma
         "%d" % c.get_vat_percentage(),  # ALV-%
-        '6',  # Laskukanava
+        '%d' % bill_delivery,  # Laskukanava
         '',  # Verkkolaskutunnus
         '%d' % bill.id,  # Tilausviite
         't',  # Kirjanpito riveittäin -koodi)
