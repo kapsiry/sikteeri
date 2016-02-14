@@ -55,6 +55,24 @@ class Command(BaseCommand):
             dest='duplicates',
             default=5,
             help='Number of duplicate members (5)'),
+        ) + (
+        make_option('--dissociated',
+            type='int',
+            dest='dissociated',
+            default=5,
+            help='Number of dissociated members (5)'),
+        ) + (
+        make_option('--dissociation-requested',
+            type='int',
+            dest='dissociation_requested',
+            default=2,
+            help='Number of dissociation requested members (2)'),
+        ) + (
+        make_option('--deleted',
+            type='int',
+            dest='deleted',
+            default=2,
+            help='Number of deleted members (2)'),
         )
 
     def handle(self, *args, **options):
@@ -68,22 +86,27 @@ class Command(BaseCommand):
         self.generate(approved=options['approved'],
                       preapproved=options['preapproved'],
                       new=options['new'],
-                      duplicates=options['duplicates'])
+                      duplicates=options['duplicates'],
+                      dissociated=options['dissociated'],
+                      dissociation_requested=options['dissociation_requested'],
+                      deleted=options['deleted'])
 
     @transaction.atomic
-    def generate(self, approved, preapproved, new, duplicates):
+    def generate(self, approved, preapproved, new, duplicates, dissociated, dissociation_requested, deleted):
         if Membership.objects.count() > 0 or Payment.objects.count() > 0:
             self.stderr.write("Database not empty, refusing to generate test data")
             sys.exit(1)
         assert approved+preapproved+new > duplicates
         # Approved members
-        index = 1
-        for i in xrange(index, index+approved):
+        initial_index = 1
+        index = int(initial_index)
+
+        for i in xrange(index, index+approved+dissociated+dissociation_requested+deleted):
             membership = self.create_dummy_member(i)
             membership.preapprove(self.user)
             membership.approve(self.user)
             self.create_payment(membership)
-        index += approved
+        index += approved+dissociated+dissociation_requested+deleted
 
         # Pre-approved members
         for i in xrange(index, index+preapproved):
@@ -115,6 +138,20 @@ class Command(BaseCommand):
                 attach_payment_to_cycle(payment)
             except:
                 pass
+
+        # Some members disassociate.
+
+        for i in xrange(initial_index, initial_index+dissociated+dissociation_requested+deleted):
+            membership = Membership.objects.get(id=i)
+            membership.request_dissociation(self.user)
+
+        for i in xrange(initial_index, initial_index+dissociated+deleted):
+            membership = Membership.objects.get(id=i)
+            membership.dissociate(self.user)
+
+        for i in xrange(initial_index, initial_index+deleted):
+            membership = Membership.objects.get(id=i)
+            membership.delete_membership(self.user)
 
     @transaction.atomic
     def create_dummy_member(self, i, duplicate_of=None):
