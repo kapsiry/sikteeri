@@ -1526,6 +1526,8 @@ class MemberDissociationRequestedTest(TestCase):
         m.dissociate(self.user)
         self.assertEquals(CancelledBill.objects.count(), 1,
                           "Outstanding bills are cancelled")
+        self.assertEqual(m.billingcycle_set.first().is_cancelled(), True,
+                         "Member billingcycle.is_cancelled returned False")
 
     def test_disassociation_cancels_outstanding_bills_logging(self):
         handler = MockLoggingHandler()
