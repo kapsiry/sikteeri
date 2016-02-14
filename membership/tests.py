@@ -38,6 +38,7 @@ from membership.test_utils import create_dummy_member, MockLoggingHandler
 from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
+from membership.billing.procountor_csv import create_csv
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
@@ -1611,6 +1612,38 @@ class MemberDissociationTest(TestCase):
         self.assertIsNotNone(m.dissociated)
         self.assertTrue(m.dissociated > before)
         self.assertTrue(m.dissociated < after)
+
+
+class ProcountorExportTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        mail.outbox = []
+
+    def test_send_cancelledbill_deleted_member(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        m.delete_membership(self.user)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
+
+    def test_send_cancelledbill_dissociated_member(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation(self.user)
+        m.dissociate(self.user)
+        self.assertEquals(CancelledBill.objects.count(), 1)
+        makebills()
+        result_csv = create_csv(mark_cancelled=True)
+        self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
 
 class MetricsInterfaceTest(TestCase):
     def setUp(self):

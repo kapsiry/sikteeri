@@ -28,6 +28,30 @@ def _bill_to_rows(bill, cancel=False):
     c = bill.billingcycle
     if c.membership.type in ['H']:
         return rows
+
+
+
+    if c.membership.get_billing_contact():
+        billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
+                            c.membership.get_billing_contact().street_address,
+                            c.membership.get_billing_contact().postal_code,
+                            c.membership.get_billing_contact().post_office,
+                            'FI')
+        billing_email = c.membership.get_billing_contact().email
+    else:
+        billing_email = ""
+        if not cancel:
+            logger.error("No billing contact found for member %s" % (str(c.membership),))
+            # Make dummy billing contact
+            billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
+                            "None",
+                            "None",
+                            "None",
+                            'FI')
+        else:
+            # Billing address is not mandatory for cancel bill
+            billing_address = ""
+
     rows.append([
         'M',  # laskutyyppi
         'EUR',  # valuuttakoodi
@@ -45,15 +69,12 @@ def _bill_to_rows(bill, cancel=False):
         ft(bill.created),  # Toimituspäivämäärä
         ft(bill.created + timedelta(days=settings.BILL_DAYS_TO_DUE)),  # Eräpäivämäärä
         '',  # Liikekumppanin osoite
-        '%s\%s\%s\%s\%s' % (c.membership.name(),
-                            c.membership.get_billing_contact().street_address,
-                            c.membership.get_billing_contact().postal_code,
-                            c.membership.get_billing_contact().post_office,
-                            'FI'),  # Laskutusosoite
+        billing_address,  # Laskutusosoite
         '',  # Toimitusosoite
         '',  # Laskun lisätiedot
-        'Lasku %d sikteerissä, tuotu %s, jäsen %d' % (bill.id, ft(datetime.now()), c.membership.id),  # Muistiinpanto
-        c.membership.get_billing_contact().email,  # Sähköpostiosoite
+        '%s %d sikteerissä, tuotu %s, jäsen %d' % ('Hyvityslasku' if cancel else 'Lasku', bill.id, ft(datetime.now()),
+                                                        c.membership.id),  # Muistiinpanot
+        billing_email,  # Sähköpostiosoite
         '',  # Maksupäivämäärä
         '',  # Valuuttakurssi
         "%.2f" % Decimal.copy_negate(c.get_fee()) if cancel else c.get_fee(),  # Laskun loppusumma
@@ -107,7 +128,7 @@ def create_csv(start=None, mark_cancelled=True):
 
     if start is None:
         start = datetime.now()
-        start = datetime(year=start.year, month=start.month(), day=1)
+        start = datetime(year=start.year, month=start.month, day=1)
 
     filehandle = StringIO()
     output = csv.writer(filehandle, delimiter=b';', quoting=csv.QUOTE_NONE)
