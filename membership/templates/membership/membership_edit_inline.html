@@ -117,7 +117,7 @@
               <small>({{bill.reference_number|fref:"0"}})</small>
               {% trans "sent" %} {{ bill.created|naturalday }},
               {% trans "due on" %} {{ bill.due_date|naturalday }}
-              ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% endif %})
+              ({% if billingcycle.is_paid %}{% trans "paid" %}{% else %}{% trans "not paid" %}{% if billingcycle.is_cancelled %}, {% trans "cancelled bill" %}{% endif %}{% endif %})
               <small><a href="https://tuki.kapsi.fi/otrs/index.pl?Action=AgentTicketSearch&amp;Subaction=Search&amp;Subject={% if bill.is_reminder %}muistutus{% else %}maksulasku{% endif %}+{{bill.id}}" target="_blank">OTRS</a></small>
               <small><a href="{% url "bill_pdf" bill.id %}" target="_blank">PDF</a></small>
             </li>
