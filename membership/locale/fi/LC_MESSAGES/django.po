@@ -772,6 +772,10 @@ msgstr "Palvelut"
 msgid "Billing information"
 msgstr "Laskutustiedot"
 
+#: membership/templates/membership/membership_edit_inline.html:120
+msgid "cancelled bill"
+msgstr "hyvitetty"
+
 #: templates/membership/membership_edit_inline.html:142
 msgid "Event type"
 msgstr "Tapahtuman laji"

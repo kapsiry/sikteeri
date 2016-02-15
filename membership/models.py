@@ -675,6 +675,12 @@ class BillingCycle(models.Model):
         vat_percentage = fees.latest('start').vat_percentage
         return vat_percentage
 
+    def is_cancelled(self):
+        first_bill = self.first_bill()
+        if first_bill:
+            return first_bill.is_cancelled()
+        return False
+
     @classmethod
     def get_reminder_billingcycles(cls, memberid=None):
         """
@@ -807,6 +813,14 @@ class Bill(models.Model):
 
     def is_reminder(self):
         return self.reminder_count > 0
+
+    def is_cancelled(self):
+        try:
+            if self.cancelledbill is not None:
+                return True
+        except CancelledBill.DoesNotExist:
+            pass
+        return False
 
     # FIXME: different template based on class? should this code be here?
     def render_as_text(self):
