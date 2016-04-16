@@ -18,3 +18,4 @@ cache
 .idea
 *.pdf
 *.mbox
+junit.xml
