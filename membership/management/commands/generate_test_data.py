@@ -225,7 +225,7 @@ class Command(BaseCommand):
         if random() < 0.3:
             return # do nothing
 
-        amount = "35.0"
+        amount = "40.0"
         if random() < 0.2:
             amount = "30.0"
 
