@@ -860,7 +860,7 @@ class Bill(models.Model):
         else:
             amount_paid = self.billingcycle.amount_paid()
             sum = self.billingcycle.sum - amount_paid
-            non_vat_sum = sum / (Decimal(1) + vat)
+            non_vat_amount = sum / (Decimal(1) + vat)
             return render_to_string('membership/reminder.txt', {
                 'membership_type' : MEMBER_TYPES_DICT[membership.type],
                 'membership_type_raw' : membership.type,
@@ -884,8 +884,8 @@ class Bill(models.Model):
                 'original_sum': self.billingcycle.sum,
                 'amount_paid': amount_paid,
                 'sum': sum,
-                'vat_amount': vat * non_vat_sum,
-                'non_vat_amount':   non_vat_sum,
+                'vat_amount': vat * non_vat_amount,
+                'non_vat_amount':   non_vat_amount,
                 'vat_percentage': self.billingcycle.get_vat_percentage(),
                 'barcode': barcode_4(iban = settings.IBAN_ACCOUNT_NUMBER,
                                      refnum = self.billingcycle.reference_number,
