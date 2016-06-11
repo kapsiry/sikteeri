@@ -67,20 +67,13 @@ def gen_test_PDFs():
     reminder_file = tempfile.NamedTemporaryFile(
         prefix="sikteeri_reminder", suffix=".pdf", delete=False)
     reminder = pdf.PDFReminder(reminder_file)
-    reminder.addCycle(cycle, payments=MockPayments)
+    reminder.addCycle(cycle, payments=Payment)
     reminder.generate()
 
     print("Reminder: %s" % reminder_file.name)
     print("Invoice: %s" % invoice_file.name)
     # Revert database changes
     transaction.savepoint_rollback(sid)
-
-
-class MockPayments():
-
-    @classmethod
-    def latest_payment_date(cls):
-        return datetime.now()
 
 
 class Command(NoArgsCommand):
