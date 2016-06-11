@@ -1,62 +1,86 @@
 # encoding: utf-8
 
+from __future__ import print_function, unicode_literals
+
 from decimal import Decimal
 import tempfile
 from datetime import datetime, timedelta
+import uuid
 
 from django.conf import settings
 from django.core.management.base import NoArgsCommand
+from django.db import transaction
 from django.utils import translation
 
 from membership.billing import pdf
-from membership.models import Contact, Membership, BillingCycle
+from membership.models import Contact, Membership, BillingCycle, Payment
 
 
+@transaction.atomic
 def gen_test_PDFs():
+    # We are going to revert all database changes to this savepoint
+    sid = transaction.savepoint()
 
+    contact = Contact.objects.create(
+        first_name="Antero",
+        given_names="Antero Ilmari",
+        last_name="Marttila",
+        street_address="Läppäkuja 16 A 24",
+        postal_code="00500",
+        post_office="Helsinki",
+        country="Suomi",
+        phone="40403123123",
+        sms="40403123123",
+        email="test@example.com")
+    member = Membership.objects.create(
+        id=4444,
+        type='P',
+        status='A',
+        public_memberlist=True,
+        municipality='Helsinki',
+        nationality='Suomi',
+        birth_year=1990,
+        person=contact,
+        locked=None)
+    cycle = BillingCycle.objects.create(
+        membership=member,
+        start=datetime.now(),
+        end=datetime.now() + timedelta(seconds=31536000),
+        sum=Decimal(40.00),
+        is_paid=False,
+        reference_number="2600013")
 
-    contact = Contact()
-    contact.first_name = u"Antero"
-    contact.given_name = u"Antero Ilmari"
-    contact.last_name = u"Marttila"
-    contact.street_address = u"Läppäkuja 16 A 24"
-    contact.postal_code = u"00500"
-    contact.post_office = u"Helsinki"
-    contact.country = u"Suomi"
-    contact.phone = u"40403123123"
-    contact.sms = u"40403123123"
-    contact.email = u"test@example.com"
+    # Generate test invoice PDF
+    invoice_file = tempfile.NamedTemporaryFile(
+        prefix="sikteeri_invoice", suffix=".pdf", delete=False)
+    invoice = pdf.PDFInvoice(invoice_file, cycle)
+    invoice.generate()
 
-
-    member = Membership()
-    member.id = 4444
-    member.type = 'P'
-    member.status = 'A'
-    member.public_memberlist = True
-    member.municipality = 'Helsinki'
-    member.nationality = 'Suomi'
-    member.birth_year = 1990
-    member.person = contact
-    member.locked = False
-
-    cycle = BillingCycle()
-    cycle.membership = member
-    cycle.start = datetime.now()
-    cycle.end = datetime.now() + timedelta(seconds=31536000)
-    cycle.sum = Decimal(40.00)
-    cycle.is_paid = False
-    cycle.reference_number = "2600013"
-
-
-    reminder_file = tempfile.NamedTemporaryFile(prefix="sikteeri_reminder", suffix=".pdf", delete=False)
-    invoice_file = tempfile.NamedTemporaryFile(prefix="sikteeri_invoice", suffix=".pdf", delete=False)
-
-    p = pdf.PDFReminder(reminder_file, cycle)
-    p.generate()
-    pdf.PDFInvoice(invoice_file, cycle).generate()
+    # Generate test reminder PDF, with payments smaller than total
+    payment = Payment.objects.create(
+        billingcycle=cycle,
+        reference_number='1234',
+        transaction_id=uuid.uuid4(),
+        payment_day=datetime.now(),
+        amount=30.0,
+        payer_name="It was me")
+    reminder_file = tempfile.NamedTemporaryFile(
+        prefix="sikteeri_reminder", suffix=".pdf", delete=False)
+    reminder = pdf.PDFReminder(reminder_file)
+    reminder.addCycle(cycle, payments=MockPayments)
+    reminder.generate()
 
     print("Reminder: %s" % reminder_file.name)
     print("Invoice: %s" % invoice_file.name)
+    # Revert database changes
+    transaction.savepoint_rollback(sid)
+
+
+class MockPayments():
+
+    @classmethod
+    def latest_payment_date(cls):
+        return datetime.now()
 
 
 class Command(NoArgsCommand):
