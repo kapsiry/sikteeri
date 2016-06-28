@@ -214,11 +214,18 @@ class PDFTemplate(object):
     def createData(self, cycle, bill=None, payments=None):
         # TODO: use Django SHORT_DATE_FORMAT
         membercontact = cycle.membership.get_billing_contact()
-        # Calculate proper vat percentages
-        full = Decimal(100)
-        vatp = cycle.get_vat_percentage() / full
-        vat = (cycle.sum / (Decimal(1) + vatp)) * vatp
-        amount = cycle.sum - vat
+
+        # Calculate vat; copied from models.Bill#render_as_text(self)
+        vat = Decimal(cycle.get_vat_percentage()) / Decimal(100)
+        if self.__type__ == 'reminder':
+            amount_paid = cycle.amount_paid()
+            sum = cycle.sum - amount_paid
+            non_vat_amount = sum / (Decimal(1) + vat)
+        else:
+            sum = cycle.sum
+            non_vat_amount = (cycle.sum / (Decimal(1) + vat))
+
+        # Select due date
         if self.__type__ == 'reminder':
             due_date = u"HETI"
         elif bill:
@@ -226,17 +233,30 @@ class PDFTemplate(object):
         else:
             due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
             due_date = due_date.strftime("%d.%m.%Y")
-        bills = []
+
+        lineitems = []
         # ['1', 'Jäsenmaksu', '04.05.2010 - 04.05.2011', '32.74 €','7.26 €','40.00 €']
         cycle_start_date = cycle.start.strftime('%d.%m.%Y')
         cycle_end_date = cycle.end_date().strftime('%d.%m.%Y')
-        bills.append(['1',
+        lineitems.append(["1",
                       u"Jäsenmaksu",
                       u"%s - %s" % (cycle_start_date, cycle_end_date),
-                      u"%s €" % locale.format("%.2f", amount),
+                      u"%s €" % locale.format("%.2f", cycle.sum / (Decimal(1) + vat)),
                       u"%s %%" % locale.format("%d", cycle.get_vat_percentage()),
-                      u"%s €" % locale.format("%.2f", vat),
+                      u"%s €" % locale.format("%.2f", vat * non_vat_amount),
                       u"%s €" % locale.format("%.2f", cycle.sum)])
+        # Note any payments attached
+        if self.__type__ == 'reminder' and amount_paid > 0:
+            lineitems.append([
+                "2",
+                "Maksuja huomioitu yht.",
+                "",  # start-end
+                "",  # amount
+                "",  # vat-percentage
+                "",  # vat amount
+                "%s €" % locale.format("%.2f", -amount_paid),  # total amount
+                ])
+
         first_bill = cycle.first_bill()
         if bill:
             bill_id = bill.id
@@ -266,13 +286,11 @@ class PDFTemplate(object):
                 'due_date': due_date,
                 'email': membercontact.email,
                 'bill_id': bill_id,
-                'amount': amount,
-                'pretty_amount': locale.format('%.2f', amount),
                 'vat': vat,
-                'sum': cycle.sum,
-                'pretty_sum': locale.format('%.2f', cycle.sum),
+                'sum': sum,
+                'pretty_sum': locale.format('%.2f', sum),
                 'notify_period': '%d vrk' % (settings.REMINDER_GRACE_DAYS,),
-                'bills': bills,
+                'lineitems': lineitems,
                 'reference_number': group_reference(cycle.reference_number)
         }
 
@@ -302,10 +320,11 @@ class PDFTemplate(object):
         self.drawHorizontalStroke(1,6.6, 18.5)
 
         y = 7
-        for line in self.data['bills']:
+        for line in self.data['lineitems']:
             for i in range(len(xtable)):
                 self.drawString(xtable[i],y, line[i], size=10)
             y += 0.4
+
         y -= 0.3
         self.drawHorizontalStroke(1,y, 18.5)
         y += 0.4
@@ -438,4 +457,3 @@ Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa
 """ % (get_billing_email(),), size=10)
         if self.data['bill_id']:
             self.drawText(11.5,23.4, u"Laskunumero %s" % self.data['bill_id'], size=10)
-
