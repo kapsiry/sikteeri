@@ -64,10 +64,13 @@ MEMBER_STATUS = ((STATUS_NEW, _('New')),
                  (STATUS_DELETED, _('Deleted')))
 MEMBER_STATUS_DICT = tupletuple_to_dict(MEMBER_STATUS)
 
+BILL_EMAIL = 'E'
+BILL_PAPER = 'P'
+BILL_SMS = 'S'
 BILL_TYPES = (
-('E', _('Email')),
-('P', _('Paper')),
-('S', _('SMS'))
+    (BILL_EMAIL, _('Email')),
+    (BILL_PAPER, _('Paper')),
+    (BILL_SMS, _('SMS'))
 )
 BILL_TYPES_DICT = tupletuple_to_dict(BILL_TYPES)
 
@@ -515,7 +518,7 @@ class Membership(models.Model):
     @classmethod
     def paper_reminder_sent_unpaid_after(cls, days=14):
         unpaid_filter = Q(billingcycle__is_paid=False)
-        type_filter = Q(type='P')
+        type_filter = Q(type=BILL_PAPER)
         date_filter = Q(due_date__lt=datetime.now() - timedelta(days=days))
         not_deleted_filter = Q(billingcycle__membership__status__exact=STATUS_APPROVED)
         bill_qs = Bill.objects.filter(unpaid_filter, type_filter, date_filter,
@@ -697,7 +700,7 @@ class BillingCycle(models.Model):
         if memberid:
             logger.info('memberid: %s' % memberid)
             qs = qs.filter(membership__id=memberid)
-            qs = qs.exclude(bill__type='P')
+            qs = qs.exclude(bill__type=BILL_PAPER)
             return qs
 
         # For all memberships in Approved state
@@ -706,7 +709,7 @@ class BillingCycle(models.Model):
                        is_paid__exact=False,
                        membership__status=STATUS_APPROVED,
                        membership__id__gt=-1)
-        qs = qs.exclude(bill__type='P')
+        qs = qs.exclude(bill__type=BILL_PAPER)
         qs = qs.order_by('start')
 
         return qs
@@ -734,8 +737,8 @@ class BillingCycle(models.Model):
             # check if paper reminder already sent
             cont = False
             for bill in cycle.bill_set.all():
-                if bill.type == 'P':
-                    cont=True
+                if bill.type == BILL_PAPER:
+                    cont = True
                     break
             if cont:
                 continue
