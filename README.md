@@ -1,13 +1,15 @@
+# Sikteeri membership management service
 <a href="https://codecov.io/github/kapsiry/sikteeri?branch=master">
   <img src="https://codecov.io/github/kapsiry/sikteeri/coverage.svg?branch=master" alt="Coverage via Codecov" />
 </a>
-[![Build Status](https://travis-ci.org/kapsiry/sikteeri.svg?branch=master)](https://travis-ci.org/kapsiry/sikteeri)
+<a href="https://travis-ci.org/kapsiry/sikteeri">
+  <img src="https://travis-ci.org/kapsiry/sikteeri.svg?branch=master" alt="Build Status">
+</a>
 
 REQUIREMENTS
 ============
 
-* Django 1.6
-* Python 2.7
+* Python 3.4
 * gettext
 * openldap and sasl dev for LDAP support
 
@@ -18,47 +20,31 @@ For production, additionally:
 HOW TO RUN
 ==========
 
-# Create virtualenv environment
-./install-virtualenv.sh
+    # Create virtualenv environment
+    ./install-virtualenv.sh
 
-(
-If it fails with installing python-ldap on OS X, check that you have the
-requirements (SASL, openldap). Hint:
-  source env/bin/activate
-  pip install -r requirements.txt --global-option=build_ext --global-option="-I$(xcrun --show-sdk-path)/usr/include/sasl"
-)
+    # Activate virtualenv
+    source env/bin/activate
 
-# Activate virtualenv
-source env/bin/activate
+    # Initialize development database
+    ./manage.py migrate && \
+    ./manage.py createsuperuser && \
+    ./manage.py loaddata membership/fixtures/membership_fees.json && \
+    ./manage.py generate_test_data
 
-# Initialize development database
-./manage.py migrate && \
-./manage.py createsuperuser && \
-./manage.py loaddata membership/fixtures/membership_fees.json && \
-./manage.py generate_test_data
+    # Compile translations and run development server
+    ./run-sikteeri.sh
 
-# Compile translations and run development server
-./run-sikteeri.sh
+Access the development server at <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>
 
-# Access the development server at
+Log in at <a href="http://127.0.0.1:8000/login/">http://127.0.0.1:8000/login/</a>
 
-    http://127.0.0.1:8000/
+# Run tests
 
-# Log in at
+You should always run tests before committing changes.
 
-    http://127.0.0.1:8000/login/
-
-# Run unit tests (always before committing changes)
-
-./manage.py test
+    ./manage.py test
 
 OR with py.test: (requires pip install pytest pytest-cov pytest-django)
 
-./test.sh
-
-If you want to override settings, create a local settings
-file which has "import * from sikteeri.settings" and
-export DJANGO_SETTINGS_FILE=production_settings or similar
-
-The default settings.py must be the default development
-configuration and work out of the box.
+    ./test.sh
