@@ -1,6 +1,3 @@
-# encoding: UTF-8
-from __future__ import with_statement
-
 import logging
 import codecs
 import csv
@@ -82,24 +79,24 @@ class OpDictReader(BillDictReader):
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
 
     # Translation table from Osuuspankki CSV format to short names
-    OP_CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
-                          u'Arvopäivä'          : 'value_date',
-                          u'Tap.pv'             : 'date', # old format
-                          u'Määrä EUROA'        : 'amount',
-                          u'Määrä'              : 'amount',
-                          u'Tapahtumalajikoodi' : 'event_type_code',
-                          u'Selitys'            : 'event_type_description',
-                          u'Saaja/Maksaja'      : 'fromto',
-                          u'Saajan tilinumero'  : 'account', # old format
-                          u'Saajan tilinumero ja pankin BIC' : 'account',
-                          u'Viite'              : 'reference',
-                          u'Viesti'             : 'message',
-                          u'Arkistotunnus'      : 'transaction', # old format
-                          u'Arkistointitunnus'  : 'transaction'}
+    OP_CSV_TRANSLATION = {'Kirjauspäivä'       : 'date',
+                          'Arvopäivä'          : 'value_date',
+                          'Tap.pv'             : 'date', # old format
+                          'Määrä EUROA'        : 'amount',
+                          'Määrä'              : 'amount',
+                          'Tapahtumalajikoodi' : 'event_type_code',
+                          'Selitys'            : 'event_type_description',
+                          'Saaja/Maksaja'      : 'fromto',
+                          'Saajan tilinumero'  : 'account', # old format
+                          'Saajan tilinumero ja pankin BIC' : 'account',
+                          'Viite'              : 'reference',
+                          'Viesti'             : 'message',
+                          'Arkistotunnus'      : 'transaction', # old format
+                          'Arkistointitunnus'  : 'transaction'}
 
     def _get_translation(self, h):
         # Quick and dirty, OP changes this field name too often!
-        if h.startswith(u"Määrä"):
+        if h.startswith("Määrä"):
             return "amount"
         return self.OP_CSV_TRANSLATION.get(h, h)
 
@@ -108,19 +105,19 @@ class ProcountorDictReader(BillDictReader):
 
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
 
-    CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
-                       u'Arvopäivä'          : 'value_date',
-                       u'Maksupäivä'         : 'date',
-                       u'Maksu'              : 'amount',
-                       u'Summa'              : 'amount',
-                       u'Kirjausselite'      : 'event_type_description',
-                       u'Maksaja'            : 'fromto',
-                       u'Nimi'               : 'fromto',
-                       u'Tilinro'            : 'account',
-                       u'Viesti'             : 'message',
-                       u'Viitenumero'        : 'reference',
-                       u'Arkistointitunnus'  : 'transaction',
-                       u'Oikea viite'        : 'real_reference',
+    CSV_TRANSLATION = {'Kirjauspäivä'       : 'date',
+                       'Arvopäivä'          : 'value_date',
+                       'Maksupäivä'         : 'date',
+                       'Maksu'              : 'amount',
+                       'Summa'              : 'amount',
+                       'Kirjausselite'      : 'event_type_description',
+                       'Maksaja'            : 'fromto',
+                       'Nimi'               : 'fromto',
+                       'Tilinro'            : 'account',
+                       'Viesti'             : 'message',
+                       'Viitenumero'        : 'reference',
+                       'Arkistointitunnus'  : 'transaction',
+                       'Oikea viite'        : 'real_reference',
                      }
 
     def _get_row(self, row):

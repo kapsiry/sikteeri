@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 # http://djangosnippets.org/snippets/218/
 
 class ForceDefaultLanguageMiddleware(object):

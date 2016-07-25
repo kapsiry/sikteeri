@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Code to make pdf bills and reminders
 """

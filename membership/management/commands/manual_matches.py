@@ -1,7 +1,3 @@
-# encoding: UTF-8
-
-from __future__ import with_statement
-
 from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist

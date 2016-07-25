@@ -97,7 +97,7 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(group_right('1111122222'), '11111 22222')
         self.assertEqual(group_right('1112222233333'), '111 22222 33333')
         self.assertEqual(group_right('15222333', group_size=3), '15 222 333')
-        self.assertEqual(group_right(u'äkstestÖ'), u'äks testÖ')
+        self.assertEqual(group_right('äkstestÖ'), 'äks testÖ')
 
     def test_canonize_iban(self):
         self.assertEqual(canonize_iban('FI79 4405 2020 0360 82'), '7944052020036082')
@@ -1191,9 +1191,9 @@ class MemberApplicationTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         self.post_data = {
-            "first_name": u"Yrjö",
-            "given_names": u"Yrjö Kapsi",
-            "last_name": u"Äikäs",
+            "first_name": "Yrjö",
+            "given_names": "Yrjö Kapsi",
+            "last_name": "Äikäs",
             "street_address": "Vasagatan 9",
             "postal_code": "90230",
             "post_office": "VAASA",
@@ -1204,7 +1204,7 @@ class MemberApplicationTest(TestCase):
             "nationality": "Suomi",
             "country": "Suomi",
             "municipality": "Vaasa",
-            "extra_info": u"Mää oon testikäyttäjä.",
+            "extra_info": "Mää oon testikäyttäjä.",
             "unix_login": "luser",
             "birth_year": "1993",
             "email_forward": "y.aikas",
@@ -1217,7 +1217,7 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"Yrjö")
+        self.assertEquals(new.person.first_name, "Yrjö")
 
 
     def test_do_application_with_short_homepage(self):
@@ -1225,7 +1225,7 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+        self.assertEquals(new.person.homepage, "http://www.kapsi.fi")
 
     def test_do_application_with_empty_phone_number(self):
         self.post_data['phone'] = ''
@@ -1244,14 +1244,14 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+        self.assertEquals(new.person.homepage, "http://www.kapsi.fi")
 
     def test_do_application_with_proper_secure_homepage(self):
         self.post_data['homepage'] = 'https://www.kapsi.fi'
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"https://www.kapsi.fi")
+        self.assertEquals(new.person.homepage, "https://www.kapsi.fi")
 
     def test_redundant_email_alias(self):
         self.post_data['unix_login'] = 'fnamelname'
@@ -1259,16 +1259,16 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"Yrjö")
+        self.assertEquals(new.person.first_name, "Yrjö")
 
     def test_clean_ajax_output(self):
         post_data = self.post_data.copy()
-        post_data['first_name'] = u'<b>Yrjö</b>'
+        post_data['first_name'] = '<b>Yrjö</b>'
         post_data['extra_info'] = '<iframe src="https://www.kapsi.fi" width=200 height=100></iframe>'
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"<b>Yrjö</b>")
+        self.assertEquals(new.person.first_name, "<b>Yrjö</b>")
 
         login = self.client.login(username='admin', password='dhtn')
         self.failUnless(login, 'Could not log in')
@@ -1278,7 +1278,7 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_response.status_code, 200)
         json_dict = json.loads(json_response.content.decode("UTF-8"))
         self.assertEqual(json_dict['contacts']['person']['first_name'],
-                         u'&lt;b&gt;Yrjö&lt;/b&gt;')
+                         '&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;https://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
@@ -1321,33 +1321,33 @@ class PhoneNumberFieldTest(TestCase):
         self.assertRaises(ValidationError, self.field.clean, "12345")
 
     def test_number(self):
-        self.assertEquals(u"0123456", self.field.clean(u"0123456"))
+        self.assertEquals("0123456", self.field.clean("0123456"))
 
     def test_parens(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"(0400) 123123"))
+        self.assertEquals("0400123123", self.field.clean("(0400) 123123"))
 
     def test_dash_delimiter(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"0400-123123"))
+        self.assertEquals("0400123123", self.field.clean("0400-123123"))
 
     def test_space_delimiter(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"0400 123123"))
+        self.assertEquals("0400123123", self.field.clean("0400 123123"))
 
     def test_strippable_spaces(self):
-        self.assertEquals(u"0400123123", self.field.clean(u" 0400 123123  "))
+        self.assertEquals("0400123123", self.field.clean(" 0400 123123  "))
 
     def test_begins_with_plus(self):
-        self.assertEquals(u"+358401231111", self.field.clean(u"+358 40 123 1111"))
+        self.assertEquals("+358401231111", self.field.clean("+358 40 123 1111"))
 
     def test_dash_delimiter_begins_with_plus(self):
-        self.assertEquals(u"+358400123123", self.field.clean(u"+358-400-123123 "))
+        self.assertEquals("+358400123123", self.field.clean("+358-400-123123 "))
 
 class OrganizationRegistratioTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
 
     def test_valid(self):
-        self.assertEqual(u"1.11", self.field.clean(u"1.11"))
-        self.assertEqual(u"123.123", self.field.clean(u"123.123"))
+        self.assertEqual("1.11", self.field.clean("1.11"))
+        self.assertEqual("123.123", self.field.clean("123.123"))
 
     def test_invalid(self):
         self.assertRaises(ValidationError, self.field.clean, "str.str")
@@ -1359,11 +1359,11 @@ class LoginFieldTest(TestCase):
         self.field = LoginField()
 
     def test_valid(self):
-        self.assertEquals(u"testuser", self.field.clean(u"testuser"))
-        self.assertEquals(u"testuser2", self.field.clean(u"testuser2"))
-        self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
+        self.assertEquals("testuser", self.field.clean("testuser"))
+        self.assertEquals("testuser2", self.field.clean("testuser2"))
+        self.assertEquals("a1b2c4", self.field.clean("a1b2c4"))
     def test_uppercase(self):
-        self.assertEquals(u"testuser", self.field.clean(u"TestUser"))
+        self.assertEquals("testuser", self.field.clean("TestUser"))
 
     def test_bad_chars(self):
         self.assertRaises(ValidationError, self.field.clean, "user.name")
@@ -1652,11 +1652,11 @@ class MetricsInterfaceTest(TestCase):
         self.assertEqual(response.status_code, 200)
         d = json.loads(response.content.decode("UTF-8"))
         self.assertTrue('memberships' in d)
-        for key in [u'new', u'preapproved', u'approved', u'deleted']:
-            self.assertTrue(key in d[u'memberships'])
+        for key in ['new', 'preapproved', 'approved', 'deleted']:
+            self.assertTrue(key in d['memberships'])
         self.assertTrue('bills' in d)
-        for key in [u'unpaid_count', u'unpaid_sum']:
-            self.assertTrue(key in d[u'bills'])
+        for key in ['unpaid_count', 'unpaid_sum']:
+            self.assertTrue(key in d['bills'])
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
@@ -1780,7 +1780,7 @@ class MembershipSearchTest(TestCase):
 
     def test_find_by_alias(self):
         alias = Alias(owner=self.m,
-                      name=u"this.alias.should.be.unique")
+                      name="this.alias.should.be.unique")
         alias.save()
         self.assertEquals(len(Membership.search(alias.name)), 1)
 
@@ -1903,25 +1903,25 @@ class CorrectVatAmountInBillTest(TestCase):
 
 class EmailUtilsTests(TestCase):
     def test_unicode_in_name(self):
-        res = email_utils.format_email(u'räyh', 'foo@bar')
-        self.assertEqual(res, u'"räyh" <foo@bar>')
+        res = email_utils.format_email('räyh', 'foo@bar')
+        self.assertEqual(res, '"räyh" <foo@bar>')
 
     def test_clean_ascii_name(self):
         res = email_utils.format_email('rauh', 'foo@bar')
-        self.assertEqual(res, u'"rauh" <foo@bar>')
+        self.assertEqual(res, '"rauh" <foo@bar>')
 
     def test_comma_in_name(self):
         res = email_utils.format_email('rauh,joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh,joo" <foo@bar>')
+        self.assertEqual(res, '"rauh,joo" <foo@bar>')
 
     def test_semicolon_in_name(self):
         res = email_utils.format_email('rauh;joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh;joo" <foo@bar>')
+        self.assertEqual(res, '"rauh;joo" <foo@bar>')
 
     def test_dquote_in_name(self):
         res = email_utils.format_email('rauh\"joo', 'foo@bar')
-        self.assertEqual(res, u'"rauhjoo" <foo@bar>')
+        self.assertEqual(res, '"rauhjoo" <foo@bar>')
 
     def test_quote_in_name(self):
         res = email_utils.format_email('rauh\'joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh\'joo" <foo@bar>')
+        self.assertEqual(res, '"rauh\'joo" <foo@bar>')

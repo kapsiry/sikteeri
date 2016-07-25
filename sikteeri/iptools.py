@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# encoding: UTF-8
 # Copyright Kapsi Internet-käyttäjät ry
 # Idea from http://code.google.com/p/python-iptools ; code completely new
 

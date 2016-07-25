@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 from django.db.models import Q
 from django.core.management.base import NoArgsCommand
 from django.template.loader import render_to_string

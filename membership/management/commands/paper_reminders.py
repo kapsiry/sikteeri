@@ -1,6 +1,3 @@
-# encoding: UTF-8
-from __future__ import with_statement
-
 import logging
 from optparse import make_option
 from tempfile import NamedTemporaryFile

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 generate_test_data.py
 

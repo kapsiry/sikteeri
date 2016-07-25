@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """
 Some functions that cannot be in pdf.py file to prevent import loop.
 """

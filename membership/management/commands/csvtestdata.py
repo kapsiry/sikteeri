@@ -1,13 +1,6 @@
-# encoding: UTF-8
 """
 Generates test data for CSV import.
 """
-from __future__ import print_function
-from __future__ import with_statement
-
-# http://www.python.org/dev/peps/pep-3101/ # unicode.format()
-# http://www.python.org/dev/peps/pep-3105/ # print function
-
 import codecs
 
 from uuid import uuid4

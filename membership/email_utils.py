@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 logger = logging.getLogger("membership.email_utils")
 
@@ -9,12 +7,10 @@ from django.core import mail
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
-unicode = str
-
 
 def format_email(name, email):
     clean_name = name.replace('"', '')  # Strip double quotes
-    return u'"{name}" <{email}>'.format(name=clean_name, email=email)
+    return '"{name}" <{email}>'.format(name=clean_name, email=email)
 
 
 # Address helper
@@ -23,7 +19,7 @@ def unix_email(membership):
         from services.models import valid_aliases, Alias
         try:
             alias = valid_aliases(membership).filter(account=True).latest('created')
-            email = u"{user}@{domain}".format(user=alias, domain=settings.UNIX_EMAIL_DOMAIN)
+            email = "{user}@{domain}".format(user=alias, domain=settings.UNIX_EMAIL_DOMAIN)
             return format_email(name=membership.name(), email=email)
         except Alias.DoesNotExist:
             pass
@@ -66,8 +62,7 @@ def bill_sender(sender, instance=None, **kwargs):
                              attachments=attachments)
     connection = mail.get_connection()
     connection.send_messages([email])
-    logger.info(u'A bill sent as email to %s: %s' % (",".join(to),
-                                                     unicode(instance)))
+    logger.info('A bill sent as email to %s: %s' % (",".join(to), str(instance)))
 
 def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
     from services.models import Service
@@ -86,9 +81,7 @@ def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
                                   headers = {'Reply-To': instance.email_to()})
     connection = mail.get_connection()
     connection.send_messages([sysadmin_email])
-    logger.info(u'A preapprove email sent to %s (%s) by %s' % (unicode(instance),
-                                                               instance.billing_email(),
-                                                               user))
+    logger.info('A preapprove email sent to %s (%s) by %s' % (str(instance), instance.billing_email(), user))
 
 def duplicate_payment_sender(sender, instance=None, user=None, billingcycle=None, **kwargs):
     """Email to bill payer due to duplicate payment"""
@@ -108,6 +101,4 @@ def duplicate_payment_sender(sender, instance=None, user=None, billingcycle=None
                              headers={'CC': settings.BILLING_CC_EMAIL})
     connection = mail.get_connection()
     connection.send_messages([email])
-    logger.info(u'A duplicate payment notice email sent to %s (%s) by %s' % (unicode(membership),
-                                                               membership.billing_email(),
-                                                               user))
+    logger.info('A duplicate payment notice email sent to %s (%s) by %s' % (str(membership), membership.billing_email(), user))

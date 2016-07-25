@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from membership.models import BillingCycle
 
 def unpaid_members_data():
