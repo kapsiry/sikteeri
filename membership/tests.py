@@ -1782,6 +1782,15 @@ class MembershipSearchTest(TestCase):
     def test_find_by_organization_name(self):
         self.assertEquals(len(Membership.search(self.o.organization.organization_name)), 1)
 
+    def test_find_by_membership_id(self):
+        self.assertEquals(len(Membership.search("#{id}".format(id=self.m.id))), 1)
+
+    def test_find_by_membership_id_org(self):
+        self.assertEquals(len(Membership.search("#{id}".format(id=self.o.id))), 1)
+
+    def test_find_by_membership_id_does_not_exist(self):
+        self.assertEquals(len(Membership.search("#{id}".format(id=12765))), 0)
+
     def test_find_by_alias(self):
         alias = Alias(owner=self.m,
                       name=u"this.alias.should.be.unique")

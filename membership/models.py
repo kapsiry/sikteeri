@@ -473,6 +473,16 @@ class Membership(models.Model):
 
         # Each word narrows the search further
         for word in words:
+            # Exact match for membership id (for Django admin)
+            if word.startswith('#'):
+                try:
+                    mid = int(word[1:])
+                    person_contacts = person_contacts.filter(id=mid)
+                    org_contacts = org_contacts.filter(id=mid)
+                    continue
+                except ValueError:
+                    pass  # Continue processing normal search
+
             # Exact word match when word is "word"
             if word.startswith('"') and word.endswith('"'):
                 word = word[1:-1]

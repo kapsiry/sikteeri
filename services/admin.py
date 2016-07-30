@@ -35,6 +35,7 @@ class StartsWithListFilter(SimpleListFilter):
 
 
 class AliasAdmin(admin.ModelAdmin):
+    raw_id_fields = ['owner']
     list_filter = (StartsWithListFilter,)
 
 
