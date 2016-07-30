@@ -2,16 +2,20 @@ label {
     font-size: 90%;
     font-weight: bold;
     font-family: sans-serif;
+    vertical-align: middle;
 }
 
-textarea, input {
+textarea, input, select {
+    margin: 0;
+    padding: 0.2em;
+    border: 0;
     color: #000000;
     background-color: #f0f5e5;
     border: 1px solid #3F4C18;
-    padding: 0.2em;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
+    vertical-align: middle;
 }
 
 fieldset {
@@ -121,7 +125,7 @@ ul.errorlist li {
     font-size: 100%;
 }
 
-#new_application input, #login-form input, #entity_edit input, textarea {
+#new_application input, #login-form input, #entity_edit input, textarea, #entity_edit select {
     margin: 0 0.4em;
     vertical-align: top;
     width: 200px;
