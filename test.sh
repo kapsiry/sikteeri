@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export DJANGO_SETTINGS_MODULE=sikteeri.settings
 export SIKTEERI_CONFIGURATION=dev
