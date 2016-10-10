@@ -175,7 +175,10 @@ class ProcountorDictReader(BillDictReader):
 
 def row_to_payment(row):
     try:
-        p = Payment.objects.get(transaction_id__exact=row['transaction'])
+        # Search first for from already imported rows
+        p = Payment.objects.get(transaction_id__exact=row['transaction'],
+                                reference_number__exact=row['reference'],
+                                message__exact=row['message'])
         return p
     except Payment.DoesNotExist:
         p = Payment(payment_day=min(datetime.now(), row['date']),
