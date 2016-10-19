@@ -138,5 +138,15 @@
         },
         "model": "membership.fee",
         "pk": 14
+    },
+    {
+        "fields": {
+            "start": "2016-01-01T00:00:01",
+            "sum": "20.00",
+            "type": "P",
+            "vat_percentage": 0
+        },
+        "model": "membership.fee",
+        "pk": 15
     }
 ]
