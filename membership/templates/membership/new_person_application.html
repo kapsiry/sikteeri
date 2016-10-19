@@ -17,6 +17,13 @@
   href="https://www.kapsi.fi/liityjaseneksi.html">hakemuksen käsittelyajat sekä
   muuta tietoa</a>. Tähdellä (<span class="required">*</span>) merkityt kentät ovat pakollisia.
 </p>
+<p>
+  Alle 21-vuotiaan hakemus tulkitaan automaattisesti nuorisojäsenhakemukseksi.
+  Täyttämällä lomakkeen hyväksyt, että nuorisojäsenyys muutetaan automaattisesti
+  henkilöjäsenyydeksi sen vuoden alussa, jossa täytät 21 vuotta. Jos
+  ehdottomasti haluat henkilöjäsenyyden, ota yhteyttä
+  <a href="https://www.kapsi.fi/tukipalvelut.html">hallitukseen</a>.
+</p>
 
 <form method="POST">{% csrf_token %}
 <div id="new_application">
@@ -74,7 +81,6 @@
     <span class="error{% if form.birth_year.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
-
   </fieldset>
   <fieldset><legend>Postiosoite</legend>
   <p{% if form.street_address.errors %} class="error"{% endif %}>
