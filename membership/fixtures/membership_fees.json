@@ -142,8 +142,8 @@
     {
         "fields": {
             "start": "2016-01-01T00:00:01",
-            "sum": "20.00",
-            "type": "P",
+            "sum": "10.00",
+            "type": "J",
             "vat_percentage": 0
         },
         "model": "membership.fee",
