@@ -4,6 +4,7 @@ import logging
 import json
 from django.conf import settings
 import traceback
+from datetime import datetime
 
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
@@ -102,7 +103,11 @@ def person_application(request, template_name='membership/new_person_application
 
                 person = Contact(**contact_dict)
                 person.save()
-                membership = Membership(type='P', status='N',
+                if (datetime.now().year - int(f['birth_year'])) < 21:
+                    membership_type = 'J'
+                else:
+                    membership_type = 'P'
+                membership = Membership(type=membership_type, status='N',
                                         person=person,
                                         nationality=f['nationality'],
                                         municipality=f['municipality'],

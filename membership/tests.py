@@ -1188,6 +1188,56 @@ class ContactTest(TestCase):
         c.save()
         self.assertEqual(c.homepage, "https://www.kapsi.fi")
 
+class JuniorMemberApplicationTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.post_data = {
+            "first_name": u"Yrjö",
+            "given_names": u"Yrjö Kapsi",
+            "last_name": u"Äikäs",
+            "street_address": "Vasagatan 9",
+            "postal_code": "90230",
+            "post_office": "VAASA",
+            "phone": "0123123123",
+            "sms": "0123123123",
+            "email": "veijo.invalid@valpas.kapsi.fi",
+            "homepage": "",
+            "nationality": "Suomi",
+            "country": "Suomi",
+            "municipality": "Vaasa",
+            "extra_info": u"Mää oon testikäyttäjä.",
+            "unix_login": "luser",
+            "birth_year": "1993",
+            "email_forward": "y.aikas",
+            "mysql_database": "yes",
+            "postgresql_database": "yes",
+            "login_vhost": "yes",
+    }
+
+    def test_do_application_is_junior_1(self):
+        post_data = dict(self.post_data)  # Copy data
+        post_data['birth_year'] = str(datetime.now().year - 1)
+        response = self.client.post('/membership/application/person/', post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.type, u"J")
+
+    def test_do_application_is_junior_20(self):
+        post_data = dict(self.post_data)  # Copy data
+        post_data['birth_year'] = str(datetime.now().year - 20)
+        response = self.client.post('/membership/application/person/', post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.type, u"J")
+
+    def test_do_application_not_junior(self):
+        post_data = dict(self.post_data)  # Copy data
+        post_data['birth_year'] = str(datetime.now().year - 21)
+        response = self.client.post('/membership/application/person/', post_data)
+        self.assertRedirects(response, '/membership/application/person/success/')
+        new = Membership.objects.latest("id")
+        self.assertEquals(new.type, u"P")
 
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']

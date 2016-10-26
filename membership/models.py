@@ -44,6 +44,7 @@ class MembershipAlreadyStatus(MembershipOperationError): pass
 class PaymentAttachedError(Exception): pass
 
 MEMBER_TYPES = (('P', _('Person')),
+                ('J', _('Junior')),
                 ('S', _('Supporting')),
                 ('O', _('Organization')),
                 ('H', _('Honorary')))

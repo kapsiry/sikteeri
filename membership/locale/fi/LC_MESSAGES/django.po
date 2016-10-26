@@ -279,6 +279,10 @@ msgstr "Ei laskutuskautta maksulle %s"
 msgid "Person"
 msgstr "Henkilöjäsen"
 
+#: membership/models.py:47
+msgid "Junior"
+msgstr "Nuorisojäsen"
+
 #: models.py:42
 msgid "Supporting"
 msgstr "Kannatusjäsen"
