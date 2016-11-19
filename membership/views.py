@@ -1043,7 +1043,7 @@ def test_email(request, template_name='membership/test_email.html'):
 
 @trusted_host_required
 def membership_metrics(request):
-    unpaid_cycles = BillingCycle.objects.filter(is_paid=False)
+    unpaid_cycles = BillingCycle.objects.filter(membership__status='A', is_paid=False)
     unpaid_sum = unpaid_cycles.aggregate(Sum("sum"))['sum__sum']
     if unpaid_sum == None:
         unpaid_sum = "0.0"
