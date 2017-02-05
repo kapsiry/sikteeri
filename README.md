@@ -1,64 +1,64 @@
 <a href="https://codecov.io/github/kapsiry/sikteeri?branch=master">
   <img src="https://codecov.io/github/kapsiry/sikteeri/coverage.svg?branch=master" alt="Coverage via Codecov" />
 </a>
-[![Build Status](https://travis-ci.org/kapsiry/sikteeri.svg?branch=master)](https://travis-ci.org/kapsiry/sikteeri)
+<a href="https://travis-ci.org/kapsiry/sikteeri">
+  <img src="https://travis-ci.org/kapsiry/sikteeri.svg?branch=master" alt="Test results at Travis CI" />
+</a>
 
 REQUIREMENTS
 ============
 
-* Django 1.6
+The following software is required to install Sikteeri.
+
 * Python 2.7
 * gettext
 * openldap and sasl dev for LDAP support
 
 For production, additionally:
-* gunicorn
 * PostgreSQL
 
-HOW TO RUN
-==========
+# HOW TO RUN
 
-# Create virtualenv environment
+## Create virtualenv environment
 ./install-virtualenv.sh
 
-(
-If it fails with installing python-ldap on OS X, check that you have the
-requirements (SASL, openldap). Hint:
-  source env/bin/activate
-  pip install -r requirements.txt --global-option=build_ext --global-option="-I$(xcrun --show-sdk-path)/usr/include/sasl"
-)
+OR you may create and activate virtualenv from requirements.txt manually.
 
-# Activate virtualenv
+## Activate virtualenv
 source env/bin/activate
 
-# Initialize development database
-./manage.py migrate && \
-./manage.py createsuperuser && \
-./manage.py loaddata membership/fixtures/membership_fees.json && \
-./manage.py generate_test_data
+## Initialize development database
+    ./manage.py migrate && \
+    ./manage.py createsuperuser && \
+    ./manage.py loaddata membership/fixtures/membership_fees.json && \
+    ./manage.py generate_test_data
 
-# Compile translations and run development server
-./run-sikteeri.sh
+## Use development settings
+    export SIKTEERI_CONFIGURATION=dev
 
-# Access the development server at
+## Compile translations and run development server
+    ./run-sikteeri.sh
 
+## Access the development server at
     http://127.0.0.1:8000/
 
-# Log in at
-
+## Log in at
     http://127.0.0.1:8000/login/
 
-# Run unit tests (always before committing changes)
+## Run unit tests (always before committing changes)
+    ./manage.py test
 
-./manage.py test
+### OR with py.test:
+    pip install pytest pytest-cov pytest-django
+    ./test.sh
 
-OR with py.test: (requires pip install pytest pytest-cov pytest-django)
-
-./test.sh
-
+## Settings
 If you want to override settings, create a local settings
-file which has "import * from sikteeri.settings" and
-export DJANGO_SETTINGS_FILE=production_settings or similar
+file which has "import * from sikteeri.settings" and set:
+
+    export DJANGO_SETTINGS_MODULE=sikteeri.my_settings
 
 The default settings.py must be the default development
-configuration and work out of the box.
+configuration and work out of the box for quick development.
+Production settings (email subjects, bank account numbers
+etc.) are configured as JSON file.
