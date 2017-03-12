@@ -22,7 +22,7 @@ def unix_email(membership):
     if settings.UNIX_EMAIL_DOMAIN:
         from services.models import valid_aliases, Alias
         try:
-            alias = valid_aliases(membership).filter(account=True).latest('created')
+            alias = valid_aliases(membership).filter(account=True).earliest('created')
             email = u"{user}@{domain}".format(user=alias, domain=settings.UNIX_EMAIL_DOMAIN)
             return format_email(name=membership.name(), email=email)
         except Alias.DoesNotExist:
