@@ -68,7 +68,7 @@ class ServiceType(models.Model):
 class Alias(models.Model):
     owner = models.ForeignKey('membership.Membership', verbose_name=_('Alias owner'))
     name = models.CharField(max_length=128, unique=True, verbose_name=_('Alias name'))
-    account = models.BooleanField(default=False, verbose_name=_('Is UNIX account'))
+    account = models.BooleanField(default=False, verbose_name=_('Is primary member account, e.g. fall-back address for reminders'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     comment = models.CharField(max_length=128, blank=True, verbose_name=_('Comment'))
     expiration_date = models.DateTimeField(blank=True, null=True, verbose_name=_('Alias expiration date'))
