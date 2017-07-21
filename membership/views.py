@@ -6,6 +6,7 @@ from django.conf import settings
 import traceback
 from datetime import datetime
 
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
 
@@ -30,10 +31,10 @@ from membership.forms import PersonApplicationForm, OrganizationApplicationForm,
 from membership.utils import log_change, serializable_membership_info, admtool_membership_details, \
     get_client_ip, bake_log_entries
 from membership.public_memberlist import public_memberlist_data
-from membership.unpaid_members import unpaid_members_data
+from membership.unpaid_members import unpaid_members_data, members_to_lock
 from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill, BillingCycle, Payment, ApplicationPoll, \
-    MembershipAlreadyStatus
+    MembershipAlreadyStatus, STATUS_APPROVED, STATUS_DISASSOCIATED
 from services.views import check_alias_availability, validate_alias
 
 logger = logging.getLogger("membership.views")
@@ -1072,6 +1073,13 @@ def unpaid_members(request):
     json_obj = unpaid_members_data()
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         content_type='application/json')
+
+@trusted_host_required
+def users_to_lock(request):
+    json_obj = members_to_lock()
+    return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
+                        content_type='application/json')
+
 
 @trusted_host_required
 def admtool_membership_detail_json(request, id):
