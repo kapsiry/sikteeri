@@ -2035,3 +2035,10 @@ class TestMembersToLock(TestCase):
         self.m.save()
         self.assertTrue(len(unpaid_members.members_to_lock()) == 0,
                         "Deleted member should not be listed")
+
+
+class TestGroupIBAN(TestCase):
+
+    def testGroupIBAN(self):
+        self.assertTrue(group_iban("123456781234567812"), "1234 5678 1234 5678 12",
+                        "Group function failed to group IBAN")
