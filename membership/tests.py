@@ -15,6 +15,8 @@ import json
 from django.core.mail import EmailMessage
 from django.core.management import call_command
 
+from membership import unpaid_members
+
 logger = logging.getLogger("membership.tests")
 
 from django.contrib.auth.models import User
@@ -1988,3 +1990,48 @@ class EmailUtilsTests(TestCase):
     def test_quote_in_name(self):
         res = email_utils.format_email('rauh\'joo', 'foo@bar')
         self.assertEqual(res, u'"rauh\'joo" <foo@bar>')
+
+
+class TestMembersToLock(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        self.m = create_dummy_member('N')
+        self.m.save()
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+        alias = Alias(account=True, name="veijo", owner=self.m)
+        alias.save()
+
+    def testStatuses(self):
+        self.assertTrue(len(unpaid_members.unpaid_members_data()) == 0,
+                        "Approved member without outstanding bills should not be listed")
+
+        cycle_start = datetime.now() - timedelta(days=120)
+        cycle = BillingCycle(membership=self.m, start=cycle_start)
+        cycle.save()
+        bill = Bill(billingcycle=cycle, type='E',
+                    due_date=datetime.now() - timedelta(days=120))
+        bill.save()
+        bill2 = Bill(billingcycle=cycle, type='E',
+                     due_date=datetime.now() - timedelta(days=80), reminder_count=1)
+        bill2.save()
+        bill3 = Bill(billingcycle=cycle, type='E',
+                     due_date=datetime.now() - timedelta(days=60), reminder_count=2)
+        bill3.save()
+        self.assertTrue(len(unpaid_members.members_to_lock()) == 1,
+                        "Approved member with two reminders should be listed")
+        self.m.request_dissociation(self.user)
+        self.m.save()
+        self.assertTrue(len(unpaid_members.members_to_lock()) == 0,
+                        "Disassociation requested member with two reminders should not be listed")
+        self.m.dissociate(self.user)
+        self.m.save()
+        self.assertTrue(len(unpaid_members.members_to_lock()) == 1,
+                        "Disassociated member should be listed")
+
+        self.m.delete_membership(self.user)
+        self.m.save()
+        self.assertTrue(len(unpaid_members.members_to_lock()) == 0,
+                        "Deleted member should not be listed")
