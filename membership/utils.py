@@ -246,6 +246,8 @@ def admtool_membership_details(membership):
     # Aliases
     json_obj['aliases'] = [unicode(alias) for alias in valid_aliases(membership)]
 
+    json_obj['unix_users'] = [unicode(alias) for alias in valid_aliases(membership) if alias.account is True]
+
 #    json_obj['services'] = ", ".join((escape(str(service))
 #                                      for service in Service.objects.filter(owner=membership)))
     json_obj['services'] = services_json_obj = []
