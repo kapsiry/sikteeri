@@ -34,7 +34,7 @@ from membership.models import (Bill, BillingCycle, Contact, CancelledBill, Membe
                                Fee, Payment, PaymentAttachedError, MEMBER_STATUS)
 from membership.models import logger as models_logger
 from membership import reference_numbers
-from membership.utils import tupletuple_to_dict, log_change
+from membership.utils import tupletuple_to_dict, log_change, group_iban
 from membership.forms import LoginField, PhoneNumberField, OrganizationRegistrationNumber
 from membership.test_utils import create_dummy_member, MockLoggingHandler
 from membership.decorators import trusted_host_required
