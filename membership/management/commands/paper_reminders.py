@@ -12,14 +12,13 @@ from membership.billing import pdf_utils
 logger = logging.getLogger("paper_bills")
 
 class Command(BaseCommand):
-    args = ''
     help = 'Create paper reminders pdf'
-    option_list = BaseCommand.option_list + (
-        make_option('--member',
+
+    def add_arguments(self, parser):
+        parser.add_argument('--member',
             dest='member',
             default=None,
-            help='Create pdf-reminder for user'),
-        )
+            help='Create pdf-reminder for user')
 
     def handle(self, *args, **options):
         try:

@@ -281,18 +281,23 @@ def process_procountor_csv(file_handle, user=None):
 
 
 class Command(BaseCommand):
-    args = '<csvfile> [<csvfile> ...]'
+
     help = 'Read a CSV list of payment transactions'
-    option_list = BaseCommand.option_list + (
-        make_option('--procountor',
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfiles', nargs='+')
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--procountor',
             dest='procountor',
             default=None,
             action="store_true",
-            help='Use procountor import csv format'),
-        )
+            help='Use procountor import csv format')
 
-    def handle(self, *args, **options):
-        for csvfile in args:
+    def handle(self, csvfiles, *args, **options):
+        for csvfile in csvfiles:
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
             # Exceptions of process_csv are fatal in command line run

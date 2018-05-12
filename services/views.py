@@ -14,8 +14,7 @@ from django.contrib import messages
 from django.forms import ModelForm, ModelChoiceField
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404, redirect
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import ugettext_lazy as _
 
 @permission_required('services.manage_aliases')
@@ -57,9 +56,8 @@ def alias_edit(request, id, template_name='membership/entity_edit.html'):
         form = Form(instance=alias)
         form.disable_fields()
     logentries = bake_log_entries(alias.logs.all())
-    return render_to_response(template_name, {'form': form,
-        'alias': alias, 'logentries': logentries},
-        context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form,
+                  'alias': alias, 'logentries': logentries})
 
 
 @permission_required('services.manage_aliases')
@@ -87,10 +85,8 @@ def alias_add_for_member(request, id, template_name='membership/membership_add_a
     else:
         form = Form()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {'form': form, 'membership': membership })
 
 
 # FIXME: Here should probably be rate limiting, but it isn't simple.
@@ -100,6 +96,7 @@ def check_alias_availability(request, alias):
     if Alias.objects.filter(name__iexact=alias).count() == 0:
         return HttpResponse("true", content_type='text/plain')
     return HttpResponse("false", content_type='text/plain')
+
 
 # This is called from membership.views.handle_json!
 # Public access

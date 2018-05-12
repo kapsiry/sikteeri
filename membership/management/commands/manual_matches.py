@@ -5,7 +5,7 @@ from __future__ import with_statement
 from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
 import logging
@@ -93,10 +93,14 @@ class Command(BaseCommand):
     args = '<csvfile>'
     help = 'Import manual matches of payments'
 
-    def handle(self, csvfile, **options):
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfile')
+
+    def handle(self, *args, **options):
         logger.info("Starting the processing of file %s." %
-            os.path.abspath(csvfile))
-        process_csv(csvfile)
+            os.path.abspath(args["csvfile"]))
+        process_csv(args["csvfile"])
         try:
             pass
             #process_csv(csvfile)

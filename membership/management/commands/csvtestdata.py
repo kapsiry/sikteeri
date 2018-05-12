@@ -68,9 +68,12 @@ def print_csv(stream=stdout, count=10):
 
 
 class Command(BaseCommand):
-    args = '<file_to_write_to>'
     help = 'Generate payments CSV to be used for testing out payment import' \
         + ' form'
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfile')
 
     def handle(self, *args, **options):
         if len(args) > 0:

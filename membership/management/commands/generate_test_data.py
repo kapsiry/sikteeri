@@ -31,49 +31,44 @@ logger = logging.getLogger("sikteeri.generate_test_data")
 class Command(BaseCommand):
     help = 'Generate test random member data for development.'
 
-    option_list = BaseCommand.option_list + (
-        make_option('--approved',
-            type='int',
-            dest='approved',
-            default=100,
-            help='Number of approved members (100)'),
-        ) + (
-        make_option('--preapproved',
-            type='int',
-            dest='preapproved',
-            default=20,
-            help='Number of preapproved members (20)'),
-        ) + (
-        make_option('--new',
-            type='int',
-            dest='new',
-            default=15,
-            help='Number of new members (15)'),
-        ) + (
-        make_option('--duplicates',
-            type='int',
-            dest='duplicates',
-            default=5,
-            help='Number of duplicate members (5)'),
-        ) + (
-        make_option('--dissociated',
-            type='int',
-            dest='dissociated',
-            default=5,
-            help='Number of dissociated members (5)'),
-        ) + (
-        make_option('--dissociation-requested',
-            type='int',
-            dest='dissociation_requested',
-            default=2,
-            help='Number of dissociation requested members (2)'),
-        ) + (
-        make_option('--deleted',
-            type='int',
-            dest='deleted',
-            default=2,
-            help='Number of deleted members (2)'),
-        )
+    def add_arguments(self, parser):
+        # Named (optional) arguments
+        parser.add_argument('--approved',
+                    type='int',
+                    dest='approved',
+                    default=100,
+                    help='Number of approved members (100)')
+        parser.add_argument('--preapproved',
+                    type='int',
+                    dest='preapproved',
+                    default=20,
+                    help='Number of preapproved members (20)')
+        parser.add_argument('--new',
+                    type='int',
+                    dest='new',
+                    default=15,
+                    help='Number of new members (15)')
+
+        parser.add_argument('--duplicates',
+                    type='int',
+                    dest='duplicates',
+                    default=5,
+                    help='Number of duplicate members (5)')
+        parser.add_argument('--dissociated',
+                    type='int',
+                    dest='dissociated',
+                    default=5,
+                    help='Number of dissociated members (5)')
+        parser.add_argument('--dissociation-requested',
+                    type='int',
+                    dest='dissociation_requested',
+                    default=2,
+                    help='Number of dissociation requested members (2)')
+        parser.add_argument('--deleted',
+                    type='int',
+                    dest='deleted',
+                    default=2,
+                    help='Number of deleted members (2)')
 
     def handle(self, *args, **options):
         if Fee.objects.all().count() == 0:
