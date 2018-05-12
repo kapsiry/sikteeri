@@ -12,3 +12,6 @@ script: "./test.sh"
 sudo: required
 after_success:
     codecov
+addons:
+  apt:
+    update: true
