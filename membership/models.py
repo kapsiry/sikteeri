@@ -28,7 +28,7 @@ from django.db.models.query import QuerySet
 
 from django.contrib.contenttypes.models import ContentType
 
-from utils import log_change, tupletuple_to_dict
+from utils import log_change, tupletuple_to_dict, json_format
 
 from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
 from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
@@ -158,6 +158,9 @@ class Contact(models.Model):
             return self.organization_name
         else:
             return u'%s %s' % (self.first_name, self.last_name)
+
+    def json_data(self):
+        return {k: json_format(v) for k, v in self.__dict__.items() if k in [field.name for field in self._meta.fields]}
 
     def __unicode__(self):
         if self.organization_name:
@@ -539,6 +542,24 @@ class Membership(models.Model):
             membership_ids.add(bill.billingcycle.membership.id)
 
         return Membership.objects.filter(id__in=membership_ids)
+
+    def json_data(self):
+        data = {k: json_format(v) for k, v in self.__dict__.items() if k in [field.name for field in self._meta.fields]}
+
+        data.update({"person_contact": None,
+                     "billing_contact": None,
+                     "tech_contact": None,
+                     "organization_contact": None})
+
+        if self.person:
+            data["person_contact"] = self.person.json_data()
+        if self.billing_contact:
+            data["billing_contact"] = self.billing_contact.json_data()
+        if self.tech_contact:
+            data["tech_contact"] = self.tech_contact.json_data()
+        if self.organization:
+            data["organization_contact"] = self.organization.json_data()
+        return data
 
     def __repr__(self):
         plain_self = unicode(self).encode('ASCII', 'backslashreplace')

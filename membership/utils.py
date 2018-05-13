@@ -344,3 +344,9 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def json_format(v):
+    if isinstance(v, datetime):
+        return str(v)
+    return v

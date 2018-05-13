@@ -8,3 +8,4 @@ Pillow
 psycopg2
 reportlab
 sqlparse
+djangorestframework
