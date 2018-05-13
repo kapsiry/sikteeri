@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from services.models import Alias
 from membership.models import Contact
 
-from datetime import datetime, date, timedelta
+from datetime import datetime
 
 # User login format validation regex
 VALID_USERNAME_RE = r"^[a-z][a-z0-9_]*[a-z0-9]$"

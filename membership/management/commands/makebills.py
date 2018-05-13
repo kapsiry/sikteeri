@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-from datetime import datetime, timedelta
-import calendar
 
-from django.core.exceptions import ObjectDoesNotExist
+
+import calendar
 from django.core.management.base import BaseCommand
 from django.utils import translation
-from django.conf import settings
-from django.db import transaction
-from django.conf import settings
 
 from membership.models import *
 from membership.utils import *

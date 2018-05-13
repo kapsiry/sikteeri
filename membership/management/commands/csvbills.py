@@ -9,16 +9,12 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
-from membership.models import Bill, BillingCycle, Payment
+from membership.models import BillingCycle, Payment
 from membership.utils import log_change
-
-from optparse import make_option
 
 logger = logging.getLogger("membership.csvbills")
 
@@ -260,9 +256,9 @@ def process_payments(reader, user=None):
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
 
-    log_message ="Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" % \
-                  (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached, \
-                   sum_notattached)
+    log_message = "Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" % (
+        num_attached + num_notattached, sum_attached + sum_notattached, num_notattached,
+        sum_notattached)
     logger.info(log_message)
     return_messages.append((None, None, log_message))
     return return_messages

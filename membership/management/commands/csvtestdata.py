@@ -11,11 +11,9 @@ from __future__ import with_statement
 import codecs
 
 from uuid import uuid4
-from datetime import datetime, timedelta
 from sys import stdout
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from membership.models import *
 

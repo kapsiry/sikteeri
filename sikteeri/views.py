@@ -2,8 +2,6 @@
 
 import logging
 
-from django.urls import reverse
-
 logger = logging.getLogger("sikteeri.views")
 
 from django.conf import settings

@@ -8,13 +8,13 @@
 {% endif %}
 <p>
 <form method="POST">{% csrf_token %}
-<input type="submit" value="{% trans "Download reminders pdf" %}" {% if count = 0 %}disabled=disabled{% endif %} />
+<input type="submit" value="{% trans 'Download reminders pdf' %}" {% if count == 0 %}disabled=disabled{% endif %} />
 </form>
 </p>
 <p>
 <form method="POST">{% csrf_token %}
 <input type="hidden" name="marksent" value="{% trans "Mark as sent" %}">
-<input type="submit" value="{% trans "Mark reminders as sent" %}" {%if count = 0 %}disabled=disabled{% endif %} />
+<input type="submit" value="{% trans "Mark reminders as sent" %}" {%if count == 0 %}disabled=disabled{% endif %} />
 </form>
 </p>
 <p><a href="{% url "locked_cycle_list" %}">{% trans "List reminders" %}</a> {% trans "count" %}: {{count}}</p>

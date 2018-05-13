@@ -1131,7 +1131,7 @@ class LoginRequiredTest(TestCase):
         for url in self.urls:
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['user'].username, 'admin')
+            self.assertEqual(response.context['user'].username, 'admin')
 
 class TrustedHostTest(TestCase):
     def setUp(self):
@@ -2076,3 +2076,15 @@ class TestAdmtoolJsonView(TestCase):
         self.assertTrue(len(details["aliases"]) == 2, "details contain wrong number of unix users")
         self.assertIn("validalias2", details["aliases"])
         self.assertIn("validuser", details["aliases"])
+
+
+class TestGenerateTestData(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def test_create_all(self):
+        call_command('generate_test_data', '--new', "5", "--deleted", "6", "--preapproved", "7", "--approved", "8",
+                     "--duplicates", "0", stdout=StringIO())
+        self.assertEquals(Membership.objects.filter(status="N").count(), 5)
+        self.assertEquals(Membership.objects.filter(status="D").count(), 6)
+        self.assertEquals(Membership.objects.filter(status="P").count(), 7)
+        self.assertEquals(Membership.objects.filter(status="A").count(), 8)

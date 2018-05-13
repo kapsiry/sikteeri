@@ -2,14 +2,13 @@
 from __future__ import with_statement
 
 import logging
-from optparse import make_option
 from tempfile import NamedTemporaryFile
 
 from django.core.management.base import BaseCommand, CommandError
 from membership.models import BillingCycle
-from membership.billing import pdf_utils
 
 logger = logging.getLogger("paper_bills")
+
 
 class Command(BaseCommand):
     help = 'Create paper reminders pdf'
@@ -30,8 +29,8 @@ class Command(BaseCommand):
                 pdffile = target_file.name
 
             if pdffile:
-                print "pdf file created: %s" % pdffile
+                print("pdf file created: %s" % pdffile)
             else:
-                print "Cannot create pdffile"
+                print("Cannot create pdffile")
         except RuntimeError as e:
             raise CommandError(e)

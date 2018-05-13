@@ -1,15 +1,11 @@
 from django.conf.urls import url
 from django.conf.urls.static import static
-from django.contrib.auth.decorators import permission_required
-from django.db.models import Count
-from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 
-from membership.models import Contact, Membership, Payment, BillingCycle
+from membership.models import Membership, Payment, BillingCycle
 from django.conf import settings
 from django.views.i18n import JavaScriptCatalog
 import membership.views
-from django.conf.urls.i18n import i18n_patterns
 
 # Shortcuts
 payments = Payment.objects.all().order_by('-payment_day', '-id')
