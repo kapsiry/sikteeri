@@ -62,3 +62,28 @@ The default settings.py must be the default development
 configuration and work out of the box for quick development.
 Production settings (email subjects, bank account numbers
 etc.) are configured as JSON file.
+
+Docker
+======
+
+To make development easier there exists a `Dockerfile` to use as a development container.
+
+To build a new version:
+
+`docker build -t sikteeri .`
+
+To run it:
+
+`docker run -ditp 8080:8080 --name sikteeri sikteeri`
+
+To run it with bash as initial command:
+
+`docker run -itp 8080:8080 --name sikteeri sikteeri /bin/bash`
+
+To attach to Django std feed:
+
+`docker attach sikteeri`
+
+To attach a shell to a running instance:
+
+`docker exec -it sikteeri /bin/bash`
