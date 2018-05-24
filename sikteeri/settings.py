@@ -27,12 +27,10 @@ if CONFIGURATION == 'dev':
     # SECURITY WARNING: don't run with debug turned on in production!
     # We don't make it possible to set DEBUG on from config file.
     DEBUG = True
-    TEMPLATE_DEBUG = True
     CONFIGURATION = os.path.join(BASE_DIR, 'config-dev.json')
     config = {}
 else:
     DEBUG = False
-    TEMPLATE_DEBUG = False
 
 with open(CONFIGURATION, 'rb') as f:
     try:
