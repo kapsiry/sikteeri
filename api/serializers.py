@@ -16,12 +16,12 @@ class MembershipSerializer(serializers.ModelSerializer, mixins.CreateModelMixin)
 
     class Meta:
         model = Membership
-        fields = (
-            'status', 'dissociated', 'dissociation_requested', 'locked', 'approved', 'municipality',
-            'organization_registration_number', 'public_memberlist', 'nationality', 'type', 'birth_year',
-            'person', 'organization', 'tech_contact', 'billing_contact'
-        )
         read_only_fields = (
             'status', 'dissociated', 'dissociation_requested', 'locked', 'approved',
             'organization_registration_number', 'type', 'birth_year', 'person', 'organization'
         )
+        fields = read_only_fields + (
+            'municipality', 'public_memberlist', 'nationality',
+            'tech_contact', 'billing_contact'
+        )
+
