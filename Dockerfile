@@ -5,7 +5,7 @@ ENV SIKTEERI_CONFIGURATION dev
 ENV DJANGO_HOSTNAME 0.0.0.0:8080
 ENV SIKTEERI_ADMIN_EMAIL admin@example.com
 ENV SIKTEERI_ADMIN_USERNAME admin
-ENV SIKTEERI_ADMIN_PASSWORD admin
+ENV SIKTEERI_ADMIN_PASSWORD salasana
 
 RUN apt-get update && apt-get install -y \
     libldap-dev \
