@@ -97,6 +97,11 @@ urlpatterns = [
          'template_name': 'membership/membership_list.html',
          'context_object_name': 'member_list',
          'paginate_by': ENTRIES_PER_PAGE}, name='dissociation_requested_memberships'),
+    url(r'memberships/dissociation_requested-plain/$', membership.views.member_object_list,
+        {'queryset': Membership.objects.filter(status__exact='S').order_by('id'),
+         'template_name': 'membership/membership_list_plaintext.html',
+         'context_object_name': 'member_list'},
+         name='dissociation_requested_memberships_plain'),
     url(r'memberships/dissociated/$', membership.views.member_object_list,
         {'queryset': Membership.objects.filter(status__exact='I').
             order_by('person__last_name', 'person__first_name', 'id'),

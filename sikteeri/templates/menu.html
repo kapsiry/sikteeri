@@ -28,8 +28,8 @@
    <li>
      <a href="{% url "dissociation_requested_memberships" %}">
        {% trans "Members that have requested dissociation" %}
-     </a>
-   </li>
+     </a><small><a href="{% url "dissociation_requested_memberships_plain" %}">txt</a></small>
+    </li>
 
    <li>
      <a href="{% url "dissociated_memberships" %}">
