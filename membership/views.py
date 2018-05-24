@@ -6,7 +6,6 @@ from django.conf import settings
 import traceback
 from datetime import datetime
 
-from django.db.models import Q
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
 
@@ -18,8 +17,7 @@ from django.forms import ChoiceField, ModelForm, Form, EmailField, BooleanField
 from django.forms import ModelChoiceField, CharField, Textarea, HiddenInput, FileField
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
-from django.shortcuts import render_to_response, get_object_or_404, redirect
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic.list import ListView
 from services.models import Alias, Service, ServiceType
@@ -34,7 +32,7 @@ from membership.public_memberlist import public_memberlist_data
 from membership.unpaid_members import unpaid_members_data, members_to_lock
 from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill, BillingCycle, Payment, ApplicationPoll, \
-    MembershipAlreadyStatus, STATUS_APPROVED, STATUS_DISASSOCIATED
+    MembershipAlreadyStatus
 from services.views import check_alias_availability, validate_alias
 
 logger = logging.getLogger("membership.views")
@@ -69,8 +67,7 @@ class SortListView(ListView):
 
 # Public access
 def new_application(request, template_name='membership/choose_membership_type.html'):
-    return render_to_response(template_name, {},
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {})
 
 
 # Public access
@@ -176,10 +173,10 @@ def person_application(request, template_name='membership/new_person_application
                           [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
 
-    return render_to_response(template_name, {"form": application_form,
-                                "chosen_email_forward": chosen_email_forward,
-                                "title": _("Person member application")},
-                                context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {"form": application_form,
+                   "chosen_email_forward": chosen_email_forward,
+                   "title": _("Person member application")})
 
 
 # Public access
@@ -214,9 +211,9 @@ def organization_application(request, template_name='membership/new_organization
             return redirect('organization_application_add_contact', 'billing_contact')
     else:
         form = OrganizationApplicationForm()
-    return render_to_response(template_name, {"form": form,
-                                              "title": _('Organization application')},
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {"form": form, "title": _('Organization application')})
+
 
 # Public access
 def organization_application_add_contact(request, contact_type,
@@ -254,10 +251,11 @@ def organization_application_add_contact(request, contact_type,
             form = PersonContactForm(request.session[contact_type])
         else:
             form = PersonContactForm()
-    return render_to_response(template_name, {"form": form, "contact_type": type_text,
-                                              "step_number": forms.index(contact_type) + 2,
-                                              "title": _('Organization application') + ' - ' + type_text},
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {"form": form, "contact_type": type_text,
+                                  "step_number": forms.index(contact_type) + 2,
+                                  "title": _('Organization application') + ' - ' + type_text},
+                 )
+
 
 # Public access
 def organization_application_services(request, template_name='membership/new_organization_application_services.html'):
@@ -295,9 +293,8 @@ def organization_application_services(request, template_name='membership/new_org
             if request.session.has_key('services'):
                 del request.session['services']
 
-    return render_to_response(template_name, {"form": form,
-                                              "title": unicode(_('Choose services'))},
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {"form": form, "title": unicode(_('Choose services'))})
 
 
 # Public access
@@ -318,9 +315,9 @@ def organization_application_review(request, template_name='membership/new_organ
     if request.session.get('tech_contact') is not None:
         forms.append(PersonContactForm(request.session['tech_contact']))
         forms[-1].name = _("Technical contact")
-    return render_to_response(template_name, {"forms": forms, "services": request.session['services'],
-                                              "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))},
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {"forms": forms, "services": request.session['services'],
+                   "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))})
 
 
 # Public access
@@ -424,17 +421,15 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
                 membership.tech_contact = contact
             membership.save()
             messages.success(request,
-                             unicode(_("Added contact %s.") %
-                             contact))
+                             unicode(_("Added contact %s.") % contact))
             return redirect('contact_edit', contact.id)
         else:
             messages.error(request,
                            unicode(_("New contact not saved.")))
     else:
         form = ContactForm()
-    return render_to_response(template_name,
-                             {"form": form, 'memberid': memberid},
-                             context_instance=RequestContext(request))
+    return render(request, template_name, {"form": form, 'memberid': memberid})
+
 
 @permission_required('membership.read_members')
 def contact_edit(request, id, template_name='membership/entity_edit.html'):
@@ -459,9 +454,9 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
     else:
         form = ContactForm(instance=contact)
     logentries = bake_log_entries(contact.logs.all())
-    return render_to_response(template_name, {'form': form, 'contact': contact,
-        'logentries': logentries, 'memberid': contact.find_memberid()},
-        context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'contact': contact,
+                  'logentries': logentries, 'memberid': contact.find_memberid()})
+
 
 @permission_required('membership.manage_bills')
 def bill_edit(request, id, template_name='membership/entity_edit.html'):
@@ -497,11 +492,11 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
         else:
             messages.error(request, unicode(_("Changes to bill %s not saved.") % bill))
     else:
-        form =  Form(instance=bill)
+        form = Form(instance=bill)
     logentries = bake_log_entries(bill.logs.all())
-    return render_to_response(template_name, {'form': form, 'bill': bill,
-        'logentries': logentries,'memberid': bill.billingcycle.membership.id},
-        context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'bill': bill,
+                  'logentries': logentries,'memberid': bill.billingcycle.membership.id})
+
 
 @permission_required('membership.read_bills')
 def bill_pdf(request, bill_id):
@@ -518,6 +513,7 @@ def bill_pdf(request, bill_id):
         logger.exception("Failed to generate pdf for bill %s" % bill.id)
     response = HttpResponseServerError("Failed to generate pdf", content_type='plain/text', )
     return response
+
 
 @permission_required('membership.manage_bills')
 def billingcycle_connect_payment(request, id, template_name='membership/billingcycle_connect_payment.html'):
@@ -560,9 +556,9 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
     else:
         form =  PaymentForm()
     logentries = bake_log_entries(billingcycle.logs.all())
-    return render_to_response(template_name, {'form': form, 'cycle': billingcycle,
-                                              'logentries': logentries},
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {'form': form, 'cycle': billingcycle, 'logentries': logentries})
+
 
 @permission_required('membership.can_import_payments')
 def import_payments(request, template_name='membership/import_payments.html'):
@@ -593,10 +589,11 @@ def import_payments(request, template_name='membership/import_payments.html'):
     else:
         form = PaymentCSVForm()
 
-    return render_to_response(template_name, {'title': _("Import payments"),
-                                              'form': form,
-                                              'import_messages': import_messages},
-                              context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {'title': _("Import payments"),
+                   'form': form,
+                   'import_messages': import_messages})
+
 
 @permission_required('membership.read_bills')
 def print_reminders(request, **kwargs):
@@ -622,11 +619,11 @@ def print_reminders(request, **kwargs):
             output_messages.append(_('Error processing PDF'))
         except IOError:
             output_messages.append(_('Cannot open PDF file'))
-    return render_to_response('membership/print_reminders.html',
-    {'title': _("Print paper reminders"),
-     'output_messages': output_messages,
-     'count': BillingCycle.get_reminder_billingcycles().count()},
-     context_instance=RequestContext(request))
+    return render(request, 'membership/print_reminders.html',
+                  {'title': _("Print paper reminders"),
+                   'output_messages': output_messages,
+                   'count': BillingCycle.get_reminder_billingcycles().count()})
+
 
 @permission_required('membership.manage_bills')
 def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
@@ -666,11 +663,11 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
         form =  Form(instance=cycle)
         form.disable_fields()
     logentries = bake_log_entries(cycle.logs.all())
-    return render_to_response(template_name,
-                              {'form': form, 'cycle': cycle,
-                               'logentries': logentries,
-                               'memberid': cycle.membership.id},
-        context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {'form': form, 'cycle': cycle,
+                   'logentries': logentries,
+                   'memberid': cycle.membership.id})
+
 
 @permission_required('membership.manage_bills')
 def payment_edit(request, id, template_name='membership/entity_edit.html'):
@@ -715,20 +712,28 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
                 return False
             else:
                 return self.cleaned_data['ignore']
+
         def clean_billingcycle(self):
             return payment.billingcycle
+
         def clean_reference_number(self):
             return payment.reference_number
+
         def clean_message(self):
             return payment.message
+
         def clean_transaction_id(self):
             return payment.transaction_id
+
         def clean_payment_day(self):
             return payment.payment_day
+
         def clean_amount(self):
             return payment.amount
+
         def clean_type(self):
             return payment.type
+
         def clean_payer_name(self):
             return payment.payer_name
 
@@ -762,15 +767,16 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
     else:
             memberid = None
 
-    return render_to_response(template_name, {'form': form, 'payment': payment,
-        'logentries': logentries, 'memberid': memberid},
-        context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'payment': payment,
+                  'logentries': logentries, 'memberid': memberid})
+
 
 @permission_required('membership.manage_bills')
 def send_duplicate_notification(request, payment, **kwargs):
     payment = get_object_or_404(Payment, id=payment)
     payment.send_duplicate_payment_notice(request.user)
     return redirect('payment_edit', payment.id)
+
 
 @permission_required('membership.read_members')
 def membership_edit(request, id, template_name='membership/membership_edit.html'):
@@ -813,9 +819,9 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
         form.disable_fields()
     # Pretty print log entries for template
     logentries = bake_log_entries(membership.logs.all())
-    return render_to_response(template_name, {'form': form,
-        'membership': membership, 'logentries': logentries},
-        context_instance=RequestContext(request))
+    return render(request, template_name,
+                  {'form': form, 'membership': membership, 'logentries': logentries})
+
 
 @permission_required('membership.read_members')
 def membership_duplicates(request, id):
@@ -831,6 +837,7 @@ def membership_duplicates(request, id):
 
     return member_object_list(request, **view_params)
 
+
 @permission_required('membership.read_members')
 def unpaid_paper_reminded(request):
     view_params = {'queryset': Membership.paper_reminder_sent_unpaid_after(),
@@ -840,6 +847,7 @@ def unpaid_paper_reminded(request):
                    }
 
     return member_object_list(request, **view_params)
+
 
 @permission_required('membership.read_members')
 def unpaid_paper_reminded_plain(request):
@@ -870,10 +878,8 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
     else:
         form = ConfirmForm()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'membership': membership})
+
 
 @permission_required('membership.dissociate_members')
 def membership_dissociate(request, id, template_name='membership/membership_dissociate.html'):
@@ -894,10 +900,8 @@ def membership_dissociate(request, id, template_name='membership/membership_diss
     else:
         form = ConfirmForm()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'membership': membership})
+
 
 @permission_required('membership.request_dissociation_for_member')
 def membership_request_dissociation(request, id, template_name='membership/membership_request_dissociation.html'):
@@ -918,10 +922,8 @@ def membership_request_dissociation(request, id, template_name='membership/membe
     else:
         form = ConfirmForm()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'membership': membership })
+
 
 @permission_required('membership.request_dissociation_for_member')
 def membership_cancel_dissociation_request(request, id, template_name='membership/membership_cancel_dissociation_request.html'):
@@ -942,10 +944,8 @@ def membership_cancel_dissociation_request(request, id, template_name='membershi
     else:
         form = ConfirmForm()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'membership': membership})
+
 
 @permission_required('membership.manage_members')
 def membership_convert_to_organization(request, id, template_name='membership/membership_convert_to_organization.html'):
@@ -970,10 +970,8 @@ def membership_convert_to_organization(request, id, template_name='membership/me
     else:
         form = ConfirmForm()
 
-    return render_to_response(template_name,
-                              {'form': form,
-                               'membership': membership },
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': form, 'membership': membership})
+
 
 @permission_required('membership.manage_members')
 def membership_preapprove_json(request, id):
@@ -984,6 +982,7 @@ def membership_preapprove_json(request, id):
         pass  # Success if we didn't do anything
     return HttpResponse(id, content_type='text/plain')
 
+
 @permission_required('membership.manage_members')
 def membership_approve_json(request, id):
     m = get_object_or_404(Membership, id=id)
@@ -993,12 +992,14 @@ def membership_approve_json(request, id):
         pass  # Success if we didn't do anything
     return HttpResponse(id, content_type='text/plain')
 
+
 @permission_required('membership.read_members')
 def membership_detail_json(request, id):
     membership = get_object_or_404(Membership, id=id)
     json_obj = serializable_membership_info(membership)
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         content_type='application/json')
+
 
 # Public access
 def handle_json(request):
@@ -1012,12 +1013,13 @@ def handle_json(request):
     if not funcs.has_key(msg['requestType']):
         raise NotImplementedError()
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
-                                                 unicode(msg['payload'])))
+                                                unicode(msg['payload'])))
     try:
         return funcs[msg['requestType']](request, msg['payload'])
     except Exception as e:
         logger.critical("%s" % traceback.format_exc())
         raise e
+
 
 @login_required
 def test_email(request, template_name='membership/test_email.html'):
@@ -1029,18 +1031,17 @@ def test_email(request, template_name='membership/test_email.html'):
         if form.is_valid():
             f = form.cleaned_data
         else:
-            return render_to_response(template_name, {'form': form},
-                                      context_instance=RequestContext(request))
+            return render(request, template_name, {'form': form})
 
-        body = render_to_string('membership/test_email.txt', { "user": request.user })
+        body = render_to_string('membership/test_email.txt', {"user": request.user})
         send_mail(u"Testisähköposti", body,
                   settings.FROM_EMAIL,
 #                  request.user.email,
                   [f["recipient"]], fail_silently=False)
         logger.info("Sent a test e-mail to %s" % f["recipient"])
 
-    return render_to_response(template_name, {'form': RecipientForm()},
-                              context_instance=RequestContext(request))
+    return render(request, template_name, {'form': RecipientForm()})
+
 
 @trusted_host_required
 def membership_metrics(request):
@@ -1062,17 +1063,20 @@ def membership_metrics(request):
     return HttpResponse(json.dumps(d, sort_keys=True, indent=4),
                         content_type='application/json')
 
+
 @trusted_host_required
 def public_memberlist(request):
     template_name = 'membership/public_memberlist.xml'
     data = public_memberlist_data()
-    return render_to_response(template_name, data, content_type='text/xml')
+    return render(request, template_name, data, content_type='text/xml')
+
 
 @trusted_host_required
 def unpaid_members(request):
     json_obj = unpaid_members_data()
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         content_type='application/json')
+
 
 @trusted_host_required
 def users_to_lock(request):
@@ -1088,6 +1092,7 @@ def admtool_membership_detail_json(request, id):
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),
                         content_type='application/json')
 
+
 @trusted_host_required
 def admtool_lookup_alias_json(request, alias):
     aliases = Alias.objects.filter(name__iexact=alias)
@@ -1098,10 +1103,10 @@ def admtool_lookup_alias_json(request, alias):
     return HttpResponse("Too many matches", content_type='text/plain')
 
 
-
 @permission_required('membership.read_members')
 def member_object_list(request, **kwargs):
     return SortListView.as_view(**kwargs)(request)
+
 
 @permission_required('membership.read_bills')
 def billing_object_list(request, **kwargs):

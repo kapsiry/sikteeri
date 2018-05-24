@@ -471,15 +471,16 @@ class Membership(models.Model):
 
         # Split into words and remove duplicates
         words = set(query.split(" "))
-
+        print(words)
         # Each word narrows the search further
         for word in words:
             # Exact match for membership id (for Django admin)
+            print("word: %s" % word)
             if word.startswith('#'):
                 try:
                     mid = int(word[1:])
-                    person_contacts = person_contacts.filter(id=mid)
-                    org_contacts = org_contacts.filter(id=mid)
+                    person_contacts = person_contacts.filter(person_set__id=mid)
+                    org_contacts = org_contacts.filter(organization_set__id=mid)
                     continue
                 except ValueError:
                     pass  # Continue processing normal search

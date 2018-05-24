@@ -27,12 +27,10 @@ if CONFIGURATION == 'dev':
     # SECURITY WARNING: don't run with debug turned on in production!
     # We don't make it possible to set DEBUG on from config file.
     DEBUG = True
-    TEMPLATE_DEBUG = True
     CONFIGURATION = os.path.join(BASE_DIR, 'config-dev.json')
     config = {}
 else:
     DEBUG = False
-    TEMPLATE_DEBUG = False
 
 with open(CONFIGURATION, 'rb') as f:
     try:
@@ -45,7 +43,6 @@ assert config.__class__ == dict, "Config must be dictionary"
 SECRET_KEY = config.get('SECRET_KEY')
 
 DEBUG = config.get('DEBUG', DEBUG)
-TEMPLATE_DEBUG = config.get('TEMPLATE_DEBUG', TEMPLATE_DEBUG)
 
 # Where to put collectstatic output
 STATIC_ROOT = config.get('STATIC_ROOT', None)
@@ -160,12 +157,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
-
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'sikteeri/locale'),
     os.path.join(BASE_DIR, 'membership/locale'),
@@ -176,13 +167,32 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'membership/static'),
 )
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'sikteeri/templates/'),
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = DEFAULT_SETTINGS.TEMPLATE_CONTEXT_PROCESSORS + (
-    "sikteeri.context_processors.is_production",
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'sikteeri/templates/'),
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
+                # list if you haven't customized them:
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+                "sikteeri.context_processors.is_production",
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]
+        },
+    },
+]
 
 INSTALLED_APPS = (
     'django.contrib.admin',

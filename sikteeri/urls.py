@@ -1,21 +1,25 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
+import sikteeri.views
+import django.contrib.auth.views
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('',
+
+
+urlpatterns = [
     # Examples:
     # url(r'^$', 'sikteeri.views.home', name='home'),
     # url(r'^sikteeri/', include('sikteeri.foo.urls')),
 
-    url(r'^$', 'sikteeri.views.frontpage', name='frontpage'),
+    url(r'^$', sikteeri.views.frontpage, name='frontpage'),
     url(r'^comments/', include('django_comments.urls')),
     url(r'^membership/', include('membership.urls')),
     url(r'^services/', include('services.urls')),
 
-    url(r'^login/', 'django.contrib.auth.views.login', name='login'),
-    url(r'^logout/', 'django.contrib.auth.views.logout', {'next_page': '/'},
+    url(r'^login/', django.contrib.auth.views.login, name='login'),
+    url(r'^logout/', django.contrib.auth.views.logout, {'next_page': '/'},
         name='logout'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
@@ -23,4 +27,4 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
-)
+]

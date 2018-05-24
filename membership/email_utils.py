@@ -4,8 +4,6 @@ import logging
 logger = logging.getLogger("membership.email_utils")
 
 from django.conf import settings
-
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.core import mail
 from django.core.mail import EmailMessage

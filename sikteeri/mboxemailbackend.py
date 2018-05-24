@@ -3,8 +3,6 @@ from __future__ import with_statement
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_UN
 
-import email.utils
-
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 

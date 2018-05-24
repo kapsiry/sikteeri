@@ -11,11 +11,9 @@ from __future__ import with_statement
 import codecs
 
 from uuid import uuid4
-from datetime import datetime, timedelta
 from sys import stdout
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from membership.models import *
 
@@ -68,9 +66,12 @@ def print_csv(stream=stdout, count=10):
 
 
 class Command(BaseCommand):
-    args = '<file_to_write_to>'
     help = 'Generate payments CSV to be used for testing out payment import' \
         + ' form'
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfile')
 
     def handle(self, *args, **options):
         if len(args) > 0:

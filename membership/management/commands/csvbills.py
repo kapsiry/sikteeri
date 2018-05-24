@@ -9,16 +9,12 @@ import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.db.models import Q, Sum
 from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
-from membership.models import Bill, BillingCycle, Payment
+from membership.models import BillingCycle, Payment
 from membership.utils import log_change
-
-from optparse import make_option
 
 logger = logging.getLogger("membership.csvbills")
 
@@ -260,9 +256,9 @@ def process_payments(reader, user=None):
                 num_notattached = num_notattached + 1
                 sum_notattached = sum_notattached + payment.amount
 
-    log_message ="Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" % \
-                  (num_attached + num_notattached, sum_attached + sum_notattached, num_notattached, \
-                   sum_notattached)
+    log_message = "Processed %s payments total %.2f EUR. Unidentified payments: %s (%.2f EUR)" % (
+        num_attached + num_notattached, sum_attached + sum_notattached, num_notattached,
+        sum_notattached)
     logger.info(log_message)
     return_messages.append((None, None, log_message))
     return return_messages
@@ -281,18 +277,23 @@ def process_procountor_csv(file_handle, user=None):
 
 
 class Command(BaseCommand):
-    args = '<csvfile> [<csvfile> ...]'
+
     help = 'Read a CSV list of payment transactions'
-    option_list = BaseCommand.option_list + (
-        make_option('--procountor',
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfiles', nargs='+')
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--procountor',
             dest='procountor',
             default=None,
             action="store_true",
-            help='Use procountor import csv format'),
-        )
+            help='Use procountor import csv format')
 
-    def handle(self, *args, **options):
-        for csvfile in args:
+    def handle(self, csvfiles, *args, **options):
+        for csvfile in csvfiles:
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
             # Exceptions of process_csv are fatal in command line run

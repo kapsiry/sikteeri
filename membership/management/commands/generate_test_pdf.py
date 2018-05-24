@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import uuid
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import translation
 
@@ -76,9 +76,9 @@ def gen_test_PDFs():
     transaction.savepoint_rollback(sid)
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'Generate test reminder and invoice PDFs'
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         translation.activate(settings.LANGUAGE_CODE)
         gen_test_PDFs()

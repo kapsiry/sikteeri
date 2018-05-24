@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-from datetime import datetime, timedelta
-import calendar
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import NoArgsCommand
+
+import calendar
+from django.core.management.base import BaseCommand
 from django.utils import translation
-from django.conf import settings
-from django.db import transaction
-from django.conf import settings
 
 from membership.models import *
 from membership.utils import *
@@ -112,9 +107,10 @@ def makebills():
                     logger.info("Sent reminder %s to %s." % (repr(reminder), repr(member)))
     logger.info("Done running makebills.")
 
-class Command(NoArgsCommand):
+
+class Command(BaseCommand):
     help = 'Find expiring billing cycles, send bills, send reminders'
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         translation.activate(settings.LANGUAGE_CODE)
         makebills()

@@ -4,11 +4,9 @@ from datetime import datetime
 
 from django_comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldError
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
-from django.db.models import Sum
 
 # http://code.activestate.com/recipes/576644/
 

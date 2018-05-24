@@ -2,26 +2,19 @@
 
 from __future__ import with_statement
 
-from django.db.models import Q, Sum
-from django.core.management.base import BaseCommand
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import NoArgsCommand
-from django.contrib.auth.models import User
-
-import logging
-logger = logging.getLogger("membership.manual_matches")
-from datetime import datetime, timedelta
-
-from membership.models import Bill, BillingCycle, Payment, Membership
-from membership.utils import log_change
-
-import codecs
 import csv
 import os
 import sys
 
-from datetime import datetime
-from decimal import Decimal
+from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
+
+from membership.models import BillingCycle, Payment, Membership
+from membership.utils import log_change
+
+import logging
+logger = logging.getLogger("membership.manual_matches")
+
 
 def process_csv(filename):
     """Actual CSV file processing logic
@@ -89,19 +82,23 @@ def mark_cycle_paid(cycle, log_user, reason):
         cycle.save()
         log_change(cycle, log_user, change_message=reason)
 
+
 class Command(BaseCommand):
     args = '<csvfile>'
     help = 'Import manual matches of payments'
 
-    def handle(self, csvfile, **options):
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('csvfile')
+
+    def handle(self, csvfile, *args, **options):
         logger.info("Starting the processing of file %s." %
             os.path.abspath(csvfile))
         process_csv(csvfile)
         try:
             pass
-            #process_csv(csvfile)
         except Exception as e:
-            print "Fatal error: %s" % unicode(e)
+            print("Fatal error: %s" % unicode(e))
             logger.error("process_csv failed: %s" % unicode(e))
             sys.exit(1)
         logger.info("Done processing file %s." % os.path.abspath(csvfile))

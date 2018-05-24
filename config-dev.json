@@ -1,7 +1,7 @@
 {
   "SECRET_KEY": "insecure dev only",
-  "ALLOWED_HOSTS": [],
-  "TRUSTED_HOSTS": ["127.0.0.1", "::1"],
+  "ALLOWED_HOSTS": ["localhost", "128.0.0.1", "::1"],
+  "TRUSTED_HOSTS": ["localhost", "127.0.0.1", "::1"],
   "DATABASE_URL": "sqlite:///sikteeri-test.sqlite3",
   "PRODUCTION": false,
   "EMAIL_SUBJECT_PREFIX": "[sikteeri-dev] ",
