@@ -127,6 +127,15 @@ IMG_PATH = os.path.join(BASE_DIR, 'external/img')
 # Otherwise indicate that this is a development environment (logo, colour)
 PRODUCTION = config.get('PRODUCTION', False)
 
+# Procountor
+
+PROCOUNTOR_COMPANY_ID = config.get('PROCOUNTOR_COMPANY_ID', 0)
+PROCOUNTOR_REDIRECT_URL = config.get('PROCOUNTOR_REDIRECT_URL', "http://localhost:8000")
+PROCOUNTOR_CLIENT_ID = config.get('PROCOUNTOR_CLIENT_ID', "")
+PROCOUNTOR_CLIENT_SECRET = config.get('PROCOUNTOR_CLIENT_SECRET', "")
+PROCOUNTOR_USER = config.get('PROCOUNTOR_USER', "")
+PROCOUNTOR_PASSWORD = config.get('PROCOUNTOR_PASSWORD', "")
+
 ######################################################
 # Implementation details below - should not need
 # operational configuration
