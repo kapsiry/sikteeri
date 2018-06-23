@@ -157,3 +157,11 @@ msgstr "lisää hyväksyntäkoriin"
 #: static/js/member_list.js:264
 msgid "remove from approve cart"
 msgstr "poista hyväksyntäkorista"
+
+#: static/js/member_list.js:261
+msgid "add to disassociate cart"
+msgstr "lisää erotuskoriin"
+
+#: static/js/member_list.js:264
+msgid "remove from disassociate cart"
+msgstr "poista erotuskorista"
