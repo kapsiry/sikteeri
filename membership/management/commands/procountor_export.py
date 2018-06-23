@@ -32,7 +32,7 @@ def valid_date(s):
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Export bills for Procountor'
 
     def add_arguments(self, parser):
         parser.add_argument('-s', "--startdate", help="Start Date (YYYY-MM-DD)",

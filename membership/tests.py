@@ -16,6 +16,7 @@ from django.core.mail import EmailMessage
 from django.core.management import call_command
 
 from membership import unpaid_members
+from membership.billing.payments import process_payments, PaymentFromFutureException
 
 logger = logging.getLogger("membership.tests")
 
@@ -41,6 +42,7 @@ from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
 from membership.billing.procountor_csv import create_csv
+from membership.billing.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
@@ -53,8 +55,9 @@ from membership.management.commands.makebills import create_billingcycle
 from membership.management.commands.makebills import send_reminder
 from membership.management.commands.makebills import can_send_reminder
 from membership.management.commands.makebills import MembershipNotApproved
-from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
-from membership.management.commands.csvbills import PaymentFromFutureException, RequiredFieldNotFoundException
+from membership.billing.payments import  process_op_csv, process_procountor_csv
+from membership.billing.payments import RequiredFieldNotFoundException
+
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -2152,3 +2155,134 @@ class TestGenerateTestData(TestCase):
         self.assertEquals(Membership.objects.filter(status="D").count(), 6)
         self.assertEquals(Membership.objects.filter(status="P").count(), 7)
         self.assertEquals(Membership.objects.filter(status="A").count(), 8)
+
+
+class TestProcountorApi(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+        self.m = create_dummy_member('N')
+        self.m.save()
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+
+    def test_parse_bankstatement(self):
+        """
+        Test parsing Procountor bank statement JSON messages
+        :return:
+        """
+        statement = ProcountorBankStatement(json.loads("""
+        {
+          "id": 1,
+          "accountNumber": "string",
+          "startDate": "2018-06-02",
+          "endDate": "2018-06-02",
+          "currency": "EUR",
+          "numberOfDeposits": 1,
+          "depositSum": 1,
+          "numberOfWithdrawals": 1,
+          "withdrawalSum": 1,
+          "startBalance": 1,
+          "endBalance": 1,
+          "events": [
+            {
+              "id": 2,
+              "payDate": "2018-06-02",
+              "valueDate": "2018-06-02",
+              "sum": 1,
+              "accountNumber": "string",
+              "name": "string",
+              "explanationCode": 1,
+              "archiveCode": "string",
+              "message": "string",
+              "reference": "string",
+              "allocated": true,
+              "invoiceId": 1,
+              "productId": 1,
+              "endToEndId": 1,
+              "attachments": [
+                {
+                  "id": 1,
+                  "name": "Picture.jpg",
+                  "referenceType": "INVOICE",
+                  "referenceId": 1,
+                  "mimeType": "string"
+                }
+              ]
+            }
+          ]
+        }
+        """))
+
+        self.assertEqual(len(statement.events), 1)
+
+        event = statement.events[0]
+
+        self.assertEqual(statement.id, 1)
+        self.assertEqual(statement.accountNumber, "string")
+        self.assertEqual(statement.startDate, datetime.strptime("2018-06-02", "%Y-%m-%d"))
+        self.assertEqual(statement.endDate, datetime.strptime("2018-06-02", "%Y-%m-%d"))
+        self.assertEqual(statement.currency, "EUR")
+        self.assertEqual(statement.numberOfDeposits, 1)
+        self.assertEqual(statement.numberOfDeposits, 1)
+        self.assertEqual(statement.withdrawalSum, 1)
+        self.assertEqual(statement.startBalance, 1)
+        self.assertEqual(statement.endBalance, 1)
+        self.assertEqual(event.id, 2)
+        self.assertEqual(event.payDate, datetime.strptime("2018-06-02", "%Y-%m-%d"))
+        self.assertEqual(event.valueDate, datetime.strptime("2018-06-02", "%Y-%m-%d"))
+        self.assertEqual(event.sum, 1)
+        self.assertEqual(event.accountNumber, "string")
+        self.assertEqual(event.name, "string")
+        self.assertEqual(event.explanationCode, 1)
+        self.assertEqual(event.archiveCode, "string")
+        self.assertEqual(event.message, "string")
+        self.assertEqual(event.reference, "string")
+        self.assertEqual(event.allocated, True)
+        self.assertEqual(event.invoiceId, 1)
+        self.assertEqual(event.productId, 1)
+        self.assertEqual(event.endToEndId, 1)
+
+    def test_process_payments(self):
+        """
+        Test marking bill paid by imported bank statement from Procountor
+        :return:
+        """
+        makebills()
+        billing_cycle = self.m.billingcycle_set.first()
+        bill = billing_cycle.first_bill()
+
+        # Convert to JSON to verify type conversions
+        row = json.dumps({
+                "id": 2,
+                "payDate": bill.created.strftime("%Y-%m-%d"),
+                "valueDate": bill.created.strftime("%Y-%m-%d"),
+                "sum": float(billing_cycle.sum),
+                "accountNumber": "FI12345678901",
+                "name": self.m.name(),
+                "explanationCode": 705,
+                "archiveCode": "ABC123456789",
+                "message": "",
+                "reference": billing_cycle.reference_number,
+                "allocated": True,
+                "invoiceId": 0,
+                "productId": 0,
+                "endToEndId": 0,
+                "attachments": []
+        })
+
+        event = ProcountorBankStatementEvent(row=json.loads(row))
+
+        # Process payments
+        process_payments([event])
+
+        # Refresh billing cycle
+        billing_cycle = self.m.billingcycle_set.first()
+
+        self.assertEqual(billing_cycle.payment_set.count(), 1, "Payment not imported")
+
+        payment = billing_cycle.payment_set.first()
+
+        self.assertEqual(payment.reference_number, billing_cycle.reference_number)
+        self.assertTrue(billing_cycle.is_paid, "Payment is not paid?")

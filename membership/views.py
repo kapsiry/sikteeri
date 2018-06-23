@@ -30,7 +30,7 @@ from membership.utils import log_change, serializable_membership_info, admtool_m
     get_client_ip, bake_log_entries
 from membership.public_memberlist import public_memberlist_data
 from membership.unpaid_members import unpaid_members_data, members_to_lock
-from membership.management.commands.csvbills import process_op_csv, process_procountor_csv
+from membership.billing.payments import process_op_csv, process_procountor_csv
 from membership.models import Contact, Membership, MEMBER_TYPES_DICT, Bill, BillingCycle, Payment, ApplicationPoll, \
     MembershipAlreadyStatus
 from services.views import check_alias_availability, validate_alias

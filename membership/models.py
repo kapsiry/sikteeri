@@ -696,6 +696,18 @@ class BillingCycle(models.Model):
             return first_bill.is_cancelled()
         return False
 
+    def get_rf_reference_number(self):
+        """
+        Get reference number in international RFXX format.
+        For example 218012 is formatted as RF28218012 where 28 is checksum
+        :return: RF formatted reference number
+        """
+        # Magic 2715 is "RF" in number encoded format and
+        # zeros are placeholders for modulus calculation.
+        reference_number_int = int(''.join(self.reference_number.split()) + '271500')
+        modulo = reference_number_int % 97
+        return "RF%02d%s" % (98 - modulo, reference_number_int)
+
     @classmethod
     def get_reminder_billingcycles(cls, memberid=None):
         """

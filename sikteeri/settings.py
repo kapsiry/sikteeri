@@ -129,6 +129,7 @@ PRODUCTION = config.get('PRODUCTION', False)
 
 # Procountor
 
+PROCOUNTOR_URL = config.get('PROCOUNTOR_URL', "https://api.procountor.com/procountor.api.v5/api")
 PROCOUNTOR_COMPANY_ID = config.get('PROCOUNTOR_COMPANY_ID', 0)
 PROCOUNTOR_REDIRECT_URL = config.get('PROCOUNTOR_REDIRECT_URL', "http://localhost:8000")
 PROCOUNTOR_CLIENT_ID = config.get('PROCOUNTOR_CLIENT_ID', "")
