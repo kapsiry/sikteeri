@@ -1001,12 +1001,23 @@ def membership_detail_json(request, id):
                         content_type='application/json')
 
 
+@permission_required('membership.manage_members')
+def membership_disassociate_json(request, id):
+    m = get_object_or_404(Membership, id=id)
+    try:
+        m.dissociate(request.user)
+    except MembershipAlreadyStatus:
+        pass
+    return HttpResponse(id, content_type='text/plain')
+
+
 # Public access
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.body)
     msg = json.loads(request.body)
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
+             'DISASSOCIATE': membership_disassociate_json,
              'MEMBERSHIP_DETAIL': membership_detail_json,
              'ALIAS_AVAILABLE': check_alias_availability,
              'VALIDATE_ALIAS': validate_alias}

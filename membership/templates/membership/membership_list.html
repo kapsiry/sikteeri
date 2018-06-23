@@ -28,7 +28,11 @@
   {% if member.status == "P" %}
     <li class="list_item approvable" id="{{ member.id }}">
   {% else %}
+  {% if member.status == "S" %}
+      <li class="list_item disassociatable" id="{{ member.id }}">
+  {% else %}
     <li class="list_item" id="{{ member.id }}">
+  {% endif %}
   {% endif %}
   {% endif %}
     {% if member.status == "N" %}
@@ -96,12 +100,26 @@ function approve () {
   }
 }
 
+function disassociate() {
+  var ids = [];
+  $("#disassociatable_cart").children().each(function (idx, object) {
+      var id = $(object).attr("id");
+      ids.push(id);
+  });
+  for (var idx in ids) {
+    var id = ids[idx];
+    jQuery.post("../handle_json/", '{"requestType": "DISASSOCIATE", "payload": ' + id + '}', function (data) { $("#" + data).remove()});
+  }
+}
+
+
 /**
  * Adds details to member list items. Also adds a preapprove cart and buttons
  * if the class preapprovable is found from the list item.
  */
 var preApproveCartCreated = false;
 var approveCartCreated = false;
+var disassociatedCartCreated = false;
 $("#memberlist").children().each(function (idx, object) {
   var item = enhanceMemberItem($(object));
   if ($(object).hasClass("list_header")) {
@@ -131,6 +149,18 @@ $("#memberlist").children().each(function (idx, object) {
       approveCartCreated = true;
     }
     approveify(item);
+  }
+
+  if ($(object).hasClass("disassociatable")) {
+    if (!disassociatedCartCreated) {
+      var cart = $("<div>").addClass("cart");
+      cart.append($("<h3>").html("{% trans "Disassociate cart" %}"));
+      cart.append($("<ul>").attr("id", "disassociatable_cart"));
+      cart.append($("<input type=\"submit\" value=\"{% trans "Disassociate these" %}\" onclick=\"disassociate()\">"));
+      $("#memberlist").after(cart);
+      disassociatedCartCreated = true;
+    }
+    disassociateify(item);
   }
 
 });

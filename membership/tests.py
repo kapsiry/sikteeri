@@ -2078,6 +2078,70 @@ class TestAdmtoolJsonView(TestCase):
         self.assertIn("validuser", details["aliases"])
 
 
+class TestHandleJson(TestCase):
+    fixtures = ['test_user.json']
+
+    def setUp(self):
+        self.user = User.objects.get(id=1)
+
+        self.m = create_dummy_member('N')
+        self.m.save()
+
+        self.o = create_dummy_member('N', type='O')
+        self.o.save()
+
+        login = self.client.login(username='admin', password='dhtn')
+        self.failUnless(login, 'Could not log in')
+
+    def test_preapprove(self):
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "PREAPPROVE", "payload": self.m.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.m.id).status, 'P')
+
+    def test_preapprove_org(self):
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "PREAPPROVE", "payload": self.o.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.o.id).status, 'P')
+
+    def test_approve(self):
+        self.m.preapprove(self.user)
+        self.m.save()
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "APPROVE", "payload": self.m.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.m.id).status, 'A')
+
+    def test_approve_org(self):
+        self.o.preapprove(self.user)
+        self.o.save()
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "APPROVE", "payload": self.o.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.o.id).status, 'A')
+
+    def test_disassociate(self):
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+        self.m.request_dissociation(self.user)
+        self.m.save()
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "DISASSOCIATE", "payload": self.m.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.m.id).status, 'I')
+
+    def test_disassociate_org(self):
+        self.o.preapprove(self.user)
+        self.o.approve(self.user)
+        self.o.request_dissociation(self.user)
+        self.o.save()
+        self.client.post('/membership/application/handle_json/',
+                         json.dumps({"requestType": "DISASSOCIATE", "payload": self.o.id}),
+                         content_type="application/json")
+        self.assertEqual(Membership.objects.get(id=self.o.id).status, 'I')
+
+
 class TestGenerateTestData(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
