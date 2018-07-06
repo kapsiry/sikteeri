@@ -274,3 +274,25 @@ function approveify (item) {
 						  item.removeButton.hide();
 						  item.addButton.show();}}());
 }
+
+/**
+ * Makes member list items to work with disassociate-cart
+ */
+function disassociateify(item) {
+	var id = item.attr("id");
+	item.addButton = $("<a>").html(gettext("add to disassociate cart")).addClass("cart_function");
+    item.buttons.append(item.addButton);
+
+    item.removeButton = $("<a>").html(gettext("remove from disassociate cart")).addClass("cart_function");
+    item.buttons.append(item.removeButton);
+    item.removeButton.hide();
+
+    item.addButton.click(function(){
+			     return function(){$("#disassociatable_cart").append(item);
+                                               item.addButton.hide();
+                                               item.removeButton.show();}}());
+    item.removeButton.click(function(){
+				return function(){$("#memberlist").append(item);
+						  item.removeButton.hide();
+						  item.addButton.show();}}());
+}
