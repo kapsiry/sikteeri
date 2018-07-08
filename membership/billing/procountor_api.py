@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+import json
 import random
 import string
 import urlparse
@@ -30,7 +30,10 @@ class ProcountorBankStatement(object):
         self.withdrawalSum = row.get("withdrawalSum", 0)
         self.startBalance = row.get("startBalance", 0)
         self.endBalance = row.get("endBalance", 0)
-        self.events = [ProcountorBankStatementEvent(event) for event in row.get("events", [])]
+        self.events = []
+        for potential_event in row.get("events", []):
+            for event in potential_event.get("events", []) + [potential_event]:
+                ProcountorBankStatementEvent(event)
 
 
 class ProcountorBankStatementEvent(object):
@@ -68,8 +71,10 @@ class ProcountorBankStatementEvent(object):
 
     def __init__(self, row):
         self.id = row.get("id", 0)
-        self.payDate = datetime.strptime(row.get("payDate", None), "%Y-%m-%d")
-        self.valueDate = datetime.strptime(row.get("valueDate", None), "%Y-%m-%d")
+        self.payDate = datetime.strptime(row.get("payDate", ""), "%Y-%m-%d")
+        self.valueDate = row.get("valueDate", None)
+        if self.valueDate:
+            self.valueDate = datetime.strptime(self.valueDate, "%Y-%m-%d")
         self.sum = row.get("sum", 0)
         self.accountNumber = row.get("accountNumber", None)
         self.name = row.get("name", None)
@@ -176,11 +181,7 @@ class ProcountorAPIClient(object):
 
         return res.json()
 
-    def authenticate(self, username, password):
-        authorization_code = self.oauth_authz(username, password)
-
-        logger.debug("Oauth phase 1 success, token: %s" % (authorization_code,))
-
+    def authenticate_2phase(self, authorization_code):
         tokens = self.oauth_token(authorization_code)
 
         self._oauth_access_token = tokens.get("access_token", None)
@@ -192,8 +193,15 @@ class ProcountorAPIClient(object):
 
         return True
 
+    def authenticate(self, username, password):
+        authorization_code = self.oauth_authz(username, password)
+
+        logger.debug("Oauth phase 1 success, token: %s" % (authorization_code,))
+
+        return self.authenticate_2phase(authorization_code=authorization_code)
+
     def get_invoices(self, status="PAID"):
-        res = r.get("/invoices", params={"status": status})
+        res = r.get("invoices", params={"status": status})
         return res.json()
 
     def get_bankstatements(self, start, end):
@@ -248,22 +256,46 @@ class ProcountorAPIClient(object):
             "startDate": start.strftime("%Y-%m-%d"),
             "endDate": end.strftime("%Y-%m-%d")
         }
-        res = r.get("/bankstatements", params=params)
+        res = self.get("bankstatements", params=params)
+        print(json.dumps(res.json(), indent=4))
         return [ProcountorBankStatement(x) for x in res.json().get("bankStatements", [])]
+
+    def get_ledgerreceipts(self, start, end):
+
+        params = {
+            "startDate": start.strftime("%Y-%m-%d"),
+            "endDate": end.strftime("%Y-%m-%d")
+        }
+        res = r.get("ledgerreceipts", params=params)
+        return res.json()
+
+    def get_invoices(self, start, end):
+        params = {
+            "startDate": start.strftime("%Y-%m-%d"),
+            "endDate": end.strftime("%Y-%m-%d")
+        }
+        res = r.get("invoices", params=params)
+        return res.json()
 
 
 if __name__ == '__main__':
     django.setup()
-    r = ProcountorAPIClient("https://api-test.procountor.com/api",
+    r = ProcountorAPIClient(api=settings.PROCOUNTOR_API_URL,
                             company_id=settings.PROCOUNTOR_COMPANY_ID,
                             redirect_uri=settings.PROCOUNTOR_REDIRECT_URL,
                             client_id=settings.PROCOUNTOR_CLIENT_ID,
                             client_secret=settings.PROCOUNTOR_CLIENT_SECRET,
                             )
     r.authenticate(settings.PROCOUNTOR_USER, settings.PROCOUNTOR_PASSWORD)
+
+    res = r.get_ledgerreceipts(datetime.now() - timedelta(days=3), datetime.now())
+    print(json.dumps(res, indent=4))
+
+    """
     res = r.get_invoices(status='PAID')
     print(res)
     res = r.get_invoices(status='MARKED_PAID')
     print(res)
     res = r.get_bankstatements(start=datetime.now() - timedelta(days=365), end=datetime.now())
     print(res)
+    """

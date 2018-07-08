@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         start = options['startdate'] or datetime.now() - timedelta(days=1)
 
-        api = ProcountorAPIClient(api=settings.PROCOUNTOR_URL,
+        api = ProcountorAPIClient(api=settings.PROCOUNTOR_API_URL,
                                   company_id=settings.PROCOUNTOR_COMPANY_ID,
                                   redirect_uri=settings.PROCOUNTOR_REDIRECT_URL,
                                   client_id=settings.PROCOUNTOR_CLIENT_ID,
