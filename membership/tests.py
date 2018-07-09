@@ -1085,6 +1085,22 @@ class ProcountorCSVReadingTest(TestCase):
         with open_test_data("procountor-csv-future.csv") as f:
             self.assertRaises(PaymentFromFutureException, process_procountor_csv, f)
 
+    def test_empty_rows(self):
+        with open_test_data("procountor-csv-empty-rows.csv") as f:
+            process_procountor_csv(f)
+        no_cycle_q = Q(billingcycle=None)
+        payment_count = Payment.objects.filter(~no_cycle_q).count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_count, 1, error)
+
+    def test_uknown_rows(self):
+        with open_test_data("procountor-csv-uknown-rows.csv") as f:
+            process_procountor_csv(f)
+        no_cycle_q = Q(billingcycle=None)
+        payment_count = Payment.objects.filter(~no_cycle_q).count()
+        error = "The payment in the sample file should have matched"
+        self.assertEqual(payment_count, 1, error)
+
     def test_csv_header_processing(self):
         error = "Should fail on invalid header"
         with open_test_data("procountor-csv-invalid.csv") as f:
