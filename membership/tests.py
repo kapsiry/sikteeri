@@ -42,7 +42,8 @@ from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
 from membership.billing.procountor_csv import create_csv
-from membership.billing.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent
+from membership.billing.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent, \
+    ProcountorReferencePayment
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
@@ -2162,10 +2163,19 @@ class TestProcountorApi(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(id=1)
-        self.m = create_dummy_member('N')
-        self.m.save()
+        self.m = create_dummy_member('N', mid=11)
         self.m.preapprove(self.user)
         self.m.approve(self.user)
+        cycle_start = datetime(2014, 9, 6)
+        self.cycle = BillingCycle(membership=self.m, start=cycle_start)
+        self.cycle.save()
+        self.bill = Bill(billingcycle=self.cycle)
+        self.bill.save()
+
+    def tearDown(self):
+        self.bill.delete()
+        self.cycle.delete()
+        self.m.delete()
 
     def test_parse_bankstatement(self):
         """
@@ -2286,3 +2296,123 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payment.reference_number, billing_cycle.reference_number)
         self.assertTrue(billing_cycle.is_paid, "Payment is not paid?")
+
+    def test_process_payment_correct(self):
+        today = datetime.now().strftime("%Y-%m-%d")
+        payment = {
+            "id": 42,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": today,
+            "paymentDate": today,
+            "sum": Decimal(self.cycle.get_fee()),
+            "name": "TEST USER",
+            "bankReference": self.bill.reference_number(),
+            "archiveId": "ABC123",
+            "allocated": True,
+            "invoiceId": 0,
+        }
+        payments = [ProcountorReferencePayment(payment)]
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertTrue(cycle.is_paid)
+
+    def test_process_payment_correct_with_padding(self):
+        today = datetime.now().strftime("%Y-%m-%d")
+        payment = {
+            "id": 42,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": today,
+            "paymentDate": today,
+            "sum": Decimal(self.cycle.get_fee()),
+            "name": "TEST USER",
+            "bankReference": "000 " + self.bill.reference_number(),
+            "archiveId": "ABC123",
+            "allocated": True,
+            "invoiceId": 0,
+        }
+        payments = [ProcountorReferencePayment(payment)]
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid)
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertTrue(cycle.is_paid)
+
+    def test_process_payment_negative_sum(self):
+        today = datetime.now().strftime("%Y-%m-%d")
+        payment = {
+            "id": 42,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": today,
+            "paymentDate": today,
+            "sum": Decimal(-40),
+            "name": "TEST USER",
+            "bankReference": self.bill.reference_number(),
+            "archiveId": "ABC123",
+            "allocated": True,
+            "invoiceId": 0,
+        }
+        payments = [ProcountorReferencePayment(payment)]
+
+        payments_at_start = Payment.objects.count()
+
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid)
+
+        payments_at_end = Payment.objects.count()
+
+        self.assertEqual(payments_at_start, payments_at_end, "No new payments should be imported")
+
+    def test_process_payment_payment_in_future(self):
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        payment = {
+            "id": 42,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": tomorrow,
+            "paymentDate": tomorrow,
+            "sum": Decimal(-40),
+            "name": "TEST USER",
+            "bankReference": self.bill.reference_number(),
+            "archiveId": "ABC123",
+            "allocated": True,
+            "invoiceId": 0,
+        }
+        payments = [ProcountorReferencePayment(payment)]
+
+        payments_at_start = Payment.objects.count()
+
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid)
+
+        payments_at_end = Payment.objects.count()
+
+        self.assertEqual(payments_at_start, payments_at_end, "No new payments should be imported")
+
+
+    def test_process_payment_unknown_payment(self):
+        today = datetime.now().strftime("%Y-%m-%d")
+        payment = {
+            "id": 42,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": today,
+            "paymentDate": today,
+            "sum": Decimal(40),
+            "name": "TEST USER",
+            "bankReference": "66666",
+            "archiveId": "ABC123",
+            "allocated": True,
+            "invoiceId": 0,
+        }
+
+        payments_at_start = Payment.objects.count()
+
+        payments = [ProcountorReferencePayment(payment)]
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid)
+
+        payments_at_end = Payment.objects.count()
+
+        self.assertEqual(payments_at_start, payments_at_end-1, "One new uknown payment should be imported")
+

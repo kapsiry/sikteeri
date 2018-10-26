@@ -4,6 +4,7 @@ import random
 import string
 import urlparse
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import django
 import requests
@@ -33,12 +34,12 @@ class ProcountorBankStatement(object):
         self.events = []
         for potential_event in row.get("events", []):
             for event in potential_event.get("events", []) + [potential_event]:
-                ProcountorBankStatementEvent(event)
+                self.events.append(ProcountorBankStatementEvent(event))
 
 
 class ProcountorBankStatementEvent(object):
     """
-    BaknStatement event object
+    BankStatement event object
     """
 
     MAPPINGS = {
@@ -102,6 +103,61 @@ class ProcountorBankStatementEvent(object):
         return getattr(self, key, None)
 
 
+class ProcountorReferencePayment(object):
+    """
+    Procountor Reference Payments
+    """
+
+    MAPPINGS = {
+        'transaction': 'archiveId',
+        'amount': 'sum',
+        'date': 'paymentDate',
+        'fromto': 'name',
+        'reference': 'reference',
+    }
+
+    def __init__(self, row):
+        self.id = row.get("id", 0)
+        self.paymentDate = row.get("paymentDate", None)
+        if self.paymentDate:
+            self.paymentDate = datetime.strptime(self.paymentDate, "%Y-%m-%d")
+        self.valueDate = row.get("valueDate", None)
+        if self.valueDate:
+            self.valueDate = datetime.strptime(self.valueDate, "%Y-%m-%d")
+        self.sum = Decimal(row.get("sum", 0))
+        self.accountNumber = row.get("accountNumber", None)
+        self.name = row.get("name", None)
+        self.reference = row.get("bankReference", "").replace(' ', '').lstrip('0')
+        self.archiveId = row.get("archiveId", "")
+        self.allocated = row.get("allocated", True)
+        self.invoiceId = row.get("invoiceId", 0)
+        self.event_type_description = u"Viitesiirto"
+        self.message = ""
+        self.attachments = []
+
+    def __getitem__(self, key):
+        """
+        This is a compatibility getter for csv bills processing
+        ReferencePayment {
+            id (integer, optional): Unique identifier of the reference payment. ,
+            accountNumber (string, optional): Account number for which the reference payment is generated. ,
+            valueDate (string, optional): Date when the event was registered in the counterpart bank. ,
+            paymentDate (string, optional): Date when the payment was paid by the payer in his/her own bank. ,
+            sum (number, optional): The total amount for the reference payment. ,
+            name (string, optional): Name of the counterparty. ,
+            bankReference (string, optional): A reference value for the bank. ,
+            archiveId (string, optional): Archive code of the reference payment. Archive codes are unique in one bank but two events from different banks can share the same archive code. ,
+            allocated (boolean, optional): Is the reference payment allocated to an invoice. If it is, the event must also have an invoice ID. ,
+            invoiceId (integer, optional): Unique identifier of the invoice linked to the event. ,
+            attachments (Array[Attachment], optional): A list of attachments added to the reference payment.
+        }
+        """
+
+        if key in self.MAPPINGS:
+            return getattr(self, self.MAPPINGS[key], None)
+        return getattr(self, key, None)
+
+
 class ProcountorAPIClient(object):
     def __init__(self, api, company_id, redirect_uri, client_id, client_secret):
         self.session = requests.Session()
@@ -117,8 +173,8 @@ class ProcountorAPIClient(object):
 
     def _error_handler(self, url, parameters, response):
         if response.status_code >= 400:
-            print(response.request.body)
-            print(response.request.headers)
+            logger.debug(response.request.body)
+            logger.debug(response.request.headers)
             raise ProcountorAPIException("GET %s params %s failed with error (%d) %s" % (url, parameters,
                                                                                          response.status_code,
                                                                                          response.content))
@@ -204,6 +260,30 @@ class ProcountorAPIClient(object):
         res = r.get("invoices", params={"status": status})
         return res.json()
 
+    def get_referencepayments(self, start, end):
+        """
+        Get refence payments
+        :param start:
+        :param end:
+        :return:
+        """
+        params = {
+            "startDate": start.strftime("%Y-%m-%d"),
+            "endDate": end.strftime("%Y-%m-%d"),
+            "orderById": "desc",
+        }
+        out = []
+        while True:
+            res = self.get("referencepayments", params=params)
+            result = res.json()
+            meta = result.get("meta")
+            out += [ProcountorReferencePayment(row) for row in result.get("results", [])]
+            if meta.get("resultCount") == meta.get("pageSize"):
+                params["previousId"] = str(out[-1].id)
+            else:
+                break
+        return out
+
     def get_bankstatements(self, start, end):
         """
         TODO: Fetch all pages!!!
@@ -257,7 +337,6 @@ class ProcountorAPIClient(object):
             "endDate": end.strftime("%Y-%m-%d")
         }
         res = self.get("bankstatements", params=params)
-        print(json.dumps(res.json(), indent=4))
         return [ProcountorBankStatement(x) for x in res.json().get("bankStatements", [])]
 
     def get_ledgerreceipts(self, start, end):
@@ -288,8 +367,7 @@ if __name__ == '__main__':
                             )
     r.authenticate(settings.PROCOUNTOR_USER, settings.PROCOUNTOR_PASSWORD)
 
-    res = r.get_ledgerreceipts(datetime.now() - timedelta(days=3), datetime.now())
-    print(json.dumps(res, indent=4))
+    res = r.get_referencepayments(datetime.now() - timedelta(days=16), datetime.now() - timedelta(days=1))
 
     """
     res = r.get_invoices(status='PAID')

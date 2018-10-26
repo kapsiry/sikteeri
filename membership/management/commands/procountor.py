@@ -37,6 +37,6 @@ class Command(BaseCommand):
         api.authenticate(username=settings.PROCOUNTOR_USER,
                          password=settings.PROCOUNTOR_PASSWORD)
 
-        statements = api.get_bankstatements(start=start, end=datetime.now())
-        for statement in statements:
-            process_payments(statement.events)
+        statements = api.get_referencepayments(start=start, end=datetime.now())
+        for message in process_payments(statements):
+            print(message)
