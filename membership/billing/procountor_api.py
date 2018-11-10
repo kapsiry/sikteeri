@@ -268,7 +268,7 @@ class ProcountorAPIClient(object):
         return self.authenticate_2phase(authorization_code=authorization_code)
 
     def get_invoices(self, status="PAID"):
-        res = r.get("invoices", params={"status": status})
+        res = self.get("invoices", params={"status": status})
         return res.json()
 
     def get_referencepayments(self, start, end):
@@ -281,7 +281,7 @@ class ProcountorAPIClient(object):
         params = {
             "startDate": start.strftime("%Y-%m-%d"),
             "endDate": end.strftime("%Y-%m-%d"),
-            "orderById": "desc",
+            "orderById": "asc",
         }
         out = []
         while True:
