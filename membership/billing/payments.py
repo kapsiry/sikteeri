@@ -225,7 +225,7 @@ def row_to_payment(row):
                     type=row['event_type_description'],
                     payer_name=row['fromto'],
                     reference_number=row['reference'],
-                    message=row['message'],
+                    message=row['message'][:255],
                     transaction_id=row['transaction'])
     return p
 
