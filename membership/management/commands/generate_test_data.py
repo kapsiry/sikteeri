@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from membership.models import Contact, Membership, Fee, Payment
-from membership.management.commands.csvbills import attach_payment_to_cycle
+from membership.billing.payments import attach_payment_to_cycle
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.test_utils import random_first_name, random_last_name
 from services.models import Alias, Service, ServiceType
