@@ -948,7 +948,7 @@ class Payment(models.Model):
         permissions = (
             ("can_import_payments", "Can import payment data"),
         )
-
+        unique_together = ('payment_day', 'transaction_id')
     """
     Payment object for billing
     """
@@ -961,7 +961,7 @@ class Payment(models.Model):
 
     reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'), blank=True)
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
-    transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
+    transaction_id = models.CharField(max_length=35, verbose_name=_('Transaction id'))
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
     amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
     type = models.CharField(max_length=64, verbose_name=_('Type'))
