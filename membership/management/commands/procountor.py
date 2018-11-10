@@ -40,3 +40,8 @@ class Command(BaseCommand):
         statements = api.get_referencepayments(start=start, end=datetime.now())
         for message in process_payments(statements):
             print(message)
+
+        bankstatements = api.get_bankstatements(start=start, end=datetime.now())
+        for bankstatement in bankstatements:
+            for message in process_payments(filter(lambda x: x["explanationCode"] == 710, bankstatement.events)):
+                print(message)

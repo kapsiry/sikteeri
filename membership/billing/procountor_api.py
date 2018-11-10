@@ -85,6 +85,17 @@ class ProcountorBankStatementEvent(object):
         self.archiveCode = row.get("archiveCode", "")
         self.message = row.get("message", "")
         self.reference = row.get("reference", "")
+        if not self.reference and self.explanationCode == 710:
+            # Try to figure if SEPA payment message contains reference
+            message_parts = self.message.split()
+            if self.message.startswith("SEPA-MAKSU") and len(message_parts) == 4:
+                maybe_reference = ''.join(message_parts[1:-1])
+                try:
+                    int(maybe_reference)
+                    self.reference = maybe_reference
+                except ValueError:
+                    pass
+
         self.allocated = row.get("allocated", True)
         self.invoiceId = row.get("invoiceId", 0)
         self.productId = row.get("productId", 0)
@@ -345,7 +356,7 @@ class ProcountorAPIClient(object):
             "startDate": start.strftime("%Y-%m-%d"),
             "endDate": end.strftime("%Y-%m-%d")
         }
-        res = r.get("ledgerreceipts", params=params)
+        res = self.get("ledgerreceipts", params=params)
         return res.json()
 
     def get_invoices(self, start, end):
@@ -353,27 +364,5 @@ class ProcountorAPIClient(object):
             "startDate": start.strftime("%Y-%m-%d"),
             "endDate": end.strftime("%Y-%m-%d")
         }
-        res = r.get("invoices", params=params)
+        res = self.get("invoices", params=params)
         return res.json()
-
-
-if __name__ == '__main__':
-    django.setup()
-    r = ProcountorAPIClient(api=settings.PROCOUNTOR_API_URL,
-                            company_id=settings.PROCOUNTOR_COMPANY_ID,
-                            redirect_uri=settings.PROCOUNTOR_REDIRECT_URL,
-                            client_id=settings.PROCOUNTOR_CLIENT_ID,
-                            client_secret=settings.PROCOUNTOR_CLIENT_SECRET,
-                            )
-    r.authenticate(settings.PROCOUNTOR_USER, settings.PROCOUNTOR_PASSWORD)
-
-    res = r.get_referencepayments(datetime.now() - timedelta(days=16), datetime.now() - timedelta(days=1))
-
-    """
-    res = r.get_invoices(status='PAID')
-    print(res)
-    res = r.get_invoices(status='MARKED_PAID')
-    print(res)
-    res = r.get_bankstatements(start=datetime.now() - timedelta(days=365), end=datetime.now())
-    print(res)
-    """
