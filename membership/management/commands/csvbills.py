@@ -177,8 +177,7 @@ def row_to_payment(row):
     try:
         # Search first for from already imported rows
         p = Payment.objects.get(transaction_id__exact=row['transaction'],
-                                reference_number__exact=row['reference'],
-                                message__exact=row['message'])
+                                payment_day__exact=row['date'])
         return p
     except Payment.DoesNotExist:
         p = Payment(payment_day=min(datetime.now(), row['date']),
