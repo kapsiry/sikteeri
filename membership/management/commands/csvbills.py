@@ -105,10 +105,21 @@ class BillDictReader(UnicodeDictReader):
         """
         return row
 
+    def _filter_row(self, row):
+        """
+        Function for custom data filtering
+        """
+        return False
+
     def next(self):
-        row = self._get_row(UnicodeDictReader.next(self))
-        if len(row) == 0:
-            return None
+        while True:
+            row = self._get_row(UnicodeDictReader.next(self))
+            if len(row) == 0:
+                return None
+            # Skip over invalid rows
+            if self._filter_row(row):
+                continue
+            break
         row['amount'] = Decimal(row['amount'].replace(",", "."))
         row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
         row['reference'] = row['reference'].replace(' ', '').lstrip('0')
@@ -116,6 +127,7 @@ class BillDictReader(UnicodeDictReader):
         if row.has_key('value_date'):
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
+
 
 class OpDictReader(BillDictReader):
     '''Reader for Osuuspankki CSV file format
@@ -171,6 +183,15 @@ class ProcountorDictReader(BillDictReader):
         if 'real_reference' in row:
             row['reference'] = row['real_reference']
         return row
+
+    def _filter_row(self, row):
+        if row['amount'] == "" or row['amount'] is None:
+            logger.warning("Skipping invalid row %s" % (row,))
+            return True
+        if row['event_type_description'].lower() not in ['viitemaksu', 'tilisiirto']:
+            logger.warning("Skipping unknown event row %s" % (row,))
+            return True
+        return False
 
 
 def row_to_payment(row):
