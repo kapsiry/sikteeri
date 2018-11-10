@@ -1083,7 +1083,7 @@ class ProcountorCSVReadingTest(TestCase):
     def test_duplicate_transaction_id(self):
         no_cycle_q = Q(billingcycle=None)
 
-        with open(data_file("procountor-csv-duplicate-transaction.csv"), 'r') as f:
+        with open_test_data("procountor-csv-duplicate-transaction.csv") as f:
             process_procountor_csv(f)
         payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "Both payments in the sample file should have matched"
@@ -1095,16 +1095,17 @@ class ProcountorCSVReadingTest(TestCase):
         self.assertTrue(cycle.is_paid)
 
     def test_duplicate_import(self):
+        """
+        Simulate situation where a payments csv is imported twice.
+        """
         no_cycle_q = Q(billingcycle=None)
-
-        with open(data_file("procountor-csv-single.csv"), 'r') as f:
+        with open_test_data("procountor-csv-single.csv") as f:
             process_procountor_csv(f)
-        payment_match_count = Payment.objects.filter(~no_cycle_q).count()
         error = "The sample file should have contained only one payment"
         self.assertEqual(Payment.objects.count(), 1, error)
-        with open(data_file("procountor-csv-single.csv"), 'r') as f:
+        with open_test_data("procountor-csv-single.csv") as f:
             process_procountor_csv(f)
-        error = "No payment in the sample file should have matched"
+        error = "No payment in the same sample file should have matched"
         self.assertEqual(Payment.objects.count(), 1, error)
         payment = Payment.objects.filter(billingcycle=self.cycle).latest("payment_day")
         cycle = BillingCycle.objects.get(pk=self.cycle.pk)

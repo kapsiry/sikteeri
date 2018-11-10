@@ -948,7 +948,7 @@ class Payment(models.Model):
         permissions = (
             ("can_import_payments", "Can import payment data"),
         )
-        unique_together = ('reference_number', 'transaction_id', 'message')
+        unique_together = ('payment_day', 'transaction_id')
     """
     Payment object for billing
     """
