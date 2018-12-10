@@ -471,11 +471,9 @@ class Membership(models.Model):
 
         # Split into words and remove duplicates
         words = set(query.split(" "))
-        print(words)
         # Each word narrows the search further
         for word in words:
             # Exact match for membership id (for Django admin)
-            print("word: %s" % word)
             if word.startswith('#'):
                 try:
                     mid = int(word[1:])
