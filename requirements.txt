@@ -1,6 +1,6 @@
 requests
 dj-database-url
-Django ~= 1.11.0
+Django>1.11.0,<2.0.0
 django-auth-ldap ~= 1.5.0
 django-contrib-comments
 gunicorn
