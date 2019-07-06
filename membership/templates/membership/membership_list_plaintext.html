@@ -1,4 +1,4 @@
 <pre>
-{% for member in member_list %}{{member.id}} {{member.name}}{% if forloop.last %}.{% elif forloop.revcounter == 2 %} ja {% else %},{% endif %}
+{% for member in member_list %}#{{member.id}} {{member.name}}
 {% endfor %}
 </pre>
