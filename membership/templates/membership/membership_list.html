@@ -55,6 +55,9 @@
 		{% endif %}
 		{% endif %}
 	{% endif %}
+    {% if member.status == "S" %}
+        {% if member.dissociation_pending %}{% trans "Dissociation pending until" %} {{ member.dissociation_pending_until |date:"j.n.Y" }}{% endif %}
+    {% endif %}
     </li>
 
 {% empty %}

@@ -1664,6 +1664,7 @@ class MemberCancelDissociationRequestTest(TestCase):
         m.dissociate(self.user)
         self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
 
+
 class MemberDissociationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
     def setUp(self):
@@ -1698,6 +1699,20 @@ class MemberDissociationTest(TestCase):
         self.assertIsNotNone(m.dissociated)
         self.assertTrue(m.dissociated > before)
         self.assertTrue(m.dissociated < after)
+
+    def test_dissociated_delayed(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation_billingcycle_end(self.user)
+        self.assertEqual(m.dissociation_pending_until, m.billingcycle_set.latest('start').end)
+
+    def test_dissociated_delayed_no_billingcycle(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        self.assertRaises(MembershipOperationError, m.request_dissociation_billingcycle_end, self.user)
 
 
 class MetricsInterfaceTest(TestCase):
