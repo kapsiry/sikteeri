@@ -32,7 +32,7 @@ from django.utils.translation import ugettext_lazy as _
 from membership import email_utils
 from membership.models import (Bill, BillingCycle, Contact, CancelledBill, Membership,
                                MembershipOperationError, MembershipAlreadyStatus,
-                               Fee, Payment, PaymentAttachedError, MEMBER_STATUS)
+                               Fee, Payment, PaymentAttachedError, MEMBER_STATUS, STATUS_DIS_REQUESTED)
 from membership.models import logger as models_logger
 from membership import reference_numbers
 from membership.utils import tupletuple_to_dict, log_change, group_iban, admtool_membership_details, group_reference
@@ -1104,13 +1104,17 @@ class LoginRequiredTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
+        self.m = create_dummy_member('A')
+        self.m.save()
         self.urls = ['/membership/memberships/new/',
                      '/membership/memberships/preapproved/',
                      '/membership/memberships/preapproved-plain/',
                      '/membership/memberships/approved/',
                      '/membership/memberships/approved-emails/',
                      '/membership/memberships/deleted/',
-                     '/membership/memberships/convert_to_an_organization/1/'
+                     '/membership/memberships/convert_to_an_organization/%s/' % self.m.id,
+                     '/membership/memberships/request_dissociation_billingcycle_end/%s/' % self.m.id,
+                     '/membership/memberships/request_dissociation/%s/' % self.m.id,
                      '/membership/memberships/',
                      '/membership/bills/unpaid/',
                      '/membership/bills/',
@@ -1136,6 +1140,7 @@ class LoginRequiredTest(TestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context['user'].username, 'admin')
+
 
 class TrustedHostTest(TestCase):
     def setUp(self):
@@ -1367,6 +1372,71 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(result['exists'], True)
         self.assertEqual(result['valid'], True)
         alias.delete()
+
+
+class MembershipEditTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        login = self.client.login(username='admin', password='dhtn')
+        self.user = User.objects.get(id=1)
+
+    def test_request_dissociation_no_confirm(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.save()
+        post_data = {
+            "confirm": False
+        }
+        self.client.post('/membership/memberships/request_dissociation/%s/' % m.id, post_data)
+        self.assertEqual(Membership.objects.get(pk=m.id).status, m.status,
+                         "Membership status should not change without confirmation")
+
+    def test_request_dissociation(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.save()
+        makebills()
+        post_data = {
+            "confirm": True
+        }
+        response = self.client.post('/membership/memberships/request_dissociation/%s/' % m.id, post_data)
+        self.assertRedirects(response, '/membership/memberships/edit/%s/' % m.id)
+        self.assertEqual(Membership.objects.get(pk=m.id).status, STATUS_DIS_REQUESTED,
+                         "Membership status should change with confirmation")
+
+    def test_request_dissociation_delayed_no_confirm(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.save()
+        post_data = {
+            "confirm": False
+        }
+        self.client.post('/membership/memberships/request_dissociation_billingcycle_end/%s/' % m.id, post_data)
+        self.assertEqual(Membership.objects.get(pk=m.id).status, m.status,
+                         "Membership status should not change without confirmation")
+
+    def test_request_dissociation_delayed(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        m.save()
+        makebills()
+        post_data = {
+            "confirm": True
+        }
+        response = self.client.post('/membership/memberships/request_dissociation_billingcycle_end/%s/' % m.id,
+                                    post_data)
+        self.assertRedirects(response, '/membership/memberships/edit/%s/' % m.id)
+        self.assertEqual(Membership.objects.get(pk=m.id).status, STATUS_DIS_REQUESTED,
+                         "Membership status should change with confirmation")
+        member_billingcycle = m.billingcycle_set.latest('start')
+        self.assertEqual(Membership.objects.get(pk=m.id).dissociation_pending_until, member_billingcycle.end,
+                         "Membership dissociation_pending_until should change")
+
 
 class PhoneNumberFieldTest(TestCase):
     def setUp(self):
@@ -1627,6 +1697,21 @@ class MemberDissociationRequestedTest(TestCase):
         m.dissociate(self.user)
         self.assertRaises(MembershipOperationError, m.request_dissociation, self.user)
 
+    def test_dissociated_delayed(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        makebills()
+        m.request_dissociation_billingcycle_end(self.user)
+        self.assertEqual(m.dissociation_pending_until, m.billingcycle_set.latest('start').end)
+        self.assertEqual(m.dissociation_pending(), m.billingcycle_set.latest('start').end)
+
+    def test_dissociated_delayed_no_billingcycle(self):
+        m = create_dummy_member('N')
+        m.preapprove(self.user)
+        m.approve(self.user)
+        self.assertRaises(MembershipOperationError, m.request_dissociation_billingcycle_end, self.user)
+
 
 class MemberCancelDissociationRequestTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1700,19 +1785,6 @@ class MemberDissociationTest(TestCase):
         self.assertTrue(m.dissociated > before)
         self.assertTrue(m.dissociated < after)
 
-    def test_dissociated_delayed(self):
-        m = create_dummy_member('N')
-        m.preapprove(self.user)
-        m.approve(self.user)
-        makebills()
-        m.request_dissociation_billingcycle_end(self.user)
-        self.assertEqual(m.dissociation_pending_until, m.billingcycle_set.latest('start').end)
-
-    def test_dissociated_delayed_no_billingcycle(self):
-        m = create_dummy_member('N')
-        m.preapprove(self.user)
-        m.approve(self.user)
-        self.assertRaises(MembershipOperationError, m.request_dissociation_billingcycle_end, self.user)
 
 
 class MetricsInterfaceTest(TestCase):
