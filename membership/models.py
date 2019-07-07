@@ -12,7 +12,7 @@ from membership.reference_numbers import barcode_4, group_right,\
 logger = logging.getLogger("membership.models")
 import traceback
 
-from cStringIO import StringIO
+from io import StringIO
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -28,10 +28,10 @@ from django.db.models.query import QuerySet
 
 from django.contrib.contenttypes.models import ContentType
 
-from utils import log_change, tupletuple_to_dict
+from .utils import log_change, tupletuple_to_dict
 
 from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
-from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
+from .email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
 
 
 class BillingEmailNotFound(Exception): pass
@@ -157,13 +157,13 @@ class Contact(models.Model):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.first_name, self.last_name)
+            return '%s %s' % (self.first_name, self.last_name)
 
     def __unicode__(self):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.last_name, self.first_name)
+            return '%s %s' % (self.last_name, self.first_name)
 
 
 class MembershipManager(models.Manager):
@@ -242,7 +242,7 @@ class Membership(models.Model):
         if self.primary_contact():
             return self.primary_contact().name()
         else:
-            return unicode(self)
+            return str(self)
 
     def email(self):
         return self.primary_contact().email
@@ -266,15 +266,15 @@ class Membership(models.Model):
         for contact in contact_priority_list:
             if contact:
                 if contact.email:
-                    return unicode(contact.email_to())
+                    return str(contact.email_to())
         raise BillingEmailNotFound("Neither billing or administrative contact "+
             "has an email address")
 
     # https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.clean
     def clean(self):
-        if self.type not in MEMBER_TYPES_DICT.keys():
+        if self.type not in list(MEMBER_TYPES_DICT.keys()):
             raise ValidationError("Illegal member type '%s'" % self.type)
-        if self.status not in MEMBER_STATUS_DICT.keys():
+        if self.status not in list(MEMBER_STATUS_DICT.keys()):
             raise ValidationError("Illegal member status '%s'" % self.status)
         if self.status != STATUS_DELETED:
             if self.type == 'O' and self.person:
@@ -541,8 +541,7 @@ class Membership(models.Model):
         return Membership.objects.filter(id__in=membership_ids)
 
     def __repr__(self):
-        plain_self = unicode(self).encode('ASCII', 'backslashreplace')
-        return "<Membership(%s): %s (%i)>" % (self.type, plain_self, self.id)
+        return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
     def __unicode__(self):
         if self.organization:
@@ -552,6 +551,7 @@ class Membership(models.Model):
                 return self.person.__unicode__()
             else:
                 return "#%d" % self.id
+
 
 class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
@@ -568,6 +568,7 @@ class BillingCycleManager(models.Manager):
 
     def get_query_set(self):
         return BillingCycleQuerySet(self.model)
+
 
 class BillingCycleQuerySet(QuerySet):
     def sort(self, sortkey):
@@ -863,7 +864,7 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': str(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
@@ -893,7 +894,7 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': str(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,

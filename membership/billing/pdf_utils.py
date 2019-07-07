@@ -4,7 +4,7 @@
 Some functions that cannot be in pdf.py file to prevent import loop.
 """
 
-from cStringIO import StringIO
+from io import StringIO
 import logging
 
 from django.core.files import File

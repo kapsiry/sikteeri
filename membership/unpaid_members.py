@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Q
 
-from models import BillingCycle, STATUS_APPROVED, STATUS_DISASSOCIATED
+from .models import BillingCycle, STATUS_APPROVED, STATUS_DISASSOCIATED
 
 
 def unpaid_members_data():

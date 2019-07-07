@@ -72,9 +72,9 @@ class PersonMembershipForm(forms.Form):
                                   help_text=_('Your nationality'))
     municipality = forms.CharField(max_length=30, min_length=2,
                                    label=_('Home municipality'),
-                                   help_text=_(u'Finnish municipality'))
+                                   help_text=_('Finnish municipality'))
     birth_year = YearOfBirthField(label=_("Year of birth"),
-                                  help_text=_(u'Year of birth on format YYYY'),
+                                  help_text=_('Year of birth on format YYYY'),
                                   required=True)
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
@@ -89,7 +89,7 @@ class PersonMembershipForm(forms.Form):
     poll_other = forms.CharField(max_length=500, min_length=2,
                                    label=_('Where did you hear about as'),
                                    required=False,
-                                   help_text=_(u'Other, where?'))
+                                   help_text=_('Other, where?'))
 
     email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
@@ -140,7 +140,7 @@ class BaseContactForm(forms.Form):
                               help_text=_('Homepage for the public member list'))
 
     def clean(self):
-        if self.cleaned_data.has_key('postal_code') and (self.cleaned_data['country'] == 'Finland' or
+        if 'postal_code' in self.cleaned_data and (self.cleaned_data['country'] == 'Finland' or
                                                          self.cleaned_data['country'] == 'Suomi'):
             if re.match(r"^[\d]{5}$", self.cleaned_data['postal_code']) == None:
                 self._errors["postal_code"] = self.error_class([_("Postal codes in Finland must consist of 5 numbers.")])

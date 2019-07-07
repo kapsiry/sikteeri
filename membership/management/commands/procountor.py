@@ -44,5 +44,5 @@ class Command(BaseCommand):
         bankstatements = api.get_bankstatements(start=start, end=datetime.now())
         for bankstatement in bankstatements:
             for message in process_payments(
-                    filter(lambda x: x["explanationCode"] in [700, 710], bankstatement.events)):
+                    [x for x in bankstatement.events if x["explanationCode"] in [700, 710]]):
                 print(message)

@@ -2,8 +2,8 @@
 """
 Generates test data for CSV import.
 """
-from __future__ import print_function
-from __future__ import with_statement
+
+
 
 # http://www.python.org/dev/peps/pep-3101/ # unicode.format()
 # http://www.python.org/dev/peps/pep-3105/ # print function
@@ -17,9 +17,9 @@ from django.core.management.base import BaseCommand
 
 from membership.models import *
 
-header_row = u'''Kirjauspäivä;Arvopäivä;Määrä EUROA;Tapahtumalajikoodi;Selitys;Saaja/Maksaja;Saajan tilinumero;Viite;Viesti;Arkistotunnus;'''
+header_row = '''Kirjauspäivä;Arvopäivä;Määrä EUROA;Tapahtumalajikoodi;Selitys;Saaja/Maksaja;Saajan tilinumero;Viite;Viesti;Arkistotunnus;'''
 
-row = u'''{0[date]};{0[date]};{0[sum]};106;TILISIIRTO;{0[payer]};{0[account]};{0[reference]};{0[message]};{0[id]};'''
+row = '''{0[date]};{0[date]};{0[sum]};106;TILISIIRTO;{0[payer]};{0[account]};{0[reference]};{0[message]};{0[id]};'''
 
 def dict_for_cycle(cycle):
     payment_date = cycle.last_bill().due_date - timedelta(days=1)

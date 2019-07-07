@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-from __future__ import with_statement
+
 
 import csv
 import os
@@ -98,7 +98,7 @@ class Command(BaseCommand):
         try:
             pass
         except Exception as e:
-            print("Fatal error: %s" % unicode(e))
-            logger.error("process_csv failed: %s" % unicode(e))
+            print(("Fatal error: %s" % str(e)))
+            logger.error("process_csv failed: %s" % str(e))
             sys.exit(1)
         logger.info("Done processing file %s." % os.path.abspath(csvfile))

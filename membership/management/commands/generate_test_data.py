@@ -94,7 +94,7 @@ class Command(BaseCommand):
         initial_index = 0
         index = 1
 
-        for i in xrange(index, index+approved+dissociated+dissociation_requested+deleted):
+        for i in range(index, index+approved+dissociated+dissociation_requested+deleted):
             membership = self.create_dummy_member(i)
             if initial_index == 0:
                 initial_index = membership.pk
@@ -104,19 +104,19 @@ class Command(BaseCommand):
         index += approved+dissociated+dissociation_requested+deleted
 
         # Pre-approved members
-        for i in xrange(index, index+preapproved):
+        for i in range(index, index+preapproved):
             with transaction.atomic():
                 membership = self.create_dummy_member(i)
                 membership.preapprove(self.user)
         index += preapproved
 
         # New applications
-        for i in xrange(index, index+new):
+        for i in range(index, index+new):
             membership = self.create_dummy_member(i)
         index += new
 
         # Make a few duplicates for duplicate detection GUI testing
-        for i in xrange(index, index+duplicates):
+        for i in range(index, index+duplicates):
             if approved > 0 and random() > 0.5:
                 # About 50% of duplicates are existing members
                 duplicate_source_id = randint(1, approved)
@@ -136,15 +136,15 @@ class Command(BaseCommand):
 
         # Some members disassociate.
 
-        for i in xrange(initial_index, initial_index+dissociated+dissociation_requested+deleted):
+        for i in range(initial_index, initial_index+dissociated+dissociation_requested+deleted):
             membership = Membership.objects.get(id=i)
             membership.request_dissociation(self.user)
 
-        for i in xrange(initial_index, initial_index+dissociated+deleted):
+        for i in range(initial_index, initial_index+dissociated+deleted):
             membership = Membership.objects.get(id=i)
             membership.dissociate(self.user)
 
-        for i in xrange(initial_index, initial_index+deleted):
+        for i in range(initial_index, initial_index+deleted):
             membership = Membership.objects.get(id=i)
             membership.delete_membership(self.user)
 
@@ -182,7 +182,7 @@ class Command(BaseCommand):
                                 public_memberlist=public_memberlist,
                                 extra_info='Hintsunlaisesti semmoisia tietoja.')
 
-        self.stdout.write(unicode(person))
+        self.stdout.write(str(person))
         membership.save()
 
         forward_alias = Alias(owner=membership,

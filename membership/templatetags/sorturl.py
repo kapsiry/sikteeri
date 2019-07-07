@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from django import template
 from django.http import QueryDict
@@ -37,7 +37,7 @@ def lookup_sort(sort):
     """
     if sort is None:
         return None
-    assert isinstance(sort, unicode)
+    assert isinstance(sort, str)
     key, __, index = sort.partition(':')
     try:
         return sort_cycles[key][int(index)-1]
@@ -59,7 +59,7 @@ def next_sort(sort):
     """
     if sort is None:
         return None
-    assert isinstance(sort, unicode)
+    assert isinstance(sort, str)
     key, __, index = sort.partition(':')
     try:
         available_sorts = sort_cycles[key]
@@ -109,7 +109,7 @@ class SortUrl(template.Node):
             querystring['sort'] = next_sort_value
         else:
             querystring['sort'] = "{key}:1".format(key=self.field)
-        return "?" + "&".join(["=".join(k) for k in querystring.items()])
+        return "?" + "&".join(["=".join(k) for k in list(querystring.items())])
 
 
 def do_sorturl(parser, token):

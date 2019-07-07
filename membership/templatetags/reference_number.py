@@ -15,7 +15,7 @@ def fref(number, length):
     if len(ref) >= length:
         return ref
     else:
-        ret = u""
-        for i in xrange(0, int(length) - len(ref)):
-            ret = ret + u"&nbsp;"
+        ret = ""
+        for i in range(0, int(length) - len(ref)):
+            ret = ret + "&nbsp;"
         return mark_safe(ret + ref)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from __future__ import unicode_literals
+
 
 """
 Copyright (c) 2014-2015 Kapsi Internet-käyttäjät ry. All rights reserved.

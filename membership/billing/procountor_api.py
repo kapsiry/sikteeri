@@ -2,7 +2,7 @@
 import json
 import random
 import string
-import urlparse
+import urllib.parse
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -53,21 +53,21 @@ class ProcountorBankStatementEvent(object):
 
     # http://www.finanssiala.fi/maksujenvalitys/dokumentit/ISO20022_Account_Statement_Guide_V1_3.pdf pages 39-40
     EXPLANATIONCODES = {
-        700: u'maksuliikennepalvelu',
-        701: u'toistuva maksuliikennepalvelu',
-        702: u'Laksumaksupalvelu',
-        703: u'Maksupäätemaksu',
-        704: u'Suoramaksupalvelu',
-        705: u'Viitesiirto',
-        706: u'Maksupalvelu',
-        710: u'Talletus',
-        720: u'Nosto',
-        721: u'Maksukorttimaksu',
-        722: u'Shekki',
-        730: u'Pankkimaksu',
-        740: u'Korkomaksu',
-        750: u'Luottokorkomaksu',
-        760: u'Lainamaksu',
+        700: 'maksuliikennepalvelu',
+        701: 'toistuva maksuliikennepalvelu',
+        702: 'Laksumaksupalvelu',
+        703: 'Maksupäätemaksu',
+        704: 'Suoramaksupalvelu',
+        705: 'Viitesiirto',
+        706: 'Maksupalvelu',
+        710: 'Talletus',
+        720: 'Nosto',
+        721: 'Maksukorttimaksu',
+        722: 'Shekki',
+        730: 'Pankkimaksu',
+        740: 'Korkomaksu',
+        750: 'Luottokorkomaksu',
+        760: 'Lainamaksu',
     }
 
     def __init__(self, row):
@@ -142,7 +142,7 @@ class ProcountorReferencePayment(object):
         self.archiveId = row.get("archiveId", "")
         self.allocated = row.get("allocated", True)
         self.invoiceId = row.get("invoiceId", 0)
-        self.event_type_description = u"Viitesiirto"
+        self.event_type_description = "Viitesiirto"
         self.message = ""
         self.attachments = []
 
@@ -226,8 +226,8 @@ class ProcountorAPIClient(object):
             raise ProcountorAPIException("Authentication failed, wrong response status code %d", res.status_code)
         target = self.session.get_redirect_target(res)
 
-        parsed = urlparse.urlparse(target)
-        target_parameters = dict(urlparse.parse_qsl(parsed.query))
+        parsed = urllib.parse.urlparse(target)
+        target_parameters = dict(urllib.parse.parse_qsl(parsed.query))
 
         return target_parameters["code"]
 

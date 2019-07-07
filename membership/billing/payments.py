@@ -1,5 +1,5 @@
 # encoding: utf-8
-from __future__ import with_statement
+
 
 import codecs
 import csv
@@ -34,8 +34,8 @@ class UTF8Recoder:
     def __iter__(self):
         return self
 
-    def next(self):
-        return self.reader.next().encode("utf-8")
+    def __next__(self):
+        return next(self.reader).encode("utf-8")
 
 
 class UnicodeReader:
@@ -50,9 +50,9 @@ class UnicodeReader:
         f = UTF8Recoder(f, encoding)
         self.reader = csv.reader(f, dialect=dialect, **kwds)
 
-    def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
+    def __next__(self):
+        row = next(self.reader)
+        return row
 
     def __iter__(self):
         return self
@@ -64,17 +64,19 @@ class UnicodeDictReader(UnicodeReader):
     def __init__(self, *args, **kw):
         UnicodeReader.__init__(self, *args, **kw)
         # Read headers from first line
-        self.headers = map(lambda x: x.strip(), UnicodeReader.next(self))
+        self.headers = [x.strip() for x in UnicodeReader.__next__(self)]
 
-    def next(self):
-        row = UnicodeReader.next(self)
-        return dict(zip(self.headers, row))
-
-
-class RequiredFieldNotFoundException(Exception): pass
+    def __next__(self):
+        row = UnicodeReader.__next__(self)
+        return dict(list(zip(self.headers, row)))
 
 
-class DuplicateColumnException(Exception): pass
+class RequiredFieldNotFoundException(Exception):
+    pass
+
+
+class DuplicateColumnException(Exception):
+    pass
 
 
 class BillDictReader(UnicodeDictReader):
@@ -86,7 +88,7 @@ class BillDictReader(UnicodeDictReader):
             encoding=encoding, *args, **kw)
         # Translate headers
         h = self.headers
-        for i in xrange(0, len(h)):
+        for i in range(0, len(h)):
             self.headers[i] = self._get_translation(h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
@@ -112,46 +114,46 @@ class BillDictReader(UnicodeDictReader):
         """
         return row
 
-    def next(self):
-        row = self._get_row(UnicodeDictReader.next(self))
+    def __next__(self):
+        row = self._get_row(UnicodeDictReader.__next__(self))
         if len(row) == 0:
             return None
         row['amount'] = Decimal(row['amount'].replace(",", "."))
         row['date'] = datetime.strptime(row['date'], "%d.%m.%Y")
         row['reference'] = row['reference'].replace(' ', '').lstrip('0')
         row['transaction'] = row['transaction'].replace(' ', '').replace('/', '')
-        if row.has_key('value_date'):
+        if 'value_date' in row:
             row['value_date'] = datetime.strptime(row['value_date'], "%d.%m.%Y")
         return row
 
 
 class OpDictReader(BillDictReader):
-    '''Reader for Osuuspankki CSV file format
+    """Reader for Osuuspankki CSV file format
 
-    The module converts Osuuspankki CSV format data into a more usable form.'''
+    The module converts Osuuspankki CSV format data into a more usable form."""
 
     # If these fields are not found on the first line, an exception is raised
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
 
     # Translation table from Osuuspankki CSV format to short names
-    OP_CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
-                          u'Arvopäivä'          : 'value_date',
-                          u'Tap.pv'             : 'date', # old format
-                          u'Määrä EUROA'        : 'amount',
-                          u'Määrä'              : 'amount',
-                          u'Tapahtumalajikoodi' : 'event_type_code',
-                          u'Selitys'            : 'event_type_description',
-                          u'Saaja/Maksaja'      : 'fromto',
-                          u'Saajan tilinumero'  : 'account', # old format
-                          u'Saajan tilinumero ja pankin BIC' : 'account',
-                          u'Viite'              : 'reference',
-                          u'Viesti'             : 'message',
-                          u'Arkistotunnus'      : 'transaction', # old format
-                          u'Arkistointitunnus'  : 'transaction'}
+    OP_CSV_TRANSLATION = {'Kirjauspäivä'       : 'date',
+                          'Arvopäivä'          : 'value_date',
+                          'Tap.pv'             : 'date', # old format
+                          'Määrä EUROA'        : 'amount',
+                          'Määrä'              : 'amount',
+                          'Tapahtumalajikoodi' : 'event_type_code',
+                          'Selitys'            : 'event_type_description',
+                          'Saaja/Maksaja'      : 'fromto',
+                          'Saajan tilinumero'  : 'account', # old format
+                          'Saajan tilinumero ja pankin BIC' : 'account',
+                          'Viite'              : 'reference',
+                          'Viesti'             : 'message',
+                          'Arkistotunnus'      : 'transaction', # old format
+                          'Arkistointitunnus'  : 'transaction'}
 
     def _get_translation(self, h):
         # Quick and dirty, OP changes this field name too often!
-        if h.startswith(u"Määrä"):
+        if h.startswith("Määrä"):
             return "amount"
         return self.OP_CSV_TRANSLATION.get(h, h)
 
@@ -160,19 +162,19 @@ class ProcountorDictReader(BillDictReader):
 
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
 
-    CSV_TRANSLATION = {u'Kirjauspäivä'       : 'date',
-                       u'Arvopäivä'          : 'value_date',
-                       u'Maksupäivä'         : 'date',
-                       u'Maksu'              : 'amount',
-                       u'Summa'              : 'amount',
-                       u'Kirjausselite'      : 'event_type_description',
-                       u'Maksaja'            : 'fromto',
-                       u'Nimi'               : 'fromto',
-                       u'Tilinro'            : 'account',
-                       u'Viesti'             : 'message',
-                       u'Viitenumero'        : 'reference',
-                       u'Arkistointitunnus'  : 'transaction',
-                       u'Oikea viite'        : 'real_reference',
+    CSV_TRANSLATION = {'Kirjauspäivä'       : 'date',
+                       'Arvopäivä'          : 'value_date',
+                       'Maksupäivä'         : 'date',
+                       'Maksu'              : 'amount',
+                       'Summa'              : 'amount',
+                       'Kirjausselite'      : 'event_type_description',
+                       'Maksaja'            : 'fromto',
+                       'Nimi'               : 'fromto',
+                       'Tilinro'            : 'account',
+                       'Viesti'             : 'message',
+                       'Viitenumero'        : 'reference',
+                       'Arkistointitunnus'  : 'transaction',
+                       'Oikea viite'        : 'real_reference',
                      }
 
     def _get_row(self, row):
@@ -255,7 +257,7 @@ def process_payments(reader, user=None):
             cycle = attach_payment_to_cycle(payment, user=user)
             if cycle:
                 msg = _("Attached payment %(payment)s to cycle %(cycle)s") % {
-                        'payment': unicode(payment), 'cycle': unicode(cycle)}
+                        'payment': str(payment), 'cycle': str(cycle)}
                 logger.info(msg)
                 return_messages.append((None, None, msg))
                 num_attached = num_attached + 1

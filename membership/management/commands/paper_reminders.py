@@ -1,5 +1,5 @@
 # encoding: UTF-8
-from __future__ import with_statement
+
 
 import logging
 from tempfile import NamedTemporaryFile
@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 pdffile = target_file.name
 
             if pdffile:
-                print("pdf file created: %s" % pdffile)
+                print(("pdf file created: %s" % pdffile))
             else:
                 print("Cannot create pdffile")
         except RuntimeError as e:
