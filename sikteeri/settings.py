@@ -4,7 +4,7 @@ from os import environ
 import json
 import django.conf.global_settings as DEFAULT_SETTINGS
 import dj_database_url
-import locale
+from . import locale
 import logging
 import sys
 
