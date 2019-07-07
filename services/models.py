@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 
 def remove_accents(str):
     '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
-    nkfd_form = unicodedata.normalize('NFKD', str(str))
+    nkfd_form = unicodedata.normalize('NFKD', str)
     return "".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 def logging_log_change(sender, instance, created, **kwargs):

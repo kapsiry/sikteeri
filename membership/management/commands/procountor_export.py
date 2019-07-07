@@ -69,11 +69,12 @@ Mukana myös uudet hyvityslaskut.
                     from_email=settings.FROM_EMAIL,
                     to=[options['email']],
                     bcc=[])
-                email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content, 'text/csv')
+                email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content.encode("iso-8859-1")
+                             , 'text/csv')
                 email.send()
                 message = "Sent Procountor bill list CSV by email"
             else:
-                self.stdout.write(content.decode("ISO-8859-1"))
+                self.stdout.write(content)
                 message = 'Wrote Procountor bill list CSV to console'
             logger.info(message)
         else:

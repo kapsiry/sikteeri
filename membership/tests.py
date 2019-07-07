@@ -68,7 +68,7 @@ __test__ = {
 def open_test_data(file):
     basedir = os.path.dirname(__file__)
     data_file = os.path.join(basedir, 'test_data', file)
-    return open(data_file, 'r')
+    return open(data_file, 'r', encoding='ISO-8859-1')
 
 
 class ReferenceNumberTest(TestCase):
@@ -524,7 +524,7 @@ class ProcountorExportTest(TestCase):
     def test_procountor_csv_format_email(self):
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
-        self.check_procountor_csv_format(attach_content)
+        self.check_procountor_csv_format(attach_content.decode("iso-8859-1"))
 
     def test_procountor_csv_format_console(self):
         csv_data = self.get_procountor_console()
@@ -814,7 +814,7 @@ class ProcountorExportTest(TestCase):
         self.membership.dissociate(self.user)
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
-        self.check_procountor_csv_format(attach_content)
+        self.check_procountor_csv_format(attach_content.decode("iso-8859-1"))
 
     def test_send_cancelledbill_deleted_member(self):
         self.membership.request_dissociation(self.user)
@@ -1475,20 +1475,20 @@ class MemberListTest(TestCase):
     def test_renders_member_id(self):
         response = self.client.get('/membership/memberships/approved/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/preapproved/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content.decode("utf-8"))
 
     def test_memberlist_pagination(self):
         response = self.client.get('/membership/memberships/approved/?page=1')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/approved/?page=2')
         self.assertEqual(response.status_code, 404)
@@ -1496,12 +1496,12 @@ class MemberListTest(TestCase):
     def test_memberlist_sort_by_name(self):
         response = self.client.get('/membership/memberships/approved/?sort=name')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
     def test_memberlist_sort_by_id(self):
         response = self.client.get('/membership/memberships/approved/?sort=id')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
 
 class MemberDeletionTest(TestCase):

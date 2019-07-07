@@ -36,11 +36,14 @@ LOGO = os.path.join(settings.IMG_PATH, 'kapsi-logo.jpg')
 
 # TODO: Unittests for pdf
 
+
 def get_billing_email():
     return emailutils.parseaddr(settings.BILLING_FROM_EMAIL)[1]
 
+
 class PDFTemplate(object):
     __type__ = 'invoice'
+
     def __init__(self, filename, cycle=None):
         """
         :param filename: Filename or file-like object
@@ -67,7 +70,7 @@ class PDFTemplate(object):
 
     def reset(self):
         self.c = canvas.Canvas(self._filename, pagesize=A4,
-                               bottomup = 1)
+                               bottomup=1)
 
     def addCycle(self, cycle, payments=None):
         self.c.scale(72.0/self._dpi, 72.0/self._dpi)

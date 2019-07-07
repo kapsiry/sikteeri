@@ -19,56 +19,8 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 
-class PaymentFromFutureException(Exception): pass
-
-
-class UTF8Recoder:
-    """
-    Iterator that reads an encoded stream and reencodes the input to UTF-8
-
-    <http://docs.python.org/library/csv.html#examples>
-    """
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self.reader).encode("utf-8")
-
-
-class UnicodeReader:
-    """
-    A CSV reader which will iterate over lines in the CSV file "f",
-    which is encoded in the given encoding.
-
-    <http://docs.python.org/library/csv.html#examples>
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        f = UTF8Recoder(f, encoding)
-        self.reader = csv.reader(f, dialect=dialect, **kwds)
-
-    def __next__(self):
-        row = next(self.reader)
-        return row
-
-    def __iter__(self):
-        return self
-
-
-class UnicodeDictReader(UnicodeReader):
-    """A CSV reader which stores the headers from the first line
-    """
-    def __init__(self, *args, **kw):
-        UnicodeReader.__init__(self, *args, **kw)
-        # Read headers from first line
-        self.headers = [x.strip() for x in UnicodeReader.__next__(self)]
-
-    def __next__(self):
-        row = UnicodeReader.__next__(self)
-        return dict(list(zip(self.headers, row)))
+class PaymentFromFutureException(Exception):
+    pass
 
 
 class RequiredFieldNotFoundException(Exception):
@@ -79,28 +31,26 @@ class DuplicateColumnException(Exception):
     pass
 
 
-class BillDictReader(UnicodeDictReader):
+class BillDictReader(csv.DictReader):
     REQUIRED_COLUMNS = ['date', 'amount', 'transaction']
     CSV_TRANSLATION = {}
 
-    def __init__(self, f, delimiter=';', encoding="iso8859-1", *args, **kw):
-        UnicodeDictReader.__init__(self, f, delimiter=delimiter,
-            encoding=encoding, *args, **kw)
+    def __init__(self, f, delimiter=';', *args, **kw):
+        csv.DictReader.__init__(self, f, delimiter=delimiter, *args, **kw)
         # Translate headers
-        h = self.headers
+        h = self.fieldnames
         for i in range(0, len(h)):
-            self.headers[i] = self._get_translation(h[i])
+            self.fieldnames[i] = self._get_translation(h[i])
         # Check that all required columns exist in the header
         for name in self.REQUIRED_COLUMNS:
-            if name not in self.headers:
+            if name not in self.fieldnames:
                 error = "CSV format is invalid: missing field '%s'." % name
                 raise RequiredFieldNotFoundException(error)
         # Check that each field is unique
-        for name in self.headers:
-            if self.headers.count(name) != 1:
+        for name in self.fieldnames:
+            if self.fieldnames.count(name) != 1:
                 error = "The field '%s' occurs multiple times in the header"
                 raise DuplicateColumnException(error)
-
 
     def _get_translation(self, h):
         """
@@ -115,7 +65,7 @@ class BillDictReader(UnicodeDictReader):
         return row
 
     def __next__(self):
-        row = self._get_row(UnicodeDictReader.__next__(self))
+        row = self._get_row(csv.DictReader.__next__(self))
         if len(row) == 0:
             return None
         row['amount'] = Decimal(row['amount'].replace(",", "."))

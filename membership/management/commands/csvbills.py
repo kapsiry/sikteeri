@@ -33,7 +33,7 @@ class Command(BaseCommand):
             logger.info("Starting the processing of file %s." %
                 os.path.abspath(csvfile))
             # Exceptions of process_csv are fatal in command line run
-            with open(csvfile, 'r') as file_handle:
+            with open(csvfile, 'r', encoding='ISO-8859-1') as file_handle:
                 if options['procountor']:
                     process_procountor_csv(file_handle)
                 else:

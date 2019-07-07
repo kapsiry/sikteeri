@@ -133,28 +133,16 @@ def create_csv(start=None, mark_cancelled=True):
         start = datetime(year=start.year, month=start.month, day=1)
 
     filehandle = StringIO()
-    output = csv.writer(filehandle, delimiter=b';', quoting=csv.QUOTE_NONE)
+    output = csv.writer(filehandle, delimiter=';', quoting=csv.QUOTE_NONE)
 
     for bill in Bill.objects.filter(created__gte=start, reminder_count=0).all():
         for row in _bill_to_rows(bill):
-            row2 = []
-            for v in row:
-                if type(v) == str:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
-            output.writerow(row2)
+            output.writerow(row)
 
     cancelled_bills = CancelledBill.objects.filter(exported=False)
     for cb in cancelled_bills:
         for row in _bill_to_rows(cb.bill, cancel=True):
-            row2 = []
-            for v in row:
-                if type(v) == str:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
-            output.writerow(row2)
+            output.writerow(row)
     if mark_cancelled:
         cancelled_bills.update(exported=True)
         logger.info("Marked all cancelled bills as exported.")
