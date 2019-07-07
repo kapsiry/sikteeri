@@ -44,9 +44,9 @@ def get_billing_email():
 class PDFTemplate(object):
     __type__ = 'invoice'
 
-    def __init__(self, filename, cycle=None):
+    def __init__(self, filehandle, cycle=None):
         """
-        :param filename: Filename or file-like object
+        :param filehandle: Filename or file-like object
         :param cycle: optional billingcycle object
         """
         self._dpi = 300.0
@@ -56,7 +56,7 @@ class PDFTemplate(object):
         self.font = 'IstokWeb'
         self.marginleft = 1.0 * cm
         self.margintop = 0.0 * cm
-        self._filename = filename
+        self._filehandle = filehandle
         self.data = {}
         self.page_count = 0
         self.reset()
@@ -69,23 +69,23 @@ class PDFTemplate(object):
         return float(n) * self._scale
 
     def reset(self):
-        self.c = canvas.Canvas(self._filename, pagesize=A4,
-                               bottomup=1)
+        self.canvas = canvas.Canvas(self._filehandle, pagesize=A4,
+                                    bottomup=1)
 
     def addCycle(self, cycle, payments=None):
-        self.c.scale(72.0/self._dpi, 72.0/self._dpi)
+        self.canvas.scale(72.0 / self._dpi, 72.0 / self._dpi)
         self.createData(cycle, payments=payments)
         self.addTemplate()
         self.addContent()
-        self.c.showPage()
+        self.canvas.showPage()
         self.page_count += 1
 
     def addBill(self, bill, payments=None):
-        self.c.scale(72.0/self._dpi, 72.0/self._dpi)
+        self.canvas.scale(72.0 / self._dpi, 72.0 / self._dpi)
         self.createData(cycle=bill.billingcycle, bill=bill, payments=payments)
         self.addTemplate()
         self.addContent()
-        self.c.showPage()
+        self.canvas.showPage()
         self.page_count += 1
 
     def addCycles(self, cycles, payments=None):
@@ -106,25 +106,25 @@ class PDFTemplate(object):
         y = self.real_y(float(y))
         width = self.scale(width)
         height = self.scale(height)
-        self.c.drawImage(image, x, (y - height), width, height)
+        self.canvas.drawImage(image, x, (y - height), width, height)
 
     def drawVerticalStroke(self, startx, starty, length,
                              r=0.0, g=0.0, b=0.0, width=1):
-        self.c.setStrokeColorRGB(r,g,b)
-        self.c.setLineWidth(width)
+        self.canvas.setStrokeColorRGB(r, g, b)
+        self.canvas.setLineWidth(width)
         starty = self.real_y(starty)
         startx = self.real_x(startx)
         length = self.scale(length)
-        self.c.line(startx,starty,startx, starty + length)
+        self.canvas.line(startx, starty, startx, starty + length)
 
     def drawHorizontalStroke(self, startx, starty, length,
                              r=0.0, g=0.0, b=0.0, width=1):
-        self.c.setStrokeColorRGB(r,g,b)
-        self.c.setLineWidth(width)
+        self.canvas.setStrokeColorRGB(r, g, b)
+        self.canvas.setLineWidth(width)
         starty = self.real_y(starty)
         startx = self.real_x(startx)
         length = self.scale(length)
-        self.c.line(startx,starty,startx + length,starty)
+        self.canvas.line(startx, starty, startx + length, starty)
 
     def drawString(self, x, y, line, font=None, size=None, alignment="left", flip=False):
         if font is None:
@@ -134,32 +134,32 @@ class PDFTemplate(object):
         size = self.scale(size, False)
         if line.startswith('<b>') and line.endswith("</b>"):
             line = self._strip_format(line)
-            self.c.setFont("%s-Bold" % font, size)
+            self.canvas.setFont("%s-Bold" % font, size)
         else:
-            self.c.setFont(font, size)
+            self.canvas.setFont(font, size)
         if flip:
-            self.c.rotate(90)
+            self.canvas.rotate(90)
             y = -1 * self.scale(y)
         else:
             y = self.real_y(y)
         x = self.real_x(x)
         if alignment == 'left':
-            self.c.drawString(x, y, line)
+            self.canvas.drawString(x, y, line)
         elif alignment == 'center':
-            self.c.drawCentredString(x , y, line)
+            self.canvas.drawCentredString(x, y, line)
         elif alignment == 'right':
-            self.c.drawRightString(x, y, line)
+            self.canvas.drawRightString(x, y, line)
         else:
             raise RuntimeError("Invalid alignment %s" % alignment)
         if flip:
-            self.c.rotate(-90)
+            self.canvas.rotate(-90)
 
     def drawBox(self, x, y, width, height, stroke=1):
         width = self.scale(width)
         height = self.scale(height)
         x = self.real_x(x)
         y = (self.real_y(y) - height)
-        self.c.rect(x, y, width, height, fill=0, stroke=stroke)
+        self.canvas.rect(x, y, width, height, fill=0, stroke=stroke)
 
     def _strip_format(self, line):
         if line.startswith('<b>'):
@@ -181,8 +181,8 @@ class PDFTemplate(object):
         x = self.real_x(x)
         y = self.real_y(y)
         size = self.scale(size, False)
-        keytextobject = self.c.beginText()
-        valuetextobject = self.c.beginText()
+        keytextobject = self.canvas.beginText()
+        valuetextobject = self.canvas.beginText()
         keytextobject.setFont(font, size)
         valuetextobject.setFont(font, size)
         longest_key = 0
@@ -194,8 +194,8 @@ class PDFTemplate(object):
         for key, value in data:
             self._add_text(key, keytextobject, font, size)
             self._add_text(value, valuetextobject, font, size)
-        self.c.drawText(keytextobject)
-        self.c.drawText(valuetextobject)
+        self.canvas.drawText(keytextobject)
+        self.canvas.drawText(valuetextobject)
 
 
     def drawText(self, x, y, text, font=None, size=None):
@@ -204,7 +204,7 @@ class PDFTemplate(object):
         if size is None:
             size = self.font_size
         size = self.scale(size, False)
-        textobject = self.c.beginText()
+        textobject = self.canvas.beginText()
         textobject.setFont(font, size)
         y = self.real_y(y)
         x = self.real_x(x)
@@ -212,7 +212,7 @@ class PDFTemplate(object):
         textobject.setTextRenderMode(0)
         for line in text.splitlines():
             self._add_text(line, textobject, font, size)
-        self.c.drawText(textobject)
+        self.canvas.drawText(textobject)
 
     def createData(self, cycle, bill=None, payments=None):
         # TODO: use Django SHORT_DATE_FORMAT
@@ -414,13 +414,13 @@ class PDFTemplate(object):
             due_date = datetime.now() + timedelta(days=settings.BILL_DAYS_TO_DUE)
         barcode_string = barcode_4(settings.IBAN_ACCOUNT_NUMBER, self.data['reference_number'], due_date, self.data['sum'])
         barcode = code128.Code128(str(barcode_string), barWidth=0.12*cm, barHeight=4.5*cm)
-        barcode.drawOn(self.c, self.real_x(2), self.real_y(28.7))
+        barcode.drawOn(self.canvas, self.real_x(2), self.real_y(28.7))
 
     def addContent(self):
         pass
 
     def generate(self):
-        self.c.save()
+        self.canvas.save()
 
 
 class PDFReminder(PDFTemplate):

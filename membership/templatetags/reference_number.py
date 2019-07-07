@@ -12,6 +12,7 @@ from membership.reference_numbers import group_right
 def fref(number, length):
     "Number is the reference number, length is the max reference number length anticipated."
     ref = group_right(number)
+    length = int(length)
     if len(ref) >= length:
         return ref
     else:

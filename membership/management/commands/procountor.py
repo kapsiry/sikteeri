@@ -23,8 +23,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-s', "--startdate", help="Start Date (YYYY-MM-DD)",
                             default=None, type=valid_date)
-        parser.add_argument('-e', "--email", help="Send CSV by email (default stdout)",
-                            default=None)
 
     def handle(self, *args, **options):
         start = options['startdate'] or datetime.now() - timedelta(days=1)

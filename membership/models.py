@@ -12,7 +12,7 @@ from membership.reference_numbers import barcode_4, group_right,\
 logger = logging.getLogger("membership.models")
 import traceback
 
-from io import StringIO
+from io import StringIO, BytesIO
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -739,7 +739,7 @@ class BillingCycle(models.Model):
 
     @classmethod
     def get_pdf_reminders(cls, memberid=None):
-        buffer = StringIO()
+        buffer = BytesIO()
         cycles = cls.create_paper_reminder_list(memberid)
         if len(cycles) == 0:
             return None
