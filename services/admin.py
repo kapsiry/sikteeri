@@ -14,7 +14,7 @@ class StartsWithListFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         def first_two(s):
-            s = unicode(s)
+            s = str(s)
             if len(s) < 2:
                 return s
             else:

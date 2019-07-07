@@ -159,7 +159,7 @@ class Contact(models.Model):
         else:
             return '%s %s' % (self.first_name, self.last_name)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization_name:
             return self.organization_name
         else:
@@ -543,12 +543,12 @@ class Membership(models.Model):
     def __repr__(self):
         return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization:
-            return self.organization.__unicode__()
+            return str(self.organization)
         else:
             if self.person:
-                return self.person.__unicode__()
+                return str(self.person)
             else:
                 return "#%d" % self.id
 
@@ -559,7 +559,7 @@ class Fee(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2)
     vat_percentage = models.IntegerField(_('VAT percentage'))
 
-    def __unicode__(self):
+    def __str__(self):
         return "Fee for %s, %s euros, %s%% VAT, %s--" % \
                (self.get_type_display(), str(self.sum), str(self.vat_percentage), str(self.start))
 
@@ -780,7 +780,7 @@ class BillingCycle(models.Model):
         day = timedelta(days=1)
         return self.end.date()-day
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.start.date()) + "--" + str(self.end_date())
 
     def save(self, *args, **kwargs):
@@ -826,7 +826,7 @@ class Bill(models.Model):
     def is_due(self):
         return self.due_date < datetime.now()
 
-    def __unicode__(self):
+    def __str__(self):
         return _('Sent on') + ' ' + str(self.created)
 
     def save(self, *args, **kwargs):
@@ -980,7 +980,7 @@ class Payment(models.Model):
     duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
     logs = property(_get_logs)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
 
     def attach_to_cycle(self, cycle, user=None):

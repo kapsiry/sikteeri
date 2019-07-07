@@ -12,8 +12,8 @@ from django.core.exceptions import ValidationError
 
 def remove_accents(str):
     '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
-    nkfd_form = unicodedata.normalize('NFKD', unicode(str))
-    return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
+    nkfd_form = unicodedata.normalize('NFKD', str(str))
+    return "".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
@@ -40,14 +40,12 @@ class Service(models.Model):
     owner = models.ForeignKey('membership.Membership', verbose_name=_('Service owner'), null=True)
     data = models.CharField(max_length=256, verbose_name=_('Service specific data'), blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.alias:
             return "%s %s" % (self.servicetype, self.alias)
         else:
-            return unicode(self.servicetype)
+            return str(self.servicetype)
 
-    def __str__(self):
-        return unicode(self).encode('ASCII', 'backslashreplace')
 
 class ServiceType(models.Model):
     class Meta:
@@ -59,11 +57,9 @@ class ServiceType(models.Model):
     """
     servicetype = models.CharField(max_length=64, verbose_name=_('Service type'), unique=True)
 
-    def __unicode__(self):
-        return unicode(self.servicetype)
-
     def __str__(self):
-        return unicode(self).encode('ASCII', 'backslashreplace')
+        return str(self.servicetype)
+
 
 class Alias(models.Model):
     owner = models.ForeignKey('membership.Membership', verbose_name=_('Alias owner'))
@@ -178,8 +174,9 @@ class Alias(models.Model):
 
         super(Alias, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
+
 
 def valid_aliases(owner):
     '''Builds a queryset of all valid aliases'''
