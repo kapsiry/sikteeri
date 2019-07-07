@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-
-import codecs
 import csv
 
 from datetime import datetime, timedelta
@@ -150,11 +148,11 @@ def attach_payment_to_cycle(payment, user=None):
     Outside of this module, this function is mainly used by
     generate_test_data.py.
     """
-    if payment.ignore == True or payment.billingcycle != None:
+    if payment.ignore is True or payment.billingcycle is not None:
         raise Exception("Unexpected function call. This shouldn't happen.")
     reference = payment.reference_number
     cycle = BillingCycle.objects.get(reference_number=reference)
-    if cycle.is_paid == False or cycle.amount_paid() < cycle.sum:
+    if cycle.is_paid is False or cycle.amount_paid() < cycle.sum:
         payment.attach_to_cycle(cycle, user=user)
     else:
         # Don't attach a payment to a cycle with enough payments
@@ -192,7 +190,7 @@ def process_payments(reader, user=None):
     for row in reader:
         if row is None:
             continue
-        if row['amount'] < 0: # Transaction is paid by us, ignored
+        if row['amount'] < 0:  # Transaction is paid by us, ignored
             continue
         # Payment in future more than 1 day is a fatal error
         if row['date'] > datetime.now() + timedelta(days=1):
@@ -222,7 +220,7 @@ def process_payments(reader, user=None):
         except BillingCycle.DoesNotExist:
             # Failed to find cycle for this reference number
             if not payment.id:
-                payment.save() # Only save if object not in database yet
+                payment.save()  # Only save if object not in database yet
                 logger.warning("No billing cycle found for %s" % payment.reference_number)
                 return_messages.append((None, payment.id, _("No billing cycle found for %s") % payment))
                 num_notattached = num_notattached + 1

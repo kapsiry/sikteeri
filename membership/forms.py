@@ -14,6 +14,7 @@ VALID_USERNAME_RE = r"^[a-z][a-z0-9_]*[a-z0-9]$"
 
 MAX_AGE = 80
 
+
 class LoginField(forms.CharField):
     def __init__(self, *args, **kwargs):
         super(LoginField, self).__init__(min_length=2, max_length=16, *args, **kwargs)
@@ -23,7 +24,7 @@ class LoginField(forms.CharField):
         value = value.lower()
 
         errors = []
-        if re.match(VALID_USERNAME_RE, value) == None:
+        if re.match(VALID_USERNAME_RE, value) is None:
             errors.append(_('Login begins with an illegal character or contains an illegal character.'))
         if Alias.objects.filter(name__iexact=value).count() > 0:
             errors.append(_('Login already reserved.'))
@@ -33,21 +34,25 @@ class LoginField(forms.CharField):
 
         return value
 
+
 class PhoneNumberField(forms.RegexField):
     def __init__(self, *args, **kwargs):
         super(PhoneNumberField, self).__init__(regex=r"^ *[+0(][-+\d ()]{5,20} *$",
                                                min_length=4, max_length=20, *args, **kwargs)
 
     def clean(self, value):
-        return super(PhoneNumberField, self).clean(value).replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
+        return super(PhoneNumberField, self).clean(value)\
+            .replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
+
 
 class OrganizationRegistrationNumber(forms.RegexField):
     def __init__(self, *args, **kwargs):
         super(OrganizationRegistrationNumber, self).__init__(regex=r"^ *[\d]{1,4}\.[\d]{1,4} *$",
-                                               min_length=4, max_length=14, *args, **kwargs)
+                                                             min_length=4, max_length=14, *args, **kwargs)
 
     def clean(self, value):
         return super(OrganizationRegistrationNumber, self).clean(value).replace(" ", "")
+
 
 class YearOfBirthField(forms.RegexField):
     def __init__(self, *args, **kwargs):
@@ -92,13 +97,16 @@ class PersonMembershipForm(forms.Form):
                                    help_text=_('Other, where?'))
 
     email_forward = forms.CharField(min_length=2)
-    public_memberlist = forms.BooleanField(label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
+    public_memberlist = forms.BooleanField(
+        label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
+
 
 class ServiceForm(forms.Form):
     mysql_database = forms.BooleanField(label=_('I want a MySQL database'), required=False)
     postgresql_database = forms.BooleanField(label=_('I want a PostgreSQL database'), required=False)
     login_vhost = forms.BooleanField(label=_('I want a login.kapsi.fi website'), required=False)
     unix_login = LoginField(label=_('UNIX Login'))
+
 
 class OrganizationMembershipForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
@@ -109,15 +117,17 @@ class OrganizationMembershipForm(forms.Form):
                                    label=_('Home municipality'),
                                    help_text=_('Place where your organization is registered to'))
     organization_registration_number = OrganizationRegistrationNumber(
-                                                  label=_('Organization registration number'),
-                                                  required=True,
-                                                  help_text=_('Registration number given by Patentti- ja rekisterihallitus'))
+                                 label=_('Organization registration number'),
+                                 required=True,
+                                 help_text=_('Registration number given by Patentti- ja rekisterihallitus'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
                                  help_text=_('You can write additional questions or details here'),
                                  max_length=1000)
-    public_memberlist = forms.BooleanField(label=_('Organization information (name and homepage) can be shown in the public memberlist'), required=False)
+    public_memberlist = forms.BooleanField(
+        label=_('Organization information (name and homepage) can be shown in the public memberlist'), required=False)
+
 
 class BaseContactForm(forms.Form):
     street_address = forms.CharField(max_length=30, min_length=4,
@@ -142,10 +152,12 @@ class BaseContactForm(forms.Form):
     def clean(self):
         if 'postal_code' in self.cleaned_data and (self.cleaned_data['country'] == 'Finland' or
                                                          self.cleaned_data['country'] == 'Suomi'):
-            if re.match(r"^[\d]{5}$", self.cleaned_data['postal_code']) == None:
-                self._errors["postal_code"] = self.error_class([_("Postal codes in Finland must consist of 5 numbers.")])
+            if re.match(r"^[\d]{5}$", self.cleaned_data['postal_code']) is None:
+                self._errors["postal_code"] = self.error_class(
+                    [_("Postal codes in Finland must consist of 5 numbers.")])
                 del self.cleaned_data["postal_code"]
         return self.cleaned_data
+
 
 class PersonBaseContactForm(forms.Form):
     first_name = forms.CharField(max_length=40, min_length=1,
@@ -171,14 +183,18 @@ class ContactForm(forms.ModelForm):
 class OrganizationBaseContactForm(forms.Form):
     organization_name = forms.CharField(max_length=50, min_length=6, label=_('Organization name'))
 
+
 class PersonContactForm(PersonBaseContactForm, BaseContactForm):
     pass
+
 
 class OrganizationContactForm(OrganizationBaseContactForm, BaseContactForm):
     pass
 
+
 class PersonApplicationForm(PersonContactForm, PersonMembershipForm, ServiceForm):
     pass
+
 
 class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):
     pass

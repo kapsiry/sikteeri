@@ -72,7 +72,7 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 
 # Public access
 def person_application(request, template_name='membership/new_person_application.html'):
-    if settings.MAINTENANCE_MESSAGE != None:
+    if settings.MAINTENANCE_MESSAGE is not None:
         return redirect('frontpage')
     chosen_email_forward = None
     if request.method != 'POST':
@@ -173,15 +173,15 @@ def person_application(request, template_name='membership/new_person_application
                           [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
 
-    return render(request, template_name,
-                  {"form": application_form,
-                   "chosen_email_forward": chosen_email_forward,
-                   "title": _("Person member application")})
+    return render(request, template_name, {
+        "form": application_form,
+        "chosen_email_forward": chosen_email_forward,
+        "title": _("Person member application")})
 
 
 # Public access
 def organization_application(request, template_name='membership/new_organization_application.html'):
-    if settings.MAINTENANCE_MESSAGE != None:
+    if settings.MAINTENANCE_MESSAGE is not None:
         return redirect('frontpage')
     if request.method == 'POST':
         form = OrganizationApplicationForm(request.POST)
@@ -192,7 +192,7 @@ def organization_application(request, template_name='membership/new_organization
             d = {}
             for k, v in list(f.items()):
                 if k not in ['nationality', 'municipality', 'extra_info',
-                'public_memberlist', 'organization_registration_number']:
+                             'public_memberlist', 'organization_registration_number']:
                     d[k] = v
 
             organization = Contact(**d)
@@ -252,9 +252,8 @@ def organization_application_add_contact(request, contact_type,
         else:
             form = PersonContactForm()
     return render(request, template_name, {"form": form, "contact_type": type_text,
-                                  "step_number": forms.index(contact_type) + 2,
-                                  "title": _('Organization application') + ' - ' + type_text},
-                 )
+                                           "step_number": forms.index(contact_type) + 2,
+                                           "title": _('Organization application') + ' - ' + type_text})
 
 
 # Public access
@@ -1058,7 +1057,7 @@ def test_email(request, template_name='membership/test_email.html'):
 def membership_metrics(request):
     unpaid_cycles = BillingCycle.objects.filter(membership__status='A', is_paid=False)
     unpaid_sum = unpaid_cycles.aggregate(Sum("sum"))['sum__sum']
-    if unpaid_sum == None:
+    if unpaid_sum is None:
         unpaid_sum = "0.0"
     d = {'memberships':
          {'new': Membership.objects.filter(status='N').count(),

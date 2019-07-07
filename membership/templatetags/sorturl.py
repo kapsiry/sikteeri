@@ -77,11 +77,10 @@ def next_sort(sort):
         return None
 
 
-
 class SortUrl(template.Node):
     def __init__(self, field):
         self.field = field.replace('"', '').replace("'", '').strip()
-        if not self.field in sort_cycles:
+        if self.field not in sort_cycles:
             raise ValueError("Unknown sort key")
 
     def render(self, context):

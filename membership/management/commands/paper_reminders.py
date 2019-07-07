@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-
 import logging
 from tempfile import NamedTemporaryFile
 

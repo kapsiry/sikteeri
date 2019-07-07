@@ -26,6 +26,7 @@ def finnish_timeformat(t):
 ft = finnish_timeformat
 
 
+# noinspection SpellCheckingInspection
 def _bill_to_rows(bill, cancel=False):
     """Map bills to Procountor CSV format
 
@@ -39,11 +40,12 @@ def _bill_to_rows(bill, cancel=False):
     bill_delivery = ProcountorBillDelivery.NO_DELIVERY
 
     if c.membership.get_billing_contact():
-        billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
-                            c.membership.get_billing_contact().street_address,
-                            c.membership.get_billing_contact().postal_code,
-                            c.membership.get_billing_contact().post_office,
-                            'FI')
+        billing_address = '%s\%s\%s\%s\%s' % (
+            c.membership.name(),
+            c.membership.get_billing_contact().street_address,
+            c.membership.get_billing_contact().postal_code,
+            c.membership.get_billing_contact().post_office,
+            'FI')
         billing_email = c.membership.get_billing_contact().email
     else:
         billing_email = ""
@@ -52,7 +54,7 @@ def _bill_to_rows(bill, cancel=False):
             logger.critical("No billing contact found for member {member}".format(member=str(c.membership)))
             return []
         else:
-            logger.warn("No billing contact found for member {member}".format(member=str(c.membership)))
+            logger.warning("No billing contact found for member {member}".format(member=str(c.membership)))
 
     rows.append([
         'M',  # laskutyyppi
@@ -75,7 +77,7 @@ def _bill_to_rows(bill, cancel=False):
         '',  # Toimitusosoite
         '',  # Laskun lisätiedot
         '%s %d sikteerissä, tuotu %s, jäsen %d' % ('Hyvityslasku' if cancel else 'Lasku', bill.id, ft(datetime.now()),
-                                                        c.membership.id),  # Muistiinpanot
+                                                   c.membership.id),  # Muistiinpanot
         billing_email,  # Sähköpostiosoite
         '',  # Maksupäivämäärä
         '',  # Valuuttakurssi

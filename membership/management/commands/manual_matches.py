@@ -1,7 +1,5 @@
 # encoding: UTF-8
 
-
-
 import csv
 import os
 import sys
@@ -32,7 +30,7 @@ def process_csv(filename):
                 cycle = find_cycle(membership, year)
                 payment = Payment.objects.get(transaction_id=transaction)
 
-                if payment.billingcycle: # Already assigned, mark cycle as paid
+                if payment.billingcycle:  # Already assigned, mark cycle as paid
                     if payment.billingcycle != cycle:
                         mark_cycle_paid(cycle, log_user, "One payment for several billing cycles")
                     num_old += 1
@@ -53,7 +51,8 @@ def process_csv(filename):
                 num_nocycle += 1
             except Payment.DoesNotExist:
                 if not cycle.is_paid:
-                    logger.warning("No transaction found for id: %s, member: %s year: %s. Marking as paid anyway" % (transaction, mid, year))
+                    logger.warning("No transaction found for id: %s, member: %s year: %s. Marking as paid anyway" % (
+                        transaction, mid, year))
                     mark_cycle_paid(cycle, log_user, "Paid by a legacy payment (before 2010)")
                 num_nopayment += 1
             num_notattached = num_notattached + 1

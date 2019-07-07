@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import logging
-logger = logging.getLogger("membership.email_utils")
 
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+
+import logging
+logger = logging.getLogger("membership.email_utils")
 
 
 def format_email(name, email):
@@ -42,13 +43,14 @@ def bill_sender(sender, instance=None, **kwargs):
     if settings.BILL_ATTACH_PDF:
         pdf = instance.generate_pdf()
         if instance.is_reminder():
-            attachments = [("Kapsi_muistutuslasku_%s.pdf" % instance.billingcycle.reference_number, pdf, "application/pdf")]
+            attachments = [("Kapsi_muistutuslasku_%s.pdf" % instance.billingcycle.reference_number, pdf,
+                            "application/pdf")]
         else:
             attachments = [("kapsi_jasenlasku_%s.pdf" % instance.billingcycle.reference_number, pdf, "application/pdf")]
     else:
         attachments = []
 
-    if settings.BILLING_CC_EMAIL != None:
+    if settings.BILLING_CC_EMAIL is not None:
         email = EmailMessage(instance.bill_subject(),
                              instance.render_as_text(),
                              settings.BILLING_FROM_EMAIL,
@@ -66,6 +68,7 @@ def bill_sender(sender, instance=None, **kwargs):
     connection.send_messages([email])
     logger.info('A bill sent as email to %s: %s' % (",".join(to),
                                                      str(instance)))
+
 
 def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
     from services.models import Service
@@ -87,6 +90,7 @@ def preapprove_email_sender(sender, instance=None, user=None, **kwargs):
     logger.info('A preapprove email sent to %s (%s) by %s' % (str(instance),
                                                                instance.billing_email(),
                                                                user))
+
 
 def duplicate_payment_sender(sender, instance=None, user=None, billingcycle=None, **kwargs):
     """Email to bill payer due to duplicate payment"""

@@ -161,8 +161,10 @@ last_names = [
     "Wikman", "Yli-Hukka", "Ylimäinen", "Ylinen", "Ylönen", "Yrttikoski",
     "Äijänen", "Ärmänen"]
 
+
 def random_first_name():
     return random.choice(first_names)
+
 
 def random_last_name():
     return random.choice(last_names)

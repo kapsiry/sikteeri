@@ -18,7 +18,6 @@ from django.core.management import call_command
 from membership import unpaid_members
 from membership.billing.payments import process_payments, PaymentFromFutureException
 
-logger = logging.getLogger("membership.tests")
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -59,6 +58,8 @@ from membership.management.commands.makebills import MembershipNotApproved
 from membership.billing.payments import  process_op_csv, process_procountor_csv
 from membership.billing.payments import RequiredFieldNotFoundException
 
+
+logger = logging.getLogger("membership.tests")
 
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
@@ -183,6 +184,7 @@ class ReferenceNumberTest(TestCase):
 class MembershipStatusTest(TestCase):
     def setUp(self):
         self.m = create_dummy_member('N')
+
     def test_status_validations(self):
         for k, v in MEMBER_STATUS:
             if k == 'D':
@@ -191,15 +193,18 @@ class MembershipStatusTest(TestCase):
             self.m.save()
         self.m.status = 'X'
         self.assertRaises(ValidationError, self.m.save)
+
     def test_deleted_should_have_no_contacts(self):
         self.m.status = 'D'
         self.assertRaises(ValidationError, self.m.save)
         self.m.person = None
         self.m.save()
 
+
 class MembershipTypeTest(TestCase):
     def setUp(self):
         self.m = create_dummy_member('N')
+
     def test_person_and_organization_contacts_correctly_set(self):
         self.m.organization = self.m.person
         self.assertRaises(ValidationError, self.m.save)
@@ -207,6 +212,7 @@ class MembershipTypeTest(TestCase):
         self.assertRaises(ValidationError, self.m.save)
         self.m.person = None
         self.m.save()
+
 
 class MembershipFeeTest(TestCase):
     fixtures = ['test_user.json']
@@ -230,13 +236,15 @@ class MembershipFeeTest(TestCase):
         self.membership_h = membership_h
 
     def test_fees(self):
-        "Test setting fees and verify that they are set properly"
+        """
+        Test setting fees and verify that they are set properly
+        """
         now = datetime.now() - timedelta(seconds=5)
         week_ago = datetime.now() - timedelta(days=7)
-        P_FEE=30
-        S_FEE=500
-        O_FEE=60
-        H_FEE=0
+        P_FEE = 30
+        S_FEE = 500
+        O_FEE = 60
+        H_FEE = 0
         soon = datetime.now() + timedelta(hours=1)
         # Old fees
         Fee.objects.create(type='P', start=week_ago, sum=P_FEE/2,
@@ -290,7 +298,9 @@ class BillingTest(TestCase):
         pass
 
     def test_single_preapproved_no_op(self):
-        "makebills: preapproved membership no-op"
+        """
+        makebills: preapproved membership no-op
+        """
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
         mail.outbox = []
@@ -302,7 +312,9 @@ class BillingTest(TestCase):
         membership.delete()
 
     def test_membership_no_approved_time(self):
-        "makebills: approved_time with no entries"
+        """
+        makebills: approved_time with no entries
+        """
         membership = create_dummy_member('N')
         membership.status = 'A'
         membership.save()
@@ -324,7 +336,9 @@ class BillingTest(TestCase):
         makebills_logger.removeHandler(handler)
 
     def test_membership_approved_time_multiple_entries(self):
-        "makebills: approved_time multiple entries"
+        """
+        makebills: approved_time multiple entries
+        """
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
         membership.approve(self.user)
@@ -401,7 +415,7 @@ class SingleMemberBillingTest(TestCase):
         self.assertTrue(settings.BILLING_CC_EMAIL in m.bcc)
 
     def test_expired_cycle(self):
-        "makebills: before a cycle expires, a new one is created"
+        """makebills: before a cycle expires, a new one is created"""
         cycle = create_billingcycle(self.membership)
         cycle.starts = datetime.now() - timedelta(days=365)
         cycle.ends = datetime.now() + timedelta(days=27)
@@ -413,7 +427,7 @@ class SingleMemberBillingTest(TestCase):
         self.assertFalse(cycle.last_bill().is_reminder())
 
     def test_approved_cycle_and_bill_creation(self):
-        "makebills: cycle and bill creation"
+        """makebills: cycle and bill creation"""
         makebills()
 
         self.assertEqual(len(mail.outbox), 1)
@@ -434,7 +448,7 @@ class SingleMemberBillingTest(TestCase):
         self.assertEqual(CancelledBill.objects.count(), 0)
 
     def test_new_billing_cycle_with_previous_paid(self):
-        "makebills: new billing cycle with previous already paid"
+        """makebills: new billing cycle with previous already paid"""
         m = self.membership
 
         makebills()
@@ -760,7 +774,6 @@ class ProcountorExportTest(TestCase):
                 if cash_discount_percentage != '':
                     self.assertEqual(cash_discount_percentage, '0')
 
-
                 # Specific checks
                 current_bill_id = billing_id
                 if cancel_bill_code == 't':
@@ -857,7 +870,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.membership.delete()
 
     def test_bill_is_reminder(self):
-        "models.bill.is_reminder()"
+        """models.bill.is_reminder()"""
         reminder_bill = send_reminder(self.membership)
         self.assertTrue(reminder_bill.is_reminder())
         self.assertEqual(reminder_bill.reminder_count, 1)
@@ -866,7 +879,7 @@ class SingleMemberBillingModelsTest(TestCase):
         reminder_bill.delete()
 
     def test_billing_cycle_last_bill(self):
-        "models.Bill.last_bill()"
+        """models.Bill.last_bill()"""
         reminder_bill = send_reminder(self.membership)
         last_bill = self.cycle.bill_set.latest("due_date")
         self.assertEqual(last_bill.id, reminder_bill.id)
@@ -874,7 +887,7 @@ class SingleMemberBillingModelsTest(TestCase):
         reminder_bill.delete()
 
     def test_billing_cycle_is_last_bill_late(self):
-        "models.Bill.is_last_bill_late()"
+        """models.Bill.is_last_bill_late()"""
         self.assertFalse(self.cycle.is_last_bill_late())
         self.bill.due_date = datetime.now() - timedelta(days=1)
         self.bill.save()
@@ -885,7 +898,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.assertFalse(self.cycle.is_last_bill_late())
 
     def test_billing_payment_attach(self):
-        "models.Payment.attach_to_cycle()"
+        """models.Payment.attach_to_cycle()"""
         self.assertFalse(self.cycle.is_paid)
         p1 = Payment(billingcycle=None, amount=self.cycle.sum/2, payment_day=datetime.now(),
              transaction_id="test_billing_payment_attach_1")
@@ -955,11 +968,12 @@ class CanSendReminderTest(TestCase):
         can_send = can_send_reminder(month_ago, Payment.latest_payment_date())
         self.assertTrue(can_send, "Should be true with recent payment")
 
+
 class CSVNoMembersTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def test_file_reading(self):
-        "csvbills: test data should have 3 payments, none of which match"
+        """csvbills: test data should have 3 payments, none of which match"""
         with open_test_data("csv-test.csv") as f:
             process_op_csv(f)
 
@@ -971,6 +985,7 @@ class CSVNoMembersTest(TestCase):
         nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
         error = "No payments should match without any members in db"
         self.assertEqual(nomatch_payments, 0, error)
+
 
 class CSVReadingTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1030,7 +1045,7 @@ class ProcountorCSVNoMembersTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def test_file_reading(self):
-        "csvbills: test data should have 3 payments, none of which match"
+        """csvbills: test data should have 3 payments, none of which match"""
         with open_test_data("procountor-csv-test.csv") as f:
             process_procountor_csv(f)
 
@@ -1042,6 +1057,7 @@ class ProcountorCSVNoMembersTest(TestCase):
         nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
         error = "No payments should match without any members in db"
         self.assertEqual(nomatch_payments, 0, error)
+
 
 class ProcountorCSVReadingTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1121,7 +1137,7 @@ class LoginRequiredTest(TestCase):
                      ]
 
     def test_views_with_login(self):
-        "Request a page that is protected with @login_required"
+        """Request a page that is protected with @login_required"""
 
         # Get the page without logging in. Should result in 302.
         for url in self.urls:
@@ -1137,6 +1153,7 @@ class LoginRequiredTest(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.context['user'].username, 'admin')
 
+
 class TrustedHostTest(TestCase):
     def setUp(self):
         self.urls = ['/membership/admtool/1',
@@ -1151,7 +1168,7 @@ class TrustedHostTest(TestCase):
         settings.TRUSTED_HOSTS = self.oldhosts
 
     def test_views_with_ipaddr(self):
-        "Request a page that is protected with @login_required"
+        """Request a page that is protected with @login_required"""
 
         # Get the page with an untrusted address 403.
         settings.TRUSTED_HOSTS = ['13.13.13.13']
@@ -1194,6 +1211,7 @@ class ContactTest(TestCase):
         c.homepage = "https://www.kapsi.fi"
         c.save()
         self.assertEqual(c.homepage, "https://www.kapsi.fi")
+
 
 class JuniorMemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1245,6 +1263,7 @@ class JuniorMemberApplicationTest(TestCase):
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
         self.assertEqual(new.type, "P")
+
 
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1343,7 +1362,6 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;https://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
 
-
     def _validate_alias(self, alias):
         json_response = self.client.post('/membership/application/handle_json/',
             json.dumps({"requestType": "VALIDATE_ALIAS", "payload": alias}),
@@ -1367,6 +1385,7 @@ class MemberApplicationTest(TestCase):
         self.assertEqual(result['exists'], True)
         self.assertEqual(result['valid'], True)
         alias.delete()
+
 
 class PhoneNumberFieldTest(TestCase):
     def setUp(self):
@@ -1402,6 +1421,7 @@ class PhoneNumberFieldTest(TestCase):
     def test_dash_delimiter_begins_with_plus(self):
         self.assertEqual("+358400123123", self.field.clean("+358-400-123123 "))
 
+
 class OrganizationRegistratioTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
@@ -1414,6 +1434,7 @@ class OrganizationRegistratioTest(TestCase):
         self.assertRaises(ValidationError, self.field.clean, "str.str")
         self.assertRaises(ValidationError, self.field.clean, "11111")
         self.assertRaises(ValidationError, self.field.clean, "11111.1111111")
+
 
 class LoginFieldTest(TestCase):
     def setUp(self):
@@ -1429,7 +1450,6 @@ class LoginFieldTest(TestCase):
     def test_bad_chars(self):
         self.assertRaises(ValidationError, self.field.clean, "user.name")
         self.assertRaises(ValidationError, self.field.clean, "user-name")
-
 
     def test_too_short(self):
         self.assertRaises(ValidationError, self.field.clean, "a")
@@ -1506,6 +1526,7 @@ class MemberListTest(TestCase):
 
 class MemberDeletionTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1630,6 +1651,7 @@ class MemberDissociationRequestedTest(TestCase):
 
 class MemberCancelDissociationRequestTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1664,8 +1686,10 @@ class MemberCancelDissociationRequestTest(TestCase):
         m.dissociate(self.user)
         self.assertRaises(MembershipOperationError, m.cancel_dissociation_request, self.user)
 
+
 class MemberDissociationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1719,6 +1743,7 @@ class MetricsInterfaceTest(TestCase):
         for key in ['unpaid_count', 'unpaid_sum']:
             self.assertTrue(key in d['bills'])
 
+
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
         list1 = IpRangeList('127.0.0.1', '10.0.0.0/8', '127.0.0.2')
@@ -1734,9 +1759,11 @@ class IpRangeListTest(TestCase):
         self.assertTrue('1.2.3.4' in IpRangeList(*iplist))
         self.assertFalse('127.0.0.1' in IpRangeList())
 
+
 @trusted_host_required
 def dummyView(request, *args, **kwargs):
     return HttpResponse('OK', content_type='text/plain')
+
 
 class DecoratorTest(TestCase):
     def setUp(self):
@@ -1913,7 +1940,6 @@ class MembershipPaperReminderSentTest(TestCase):
                     due_date=datetime.now() - timedelta(days=5))
         bill.save()
 
-
     def test_membership_found_for_late_paper_reminder(self):
         qs = Membership.paper_reminder_sent_unpaid_after()
         self.assertEqual(1, len(qs))
@@ -1935,7 +1961,6 @@ class CorrectVatAmountInBillTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
-        #settings.BILLING_CC_EMAIL = None
         self.user = User.objects.get(id=1)
 
         self.m = create_dummy_member('N')
@@ -1954,12 +1979,8 @@ class CorrectVatAmountInBillTest(TestCase):
                          due_date=cycle_start)
         self.bill_2014 = Bill(billingcycle=self.cycle_2014, type='P',
                          due_date=cycle_start_2014)
-        #mail.outbox = []
 
     def tearDown(self):
-
-        #self.bill_2014.delete()
-        #self.bill_2013.delete()
         self.cycle.delete()
         self.cycle_2014.delete()
         self.m.delete()
@@ -2389,7 +2410,6 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end, "No new payments should be imported")
 
-
     def test_process_payment_unknown_payment(self):
         today = datetime.now().strftime("%Y-%m-%d")
         payment = {
@@ -2423,7 +2443,8 @@ class TestProcountorApi(TestCase):
                     "name": "Firstname Lastname",
                     "payDate": today,
                     "sum": 40.0,
-                    "message": "SEPA-MAKSU                         %s                         OKOYFIHH\n" % group_reference(self.bill.reference_number()),
+                    "message": "SEPA-MAKSU                         %s                         OKOYFIHH\n" %
+                               group_reference(self.bill.reference_number()),
                     "endToEndId": 0,
                     "explanationCode": 710,
                     "valueDate": today,

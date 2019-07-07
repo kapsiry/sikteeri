@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-
-
 """
-Copyright (c) 2014-2015 Kapsi Internet-käyttäjät ry. All rights reserved.
+Copyright (c) 2014-2019 Kapsi Internet-käyttäjät ry. All rights reserved.
 
-Generates bill list in procountor format and emails it to relevant persons.
+Generates bill list in Procountor format and emails it to relevant persons.
 """
 
 import argparse

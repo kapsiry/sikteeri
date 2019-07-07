@@ -32,41 +32,41 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Named (optional) arguments
         parser.add_argument('--approved',
-                    type=int,
-                    dest='approved',
-                    default=100,
-                    help='Number of approved members (100)')
+                            type=int,
+                            dest='approved',
+                            default=100,
+                            help='Number of approved members (100)')
         parser.add_argument('--preapproved',
-                    type=int,
-                    dest='preapproved',
-                    default=20,
-                    help='Number of preapproved members (20)')
+                            type=int,
+                            dest='preapproved',
+                            default=20,
+                            help='Number of preapproved members (20)')
         parser.add_argument('--new',
-                    type=int,
-                    dest='new',
-                    default=15,
-                    help='Number of new members (15)')
+                            type=int,
+                            dest='new',
+                            default=15,
+                            help='Number of new members (15)')
 
         parser.add_argument('--duplicates',
-                    type=int,
-                    dest='duplicates',
-                    default=5,
-                    help='Number of duplicate members (5)')
+                            type=int,
+                            dest='duplicates',
+                            default=5,
+                            help='Number of duplicate members (5)')
         parser.add_argument('--dissociated',
-                    type=int,
-                    dest='dissociated',
-                    default=5,
-                    help='Number of dissociated members (5)')
+                            type=int,
+                            dest='dissociated',
+                            default=5,
+                            help='Number of dissociated members (5)')
         parser.add_argument('--dissociation-requested',
-                    type=int,
-                    dest='dissociation_requested',
-                    default=2,
-                    help='Number of dissociation requested members (2)')
+                            type=int,
+                            dest='dissociation_requested',
+                            default=2,
+                            help='Number of dissociation requested members (2)')
         parser.add_argument('--deleted',
-                    type=int,
-                    dest='deleted',
-                    default=2,
-                    help='Number of deleted members (2)')
+                            type=int,
+                            dest='deleted',
+                            default=2,
+                            help='Number of deleted members (2)')
 
     def handle(self, *args, **options):
         if Fee.objects.all().count() == 0:
@@ -89,40 +89,40 @@ class Command(BaseCommand):
         if Membership.objects.count() > 0 or Payment.objects.count() > 0:
             self.stderr.write("Database not empty, refusing to generate test data")
             sys.exit(1)
-        assert approved+preapproved+new > duplicates
+        assert approved + preapproved + new > duplicates
         # Approved members
         initial_index = 0
         index = 1
 
-        for i in range(index, index+approved+dissociated+dissociation_requested+deleted):
+        for i in range(index, index + approved + dissociated + dissociation_requested + deleted):
             membership = self.create_dummy_member(i)
             if initial_index == 0:
                 initial_index = membership.pk
             membership.preapprove(self.user)
             membership.approve(self.user)
             self.create_payment(membership)
-        index += approved+dissociated+dissociation_requested+deleted
+        index += approved + dissociated + dissociation_requested + deleted
 
         # Pre-approved members
-        for i in range(index, index+preapproved):
+        for i in range(index, index + preapproved):
             with transaction.atomic():
                 membership = self.create_dummy_member(i)
                 membership.preapprove(self.user)
         index += preapproved
 
         # New applications
-        for i in range(index, index+new):
+        for i in range(index, index + new):
             membership = self.create_dummy_member(i)
         index += new
 
         # Make a few duplicates for duplicate detection GUI testing
-        for i in range(index, index+duplicates):
+        for i in range(index, index + duplicates):
             if approved > 0 and random() > 0.5:
                 # About 50% of duplicates are existing members
                 duplicate_source_id = randint(1, approved)
             else:
                 # The rest are new applications
-                duplicate_source_id = randint(index-1-duplicates, index-1)
+                duplicate_source_id = randint(index - 1 - duplicates, index - 1)
             duplicate_of = Membership.objects.get(id=duplicate_source_id)
             membership = self.create_dummy_member(i, duplicate_of=duplicate_of)
         index += duplicates
@@ -136,15 +136,15 @@ class Command(BaseCommand):
 
         # Some members disassociate.
 
-        for i in range(initial_index, initial_index+dissociated+dissociation_requested+deleted):
+        for i in range(initial_index, initial_index + dissociated + dissociation_requested + deleted):
             membership = Membership.objects.get(id=i)
             membership.request_dissociation(self.user)
 
-        for i in range(initial_index, initial_index+dissociated+deleted):
+        for i in range(initial_index, initial_index + dissociated + deleted):
             membership = Membership.objects.get(id=i)
             membership.dissociate(self.user)
 
-        for i in range(initial_index, initial_index+deleted):
+        for i in range(initial_index, initial_index + deleted):
             membership = Membership.objects.get(id=i)
             membership.delete_membership(self.user)
 
@@ -152,17 +152,17 @@ class Command(BaseCommand):
     def create_dummy_member(self, i, duplicate_of=None):
         fname = random_first_name()
         d = {
-            'street_address' : 'Testikatu %d'%i,
-            'postal_code' : '%d' % (i+1000),
-            'post_office' : 'Paska kaupunni',
-            'country' : 'Finland',
-            'phone' : "%09d" % (40123000 + i),
-            'sms' : "%09d" % (40123000 + i),
-            'email' : 'user%d@example.com' % i,
-            'homepage' : 'http://www.example.com/%d'%i,
-            'first_name' : fname,
-            'given_names' : '%s %s' % (fname, "Kapsi"),
-            'last_name' : random_last_name(),
+            'street_address': 'Testikatu %d' % i,
+            'postal_code': '%d' % (i + 1000),
+            'post_office': 'Paska kaupunni',
+            'country': 'Finland',
+            'phone': "%09d" % (40123000 + i),
+            'sms': "%09d" % (40123000 + i),
+            'email': 'user%d@example.com' % i,
+            'homepage': 'http://www.example.com/%d' % i,
+            'first_name': fname,
+            'given_names': '%s %s' % (fname, "Kapsi"),
+            'last_name': random_last_name(),
         }
 
         if duplicate_of is not None:
@@ -188,7 +188,6 @@ class Command(BaseCommand):
         forward_alias = Alias(owner=membership,
                               name=Alias.email_forwards(membership)[0])
         forward_alias.save()
-
 
         login_alias = Alias(owner=membership, account=True,
                             name=choice(Alias.unix_logins(membership)))
@@ -218,7 +217,7 @@ class Command(BaseCommand):
 
     def create_payment(self, membership):
         if random() < 0.3:
-            return # do nothing
+            return  # do nothing
 
         amount = "40.0"
         if random() < 0.2:

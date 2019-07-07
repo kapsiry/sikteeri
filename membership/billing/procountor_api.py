@@ -1,14 +1,10 @@
-# encoding: utf-8
-import json
 import random
 import string
 import urllib.parse
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import django
 import requests
-from django.conf import settings
 import logging
 
 logger = logging.getLogger("ProcountorAPI")
@@ -157,8 +153,10 @@ class ProcountorReferencePayment(object):
             sum (number, optional): The total amount for the reference payment. ,
             name (string, optional): Name of the counterparty. ,
             bankReference (string, optional): A reference value for the bank. ,
-            archiveId (string, optional): Archive code of the reference payment. Archive codes are unique in one bank but two events from different banks can share the same archive code. ,
-            allocated (boolean, optional): Is the reference payment allocated to an invoice. If it is, the event must also have an invoice ID. ,
+            archiveId (string, optional): Archive code of the reference payment. Archive codes are unique in one bank
+            but two events from different banks can share the same archive code. ,
+            allocated (boolean, optional): Is the reference payment allocated to an invoice. If it is, the event must
+            also have an invoice ID. ,
             invoiceId (integer, optional): Unique identifier of the invoice linked to the event. ,
             attachments (Array[Attachment], optional): A list of attachments added to the reference payment.
         }
@@ -267,10 +265,6 @@ class ProcountorAPIClient(object):
 
         return self.authenticate_2phase(authorization_code=authorization_code)
 
-    def get_invoices(self, status="PAID"):
-        res = self.get("invoices", params={"status": status})
-        return res.json()
-
     def get_referencepayments(self, start, end):
         """
         Get refence payments
@@ -359,10 +353,11 @@ class ProcountorAPIClient(object):
         res = self.get("ledgerreceipts", params=params)
         return res.json()
 
-    def get_invoices(self, start, end):
+    def get_invoices(self, start, end, status="PAID"):
         params = {
             "startDate": start.strftime("%Y-%m-%d"),
-            "endDate": end.strftime("%Y-%m-%d")
+            "endDate": end.strftime("%Y-%m-%d"),
+            "status": status,
         }
         res = self.get("invoices", params=params)
         return res.json()

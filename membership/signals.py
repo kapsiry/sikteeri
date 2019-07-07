@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from django.dispatch import Signal
+
 import logging
 logger = logging.getLogger("membership.signals")
 
-from django.dispatch import Signal
 
 # Signals
 send_as_email = Signal(providing_args=["instance"])

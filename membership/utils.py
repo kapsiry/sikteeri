@@ -9,6 +9,7 @@ from django.utils.html import escape
 
 # http://code.activestate.com/recipes/576644/
 
+
 def dict_diff(first, second):
     """ Return a dict of keys that differ with another config object.  If a value is
         not found in one fo the configs, it will be represented by KEYNOTFOUND.
@@ -19,17 +20,18 @@ def dict_diff(first, second):
     diff = {}
     sd1 = set(first)
     sd2 = set(second)
-    #Keys missing in the second dict
+    # Keys missing in the second dict
     for key in sd1.difference(sd2):
         diff[key] = (first[key], None)
-    #Keys missing in the first dict
+    # Keys missing in the first dict
     for key in sd2.difference(sd1):
         diff[key] = (None, second[key])
-    #Check for differences
+    # Check for differences
     for key in sd1.intersection(sd2):
         if first[key] != second[key]:
             diff[key] = (first[key], second[key])
     return diff
+
 
 def diff_humanize(diff):
     # Human readable output
@@ -52,6 +54,7 @@ def diff_humanize(diff):
             txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
     return txt
 
+
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:
@@ -69,6 +72,7 @@ def log_change(object, user, before=None, after=None, change_message=None):
         action_flag     = CHANGE,
         change_message  = change_message
     )
+
 
 def change_message_to_list(row):
     """Convert humanized diffs to a list for usage in template"""
@@ -92,6 +96,7 @@ def change_message_to_list(row):
         retval.append([key, old, new])
     return retval
 
+
 def bake_log_entries(raw_log_entries):
     ACTION_FLAGS = {1 : _('Addition'),
                     2 : _('Change'),
@@ -100,6 +105,7 @@ def bake_log_entries(raw_log_entries):
         x.action_flag_str = str(ACTION_FLAGS[x.action_flag])
         x.change_list = change_message_to_list(x)
     return raw_log_entries
+
 
 def serializable_membership_info(membership):
     """
@@ -191,7 +197,6 @@ def serializable_membership_info(membership):
     return json_obj
 
 
-
 def admtool_membership_details(membership):
     from services.models import valid_aliases, Service
     json_obj = {}
@@ -238,8 +243,6 @@ def admtool_membership_details(membership):
 
     json_obj['unix_users'] = [str(alias) for alias in valid_aliases(membership) if alias.account is True]
 
-#    json_obj['services'] = ", ".join((escape(str(service))
-#                                      for service in Service.objects.filter(owner=membership)))
     json_obj['services'] = services_json_obj = []
     for service in Service.objects.filter(owner=membership):
         service_obj = {}
@@ -255,17 +258,17 @@ def admtool_membership_details(membership):
     # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
-        d = { 'user_name': str(comment.user),
-              'text': escape(comment.comment),
-              'date': comment.submit_date }
+        d = {'user_name': str(comment.user),
+             'text': escape(comment.comment),
+             'date': comment.submit_date }
         comment_list.append(d)
         event_list.append(d)
 
     log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
-        d = { 'user_name': str(entry.user),
-              'text': "%s %s" % (escape(str(entry.action_flag_str)), escape(str(entry.change_message))),
-              'date': entry.action_time }
+        d = {'user_name': str(entry.user),
+             'text': "%s %s" % (escape(str(entry.action_flag_str)), escape(str(entry.change_message))),
+             'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)
 
@@ -283,8 +286,10 @@ def admtool_membership_details(membership):
     ctimeify(event_list)
 
     return json_obj
+
+
 def tupletuple_to_dict(tupletuple):
-    '''Convert a tuple of tuples to dict
+    """Convert a tuple of tuples to dict
 
     >>> tupletuple = (('A', 'Value1'), ('B', 'Value2'))
     >>> d = tupletuple_to_dict(tupletuple)
@@ -292,7 +297,7 @@ def tupletuple_to_dict(tupletuple):
     'Value1'
     >>> d['B']
     'Value2'
-    '''
+    """
     d = {}
     for t in tupletuple:
         (key, value) = t

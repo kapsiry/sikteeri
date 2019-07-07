@@ -9,7 +9,6 @@ from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
 
-logger = logging.getLogger("membership.models")
 import traceback
 
 from io import StringIO, BytesIO
@@ -34,14 +33,23 @@ from membership.signals import send_as_email, send_preapprove_email, send_duplic
 from .email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
 
 
-class BillingEmailNotFound(Exception): pass
-class MembershipOperationError(Exception): pass
+logger = logging.getLogger("membership.models")
 
 
-class MembershipAlreadyStatus(MembershipOperationError): pass
+class BillingEmailNotFound(Exception):
+    pass
+
+
+class MembershipOperationError(Exception):
+    pass
+
+
+class MembershipAlreadyStatus(MembershipOperationError):
+    pass
 
 
 class PaymentAttachedError(Exception): pass
+
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('J', _('Junior')),
@@ -75,9 +83,11 @@ BILL_TYPES = (
 )
 BILL_TYPES_DICT = tupletuple_to_dict(BILL_TYPES)
 
+
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
+
 
 def _get_logs(self):
     '''Gets the log entries related to this object.
@@ -86,6 +96,7 @@ def _get_logs(self):
     ct = ContentType.objects.get_for_model(my_class)
     object_logs = ct.logentry_set.filter(object_id=self.id)
     return object_logs
+
 
 class Contact(models.Model):
     logs = property(_get_logs)
@@ -146,7 +157,7 @@ class Contact(models.Model):
         try:
             return Membership.objects.get(tech_contact_id=self.id).id
         except Membership.DoesNotExist:
-             return None
+            return None
 
     def email_to(self):
         if self.email:
@@ -173,6 +184,7 @@ class MembershipManager(models.Manager):
 
     def get_query_set(self):
         return MembershipQuerySet(self.model)
+
 
 class MembershipQuerySet(QuerySet):
     def sort(self, sortkey):
@@ -267,7 +279,7 @@ class Membership(models.Model):
             if contact:
                 if contact.email:
                     return str(contact.email_to())
-        raise BillingEmailNotFound("Neither billing or administrative contact "+
+        raise BillingEmailNotFound("Neither billing or administrative contact "
             "has an email address")
 
     # https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.clean
@@ -608,7 +620,8 @@ class BillingCycle(models.Model):
     end =  models.DateTimeField(verbose_name=_('End'))
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
-    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
+    # NOT an integer since it can begin with 0 XXX: format
+    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'))
     logs = property(_get_logs)
 
     objects = BillingCycleManager()
@@ -646,7 +659,7 @@ class BillingCycle(models.Model):
         return False
 
     def is_last_bill_late(self):
-        if self.is_paid or self.last_bill() == None:
+        if self.is_paid or self.last_bill() is None:
             return False
         if datetime.now() > self.last_bill().due_date:
             return True
@@ -654,7 +667,7 @@ class BillingCycle(models.Model):
 
     def amount_paid(self):
         data = self.payment_set.aggregate(Sum('amount'))['amount__sum']
-        if data == None:
+        if data is None:
             data = Decimal('0')
         return data
 
@@ -769,7 +782,6 @@ class BillingCycle(models.Model):
             datalist.append(cycle)
         return datalist
 
-
     def end_date(self):
         """Logical end date
 
@@ -794,6 +806,7 @@ class BillingCycle(models.Model):
         if not self.sum:
             self.sum = self.get_fee()
         super(BillingCycle, self).save(*args, **kwargs)
+
 
 cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
 
@@ -925,7 +938,6 @@ class Bill(models.Model):
         """
         return get_bill_pdf(self, payments=Payment)
 
-
     # FIXME: Should save sending date
     def send_as_email(self):
         membership = self.billingcycle.membership
@@ -974,7 +986,8 @@ class Payment(models.Model):
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
     transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
-    amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
+    # This limits sum to 9999999.99
+    amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount'))
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
     duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
@@ -1008,16 +1021,16 @@ class Payment(models.Model):
             log_change(self, user, change_message="Detached from billing cycle")
         cycle.update_is_paid()
 
-
     def send_duplicate_payment_notice(self, user, **kwargs):
         if not user:
             raise Exception('send_duplicate_payment_notice user objects as parameter')
         billingcycle = BillingCycle.objects.get(reference_number=self.reference_number)
         if billingcycle.sum > 0:
-            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user, billingcycle=billingcycle)
+            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user,
+                                                                  billingcycle=billingcycle)
             for item in ret_items:
                 sender, error = item
-                if error != None:
+                if error is not None:
                     logger.error("%s" % traceback.format_exc())
                     raise error
             log_change(self, user, change_message="Duplicate payment notice sent")
@@ -1029,6 +1042,7 @@ class Payment(models.Model):
         except Payment.DoesNotExist:
             return None
 
+
 class ApplicationPoll(models.Model):
     """
     Store statistics taken from membership application "where did you
@@ -1038,6 +1052,7 @@ class ApplicationPoll(models.Model):
     membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
     date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
     answer = models.CharField(max_length=512, verbose_name=_('Service specific data'))
+
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
@@ -1051,4 +1066,4 @@ send_as_email.connect(bill_sender, sender=Bill, dispatch_uid="email_bill")
 send_preapprove_email.connect(preapprove_email_sender, sender=Membership,
                               dispatch_uid="preapprove_email")
 send_duplicate_payment_notice.connect(duplicate_payment_sender, sender=Payment,
-                              dispatch_uid="duplicate_payment_notice")
+                                      dispatch_uid="duplicate_payment_notice")
