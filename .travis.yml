@@ -4,7 +4,7 @@ cache:
   directories:
     - $HOME/.cache/pip
 python:
-  - "2.7"
+  - "3.6"
 before_script:
  - "sudo locale-gen fi_FI.UTF-8"
  - "pip install pytest-coverage pytest-django codecov"
