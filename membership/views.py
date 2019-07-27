@@ -1013,7 +1013,7 @@ def membership_disassociate_json(request, id):
 # Public access
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.body)
-    msg = json.loads(request.body)
+    msg = json.loads(request.body.decode('utf-8'))
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
              'DISASSOCIATE': membership_disassociate_json,
