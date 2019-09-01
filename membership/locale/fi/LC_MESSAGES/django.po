@@ -40,7 +40,7 @@ msgstr "Virheellinen syntymävuosi"
 
 #: membership/forms.py:70 membership/forms.py:105 membership/models.py:217
 msgid "Nationality"
-msgstr "Kansallisuus"
+msgstr "Kansalaisuus"
 
 #: membership/forms.py:71 membership/forms.py:106
 msgid "Finnish nationality"
@@ -48,7 +48,7 @@ msgstr "Suomi"
 
 #: membership/forms.py:72
 msgid "Your nationality"
-msgstr "Kansallisuus"
+msgstr "Kansalaisuus"
 
 #: membership/forms.py:74 membership/forms.py:109 membership/models.py:216
 msgid "Home municipality"

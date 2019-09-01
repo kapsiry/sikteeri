@@ -40,7 +40,7 @@ msgstr "Kotipaikka"
 
 #: static/js/member_list.js:60
 msgid "Nationality"
-msgstr "Kansallisuus"
+msgstr "Kansalaisuus"
 
 #: static/js/member_list.js:61
 msgid "Visible in the public memberlist"
