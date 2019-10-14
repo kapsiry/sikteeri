@@ -253,7 +253,8 @@ def organization_application_add_contact(request, contact_type,
             form = PersonContactForm()
     return render(request, template_name, {"form": form, "contact_type": type_text,
                                            "step_number": forms.index(contact_type) + 2,
-                                           "title": _('Organization application') + ' - ' + type_text})
+                                           "title": '{title} - {part}'.format(title=_('Organization application'),
+                                                                              part=type_text)})
 
 
 # Public access
@@ -293,7 +294,8 @@ def organization_application_services(request, template_name='membership/new_org
                 del request.session['services']
 
     return render(request, template_name,
-                  {"form": form, "title": _('Choose services')})
+                  {"form": form, "title": '{title} - {part}'.format(title=_('Organization application'),
+                                                                    part=_('Choose services'))})
 
 
 # Public access
@@ -316,7 +318,7 @@ def organization_application_review(request, template_name='membership/new_organ
         forms[-1].name = _("Technical contact")
     return render(request, template_name,
                   {"forms": forms, "services": request.session['services'],
-                   "title": _('Organization application') + ' - ' + _('Review')})
+                   "title": '{title} - {part}'.format(title=_('Organization application'), part=_('Review'))})
 
 
 # Public access
