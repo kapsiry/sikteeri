@@ -26,6 +26,7 @@ import locale
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..//'))
 
+pdfmetrics.registerFont(TTFont('Arial', os.path.join(settings.FONT_PATH, 'Arial.ttf')))
 pdfmetrics.registerFont(TTFont('IstokWeb', os.path.join(settings.FONT_PATH, 'IstokWeb-Regular.ttf')))
 pdfmetrics.registerFont(TTFont('IstokWeb-Bold', os.path.join(settings.FONT_PATH, 'IstokWeb-Bold.ttf')))
 
@@ -286,7 +287,8 @@ class PDFTemplate(object):
             'name': cycle.membership.name(),
             'address': membercontact.street_address,
             'postal_code': membercontact.postal_code,
-            'postal_office': membercontact.post_office,
+            'postal_office': membercontact.post_office.upper(),
+            'country': membercontact.country.upper() if membercontact.country not in ['Suomi', 'Finland'] else '',
             'date': date.strftime("%d.%m.%Y"),
             'latest_payment_date': latest_payments.strftime('%d.%m.%Y'),
             'member_id': cycle.membership.id,
@@ -303,29 +305,29 @@ class PDFTemplate(object):
 
     def addTemplate(self):
         # Logo to upper left corner
-        self.drawImage(0.2, 0, 5, 2.5, LOGO)
-        self.drawString(10.5, 3, "%(date)s" % self.data, alignment="center", size=12)
-        self.drawString(1.5, 3, "Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
+        self.drawImage(1.8, 1, 3.4, 1.7, LOGO)
+        self.drawString(12.4, 2.9, "%(date)s" % self.data, size=12)
+        self.drawString(1.8, 2.9, "Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
                         size=8)
         # Address block
-        self.drawText(1.5, 4, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s" % self.data, size=12)
+        self.drawText(1.8, 4.4, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(country)s" % self.data, size=12, font='Arial')
 
-        self.drawBox(14.5, 3.5, 5, 1.7)
-        self.drawTable(14.7, 4, [['Jäsennumero:', '%(member_id)s' % self.data],
+        self.drawBox(12.2, 3.5, 5, 1.7)
+        self.drawTable(12.4, 4, [['Jäsennumero:', '%(member_id)s' % self.data],
                                  ['Eräpäivä:', '%(due_date)s' % self.data],
                                  ['Huomautusaika:', '%(notify_period)s' % self.data]
                                  ], size=10)
 
         xtable = [1, 1.5, 7, 12, 13.5, 15, 17]
-        self.drawString(xtable[1], 6.5, "Selite", size=9)
-        self.drawString(xtable[2], 6.5, "Aikaväli", size=9)
-        self.drawString(xtable[3], 6.5, "ilman alv", size=9)
-        self.drawString(xtable[4], 6.5, "alv", size=9)
-        self.drawString(xtable[5], 6.5, "alv osuus", size=9)
-        self.drawString(xtable[6], 6.5, "Yhteensä", size=9)
-        self.drawHorizontalStroke(1, 6.6, 18.5)
+        self.drawString(xtable[1], 8.8, "Selite", size=9)
+        self.drawString(xtable[2], 8.8, "Aikaväli", size=9)
+        self.drawString(xtable[3], 8.8, "ilman alv", size=9)
+        self.drawString(xtable[4], 8.8, "alv", size=9)
+        self.drawString(xtable[5], 8.8, "alv osuus", size=9)
+        self.drawString(xtable[6], 8.8, "Yhteensä", size=9)
+        self.drawHorizontalStroke(1, 8.9, 18.5)
 
-        y = 7
+        y = 9.3
         for line in self.data['lineitems']:
             for i in range(len(xtable)):
                 self.drawString(xtable[i], y, line[i], size=10)
@@ -428,19 +430,16 @@ class PDFReminder(PDFTemplate):
     __type__ = 'reminder'
 
     def addContent(self):
-        self.drawString(10.5, 2, "<b>MUISTUTUS</b>", alignment="center")
-        self.drawText(1, 10, """Hei!
+        self.drawString(12.4, 2, "<b>MUISTUTUS</b>")
+        self.drawText(1, 11.5, """Hei!
 
 Tämä on muistutus puuttuvasta jäsenmaksusuorituksesta. Alkuperäinen lasku on lähetetty ainoastaan sähköpostitse.
 Mikäli et ole saanut sitä, tarkistathan että sähköpostiosoitteesi on oikein jäsenrekisterissä (listattu maksajan tiedoissa
 alla).
 
-Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa tilanteissa:
-- jos tämä lasku on mielestäsi virheellinen
-- haluat erota yhdistyksestä
-- haluat muuttaa yhteystietojasi
-- haluat sopia maksuaikataulusta
-- sinulla on muuta kysyttävää jäsenasioista.
+Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi jos tämä lasku on mielestäsi
+virheellinen, haluat erota yhdistyksestä, haluat muuttaa yhteystietojasi, haluat sopia maksuaikataulusta tai sinulla on
+muuta kysyttävää jäsenasioista.
 """ % (get_billing_email(),), size=10)
 
         self.drawText(1, 16, "<b>Muistutuksen maksamatta jättäminen johtaa jäsenpalveluiden lukitsemiseen ja "
@@ -455,8 +454,8 @@ class PDFInvoice(PDFTemplate):
     __type__ = 'invoice'
 
     def addContent(self):
-        self.drawString(10.5, 2, "<b>LASKU</b>", alignment="center")
-        self.drawText(1, 10, """
+        self.drawString(12.4, 2, "<b>LASKU</b>")
+        self.drawText(1, 11.5, """
 Voit ottaa yhteyttä Kapsin laskutukseen osoitteeseen %s esimerkiksi seuraavissa tilanteissa:
    - tämä lasku on sinusta virheellinen
    - haluat erota yhdistyksestä
