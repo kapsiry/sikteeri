@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from version import VERSION
+from .version import VERSION
 
 class GitVersionHeaderMiddleware(object):
     """

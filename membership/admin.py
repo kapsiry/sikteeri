@@ -24,6 +24,7 @@ class MembershipAdmin(admin.ModelAdmin):
         qs = Membership.search(search_term)
         return qs, False
 
+
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(Fee)

@@ -4,11 +4,11 @@ from datetime import datetime
 
 from django_comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
-from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
 
 # http://code.activestate.com/recipes/576644/
+
 
 def dict_diff(first, second):
     """ Return a dict of keys that differ with another config object.  If a value is
@@ -20,17 +20,18 @@ def dict_diff(first, second):
     diff = {}
     sd1 = set(first)
     sd2 = set(second)
-    #Keys missing in the second dict
+    # Keys missing in the second dict
     for key in sd1.difference(sd2):
         diff[key] = (first[key], None)
-    #Keys missing in the first dict
+    # Keys missing in the first dict
     for key in sd2.difference(sd1):
         diff[key] = (None, second[key])
-    #Check for differences
+    # Check for differences
     for key in sd1.intersection(sd2):
         if first[key] != second[key]:
             diff[key] = (first[key], second[key])
     return diff
+
 
 def diff_humanize(diff):
     # Human readable output
@@ -53,6 +54,7 @@ def diff_humanize(diff):
             txt += "%s: '%s' => '%s'. " % (key, change[0], change[1])
     return txt
 
+
 def log_change(object, user, before=None, after=None, change_message=None):
     if not change_message:
         if before and after:
@@ -66,10 +68,11 @@ def log_change(object, user, before=None, after=None, change_message=None):
         user_id         = user.pk,
         content_type_id = ContentType.objects.get_for_model(object).pk,
         object_id       = object.pk,
-        object_repr     = force_unicode(object),
+        object_repr     = str(object),
         action_flag     = CHANGE,
         change_message  = change_message
     )
+
 
 def change_message_to_list(row):
     """Convert humanized diffs to a list for usage in template"""
@@ -93,14 +96,16 @@ def change_message_to_list(row):
         retval.append([key, old, new])
     return retval
 
+
 def bake_log_entries(raw_log_entries):
     ACTION_FLAGS = {1 : _('Addition'),
                     2 : _('Change'),
                     3 : _('Deletion')}
     for x in raw_log_entries:
-        x.action_flag_str = unicode(ACTION_FLAGS[x.action_flag])
+        x.action_flag_str = str(ACTION_FLAGS[x.action_flag])
         x.change_list = change_message_to_list(x)
     return raw_log_entries
+
 
 def serializable_membership_info(membership):
     """
@@ -118,13 +123,13 @@ def serializable_membership_info(membership):
         if attr in ['type', 'status']:
             attr_val = getattr(membership, 'get_' + attr + '_display')()
         else:
-            attr_val = escape(getattr(membership, attr, u''))
-        if isinstance(attr_val, basestring):
+            attr_val = escape(getattr(membership, attr, ''))
+        if isinstance(attr_val, str):
             json_obj[attr] = attr_val
         elif isinstance(attr_val, datetime):
             json_obj[attr] = attr_val.ctime()
         else:
-            json_obj[attr] = unicode(attr_val)
+            json_obj[attr] = str(attr_val)
 
     # Contacts
     contacts_json_obj = {}
@@ -139,7 +144,7 @@ def serializable_membership_info(membership):
                        'organization_name', 'street_address', 'postal_code',
                        'post_office', 'country', 'phone', 'sms', 'email',
                        'homepage']:
-            c_attr_val = escape(getattr(attr_val, c_attr, u''))
+            c_attr_val = escape(getattr(attr_val, c_attr, ''))
             contact_json_obj[c_attr] = c_attr_val
             contacts_json_obj[attr] = contact_json_obj
 
@@ -162,7 +167,7 @@ def serializable_membership_info(membership):
     # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
-        d = { 'user_name': unicode(comment.user),
+        d = { 'user_name': str(comment.user),
               'text': escape(comment.comment),
               'date': comment.submit_date }
         comment_list.append(d)
@@ -170,26 +175,19 @@ def serializable_membership_info(membership):
 
     log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
-        d = { 'user_name': unicode(entry.user),
-              'text': "%s %s" % (escape(unicode(entry.action_flag_str)), escape(unicode(entry.change_message))),
+        d = { 'user_name': str(entry.user),
+              'text': "%s %s" % (escape(str(entry.action_flag_str)), escape(str(entry.change_message))),
               'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)
 
-    def cmp_fun(x, y):
-        if x['date'] > y['date']:
-            return 1
-        if x['date'] == y['date']:
-            return 0
-        return -1
-
-    comment_list.sort(cmp_fun)
-    log_entry_list.sort(cmp_fun)
-    event_list.sort(cmp_fun)
+    comment_list.sort(key=lambda x: x['date'])
+    log_entry_list.sort(key=lambda x: x['date'])
+    event_list.sort(key=lambda x: x['date'])
 
     def ctimeify(lst):
         for item in lst:
-            if isinstance(item['date'], basestring):
+            if isinstance(item['date'], str):
                 continue # some are already in ctime format since they are part of multiple lists
             item['date'] = item['date'].ctime()
     ctimeify(comment_list)
@@ -197,7 +195,6 @@ def serializable_membership_info(membership):
     ctimeify(event_list)
 
     return json_obj
-
 
 
 def admtool_membership_details(membership):
@@ -208,13 +205,13 @@ def admtool_membership_details(membership):
                  'nationality', 'public_memberlist', 'extra_info', 'birth_year',
                  'organization_registration_number']:
         # Get the translated value for choice fields, not database field values
-        attr_val = escape(getattr(membership, attr, u''))
-        if isinstance(attr_val, basestring):
+        attr_val = escape(getattr(membership, attr, ''))
+        if isinstance(attr_val, str):
             json_obj[attr] = attr_val
         elif isinstance(attr_val, datetime):
             json_obj[attr] = attr_val.ctime()
         else:
-            json_obj[attr] = unicode(attr_val)
+            json_obj[attr] = str(attr_val)
 
     # Contacts
     contacts_json_obj = {}
@@ -229,7 +226,7 @@ def admtool_membership_details(membership):
                        'organization_name', 'street_address', 'postal_code',
                        'post_office', 'country', 'phone', 'sms', 'email',
                        'homepage']:
-            c_attr_val = escape(getattr(attr_val, c_attr, u''))
+            c_attr_val = escape(getattr(attr_val, c_attr, ''))
             contact_json_obj[c_attr] = c_attr_val
             contacts_json_obj[attr] = contact_json_obj
 
@@ -242,20 +239,18 @@ def admtool_membership_details(membership):
     json_obj['events'] = event_list
 
     # Aliases
-    json_obj['aliases'] = [unicode(alias) for alias in valid_aliases(membership)]
+    json_obj['aliases'] = [str(alias) for alias in valid_aliases(membership)]
 
-    json_obj['unix_users'] = [unicode(alias) for alias in valid_aliases(membership) if alias.account is True]
+    json_obj['unix_users'] = [str(alias) for alias in valid_aliases(membership) if alias.account is True]
 
-#    json_obj['services'] = ", ".join((escape(str(service))
-#                                      for service in Service.objects.filter(owner=membership)))
     json_obj['services'] = services_json_obj = []
     for service in Service.objects.filter(owner=membership):
         service_obj = {}
-        service_obj['type'] = escape(unicode(service.servicetype))
+        service_obj['type'] = escape(str(service.servicetype))
         if service.alias:
-            service_obj['alias'] = escape(unicode(service.alias))
+            service_obj['alias'] = escape(str(service.alias))
         if service.data:
-            service_obj['data'] = escape(unicode(service.data))
+            service_obj['data'] = escape(str(service.data))
         services_json_obj.append(service_obj)
 
     # FIXME: This is broken. Should probably replace:
@@ -263,34 +258,27 @@ def admtool_membership_details(membership):
     # http://docs.djangoproject.com/en/1.2/ref/contrib/comments/
     comments = Comment.objects.filter(object_pk=membership.pk)
     for comment in comments:
-        d = { 'user_name': unicode(comment.user),
-              'text': escape(comment.comment),
-              'date': comment.submit_date }
+        d = {'user_name': str(comment.user),
+             'text': escape(comment.comment),
+             'date': comment.submit_date }
         comment_list.append(d)
         event_list.append(d)
 
     log_entries = bake_log_entries(membership.logs.all())
     for entry in log_entries:
-        d = { 'user_name': unicode(entry.user),
-              'text': "%s %s" % (escape(unicode(entry.action_flag_str)), escape(unicode(entry.change_message))),
-              'date': entry.action_time }
+        d = {'user_name': str(entry.user),
+             'text': "%s %s" % (escape(str(entry.action_flag_str)), escape(str(entry.change_message))),
+             'date': entry.action_time }
         log_entry_list.append(d)
         event_list.append(d)
 
-    def cmp_fun(x, y):
-        if x['date'] > y['date']:
-            return 1
-        if x['date'] == y['date']:
-            return 0
-        return -1
-
-    comment_list.sort(cmp_fun)
-    log_entry_list.sort(cmp_fun)
-    event_list.sort(cmp_fun)
+    comment_list.sort(key=lambda x: x['date'])
+    log_entry_list.sort(key=lambda x: x['date'])
+    event_list.sort(key=lambda x: x['date'])
 
     def ctimeify(lst):
         for item in lst:
-            if isinstance(item['date'], basestring):
+            if isinstance(item['date'], str):
                 continue # some are already in ctime format since they are part of multiple lists
             item['date'] = item['date'].ctime()
     ctimeify(comment_list)
@@ -298,8 +286,10 @@ def admtool_membership_details(membership):
     ctimeify(event_list)
 
     return json_obj
+
+
 def tupletuple_to_dict(tupletuple):
-    '''Convert a tuple of tuples to dict
+    """Convert a tuple of tuples to dict
 
     >>> tupletuple = (('A', 'Value1'), ('B', 'Value2'))
     >>> d = tupletuple_to_dict(tupletuple)
@@ -307,7 +297,7 @@ def tupletuple_to_dict(tupletuple):
     'Value1'
     >>> d['B']
     'Value2'
-    '''
+    """
     d = {}
     for t in tupletuple:
         (key, value) = t

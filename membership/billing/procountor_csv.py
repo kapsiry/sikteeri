@@ -1,9 +1,9 @@
 # encoding: UTF-8
-from __future__ import unicode_literals
+
 import csv
 import logging
 from datetime import datetime, timedelta
-from StringIO import StringIO
+from io import StringIO
 from decimal import Decimal
 
 from django.conf import settings
@@ -26,6 +26,7 @@ def finnish_timeformat(t):
 ft = finnish_timeformat
 
 
+# noinspection SpellCheckingInspection
 def _bill_to_rows(bill, cancel=False):
     """Map bills to Procountor CSV format
 
@@ -39,11 +40,12 @@ def _bill_to_rows(bill, cancel=False):
     bill_delivery = ProcountorBillDelivery.NO_DELIVERY
 
     if c.membership.get_billing_contact():
-        billing_address = '%s\%s\%s\%s\%s' % (c.membership.name(),
-                            c.membership.get_billing_contact().street_address,
-                            c.membership.get_billing_contact().postal_code,
-                            c.membership.get_billing_contact().post_office,
-                            'FI')
+        billing_address = '%s\%s\%s\%s\%s' % (
+            c.membership.name(),
+            c.membership.get_billing_contact().street_address,
+            c.membership.get_billing_contact().postal_code,
+            c.membership.get_billing_contact().post_office,
+            'FI')
         billing_email = c.membership.get_billing_contact().email
     else:
         billing_email = ""
@@ -52,7 +54,7 @@ def _bill_to_rows(bill, cancel=False):
             logger.critical("No billing contact found for member {member}".format(member=str(c.membership)))
             return []
         else:
-            logger.warn("No billing contact found for member {member}".format(member=str(c.membership)))
+            logger.warning("No billing contact found for member {member}".format(member=str(c.membership)))
 
     rows.append([
         'M',  # laskutyyppi
@@ -75,7 +77,7 @@ def _bill_to_rows(bill, cancel=False):
         '',  # Toimitusosoite
         '',  # Laskun lisätiedot
         '%s %d sikteerissä, tuotu %s, jäsen %d' % ('Hyvityslasku' if cancel else 'Lasku', bill.id, ft(datetime.now()),
-                                                        c.membership.id),  # Muistiinpanot
+                                                   c.membership.id),  # Muistiinpanot
         billing_email,  # Sähköpostiosoite
         '',  # Maksupäivämäärä
         '',  # Valuuttakurssi
@@ -133,28 +135,16 @@ def create_csv(start=None, mark_cancelled=True):
         start = datetime(year=start.year, month=start.month, day=1)
 
     filehandle = StringIO()
-    output = csv.writer(filehandle, delimiter=b';', quoting=csv.QUOTE_NONE)
+    output = csv.writer(filehandle, delimiter=';', quoting=csv.QUOTE_NONE)
 
     for bill in Bill.objects.filter(created__gte=start, reminder_count=0).all():
         for row in _bill_to_rows(bill):
-            row2 = []
-            for v in row:
-                if type(v) == unicode:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
-            output.writerow(row2)
+            output.writerow(row)
 
     cancelled_bills = CancelledBill.objects.filter(exported=False)
     for cb in cancelled_bills:
         for row in _bill_to_rows(cb.bill, cancel=True):
-            row2 = []
-            for v in row:
-                if type(v) == unicode:
-                    row2.append(v.encode("iso-8859-1"))
-                else:
-                    row2.append(v)
-            output.writerow(row2)
+            output.writerow(row)
     if mark_cancelled:
         cancelled_bills.update(exported=True)
         logger.info("Marked all cancelled bills as exported.")

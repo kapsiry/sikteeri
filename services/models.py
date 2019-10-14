@@ -1,6 +1,3 @@
-import logging
-logger = logging.getLogger("services.models")
-
 from datetime import datetime
 import unicodedata
 
@@ -10,22 +7,31 @@ from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 
-def remove_accents(str):
-    '''http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974'''
-    nkfd_form = unicodedata.normalize('NFKD', unicode(str))
-    return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
+import logging
+logger = logging.getLogger("services.models")
+
+
+def remove_accents(string):
+    """
+    http://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-in-a-python-unicode-string/517974#517974
+    """
+    nkfd_form = unicodedata.normalize('NFKD', string)
+    return "".join([c for c in nkfd_form if not unicodedata.combining(c)])
+
 
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
 
+
 def _get_logs(self):
-    '''Gets the log entries related to this object.
-    Getter to be used as property instead of GenericRelation'''
+    """Gets the log entries related to this object.
+    Getter to be used as property instead of GenericRelation"""
     my_class = self.__class__
     ct = ContentType.objects.get_for_model(my_class)
     object_logs = ct.logentry_set.filter(object_id=self.id)
     return object_logs
+
 
 class Service(models.Model):
     class Meta:
@@ -40,14 +46,12 @@ class Service(models.Model):
     owner = models.ForeignKey('membership.Membership', verbose_name=_('Service owner'), null=True)
     data = models.CharField(max_length=256, verbose_name=_('Service specific data'), blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.alias:
             return "%s %s" % (self.servicetype, self.alias)
         else:
-            return unicode(self.servicetype)
+            return str(self.servicetype)
 
-    def __str__(self):
-        return unicode(self).encode('ASCII', 'backslashreplace')
 
 class ServiceType(models.Model):
     class Meta:
@@ -59,11 +63,9 @@ class ServiceType(models.Model):
     """
     servicetype = models.CharField(max_length=64, verbose_name=_('Service type'), unique=True)
 
-    def __unicode__(self):
-        return unicode(self.servicetype)
-
     def __str__(self):
-        return unicode(self).encode('ASCII', 'backslashreplace')
+        return str(self.servicetype)
+
 
 class Alias(models.Model):
     owner = models.ForeignKey('membership.Membership', verbose_name=_('Alias owner'))
@@ -100,7 +102,7 @@ class Alias(models.Model):
     @classmethod
     def email_forwards(cls, membership=None, first_name=None, last_name=None,
                        given_names=None):
-        "Returns a list of available email forward permutations."
+        """Returns a list of available email forward permutations."""
         if membership:
             first_name = remove_accents(membership.person.first_name.lower())
             last_name = remove_accents(membership.person.last_name.lower())
@@ -110,10 +112,10 @@ class Alias(models.Model):
             last_name = remove_accents(last_name.lower())
             given_names = remove_accents(given_names.lower())
 
-        permutations = []
-
-        permutations.append(first_name + "." + last_name)
-        permutations.append(last_name + "." + first_name)
+        permutations = [
+            first_name + "." + last_name,
+            last_name + "." + first_name
+        ]
 
         non_first_names = []
         initials = []
@@ -137,7 +139,7 @@ class Alias(models.Model):
     @classmethod
     def unix_logins(cls, membership=None, first_name=None, last_name=None,
                     given_names=None):
-        "Returns a list of available user login names."
+        """Returns a list of available user login names."""
         if membership:
             first_name = remove_accents(membership.person.first_name.lower())
             last_name = remove_accents(membership.person.last_name.lower())
@@ -147,12 +149,12 @@ class Alias(models.Model):
             last_name = remove_accents(last_name.lower())
             given_names = remove_accents(given_names.lower())
 
-        permutations = []
-
-        permutations.append(last_name)
-        permutations.append(first_name)
-        permutations.append(first_name + last_name)
-        permutations.append(last_name + first_name)
+        permutations = [
+            last_name,
+            first_name,
+            first_name + last_name,
+            last_name + first_name
+        ]
 
         non_first_names = []
         initials = []
@@ -178,11 +180,12 @@ class Alias(models.Model):
 
         super(Alias, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
+
 def valid_aliases(owner):
-    '''Builds a queryset of all valid aliases'''
+    """Builds a queryset of all valid aliases"""
     no_expire = Q(expiration_date=None)
     not_expired = Q(expiration_date__lt=datetime.now())
     return Alias.objects.filter(no_expire | not_expired).filter(owner=owner)

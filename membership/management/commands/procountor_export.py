@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from __future__ import unicode_literals
-
 """
-Copyright (c) 2014-2015 Kapsi Internet-käyttäjät ry. All rights reserved.
+Copyright (c) 2014-2019 Kapsi Internet-käyttäjät ry. All rights reserved.
 
-Generates bill list in procountor format and emails it to relevant persons.
+Generates bill list in Procountor format and emails it to relevant persons.
 """
 
 import argparse
@@ -69,11 +67,12 @@ Mukana myös uudet hyvityslaskut.
                     from_email=settings.FROM_EMAIL,
                     to=[options['email']],
                     bcc=[])
-                email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content, 'text/csv')
+                email.attach('procountor-vienti-%s.csv' % start.strftime("%Y-%m-%d"), content.encode("iso-8859-1")
+                             , 'text/csv')
                 email.send()
                 message = "Sent Procountor bill list CSV by email"
             else:
-                self.stdout.write(content.decode("ISO-8859-1"))
+                self.stdout.write(content)
                 message = 'Wrote Procountor bill list CSV to console'
             logger.info(message)
         else:

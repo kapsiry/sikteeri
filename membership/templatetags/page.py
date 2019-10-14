@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from django import template
 from django.http import QueryDict
@@ -23,14 +23,14 @@ class Page(template.Node):
             querystring = querystring.dict()
         page_obj = context.get('page_obj')
         if page_obj is None:
-            querystring['page'] = unicode(self.page)
+            querystring['page'] = str(self.page)
         elif self.page == 'previous':
             querystring['page'] = str(page_obj.previous_page_number())
         elif self.page == 'next':
             querystring['page'] = str(page_obj.next_page_number())
         else:
             querystring['page'] = str(context.get(self.page))
-        return "?" + "&".join(["=".join(k) for k in querystring.items()])
+        return "?" + "&".join(["=".join(k) for k in list(querystring.items())])
 
 
 def do_page(parser, token):

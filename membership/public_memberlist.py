@@ -1,8 +1,9 @@
 # This is shared between management commands and views
 from membership.models import Membership
 
+
 def public_memberlist_data():
-    '''Get the membership counts and data for public memberlist.'''
+    """Get the membership counts and data for public memberlist."""
     mship = Membership.objects.filter(status__exact='A', id__gt=0)
     membership_count = mship.count()
     public_members = mship.filter(public_memberlist="True") \

@@ -7,7 +7,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 
-
 urlpatterns = [
     # Examples:
     # url(r'^$', 'sikteeri.views.home', name='home'),

@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_UN
