@@ -840,7 +840,7 @@ class Bill(models.Model):
         return self.due_date < datetime.now()
 
     def __str__(self):
-        return _('Sent on') + ' ' + str(self.created)
+        return '{sent_on} {date}'.format(sent_on=_('Sent on'), date=str(self.created))
 
     def save(self, *args, **kwargs):
         if not self.due_date:
