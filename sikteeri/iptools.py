@@ -47,12 +47,12 @@ def long_to_ipv4(ip_long):
 def long_to_ipv6(ip_long):
     """Convert a long representation to a human readable IPv6 string
 
-    >>> long_to_ipv6(42540766411282592856903984951653826561L)
+    >>> long_to_ipv6(42540766411282592856903984951653826561)
     '2001:db8::1'
-    >>> long_to_ipv6(1L)
+    >>> long_to_ipv6(1)
     '::1'
     """
-    ip_parts = (int(ip_long/2**64), int(ip_long % 2**64))
+    ip_parts = (ip_long//2**64, ip_long % 2**64)
     ip_bytes = struct.pack("!QQ", *ip_parts)
     return socket.inet_ntop(socket.AF_INET6, ip_bytes)
 
