@@ -1759,6 +1759,21 @@ class IpRangeListTest(TestCase):
         self.assertTrue('1.2.3.4' in IpRangeList(*iplist))
         self.assertFalse('127.0.0.1' in IpRangeList())
 
+    def test_rangelist_IPv4(self):
+        a = IpRangeList("1.1.1.1")
+        self.assertTrue("1.1.1.1" in a)
+
+    def test_rangelist_IPv6(self):
+        a = IpRangeList("::1", "2001:8db:1234:1234:1234:da:1:2", "2001:8db:1234:1234::2")
+        self.assertTrue("0:0:0:0:0:0:0:1" in a)
+        self.assertTrue("2001:8db:1234:1234:1234:da:1:2" in a)
+        self.assertTrue("2001:8db:1234:1234:0:0:0:2" in a)
+
+    def test_rangelist_IPv4_and_IPv6(self):
+        a = IpRangeList("::1",  "1.1.1.1")
+        self.assertTrue("0:0:0:0:0:0:0:1" in a)
+        self.assertTrue("1.1.1.1" in a)
+
 
 @trusted_host_required
 def dummyView(request, *args, **kwargs):
