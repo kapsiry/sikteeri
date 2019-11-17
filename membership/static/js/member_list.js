@@ -61,7 +61,7 @@ function makeMembershipDetailObject(id) {
 	addRow(obj.table, gettext("Visible in the public memberlist"), "public_memberlist");
 	addRow(obj.table, gettext("Aliases"), "aliases");
 	addRow(obj.table, gettext("Year of birth"), "birth_year");
-	addRow(obj.table, gettext("Organization registration number"), "organization_registration_number");
+	addRow(obj.table, gettext("Business ID"), "organization_registration_number");
 	addRow(obj.table, gettext("Services"), "services");
 	addRow(obj.table, gettext("Additional information"), "extra_info");
     }

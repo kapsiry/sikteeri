@@ -89,7 +89,7 @@ class Migration(migrations.Migration):
                 ('municipality', models.CharField(max_length=128, verbose_name='Home municipality', blank=True)),
                 ('nationality', models.CharField(max_length=128, verbose_name='Nationality')),
                 ('birth_year', models.IntegerField(null=True, verbose_name='Year of birth', blank=True)),
-                ('organization_registration_number', models.CharField(max_length=15, null=True, verbose_name='Organization registration number', blank=True)),
+                ('organization_registration_number', models.CharField(max_length=15, null=True, verbose_name='Business ID', blank=True)),
                 ('extra_info', models.TextField(verbose_name='Additional information', blank=True)),
                 ('locked', models.DateTimeField(null=True, verbose_name='Membership locked', blank=True)),
                 ('dissociation_requested', models.DateTimeField(null=True, verbose_name='Dissociation requested', blank=True)),

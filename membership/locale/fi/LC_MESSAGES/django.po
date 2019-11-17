@@ -139,8 +139,8 @@ msgid "Place where your organization is registered to"
 msgstr "Kotipaikka (säännöissä)"
 
 #: membership/forms.py:112 membership/models.py:219
-msgid "Organization registration number"
-msgstr "Yhdistysrekisterinumero"
+msgid "Business ID"
+msgstr "Y-tunnus"
 
 #: membership/forms.py:114
 msgid "Registration number given by Patentti- ja rekisterihallitus"
