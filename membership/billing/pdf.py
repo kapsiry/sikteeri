@@ -220,6 +220,15 @@ class PDFTemplate(object):
         membercontact = cycle.membership.get_billing_contact()
         amount_paid = 0
 
+        if membercontact.organization_name and (membercontact.first_name or membercontact.last_name):
+            name = "{organization_name}\n{first_name} {last_name}".format(
+                organization_name = membercontact.organization_name,
+                first_name = membercontact.first_name,
+                last_name = membercontact.last_name
+            )
+        else:
+            name = cycle.membership.name()
+
         # Calculate vat; copied from models.Bill#render_as_text(self)
         vat = Decimal(cycle.get_vat_percentage()) / Decimal(100)
         if self.__type__ == 'reminder':
@@ -284,7 +293,7 @@ class PDFTemplate(object):
         else:
             latest_payments = datetime.now()
         self.data = {
-            'name': cycle.membership.name(),
+            'name': name,
             'address': membercontact.street_address,
             'postal_code': membercontact.postal_code,
             'postal_office': membercontact.post_office.upper(),
