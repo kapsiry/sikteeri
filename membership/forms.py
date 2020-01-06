@@ -117,9 +117,9 @@ class OrganizationMembershipForm(forms.Form):
                                    label=_('Home municipality'),
                                    help_text=_('Place where your organization is registered to'))
     organization_registration_number = OrganizationRegistrationNumber(
-                                 label=_('Organization registration number'),
+                                 label=_('Business ID'),
                                  required=True,
-                                 help_text=_('Registration number given by Patentti- ja rekisterihallitus'))
+                                 help_text=_('Business ID given by Patentti- ja rekisterihallitus'))
     extra_info = forms.CharField(label=_('Additional information'),
                                  widget=forms.Textarea(attrs={'cols': '40'}),
                                  required=False,
