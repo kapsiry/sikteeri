@@ -1422,18 +1422,20 @@ class PhoneNumberFieldTest(TestCase):
         self.assertEqual("+358400123123", self.field.clean("+358-400-123123 "))
 
 
-class OrganizationRegistratioTest(TestCase):
+class OrganizationRegistrationTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
 
     def test_valid(self):
-        self.assertEqual("1.11", self.field.clean("1.11"))
-        self.assertEqual("123.123", self.field.clean("123.123"))
+        self.assertEqual("12345678", self.field.clean("12345678"))
+        self.assertEqual("1234567-8", self.field.clean("1234567-8"))
 
     def test_invalid(self):
-        self.assertRaises(ValidationError, self.field.clean, "str.str")
-        self.assertRaises(ValidationError, self.field.clean, "11111")
-        self.assertRaises(ValidationError, self.field.clean, "11111.1111111")
+        self.assertRaises(ValidationError, self.field.clean, "str")
+        self.assertRaises(ValidationError, self.field.clean, "1234567")
+        self.assertRaises(ValidationError, self.field.clean, "123456789")
+        self.assertRaises(ValidationError, self.field.clean, "123456-78")
+        self.assertRaises(ValidationError, self.field.clean, "1234567-")
 
 
 class LoginFieldTest(TestCase):
