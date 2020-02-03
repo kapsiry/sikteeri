@@ -1422,7 +1422,7 @@ class PhoneNumberFieldTest(TestCase):
         self.assertEqual("+358400123123", self.field.clean("+358-400-123123 "))
 
 
-class OrganizationRegistratioTest(TestCase):
+class OrganizationRegistrationTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
 
