@@ -47,8 +47,8 @@ class PhoneNumberField(forms.RegexField):
 
 class OrganizationRegistrationNumber(forms.RegexField):
     def __init__(self, *args, **kwargs):
-        super(OrganizationRegistrationNumber, self).__init__(regex=r"^\d{7}-?\d$",
-                                                             min_length=8, max_length=9, *args, **kwargs)
+        super(OrganizationRegistrationNumber, self).__init__(regex=r"^ *[\d]{7}-?\d *$",
+                                                             min_length=8, max_length=20, *args, **kwargs)
 
     def clean(self, value):
         return super(OrganizationRegistrationNumber, self).clean(value).replace(" ", "")
