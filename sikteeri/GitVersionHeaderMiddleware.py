@@ -10,6 +10,11 @@ class GitVersionHeaderMiddleware(object):
     The X-Sikteeri-Version header is intended to convey the deployed version
     number of the project reliably.
     """
-    def process_response(self, request, response):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
         response['X-Sikteeri-Version'] = VERSION
         return response

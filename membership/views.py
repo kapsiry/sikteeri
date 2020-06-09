@@ -529,7 +529,6 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
         payment = SpeciallyLabeledModelChoiceField(queryset=qs,
                                                    empty_label=_("None chosen"), required=True)
 
-
     if request.method == 'POST':
         form = PaymentForm(request.POST)
         if form.is_valid():

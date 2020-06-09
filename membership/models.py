@@ -231,10 +231,14 @@ class Membership(models.Model):
     organization_registration_number = models.CharField(_('Business ID'),
                                                         blank=True, max_length=15)
 
-    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
-    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)
-    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'), blank=True, null=True)
-    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
+    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True,
+                               on_delete=models.PROTECT)
+    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'),
+                                        blank=True, null=True, on_delete=models.PROTECT)
+    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'),
+                                     blank=True, null=True, on_delete=models.PROTECT)
+    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'),
+                                     blank=True, null=True, on_delete=models.PROTECT)
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
@@ -615,7 +619,7 @@ class BillingCycle(models.Model):
             ("manage_bills", "Can manage billing"),
         )
 
-    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'), on_delete=models.PROTECT)
     start =  models.DateTimeField(default=django.utils.timezone.now, verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
@@ -813,7 +817,7 @@ cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
 
 class CancelledBill(models.Model):
     """List of bills that have been cancelled"""
-    bill = models.OneToOneField('Bill', verbose_name=_('Original bill'))
+    bill = models.OneToOneField('Bill', verbose_name=_('Original bill'), on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     exported = models.BooleanField(default=False)
 
@@ -826,7 +830,7 @@ class CancelledBill(models.Model):
 
 
 class Bill(models.Model):
-    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
+    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'), on_delete=models.PROTECT)
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
     due_date = models.DateTimeField(verbose_name=_('Due date'))
 
@@ -979,7 +983,7 @@ class Payment(models.Model):
     # While Payment refers to BillingCycle, the architecture scales to support
     # recording payments that are not related to any billingcycle for future
     # extension
-    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
+    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True, on_delete=models.PROTECT)
     ignore = models.BooleanField(default=False, verbose_name=_('Ignored payment'))
     comment = models.CharField(max_length=64, verbose_name=_('Comment'), blank=True)
 
@@ -1050,7 +1054,7 @@ class ApplicationPoll(models.Model):
     hear about us" poll.
     """
 
-    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'), on_delete=models.PROTECT)
     date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
     answer = models.CharField(max_length=512, verbose_name=_('Service specific data'))
 
