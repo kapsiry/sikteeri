@@ -1115,6 +1115,12 @@ class ProcountorCSVReadingTest(TestCase):
             except RequiredFieldNotFoundException:
                 self.fail("Valid csv should not raise header error.")
 
+    def test_csv_with_null_fields(self):
+        with open_test_data("procountor-csv-null-fields.csv") as f:
+            process_procountor_csv(f)
+        payment_count = Payment.objects.count()
+        self.assertEqual(payment_count, 1, "CSV should have contained 1 payment")
+
 
 class LoginRequiredTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
