@@ -74,7 +74,7 @@ class ProcountorBankStatementEvent(object):
             self.valueDate = datetime.strptime(self.valueDate, "%Y-%m-%d")
         self.sum = row.get("sum", 0)
         self.accountNumber = row.get("accountNumber", None)
-        self.name = row.get("name", None)
+        self.name = row.get("name", None) or ""  # Force name to be string
         self.explanationCode = row.get("explanationCode", 0)
         self.explanationDescription = self.EXPLANATIONCODES.get(self.explanationCode,
                                                                 str(self.explanationCode))

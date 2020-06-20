@@ -2517,3 +2517,35 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
 
+    def test_process_payment_with_null_name(self):
+        """
+        Test event with null name field
+        :return:
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        event = {
+            "invoiceId": 0,
+            "name": None,
+            "payDate": today,
+            "sum": 40.0,
+            "message": "SEPA-MAKSU                         Ehka jasenmaksu                         OKOYFIHH\n",
+            "endToEndId": 0,
+            "explanationCode": 710,
+            "valueDate": today,
+            "archiveCode": "1810015UTZ00000000",
+            "allocated": False,
+            "id": 1234,
+            "productId": 0
+        }
+
+        payments_at_start = Payment.objects.count()
+
+        payments = [ProcountorBankStatementEvent(event)]
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid, "Billing cycle should not be paid")
+
+        payments_at_end = Payment.objects.count()
+
+        self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
+        self.assertEqual(payments[0].name, "")
