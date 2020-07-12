@@ -393,6 +393,9 @@ class SingleMemberBillingTest(TestCase):
         mail.outbox = []
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
+        Bill.objects.all().delete()
+        BillingCycle.objects.all().delete()
         self.membership.delete()
 
     def test_sending(self):
@@ -865,6 +868,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
         self.bill.delete()
         self.cycle.delete()
         self.membership.delete()
@@ -2211,7 +2215,11 @@ class TestProcountorApi(TestCase):
         self.bill.save()
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
         self.bill.delete()
+        Bill.objects.all().delete()
+        Payment.objects.all().delete()
+        BillingCycle.objects.all().delete()
         self.cycle.delete()
         self.m.delete()
 

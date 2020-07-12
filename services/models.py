@@ -41,9 +41,10 @@ class Service(models.Model):
     """
     Services such as UNIX account, email aliases, vhosts etc.
     """
-    servicetype = models.ForeignKey('ServiceType', verbose_name=_('Service type'))
-    alias = models.ForeignKey('Alias', verbose_name=_('Related alias'), null=True)
-    owner = models.ForeignKey('membership.Membership', verbose_name=_('Service owner'), null=True)
+    servicetype = models.ForeignKey('ServiceType', verbose_name=_('Service type'), on_delete=models.PROTECT)
+    alias = models.ForeignKey('Alias', verbose_name=_('Related alias'), null=True, on_delete=models.PROTECT)
+    owner = models.ForeignKey('membership.Membership', verbose_name=_('Service owner'), null=True,
+                              on_delete=models.PROTECT)
     data = models.CharField(max_length=256, verbose_name=_('Service specific data'), blank=True)
 
     def __str__(self):
@@ -68,7 +69,7 @@ class ServiceType(models.Model):
 
 
 class Alias(models.Model):
-    owner = models.ForeignKey('membership.Membership', verbose_name=_('Alias owner'))
+    owner = models.ForeignKey('membership.Membership', verbose_name=_('Alias owner'), on_delete=models.PROTECT)
     name = models.CharField(max_length=128, unique=True, verbose_name=_('Alias name'))
     account = models.BooleanField(default=False, verbose_name=_('Is primary member account, e.g. fall-back address for reminders'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
