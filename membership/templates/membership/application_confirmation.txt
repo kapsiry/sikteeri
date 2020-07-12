@@ -18,7 +18,7 @@ Tarkista hakemuksen tiedot:
   Etunimet:      {{ membership.person.given_names }}
   Sukunimi:      {{ membership.person.last_name }}
   Kotipaikka:    {{ membership.municipality }}
-  Kansallisuus:  {{ membership.nationality }}
+  Kansalaisuus:  {{ membership.nationality }}
   Katuosoite:    {{ membership.person.street_address }}
   Postinumero ja
   -toimipaikka:  {{ membership.person.postal_code }} {{ membership.person.post_office }}
@@ -30,7 +30,7 @@ Tarkista hakemuksen tiedot:
 {% endif %}{% if membership.organization %}
   Yhteisön nimi: {{ membership.organization.organization_name }}
   Kotipaikka:    {{ membership.municipality }}
-  Kansallisuus:  {{ membership.nationality }}
+  Kansalaisuus:  {{ membership.nationality }}
   Katuosoite:    {{ organization.street_address }}
   Postinumero ja
   -toimipaikka:  {{ organization.postal_code }} {{ membership.organization.post_office }}

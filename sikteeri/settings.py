@@ -32,7 +32,7 @@ if CONFIGURATION == 'dev':
 else:
     DEBUG = False
 
-with open(CONFIGURATION, 'rb') as f:
+with open(CONFIGURATION, 'r') as f:
     try:
         config = json.load(f)
     except ValueError as ve:
@@ -65,7 +65,7 @@ DATABASES = dict(default=dj_database_url.parse(DATABASE_URL))
 # http://www.i18nguy.com/unicode/language-identifiers.html
 TIME_ZONE = config.get('TIME_ZONE', 'Europe/Helsinki')
 SHORT_DATE_FORMAT = config.get('SHORT_DATE_FORMAT', 'd.m.Y')
-LANGUAGE_CODE = config.get('LANGUAGE_CODE', 'fi_fi')
+LANGUAGE_CODE = config.get('LANGUAGE_CODE', 'fi-fi')
 
 # URL base for static files
 STATIC_URL = config.get('STATIC_URL', '/static/')
@@ -219,7 +219,7 @@ INSTALLED_APPS = (
     'services',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

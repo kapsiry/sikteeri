@@ -1,28 +1,29 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from os import environ as env
 import sys
-import urllib2
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen, Request
 import json
-from urllib2 import HTTPError, URLError
 
 
 def httpreq(url):
-    req = urllib2.Request(url)
+    req = Request(url)
     try:
-        response = urllib2.urlopen(req)
-        return (200, response.read())
+        response = urlopen(req)
+        return 200, response.read()
     except HTTPError as e:
-        print 'The server couldn\'t fulfill the request.'
-        print 'Error code: ', e.code
-        return (e.code, e.read())
+        print('The server couldn\'t fulfill the request.')
+        print('Error code: ', e.code)
+        return e.code, e.read()
     except URLError as e:
-        print e.reason
-        return (0, e.reason)
+        print(e.reason)
+        return 0, e.reason
+
 
 def print_config():
-    print """graph_args --base 1000 --lower-limit 0
+    print("""graph_args --base 1000 --lower-limit 0
 graph_category Sikteeri
 graph_info Shows memberships in different statuses
 graph_title Memberships in different statuses
@@ -42,7 +43,8 @@ approved.info Number of approved memberships.
 
 deleted.label deleted
 deleted.min 0
-deleted.info Number of deleted memberships."""
+deleted.info Number of deleted memberships.""")
+
 
 def main():
     if len(sys.argv) > 1:
@@ -50,17 +52,19 @@ def main():
             print_config()
             sys.exit(0)
         elif 'h' in sys.argv[1]:
-            print "Set env var URL to the membership/metrics full url, configure TRUSTED_HOSTS correctly and run this script."
+            print("Set env var URL to the membership/metrics full url, "
+                  "configure TRUSTED_HOSTS correctly and run this script.")
             sys.exit(0)
 
     code, payload = httpreq(env['URL'])
     if code != 200:
-        print >> sys.stderr, "sikteeri munin plugin ERROR: received HTTP code %i" % code
+        print("sikteeri munin plugin ERROR: received HTTP code %i" % code, file=sys.stderr)
         sys.exit(1)
     d = json.loads(payload)
 
     for status in [u'new', u'preapproved', u'approved', u'deleted']:
-        print "%s.value" % status, d[u'memberships'][status]
+        print("%s.value" % status, d[u'memberships'][status])
+
 
 if __name__ == '__main__':
     main()

@@ -7,7 +7,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 
-
 urlpatterns = [
     # Examples:
     # url(r'^$', 'sikteeri.views.home', name='home'),
@@ -18,13 +17,13 @@ urlpatterns = [
     url(r'^membership/', include('membership.urls')),
     url(r'^services/', include('services.urls')),
 
-    url(r'^login/', django.contrib.auth.views.login, name='login'),
-    url(r'^logout/', django.contrib.auth.views.logout, {'next_page': '/'},
+    url(r'^login/', django.contrib.auth.views.LoginView.as_view(), name='login'),
+    url(r'^logout/', django.contrib.auth.views.LogoutView.as_view(next_page='/'),
         name='logout'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 ]

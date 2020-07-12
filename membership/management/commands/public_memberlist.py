@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
 
-from membership.models import *
 from membership.public_memberlist import public_memberlist_data
 
 

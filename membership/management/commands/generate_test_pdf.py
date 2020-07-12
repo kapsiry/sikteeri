@@ -1,7 +1,6 @@
 # encoding: utf-8
-
-from __future__ import print_function, unicode_literals
-
+import random
+import string
 from decimal import Decimal
 import tempfile
 from datetime import datetime, timedelta
@@ -60,7 +59,7 @@ def gen_test_PDFs():
     payment = Payment.objects.create(
         billingcycle=cycle,
         reference_number='1234',
-        transaction_id=uuid.uuid4(),
+        transaction_id=''.join([random.choice(string.ascii_letters) for x in range(0, 30)]),
         payment_day=datetime.now(),
         amount=30.0,
         payer_name="It was me")

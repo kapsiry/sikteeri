@@ -25,7 +25,7 @@ fi
 
 # Prepare virtualenv
 #############################
-"$VIRTUALENV" --python=python2.7 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
+"$VIRTUALENV" --python=python3 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
 
 # OS X specific fixes
 if [[ `uname -s` == "Darwin" ]]; then
