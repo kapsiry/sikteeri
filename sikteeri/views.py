@@ -13,7 +13,7 @@ from sikteeri.version import VERSION
 
 def frontpage(request):
     if settings.MAINTENANCE_MESSAGE is None:
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return redirect('new_application')
         return render(request, 'frontpage.html',
                       dict(title=_('Django and the jazz cigarette'),
