@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import django.core.files.storage
@@ -89,15 +89,15 @@ class Migration(migrations.Migration):
                 ('municipality', models.CharField(max_length=128, verbose_name='Home municipality', blank=True)),
                 ('nationality', models.CharField(max_length=128, verbose_name='Nationality')),
                 ('birth_year', models.IntegerField(null=True, verbose_name='Year of birth', blank=True)),
-                ('organization_registration_number', models.CharField(max_length=15, null=True, verbose_name='Organization registration number', blank=True)),
+                ('organization_registration_number', models.CharField(max_length=15, null=True, verbose_name='Business ID', blank=True)),
                 ('extra_info', models.TextField(verbose_name='Additional information', blank=True)),
                 ('locked', models.DateTimeField(null=True, verbose_name='Membership locked', blank=True)),
                 ('dissociation_requested', models.DateTimeField(null=True, verbose_name='Dissociation requested', blank=True)),
                 ('dissociated', models.DateTimeField(null=True, verbose_name='Member dissociated', blank=True)),
-                ('billing_contact', models.ForeignKey(related_name='billing_set', verbose_name='Billing contact', blank=True, to='membership.Contact', null=True)),
-                ('organization', models.ForeignKey(related_name='organization_set', verbose_name='Organization', blank=True, to='membership.Contact', null=True)),
-                ('person', models.ForeignKey(related_name='person_set', verbose_name='Person', blank=True, to='membership.Contact', null=True)),
-                ('tech_contact', models.ForeignKey(related_name='tech_contact_set', verbose_name='Technical contact', blank=True, to='membership.Contact', null=True)),
+                ('billing_contact', models.ForeignKey(related_name='billing_set', verbose_name='Billing contact', blank=True, to='membership.Contact', null=True, on_delete=models.PROTECT)),
+                ('organization', models.ForeignKey(related_name='organization_set', verbose_name='Organization', blank=True, to='membership.Contact', null=True, on_delete=models.PROTECT)),
+                ('person', models.ForeignKey(related_name='person_set', verbose_name='Person', blank=True, to='membership.Contact', null=True, on_delete=models.PROTECT)),
+                ('tech_contact', models.ForeignKey(related_name='tech_contact_set', verbose_name='Technical contact', blank=True, to='membership.Contact', null=True, on_delete=models.PROTECT)),
             ],
             options={
                 'permissions': (('read_members', 'Can read member details'), ('manage_members', 'Can change details, pre-/approve'), ('delete_members', 'Can delete members'), ('dissociate_members', 'Can dissociate members'), ('request_dissociation_for_member', 'Can request dissociation for member')),
@@ -117,7 +117,7 @@ class Migration(migrations.Migration):
                 ('type', models.CharField(max_length=64, verbose_name='Type')),
                 ('payer_name', models.CharField(max_length=64, verbose_name='Payer name')),
                 ('duplicate', models.BooleanField(default=False, verbose_name='Duplicate payment')),
-                ('billingcycle', models.ForeignKey(verbose_name='Cycle', to='membership.BillingCycle', null=True)),
+                ('billingcycle', models.ForeignKey(verbose_name='Cycle', to='membership.BillingCycle', null=True, on_delete=models.PROTECT)),
             ],
             options={
                 'permissions': (('can_import_payments', 'Can import payment data'),),
@@ -126,16 +126,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='billingcycle',
             name='membership',
-            field=models.ForeignKey(verbose_name='Membership', to='membership.Membership'),
+            field=models.ForeignKey(verbose_name='Membership', to='membership.Membership', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='bill',
             name='billingcycle',
-            field=models.ForeignKey(verbose_name='Cycle', to='membership.BillingCycle'),
+            field=models.ForeignKey(verbose_name='Cycle', to='membership.BillingCycle', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='applicationpoll',
             name='membership',
-            field=models.ForeignKey(verbose_name='Membership', to='membership.Membership'),
+            field=models.ForeignKey(verbose_name='Membership', to='membership.Membership', on_delete=models.PROTECT),
         ),
     ]

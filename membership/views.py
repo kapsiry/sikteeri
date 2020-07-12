@@ -73,7 +73,7 @@ def new_application(request, template_name='membership/choose_membership_type.ht
 
 # Public access
 def person_application(request, template_name='membership/new_person_application.html'):
-    if settings.MAINTENANCE_MESSAGE != None:
+    if settings.MAINTENANCE_MESSAGE is not None:
         return redirect('frontpage')
     chosen_email_forward = None
     if request.method != 'POST':
@@ -91,7 +91,7 @@ def person_application(request, template_name='membership/new_person_application
             with transaction.atomic():
                 # Separate a contact dict from the other fields
                 contact_dict = {}
-                for k, v in f.items():
+                for k, v in list(f.items()):
                     if k not in ['nationality', 'municipality',
                                  'public_memberlist', 'email_forward',
                                  'unix_login', 'extra_info',
@@ -174,15 +174,15 @@ def person_application(request, template_name='membership/new_person_application
                           [membership.email_to()], fail_silently=False)
                 return redirect('new_person_application_success')
 
-    return render(request, template_name,
-                  {"form": application_form,
-                   "chosen_email_forward": chosen_email_forward,
-                   "title": _("Person member application")})
+    return render(request, template_name, {
+        "form": application_form,
+        "chosen_email_forward": chosen_email_forward,
+        "title": _("Person member application")})
 
 
 # Public access
 def organization_application(request, template_name='membership/new_organization_application.html'):
-    if settings.MAINTENANCE_MESSAGE != None:
+    if settings.MAINTENANCE_MESSAGE is not None:
         return redirect('frontpage')
     if request.method == 'POST':
         form = OrganizationApplicationForm(request.POST)
@@ -191,9 +191,9 @@ def organization_application(request, template_name='membership/new_organization
             f = form.cleaned_data
 
             d = {}
-            for k, v in f.items():
+            for k, v in list(f.items()):
                 if k not in ['nationality', 'municipality', 'extra_info',
-                'public_memberlist', 'organization_registration_number']:
+                             'public_memberlist', 'organization_registration_number']:
                     d[k] = v
 
             organization = Contact(**d)
@@ -224,9 +224,9 @@ def organization_application_add_contact(request, contact_type,
         return HttpResponseForbidden("Access denied")
 
     if contact_type == 'billing_contact':
-        type_text = unicode(_('Billing contact'))
+        type_text = _('Billing contact')
     elif contact_type == 'tech_contact':
-        type_text = unicode(_('Technical contact'))
+        type_text = _('Technical contact')
 
     if request.method == 'POST':
         form = PersonContactForm(request.POST)
@@ -248,19 +248,19 @@ def organization_application_add_contact(request, contact_type,
                 return redirect('organization_application_services')
             return redirect('organization_application_add_contact', forms[next_idx])
     else:
-        if request.session.has_key(contact_type):
+        if contact_type in request.session:
             form = PersonContactForm(request.session[contact_type])
         else:
             form = PersonContactForm()
     return render(request, template_name, {"form": form, "contact_type": type_text,
-                                  "step_number": forms.index(contact_type) + 2,
-                                  "title": _('Organization application') + ' - ' + type_text},
-                 )
+                                           "step_number": forms.index(contact_type) + 2,
+                                           "title": '{title} - {part}'.format(title=_('Organization application'),
+                                                                              part=type_text)})
 
 
 # Public access
 def organization_application_services(request, template_name='membership/new_organization_application_services.html'):
-    if request.session.has_key('services'):
+    if 'services' in request.session:
         form = ServiceForm({'mysql_database': request.session.get('mysql', ''),
                             'postgresql_database': request.session.get('postgresql', ''),
                             'login_vhost': request.session.get('login_vhost', ''),
@@ -277,25 +277,26 @@ def organization_application_services(request, template_name='membership/new_org
 
             if f['mysql_database'] != False:
                 services['mysql_database'] = f['unix_login']
-            elif services.has_key('mysql_database'):
+            elif 'mysql_database' in services:
                 del services['mysql_database']
             if f['postgresql_database'] != False:
                 services['postgresql_database'] = f['unix_login']
-            elif services.has_key('postgresql'):
+            elif 'postgresql' in services:
                 del services['postgresql']
             if f['login_vhost'] != False:
                 services['login_vhost'] = f['unix_login']
-            elif services.has_key('login_vhost'):
+            elif 'login_vhost' in services:
                 del services['login_vhost']
 
             request.session['services'] = services
             return redirect('organization_application_review')
         else:
-            if request.session.has_key('services'):
+            if 'services' in request.session:
                 del request.session['services']
 
     return render(request, template_name,
-                  {"form": form, "title": unicode(_('Choose services'))})
+                  {"form": form, "title": '{title} - {part}'.format(title=_('Organization application'),
+                                                                    part=_('Choose services'))})
 
 
 # Public access
@@ -307,7 +308,7 @@ def organization_application_review(request, template_name='membership/new_organ
 
     forms = []
     combo_dict = request.session['membership']
-    for k, v in request.session['organization'].items():
+    for k, v in list(request.session['organization'].items()):
         combo_dict[k] = v
     forms.append(OrganizationApplicationForm(combo_dict))
     if request.session.get('billing_contact') is not None:
@@ -318,7 +319,7 @@ def organization_application_review(request, template_name='membership/new_organ
         forms[-1].name = _("Technical contact")
     return render(request, template_name,
                   {"forms": forms, "services": request.session['services'],
-                   "title": unicode(_('Organization application')) + ' - ' + unicode(_('Review'))})
+                   "title": '{title} - {part}'.format(title=_('Organization application'), part=_('Review'))})
 
 
 # Public access
@@ -422,11 +423,11 @@ def contact_add(request, contact_type, memberid, template_name='membership/entit
                 membership.tech_contact = contact
             membership.save()
             messages.success(request,
-                             unicode(_("Added contact %s.") % contact))
+                             _("Added contact %s.") % contact)
             return redirect('contact_edit', contact.id)
         else:
             messages.error(request,
-                           unicode(_("New contact not saved.")))
+                           _("New contact not saved."))
     else:
         form = ContactForm()
     return render(request, template_name, {"form": form, 'memberid': memberid})
@@ -439,7 +440,7 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
     before = model_to_dict(contact)  # Otherwise save() (or valid?) will change the dict, needs to be here
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
-            messages.error(request, unicode(_("You are not authorized to modify memberships.")))
+            messages.error(request, _("You are not authorized to modify memberships."))
             return redirect('contact_edit', id)
 
         form = ContactForm(request.POST, instance=contact)
@@ -448,10 +449,10 @@ def contact_edit(request, id, template_name='membership/entity_edit.html'):
             form.save()
             after = model_to_dict(contact)
             log_change(contact, request.user, before, after)
-            messages.success(request, unicode(_("Changes to contact %s saved.") % contact))
+            messages.success(request, _("Changes to contact %s saved.") % contact)
             return redirect('contact_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.error(request, unicode(_("Changes to contact %s not saved.") % contact))
+            messages.error(request, _("Changes to contact %s not saved.") % contact)
     else:
         form = ContactForm(instance=contact)
     logentries = bake_log_entries(contact.logs.all())
@@ -488,10 +489,10 @@ def bill_edit(request, id, template_name='membership/entity_edit.html'):
             form.save()
             after = model_to_dict(bill)
             log_change(bill, request.user, before, after)
-            messages.success(request, unicode(_("Changes to bill %s saved.") % bill))
+            messages.success(request, _("Changes to bill %s saved.") % bill)
             return redirect('bill_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.error(request, unicode(_("Changes to bill %s not saved.") % bill))
+            messages.error(request, _("Changes to bill %s not saved.") % bill)
     else:
         form = Form(instance=bill)
     logentries = bake_log_entries(bill.logs.all())
@@ -522,13 +523,12 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
 
     class SpeciallyLabeledModelChoiceField(ModelChoiceField):
         def label_from_instance(self, obj):
-            return u"%s, %s, %s, %s" % (obj.payer_name, obj.reference_number, obj.amount, obj.payment_day)
+            return "%s, %s, %s, %s" % (obj.payer_name, obj.reference_number, obj.amount, obj.payment_day)
 
     class PaymentForm(Form):
         qs = Payment.objects.filter(billingcycle__exact=None, ignore=False).order_by("payer_name")
         payment = SpeciallyLabeledModelChoiceField(queryset=qs,
                                                    empty_label=_("None chosen"), required=True)
-
 
     if request.method == 'POST':
         form = PaymentForm(request.POST)
@@ -550,10 +550,10 @@ def billingcycle_connect_payment(request, id, template_name='membership/billingc
             after = model_to_dict(payment)
             log_change(payment, request.user, before, after)
             log_change(newcycle, request.user, newcycle_before, newcycle_after)
-            messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
+            messages.success(request, _("Changes to payment %s saved.") % payment)
             return redirect('billingcycle_edit', id)
         else:
-            messages.error(request, unicode(_("Changes to BillingCycle %s not saved.") % billingcycle))
+            messages.error(request, _("Changes to BillingCycle %s not saved.") % billingcycle)
     else:
         form =  PaymentForm()
     logentries = bake_log_entries(billingcycle.logs.all())
@@ -580,13 +580,13 @@ def import_payments(request, template_name='membership/import_payments.html'):
                     import_messages = process_op_csv(in_memory_file, user=request.user)
                 elif form.cleaned_data['format'] == 'procountor':
                     import_messages = process_procountor_csv(in_memory_file, user=request.user)
-                messages.success(request, unicode(_("Payment import succeeded!")))
+                messages.success(request, _("Payment import succeeded!"))
             except:
                   logger.error("%s" % traceback.format_exc())
                   logger.error("Payment CSV import failed.")
-                  messages.error(request, unicode(_("Payment import failed.")))
+                  messages.error(request, _("Payment import failed."))
         else:
-            messages.error(request, unicode(_("Payment import failed.")))
+            messages.error(request, _("Payment import failed."))
     else:
         form = PaymentCSVForm()
 
@@ -656,10 +656,10 @@ def billingcycle_edit(request, id, template_name='membership/entity_edit.html'):
             form.save()
             after = model_to_dict(cycle)
             log_change(cycle, request.user, before, after)
-            messages.success(request, unicode(_("Changes to billing cycle %s saved.") % cycle))
+            messages.success(request, _("Changes to billing cycle %s saved.") % cycle)
             return redirect('billingcycle_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.error(request, unicode(_("Changes to bill %s not saved.") % cycle))
+            messages.error(request, _("Changes to bill %s not saved.") % cycle)
     else:
         form =  Form(instance=cycle)
         form.disable_fields()
@@ -676,7 +676,7 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
 
     class SpeciallyLabeledModelChoiceField(ModelChoiceField):
         def label_from_instance(self, obj):
-            return u"%s, %s" % (obj.membership, unicode(obj))
+            return "%s, %s" % (obj.membership, str(obj))
 
     class Form(ModelForm):
         class Meta:
@@ -753,10 +753,10 @@ def payment_edit(request, id, template_name='membership/entity_edit.html'):
               newcycle.update_is_paid()
             after = model_to_dict(payment)
             log_change(payment, request.user, before, after)
-            messages.success(request, unicode(_("Changes to payment %s saved.") % payment))
+            messages.success(request, _("Changes to payment %s saved.") % payment)
             return redirect('payment_edit', id) # form stays as POST otherwise if someone refreshes
         else:
-            messages.error(request, unicode(_("Changes to payment %s not saved.") % payment))
+            messages.error(request, _("Changes to payment %s not saved.") % payment)
             return redirect('payment_edit', id) # form clears otherwise, this is a borderline acceptable hack
     else:
         form = Form(instance=payment)
@@ -834,8 +834,8 @@ def membership_duplicates(request, id):
     view_params = {'queryset': membership.duplicates(),
                    'template_name': 'membership/membership_list.html',
                    'context_object_name': 'member_list',
-                   'header':  _(u"List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
-                                                                               "membership":unicode(membership)}),
+                   'header':  _("List duplicates for member #%(mid)i %(membership)s" % {"mid":membership.id,
+                                                                               "membership":str(membership)}),
                    'disable_duplicates_header': True,
                    'paginate_by': ENTRIES_PER_PAGE}
 
@@ -874,9 +874,9 @@ def membership_delete(request, id, template_name='membership/membership_delete.h
         form = ConfirmForm(request.POST)
         if form.is_valid():
             f = form.cleaned_data
-            membership_str = unicode(membership)
+            membership_str = str(membership)
             membership.delete_membership(request.user)
-            messages.success(request, unicode(_('Member %s successfully deleted.') % membership_str))
+            messages.success(request, _('Member %s successfully deleted.') % membership_str)
             logger.info("User %s deleted member %s." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -896,9 +896,9 @@ def membership_dissociate(request, id, template_name='membership/membership_diss
         form = ConfirmForm(request.POST)
         if form.is_valid():
             f = form.cleaned_data
-            membership_str = unicode(membership)
+            membership_str = str(membership)
             membership.dissociate(request.user)
-            messages.success(request, unicode(_('Member %s successfully dissociated.') % membership_str))
+            messages.success(request, _('Member %s successfully dissociated.') % membership_str)
             logger.info("User %s dissociated member %s." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -918,9 +918,9 @@ def membership_request_dissociation(request, id, template_name='membership/membe
         form = ConfirmForm(request.POST)
         if form.is_valid():
             f = form.cleaned_data
-            membership_str = unicode(membership)
+            membership_str = str(membership)
             membership.request_dissociation(request.user)
-            messages.success(request, unicode(_('Member %s successfully transferred to requested dissociation state.') % membership_str))
+            messages.success(request, _('Member %s successfully transferred to requested dissociation state.') % membership_str)
             logger.info("User %s requested dissociation for member %s." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -964,9 +964,9 @@ def membership_cancel_dissociation_request(request, id, template_name='membershi
         form = ConfirmForm(request.POST)
         if form.is_valid():
             f = form.cleaned_data
-            membership_str = unicode(membership)
+            membership_str = str(membership)
             membership.cancel_dissociation_request(request.user)
-            messages.success(request, unicode(_('Member %s successfully transferred back to approved state.') % membership_str))
+            messages.success(request, _('Member %s successfully transferred back to approved state.') % membership_str)
             logger.info("User %s requested dissociation for member %s." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -992,7 +992,7 @@ def membership_convert_to_organization(request, id, template_name='membership/me
             membership.organization = contact
             membership.save()
             log_change(membership, request.user, change_message="Converted to an organization")
-            messages.success(request, unicode(_('Member %s successfully converted to an organization.') % membership))
+            messages.success(request, _('Member %s successfully converted to an organization.') % membership)
             logger.info("User %s converted member %s to an organization." % (request.user.username, membership))
             return redirect('membership_edit', membership.id)
     else:
@@ -1042,17 +1042,17 @@ def membership_disassociate_json(request, id):
 # Public access
 def handle_json(request):
     logger.debug("RAW POST DATA: %s" % request.body)
-    msg = json.loads(request.body)
+    msg = json.loads(request.body.decode('utf-8'))
     funcs = {'PREAPPROVE': membership_preapprove_json,
              'APPROVE': membership_approve_json,
              'DISASSOCIATE': membership_disassociate_json,
              'MEMBERSHIP_DETAIL': membership_detail_json,
              'ALIAS_AVAILABLE': check_alias_availability,
              'VALIDATE_ALIAS': validate_alias}
-    if not funcs.has_key(msg['requestType']):
+    if msg['requestType'] not in funcs:
         raise NotImplementedError()
     logger.debug("AJAX call %s, payload: %s" % (msg['requestType'],
-                                                unicode(msg['payload'])))
+                                                str(msg['payload'])))
     try:
         return funcs[msg['requestType']](request, msg['payload'])
     except Exception as e:
@@ -1073,7 +1073,7 @@ def test_email(request, template_name='membership/test_email.html'):
             return render(request, template_name, {'form': form})
 
         body = render_to_string('membership/test_email.txt', {"user": request.user})
-        send_mail(u"Testisähköposti", body,
+        send_mail("Testisähköposti", body,
                   settings.FROM_EMAIL,
 #                  request.user.email,
                   [f["recipient"]], fail_silently=False)
@@ -1086,7 +1086,7 @@ def test_email(request, template_name='membership/test_email.html'):
 def membership_metrics(request):
     unpaid_cycles = BillingCycle.objects.filter(membership__status='A', is_paid=False)
     unpaid_sum = unpaid_cycles.aggregate(Sum("sum"))['sum__sum']
-    if unpaid_sum == None:
+    if unpaid_sum is None:
         unpaid_sum = "0.0"
     d = {'memberships':
          {'new': Membership.objects.filter(status='N').count(),

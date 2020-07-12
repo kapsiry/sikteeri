@@ -2,15 +2,24 @@
 
 
 import calendar
+import logging
+import traceback
+from datetime import datetime, timedelta
+
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils import translation
 
-from membership.models import *
-from membership.utils import *
+from membership.models import BillingCycle, Bill, Payment, Membership
 
 logger = logging.getLogger("membership.makebills")
 
-class MembershipNotApproved(Exception): pass
+
+class MembershipNotApproved(Exception):
+    pass
+
 
 def create_billingcycle(membership):
     """
@@ -20,7 +29,6 @@ def create_billingcycle(membership):
     date for the new one.  If a previous one doesn't exist, e.g. it is a new
     user, we use the time when they were approved.
     """
-    billing_cycle = None
     try:
         if membership.status != 'A':
             logger.critical("%s not Approved. Cannot send bill" % repr(membership))
@@ -30,9 +38,9 @@ def create_billingcycle(membership):
         except ObjectDoesNotExist:
             newest_existing_billing_cycle = None
 
-        if newest_existing_billing_cycle != None:
+        if newest_existing_billing_cycle is not None:
             cycle_start = newest_existing_billing_cycle.end
-        elif membership.approved != None:
+        elif membership.approved is not None:
             cycle_start = membership.approved
         else:
             logger.critical("%s is missing the approved timestamp. Cannot send bill" % repr(membership))
@@ -45,10 +53,11 @@ def create_billingcycle(membership):
             bill.save()
         bill.send_as_email()
         return billing_cycle
-    except Exception as e:
+    except Exception as exc:
         logger.critical("%s" % traceback.format_exc())
         logger.critical("Transaction rolled back, billing cycle not created!")
         raise
+
 
 def can_send_reminder(last_due_date, latest_recorded_payment):
     """
@@ -70,6 +79,7 @@ def can_send_reminder(last_due_date, latest_recorded_payment):
 
     return can_send
 
+
 def send_reminder(membership):
     billing_cycle = membership.billingcycle_set.latest('end')
     bill = Bill(billingcycle=billing_cycle)
@@ -77,6 +87,7 @@ def send_reminder(membership):
     bill.save()
     bill.send_as_email()
     return bill
+
 
 def makebills():
     logger.info("Running makebills...")

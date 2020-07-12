@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import django.utils.timezone
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='membership',
             name='organization_registration_number',
-            field=models.CharField(default='', max_length=15, verbose_name='Organization registration number', blank=True),
+            field=models.CharField(default='', max_length=15, verbose_name='Business ID', blank=True),
             preserve_default=False,
         ),
         migrations.AlterField(

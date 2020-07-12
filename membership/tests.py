@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import with_statement
+
 
 import calendar
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from StringIO import StringIO
+from io import StringIO
 
 import os
 import os.path
@@ -18,7 +18,6 @@ from django.core.management import call_command
 from membership import unpaid_members
 from membership.billing.payments import process_payments, PaymentFromFutureException
 
-logger = logging.getLogger("membership.tests")
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -60,6 +59,8 @@ from membership.billing.payments import  process_op_csv, process_procountor_csv
 from membership.billing.payments import RequiredFieldNotFoundException
 
 
+logger = logging.getLogger("membership.tests")
+
 __test__ = {
     "tupletuple_to_dict": tupletuple_to_dict,
 }
@@ -68,12 +69,12 @@ __test__ = {
 def open_test_data(file):
     basedir = os.path.dirname(__file__)
     data_file = os.path.join(basedir, 'test_data', file)
-    return open(data_file, 'r')
+    return open(data_file, 'r', encoding='ISO-8859-1')
 
 
 class ReferenceNumberTest(TestCase):
     def test_1234(self):
-        self.failUnlessEqual(generate_checknumber("1234"), 4)
+        self.assertEqual(generate_checknumber("1234"), 4)
 
     def test_1234_add(self):
         self.assertEqual(add_checknumber("1234"), "12344")
@@ -90,8 +91,8 @@ class ReferenceNumberTest(TestCase):
 
     def test_uniqueness_of_reference_numbers(self):
         numbers = set([])
-        for i in xrange(1, 100):
-            for j in xrange(datetime.now().year, datetime.now().year + 11):
+        for i in range(1, 100):
+            for j in range(datetime.now().year, datetime.now().year + 11):
                 number = generate_membership_bill_reference_number(i, j)
                 self.assertFalse(number in numbers)
                 numbers.add(number)
@@ -107,7 +108,7 @@ class ReferenceNumberTest(TestCase):
         self.assertEqual(group_right('1111122222'), '11111 22222')
         self.assertEqual(group_right('1112222233333'), '111 22222 33333')
         self.assertEqual(group_right('15222333', group_size=3), '15 222 333')
-        self.assertEqual(group_right(u'äkstestÖ'), u'äks testÖ')
+        self.assertEqual(group_right('äkstestÖ'), 'äks testÖ')
 
     def test_canonize_iban(self):
         self.assertEqual(canonize_iban('FI79 4405 2020 0360 82'), '7944052020036082')
@@ -133,26 +134,26 @@ class ReferenceNumberTest(TestCase):
         self.assertRaises(ReferenceNumberFormatException, canonize_refnum, 'not refnum')
 
     def test_canonize_sum(self):
-        self.assertEquals(canonize_sum(euros=35, cents=00), '00003500')
-        self.assertEquals(canonize_sum(euros=35, cents=15), '00003515')
-        self.assertEquals(canonize_sum(30), '00003000')
-        self.assertEquals(canonize_sum(123456), '12345600')
-        self.assertEquals(canonize_sum(1000000),     '00000000')
-        self.assertEquals(canonize_sum("35"), '00003500')
-        self.assertEquals(canonize_sum("250", "99"), '00025099')
-        self.assertEquals(canonize_sum("2.10"), '00000210')
-        self.assertEquals(canonize_sum(Decimal("150.99")), '00015099')
+        self.assertEqual(canonize_sum(euros=35, cents=00), '00003500')
+        self.assertEqual(canonize_sum(euros=35, cents=15), '00003515')
+        self.assertEqual(canonize_sum(30), '00003000')
+        self.assertEqual(canonize_sum(123456), '12345600')
+        self.assertEqual(canonize_sum(1000000),     '00000000')
+        self.assertEqual(canonize_sum("35"), '00003500')
+        self.assertEqual(canonize_sum("250", "99"), '00025099')
+        self.assertEqual(canonize_sum("2.10"), '00000210')
+        self.assertEqual(canonize_sum(Decimal("150.99")), '00015099')
         self.assertRaises(InvalidAmountException, canonize_sum, -1)
         self.assertRaises(InvalidAmountException, canonize_sum, 123456, 101)
 
     def test_canonize_duedate(self):
-        self.assertEquals(canonize_duedate(datetime(2011, 03 ,20)), '110320')
-        self.assertEquals(canonize_duedate(datetime(2011, 03, 31)), '110331')
-        self.assertEquals(canonize_duedate(datetime(2021, 12, 31)), '211231')
-        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 16, 52, 30)), '101010')
-        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 23, 59, 59)), '101010')
-        self.assertEquals(canonize_duedate(datetime(2010, 10, 10, 0, 1, 0)),    '101010')
-        self.assertEquals(canonize_duedate(None), '000000')
+        self.assertEqual(canonize_duedate(datetime(2011, 0o3 ,20)), '110320')
+        self.assertEqual(canonize_duedate(datetime(2011, 0o3, 31)), '110331')
+        self.assertEqual(canonize_duedate(datetime(2021, 12, 31)), '211231')
+        self.assertEqual(canonize_duedate(datetime(2010, 10, 10, 16, 52, 30)), '101010')
+        self.assertEqual(canonize_duedate(datetime(2010, 10, 10, 23, 59, 59)), '101010')
+        self.assertEqual(canonize_duedate(datetime(2010, 10, 10, 0, 1, 0)),    '101010')
+        self.assertEqual(canonize_duedate(None), '000000')
         self.assertRaises(ReferenceNumberException, canonize_duedate, ('HETI'))
 
     # http://www.fkl.fi/www/page/fk_www_1293
@@ -183,6 +184,7 @@ class ReferenceNumberTest(TestCase):
 class MembershipStatusTest(TestCase):
     def setUp(self):
         self.m = create_dummy_member('N')
+
     def test_status_validations(self):
         for k, v in MEMBER_STATUS:
             if k == 'D':
@@ -191,15 +193,18 @@ class MembershipStatusTest(TestCase):
             self.m.save()
         self.m.status = 'X'
         self.assertRaises(ValidationError, self.m.save)
+
     def test_deleted_should_have_no_contacts(self):
         self.m.status = 'D'
         self.assertRaises(ValidationError, self.m.save)
         self.m.person = None
         self.m.save()
 
+
 class MembershipTypeTest(TestCase):
     def setUp(self):
         self.m = create_dummy_member('N')
+
     def test_person_and_organization_contacts_correctly_set(self):
         self.m.organization = self.m.person
         self.assertRaises(ValidationError, self.m.save)
@@ -207,6 +212,7 @@ class MembershipTypeTest(TestCase):
         self.assertRaises(ValidationError, self.m.save)
         self.m.person = None
         self.m.save()
+
 
 class MembershipFeeTest(TestCase):
     fixtures = ['test_user.json']
@@ -230,13 +236,15 @@ class MembershipFeeTest(TestCase):
         self.membership_h = membership_h
 
     def test_fees(self):
-        "Test setting fees and verify that they are set properly"
+        """
+        Test setting fees and verify that they are set properly
+        """
         now = datetime.now() - timedelta(seconds=5)
         week_ago = datetime.now() - timedelta(days=7)
-        P_FEE=30
-        S_FEE=500
-        O_FEE=60
-        H_FEE=0
+        P_FEE = 30
+        S_FEE = 500
+        O_FEE = 60
+        H_FEE = 0
         soon = datetime.now() + timedelta(hours=1)
         # Old fees
         Fee.objects.create(type='P', start=week_ago, sum=P_FEE/2,
@@ -290,7 +298,9 @@ class BillingTest(TestCase):
         pass
 
     def test_single_preapproved_no_op(self):
-        "makebills: preapproved membership no-op"
+        """
+        makebills: preapproved membership no-op
+        """
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
         mail.outbox = []
@@ -302,7 +312,9 @@ class BillingTest(TestCase):
         membership.delete()
 
     def test_membership_no_approved_time(self):
-        "makebills: approved_time with no entries"
+        """
+        makebills: approved_time with no entries
+        """
         membership = create_dummy_member('N')
         membership.status = 'A'
         membership.save()
@@ -324,7 +336,9 @@ class BillingTest(TestCase):
         makebills_logger.removeHandler(handler)
 
     def test_membership_approved_time_multiple_entries(self):
-        "makebills: approved_time multiple entries"
+        """
+        makebills: approved_time multiple entries
+        """
         membership = create_dummy_member('N')
         membership.preapprove(self.user)
         membership.approve(self.user)
@@ -343,9 +357,9 @@ class BillingTest(TestCase):
         membership.approve(self.user)
         makebills()
         bill = Bill.objects.latest('id')
-        self.assertEquals(bill.billingcycle.sum, Decimal('0'))
+        self.assertEqual(bill.billingcycle.sum, Decimal('0'))
 
-        from models import logger as models_logger
+        from .models import logger as models_logger
         models_logger.setLevel(level=logging.INFO)
         handler = MockLoggingHandler()
         models_logger.addHandler(handler)
@@ -379,29 +393,32 @@ class SingleMemberBillingTest(TestCase):
         mail.outbox = []
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
+        Bill.objects.all().delete()
+        BillingCycle.objects.all().delete()
         self.membership.delete()
 
     def test_sending(self):
         settings.BILLING_CC_EMAIL = None
         makebills()
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
-        self.assertEquals(m.to[0], self.membership.billing_email())
-        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
-        self.assertEquals(CancelledBill.objects.count(), 0)
+        self.assertEqual(m.to[0], self.membership.billing_email())
+        self.assertEqual(m.from_email, settings.BILLING_FROM_EMAIL)
+        self.assertEqual(CancelledBill.objects.count(), 0)
 
     def test_sending_with_cc(self):
         settings.BILLING_CC_EMAIL = "test@example.com"
         makebills()
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
-        self.assertEquals(m.to[0], self.membership.billing_email())
-        self.assertEquals(m.from_email, settings.BILLING_FROM_EMAIL)
-        self.assertEquals(m.extra_headers['CC'], settings.BILLING_CC_EMAIL)
+        self.assertEqual(m.to[0], self.membership.billing_email())
+        self.assertEqual(m.from_email, settings.BILLING_FROM_EMAIL)
+        self.assertEqual(m.extra_headers['CC'], settings.BILLING_CC_EMAIL)
         self.assertTrue(settings.BILLING_CC_EMAIL in m.bcc)
 
     def test_expired_cycle(self):
-        "makebills: before a cycle expires, a new one is created"
+        """makebills: before a cycle expires, a new one is created"""
         cycle = create_billingcycle(self.membership)
         cycle.starts = datetime.now() - timedelta(days=365)
         cycle.ends = datetime.now() + timedelta(days=27)
@@ -409,11 +426,11 @@ class SingleMemberBillingTest(TestCase):
 
         makebills()
 
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         self.assertFalse(cycle.last_bill().is_reminder())
 
     def test_approved_cycle_and_bill_creation(self):
-        "makebills: cycle and bill creation"
+        """makebills: cycle and bill creation"""
         makebills()
 
         self.assertEqual(len(mail.outbox), 1)
@@ -431,10 +448,10 @@ class SingleMemberBillingTest(TestCase):
         c = membership2.billingcycle_set.all()[0]
         self.assertEqual(c.bill_set.count(), 1)
         self.assertEqual(c.last_bill().reminder_count, 0)
-        self.assertEquals(CancelledBill.objects.count(), 0)
+        self.assertEqual(CancelledBill.objects.count(), 0)
 
     def test_new_billing_cycle_with_previous_paid(self):
-        "makebills: new billing cycle with previous already paid"
+        """makebills: new billing cycle with previous already paid"""
         m = self.membership
 
         makebills()
@@ -472,14 +489,14 @@ class ProcountorExportTest(TestCase):
         self.membership = membership
         mail.outbox = []
         makebills()
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def get_procountor_email(self):
         TARGET_EMAIL = 'test@example.com'
         mail_count = len(mail.outbox)
         call_command('procountor_export', '--email', TARGET_EMAIL,
                      stdout=StringIO())
-        self.assertEquals(len(mail.outbox), mail_count + 1)
+        self.assertEqual(len(mail.outbox), mail_count + 1)
         self.assertListEqual(mail.outbox[-1].to, [TARGET_EMAIL])
         message = mail.outbox[-1]
         return message
@@ -488,14 +505,14 @@ class ProcountorExportTest(TestCase):
         mail_count = len(mail.outbox)
         out = StringIO()
         call_command('procountor_export', stdout=out)
-        self.assertEquals(len(mail.outbox), mail_count)
+        self.assertEqual(len(mail.outbox), mail_count)
         return out.getvalue()
 
     def test_procountor_export_email_contains_csv_attachment(self):
         message = self.get_procountor_email()
         self.assertIsInstance(message, EmailMessage)
         self.assertTrue('Sikteerin Procountor-vienti' in message.subject)
-        self.assertEquals(len(message.attachments), 1)
+        self.assertEqual(len(message.attachments), 1)
         attach_name, attach_content, attach_mime = message.attachments[0]
         self.assertTrue(attach_name.endswith(".csv"))
         # Disabling this test for now. Django 1.11 don't allow non UTF-8 attachment as text/csv
@@ -510,21 +527,21 @@ class ProcountorExportTest(TestCase):
         self.assertEqual(len(csv_lines), billingcycle_count * 2)
 
     def test_procountor_csv_contains_bill(self):
-        self.assertEquals(Bill.objects.count(), 1)
+        self.assertEqual(Bill.objects.count(), 1)
         self.check_procountor_csv_contains_two_lines_per_bill()
 
     def test_procountor_csv_contains_bill_only_and_not_reminder(self):
-        self.assertEquals(Bill.objects.count(), 1)
+        self.assertEqual(Bill.objects.count(), 1)
         self.check_procountor_csv_contains_two_lines_per_bill()
         send_reminder(self.membership)
-        self.assertEquals(Bill.objects.count(), 2)
-        self.assertEquals(BillingCycle.objects.count(), 1)
+        self.assertEqual(Bill.objects.count(), 2)
+        self.assertEqual(BillingCycle.objects.count(), 1)
         self.check_procountor_csv_contains_two_lines_per_bill()
 
     def test_procountor_csv_format_email(self):
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
-        self.check_procountor_csv_format(attach_content)
+        self.check_procountor_csv_format(attach_content.decode("iso-8859-1"))
 
     def test_procountor_csv_format_console(self):
         csv_data = self.get_procountor_console()
@@ -560,7 +577,7 @@ class ProcountorExportTest(TestCase):
         current_bill_id = None
         for csv_line in csv_data.splitlines():
             columns = csv_line.split(";")
-            self.assertEquals(len(columns), 44)
+            self.assertEqual(len(columns), 44)
             if columns[1-1] != '':
                 # Laskutietue
 
@@ -734,7 +751,7 @@ class ProcountorExportTest(TestCase):
                 if automatic_billing_code != '':
                     self.assertTrue(automatic_billing_code in ['X', 'M'])
                 # 34
-                self.assertEquals(attachment_file_name, '', 'Attachments not supported')
+                self.assertEqual(attachment_file_name, '', 'Attachments not supported')
                 # 35
                 if contact_person != '':
                     self.assertTrue(len(contact_person) < 255)
@@ -760,7 +777,6 @@ class ProcountorExportTest(TestCase):
                 if cash_discount_percentage != '':
                     self.assertEqual(cash_discount_percentage, '0')
 
-
                 # Specific checks
                 current_bill_id = billing_id
                 if cancel_bill_code == 't':
@@ -772,7 +788,7 @@ class ProcountorExportTest(TestCase):
                 else:
                     # cancel bill
                     self.assertTrue(float(bill_amount) < 0, "Total amount is negative")
-                self.assertEquals(billing_channel, '6', "Billing channel is 6: do not send")
+                self.assertEqual(billing_channel, '6', "Billing channel is 6: do not send")
                 self.assertTrue(Bill.objects.filter(id=int(current_bill_id)).exists(),
                                 "Bill for bill ID exists")
             else:
@@ -805,21 +821,21 @@ class ProcountorExportTest(TestCase):
                 line_amount = unit_count * unit_price * (1.0-discount_percentage)
                 if unit_count > 0:  # Ignore cancel bills
                     lineitem_totals[current_bill_id] = lineitem_totals.get(current_bill_id, 0.0) + line_amount
-        items_for_wrong_bill = set(bill_amounts.keys()).difference(lineitem_totals.keys())
+        items_for_wrong_bill = set(bill_amounts.keys()).difference(list(lineitem_totals.keys()))
         self.assertEqual(len(items_for_wrong_bill), 0, "Line item bill IDs must match bill IDs")
-        for bill_id, amount in bill_amounts.items():
+        for bill_id, amount in list(bill_amounts.items()):
             self.assertEqual(amount, lineitem_totals[bill_id])
 
     def test_procountor_csv_format_cancelled_bill(self):
         self.membership.dissociate(self.user)
         message = self.get_procountor_email()
         __, attach_content, __ = message.attachments[0]
-        self.check_procountor_csv_format(attach_content)
+        self.check_procountor_csv_format(attach_content.decode("iso-8859-1"))
 
     def test_send_cancelledbill_deleted_member(self):
         self.membership.request_dissociation(self.user)
         self.membership.dissociate(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 1)
+        self.assertEqual(CancelledBill.objects.count(), 1)
         self.membership.delete_membership(self.user)
         makebills()
         result_csv = create_csv(mark_cancelled=True)
@@ -829,7 +845,7 @@ class ProcountorExportTest(TestCase):
     def test_send_cancelledbill_dissociated_member(self):
         self.membership.request_dissociation(self.user)
         self.membership.dissociate(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 1)
+        self.assertEqual(CancelledBill.objects.count(), 1)
         makebills()
         result_csv = create_csv(mark_cancelled=True)
         self.assertEqual(len(result_csv.splitlines()), 4, "Creating cancelled bill csv failed")
@@ -852,12 +868,13 @@ class SingleMemberBillingModelsTest(TestCase):
         self.bill = self.cycle.bill_set.order_by('due_date')[0]
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
         self.bill.delete()
         self.cycle.delete()
         self.membership.delete()
 
     def test_bill_is_reminder(self):
-        "models.bill.is_reminder()"
+        """models.bill.is_reminder()"""
         reminder_bill = send_reminder(self.membership)
         self.assertTrue(reminder_bill.is_reminder())
         self.assertEqual(reminder_bill.reminder_count, 1)
@@ -866,15 +883,15 @@ class SingleMemberBillingModelsTest(TestCase):
         reminder_bill.delete()
 
     def test_billing_cycle_last_bill(self):
-        "models.Bill.last_bill()"
+        """models.Bill.last_bill()"""
         reminder_bill = send_reminder(self.membership)
         last_bill = self.cycle.bill_set.latest("due_date")
-        self.assertEquals(last_bill.id, reminder_bill.id)
-        self.assertNotEquals(last_bill.id, self.bill.id)
+        self.assertEqual(last_bill.id, reminder_bill.id)
+        self.assertNotEqual(last_bill.id, self.bill.id)
         reminder_bill.delete()
 
     def test_billing_cycle_is_last_bill_late(self):
-        "models.Bill.is_last_bill_late()"
+        """models.Bill.is_last_bill_late()"""
         self.assertFalse(self.cycle.is_last_bill_late())
         self.bill.due_date = datetime.now() - timedelta(days=1)
         self.bill.save()
@@ -885,7 +902,7 @@ class SingleMemberBillingModelsTest(TestCase):
         self.assertFalse(self.cycle.is_last_bill_late())
 
     def test_billing_payment_attach(self):
-        "models.Payment.attach_to_cycle()"
+        """models.Payment.attach_to_cycle()"""
         self.assertFalse(self.cycle.is_paid)
         p1 = Payment(billingcycle=None, amount=self.cycle.sum/2, payment_day=datetime.now(),
              transaction_id="test_billing_payment_attach_1")
@@ -955,11 +972,12 @@ class CanSendReminderTest(TestCase):
         can_send = can_send_reminder(month_ago, Payment.latest_payment_date())
         self.assertTrue(can_send, "Should be true with recent payment")
 
+
 class CSVNoMembersTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def test_file_reading(self):
-        "csvbills: test data should have 3 payments, none of which match"
+        """csvbills: test data should have 3 payments, none of which match"""
         with open_test_data("csv-test.csv") as f:
             process_op_csv(f)
 
@@ -971,6 +989,7 @@ class CSVNoMembersTest(TestCase):
         nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
         error = "No payments should match without any members in db"
         self.assertEqual(nomatch_payments, 0, error)
+
 
 class CSVReadingTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1030,7 +1049,7 @@ class ProcountorCSVNoMembersTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def test_file_reading(self):
-        "csvbills: test data should have 3 payments, none of which match"
+        """csvbills: test data should have 3 payments, none of which match"""
         with open_test_data("procountor-csv-test.csv") as f:
             process_procountor_csv(f)
 
@@ -1042,6 +1061,7 @@ class ProcountorCSVNoMembersTest(TestCase):
         nomatch_payments = Payment.objects.filter(~no_cycle_q).count()
         error = "No payments should match without any members in db"
         self.assertEqual(nomatch_payments, 0, error)
+
 
 class ProcountorCSVReadingTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1099,6 +1119,12 @@ class ProcountorCSVReadingTest(TestCase):
             except RequiredFieldNotFoundException:
                 self.fail("Valid csv should not raise header error.")
 
+    def test_csv_with_null_fields(self):
+        with open_test_data("procountor-csv-null-fields.csv") as f:
+            process_procountor_csv(f)
+        payment_count = Payment.objects.count()
+        self.assertEqual(payment_count, 1, "CSV should have contained 1 payment")
+
 
 class LoginRequiredTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1125,7 +1151,7 @@ class LoginRequiredTest(TestCase):
                      ]
 
     def test_views_with_login(self):
-        "Request a page that is protected with @login_required"
+        """Request a page that is protected with @login_required"""
 
         # Get the page without logging in. Should result in 302.
         for url in self.urls:
@@ -1133,7 +1159,7 @@ class LoginRequiredTest(TestCase):
             self.assertRedirects(response, '/login/?next=%s' % url)
 
         login = self.client.login(username='admin', password='dhtn')
-        self.failUnless(login, 'Could not log in')
+        self.assertTrue(login, 'Could not log in')
 
         # Request a page that requires a login
         for url in self.urls:
@@ -1156,13 +1182,13 @@ class TrustedHostTest(TestCase):
         settings.TRUSTED_HOSTS = self.oldhosts
 
     def test_views_with_ipaddr(self):
-        "Request a page that is protected with @login_required"
+        """Request a page that is protected with @login_required"""
 
         # Get the page with an untrusted address 403.
         settings.TRUSTED_HOSTS = ['13.13.13.13']
         for url in self.urls:
             response = self.client.get(url)
-            self.assertEquals(response.status_code, 403)
+            self.assertEqual(response.status_code, 403)
 
         settings.TRUSTED_HOSTS = ['127.0.0.1']
         # Request a page that requires a trusted client address
@@ -1200,14 +1226,15 @@ class ContactTest(TestCase):
         c.save()
         self.assertEqual(c.homepage, "https://www.kapsi.fi")
 
+
 class JuniorMemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
         self.post_data = {
-            "first_name": u"Yrjö",
-            "given_names": u"Yrjö Kapsi",
-            "last_name": u"Äikäs",
+            "first_name": "Yrjö",
+            "given_names": "Yrjö Kapsi",
+            "last_name": "Äikäs",
             "street_address": "Vasagatan 9",
             "postal_code": "90230",
             "post_office": "VAASA",
@@ -1218,7 +1245,7 @@ class JuniorMemberApplicationTest(TestCase):
             "nationality": "Suomi",
             "country": "Suomi",
             "municipality": "Vaasa",
-            "extra_info": u"Mää oon testikäyttäjä.",
+            "extra_info": "Mää oon testikäyttäjä.",
             "unix_login": "luser",
             "birth_year": "1993",
             "email_forward": "y.aikas",
@@ -1233,7 +1260,7 @@ class JuniorMemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.type, u"J")
+        self.assertEqual(new.type, "J")
 
     def test_do_application_is_junior_20(self):
         post_data = dict(self.post_data)  # Copy data
@@ -1241,7 +1268,7 @@ class JuniorMemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.type, u"J")
+        self.assertEqual(new.type, "J")
 
     def test_do_application_not_junior(self):
         post_data = dict(self.post_data)  # Copy data
@@ -1249,7 +1276,8 @@ class JuniorMemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.type, u"P")
+        self.assertEqual(new.type, "P")
+
 
 class MemberApplicationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
@@ -1257,9 +1285,9 @@ class MemberApplicationTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(id=1)
         self.post_data = {
-            "first_name": u"Yrjö",
-            "given_names": u"Yrjö Kapsi",
-            "last_name": u"Äikäs",
+            "first_name": "Yrjö",
+            "given_names": "Yrjö Kapsi",
+            "last_name": "Äikäs",
             "street_address": "Vasagatan 9",
             "postal_code": "90230",
             "post_office": "VAASA",
@@ -1270,7 +1298,7 @@ class MemberApplicationTest(TestCase):
             "nationality": "Suomi",
             "country": "Suomi",
             "municipality": "Vaasa",
-            "extra_info": u"Mää oon testikäyttäjä.",
+            "extra_info": "Mää oon testikäyttäjä.",
             "unix_login": "luser",
             "birth_year": "1993",
             "email_forward": "y.aikas",
@@ -1283,7 +1311,7 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"Yrjö")
+        self.assertEqual(new.person.first_name, "Yrjö")
 
 
     def test_do_application_with_short_homepage(self):
@@ -1291,18 +1319,18 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+        self.assertEqual(new.person.homepage, "http://www.kapsi.fi")
 
     def test_do_application_with_empty_phone_number(self):
         self.post_data['phone'] = ''
         response = self.client.post('/membership/application/person/', self.post_data)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'phone', _('This field is required.'))
 
     def test_do_application_with_empty_sms_number(self):
         self.post_data['sms'] = ''
         response = self.client.post('/membership/application/person/', self.post_data)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'sms', _('This field is required.'))
 
     def test_do_application_with_proper_homepage(self):
@@ -1310,14 +1338,14 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"http://www.kapsi.fi")
+        self.assertEqual(new.person.homepage, "http://www.kapsi.fi")
 
     def test_do_application_with_proper_secure_homepage(self):
         self.post_data['homepage'] = 'https://www.kapsi.fi'
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.homepage, u"https://www.kapsi.fi")
+        self.assertEqual(new.person.homepage, "https://www.kapsi.fi")
 
     def test_redundant_email_alias(self):
         self.post_data['unix_login'] = 'fnamelname'
@@ -1325,29 +1353,28 @@ class MemberApplicationTest(TestCase):
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"Yrjö")
+        self.assertEqual(new.person.first_name, "Yrjö")
 
     def test_clean_ajax_output(self):
         post_data = self.post_data.copy()
-        post_data['first_name'] = u'<b>Yrjö</b>'
+        post_data['first_name'] = '<b>Yrjö</b>'
         post_data['extra_info'] = '<iframe src="https://www.kapsi.fi" width=200 height=100></iframe>'
         response = self.client.post('/membership/application/person/', post_data)
         self.assertRedirects(response, '/membership/application/person/success/')
         new = Membership.objects.latest("id")
-        self.assertEquals(new.person.first_name, u"<b>Yrjö</b>")
+        self.assertEqual(new.person.first_name, "<b>Yrjö</b>")
 
         login = self.client.login(username='admin', password='dhtn')
-        self.failUnless(login, 'Could not log in')
+        self.assertTrue(login, 'Could not log in')
         json_response = self.client.post('/membership/application/handle_json/',
                                          json.dumps({"requestType": "MEMBERSHIP_DETAIL", "payload": new.id}),
                                          content_type="application/json")
         self.assertEqual(json_response.status_code, 200)
         json_dict = json.loads(json_response.content)
         self.assertEqual(json_dict['contacts']['person']['first_name'],
-                         u'&lt;b&gt;Yrjö&lt;/b&gt;')
+                         '&lt;b&gt;Yrjö&lt;/b&gt;')
         self.assertEqual(json_dict['extra_info'],
                          '&lt;iframe src=&quot;https://www.kapsi.fi&quot; width=200 height=100&gt;&lt;/iframe&gt;')
-
 
     def _validate_alias(self, alias):
         json_response = self.client.post('/membership/application/handle_json/',
@@ -1452,54 +1479,57 @@ class PhoneNumberFieldTest(TestCase):
         self.assertRaises(ValidationError, self.field.clean, "12345")
 
     def test_number(self):
-        self.assertEquals(u"0123456", self.field.clean(u"0123456"))
+        self.assertEqual("0123456", self.field.clean("0123456"))
 
     def test_parens(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"(0400) 123123"))
+        self.assertEqual("0400123123", self.field.clean("(0400) 123123"))
 
     def test_dash_delimiter(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"0400-123123"))
+        self.assertEqual("0400123123", self.field.clean("0400-123123"))
 
     def test_space_delimiter(self):
-        self.assertEquals(u"0400123123", self.field.clean(u"0400 123123"))
+        self.assertEqual("0400123123", self.field.clean("0400 123123"))
 
     def test_strippable_spaces(self):
-        self.assertEquals(u"0400123123", self.field.clean(u" 0400 123123  "))
+        self.assertEqual("0400123123", self.field.clean(" 0400 123123  "))
 
     def test_begins_with_plus(self):
-        self.assertEquals(u"+358401231111", self.field.clean(u"+358 40 123 1111"))
+        self.assertEqual("+358401231111", self.field.clean("+358 40 123 1111"))
 
     def test_dash_delimiter_begins_with_plus(self):
-        self.assertEquals(u"+358400123123", self.field.clean(u"+358-400-123123 "))
+        self.assertEqual("+358400123123", self.field.clean("+358-400-123123 "))
 
-class OrganizationRegistratioTest(TestCase):
+
+class OrganizationRegistrationTest(TestCase):
     def setUp(self):
         self.field = OrganizationRegistrationNumber()
 
     def test_valid(self):
-        self.assertEqual(u"1.11", self.field.clean(u"1.11"))
-        self.assertEqual(u"123.123", self.field.clean(u"123.123"))
+        self.assertEqual("12345678", self.field.clean("12345678"))
+        self.assertEqual("1234567-8", self.field.clean("1234567-8"))
 
     def test_invalid(self):
-        self.assertRaises(ValidationError, self.field.clean, "str.str")
-        self.assertRaises(ValidationError, self.field.clean, "11111")
-        self.assertRaises(ValidationError, self.field.clean, "11111.1111111")
+        self.assertRaises(ValidationError, self.field.clean, "str")
+        self.assertRaises(ValidationError, self.field.clean, "1234567")
+        self.assertRaises(ValidationError, self.field.clean, "123456789")
+        self.assertRaises(ValidationError, self.field.clean, "123456-78")
+        self.assertRaises(ValidationError, self.field.clean, "1234567-")
+
 
 class LoginFieldTest(TestCase):
     def setUp(self):
         self.field = LoginField()
 
     def test_valid(self):
-        self.assertEquals(u"testuser", self.field.clean(u"testuser"))
-        self.assertEquals(u"testuser2", self.field.clean(u"testuser2"))
-        self.assertEquals(u"a1b2c4", self.field.clean(u"a1b2c4"))
+        self.assertEqual("testuser", self.field.clean("testuser"))
+        self.assertEqual("testuser2", self.field.clean("testuser2"))
+        self.assertEqual("a1b2c4", self.field.clean("a1b2c4"))
     def test_uppercase(self):
-        self.assertEquals(u"testuser", self.field.clean(u"TestUser"))
+        self.assertEqual("testuser", self.field.clean("TestUser"))
 
     def test_bad_chars(self):
         self.assertRaises(ValidationError, self.field.clean, "user.name")
         self.assertRaises(ValidationError, self.field.clean, "user-name")
-
 
     def test_too_short(self):
         self.assertRaises(ValidationError, self.field.clean, "a")
@@ -1540,25 +1570,25 @@ class MemberListTest(TestCase):
         self.m2.preapprove(self.user)
         self.m3 = create_dummy_member('N')
         login = self.client.login(username='admin', password='dhtn')
-        self.failUnless(login, 'Could not log in')
+        self.assertTrue(login, 'Could not log in')
 
     def test_renders_member_id(self):
         response = self.client.get('/membership/memberships/approved/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/preapproved/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m2.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/new/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content)
+        self.assertTrue('<li class="list_item preapprovable" id="%i">' % self.m3.id in response.content.decode("utf-8"))
 
     def test_memberlist_pagination(self):
         response = self.client.get('/membership/memberships/approved/?page=1')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
         response = self.client.get('/membership/memberships/approved/?page=2')
         self.assertEqual(response.status_code, 404)
@@ -1566,16 +1596,17 @@ class MemberListTest(TestCase):
     def test_memberlist_sort_by_name(self):
         response = self.client.get('/membership/memberships/approved/?sort=name')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
     def test_memberlist_sort_by_id(self):
         response = self.client.get('/membership/memberships/approved/?sort=id')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content)
+        self.assertTrue('<span class="member_id">#%i</span>' % self.m1.id in response.content.decode("utf-8"))
 
 
 class MemberDeletionTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1583,16 +1614,16 @@ class MemberDeletionTest(TestCase):
         m = create_dummy_member('N')
         a = Alias(owner=m, name=Alias.email_forwards(m)[0])
         a.save()
-        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertEqual(Alias.objects.all().count(), 1)
 
         s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
                     alias=a, owner=m, data=a.name)
         s.save()
-        self.assertEquals(Service.objects.all().count(), 1)
+        self.assertEqual(Service.objects.all().count(), 1)
 
         m.delete_membership(self.user)
-        self.assertEquals(Service.objects.all().count(), 0)
-        self.assertEquals(Alias.objects.all().count(), 0)
+        self.assertEqual(Service.objects.all().count(), 0)
+        self.assertEqual(Alias.objects.all().count(), 0)
 
     def test_preapproved_deletion(self):
         m = create_dummy_member('N')
@@ -1601,13 +1632,13 @@ class MemberDeletionTest(TestCase):
         s = Service(servicetype=ServiceType.objects.get(servicetype='Email alias'),
                     alias=a, owner=m, data=a.name)
         s.save()
-        self.assertEquals(Service.objects.all().count(), 1)
-        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertEqual(Service.objects.all().count(), 1)
+        self.assertEqual(Alias.objects.all().count(), 1)
         m.preapprove(self.user)
 
         m.delete_membership(self.user)
-        self.assertEquals(Service.objects.all().count(), 1)
-        self.assertEquals(Alias.objects.all().count(), 1)
+        self.assertEqual(Service.objects.all().count(), 1)
+        self.assertEqual(Alias.objects.all().count(), 1)
         self.assertFalse(Alias.objects.all()[0].is_valid())
 
 
@@ -1659,9 +1690,9 @@ class MemberDissociationRequestedTest(TestCase):
         m.approve(self.user)
         makebills()
         m.request_dissociation(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 0)
+        self.assertEqual(CancelledBill.objects.count(), 0)
         m.dissociate(self.user)
-        self.assertEquals(CancelledBill.objects.count(), 1,
+        self.assertEqual(CancelledBill.objects.count(), 1,
                           "Outstanding bills are cancelled")
 
     def test_disassociation_cancels_outstanding_bills_logging(self):
@@ -1715,6 +1746,7 @@ class MemberDissociationRequestedTest(TestCase):
 
 class MemberCancelDissociationRequestTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1752,6 +1784,7 @@ class MemberCancelDissociationRequestTest(TestCase):
 
 class MemberDissociationTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
+
     def setUp(self):
         self.user = User.objects.get(id=1)
 
@@ -1799,12 +1832,13 @@ class MetricsInterfaceTest(TestCase):
         response = self.client.get('/membership/metrics/')
         self.assertEqual(response.status_code, 200)
         d = json.loads(response.content)
-        self.assertTrue(d.has_key(u'memberships'))
-        for key in [u'new', u'preapproved', u'approved', u'deleted']:
-            self.assertTrue(d[u'memberships'].has_key(key))
-        self.assertTrue(d.has_key(u'bills'))
-        for key in [u'unpaid_count', u'unpaid_sum']:
-            self.assertTrue(d[u'bills'].has_key(key))
+        self.assertTrue('memberships' in d)
+        for key in ['new', 'preapproved', 'approved', 'deleted']:
+            self.assertTrue(key in d['memberships'])
+        self.assertTrue('bills' in d)
+        for key in ['unpaid_count', 'unpaid_sum']:
+            self.assertTrue(key in d['bills'])
+
 
 class IpRangeListTest(TestCase):
     def test_rangelist(self):
@@ -1821,9 +1855,26 @@ class IpRangeListTest(TestCase):
         self.assertTrue('1.2.3.4' in IpRangeList(*iplist))
         self.assertFalse('127.0.0.1' in IpRangeList())
 
+    def test_rangelist_IPv4(self):
+        a = IpRangeList("1.1.1.1")
+        self.assertTrue("1.1.1.1" in a)
+
+    def test_rangelist_IPv6(self):
+        a = IpRangeList("::1", "2001:8db:1234:1234:1234:da:1:2", "2001:8db:1234:1234::2")
+        self.assertTrue("0:0:0:0:0:0:0:1" in a)
+        self.assertTrue("2001:8db:1234:1234:1234:da:1:2" in a)
+        self.assertTrue("2001:8db:1234:1234:0:0:0:2" in a)
+
+    def test_rangelist_IPv4_and_IPv6(self):
+        a = IpRangeList("::1",  "1.1.1.1")
+        self.assertTrue("0:0:0:0:0:0:0:1" in a)
+        self.assertTrue("1.1.1.1" in a)
+
+
 @trusted_host_required
 def dummyView(request, *args, **kwargs):
     return HttpResponse('OK', content_type='text/plain')
+
 
 class DecoratorTest(TestCase):
     def setUp(self):
@@ -1851,10 +1902,10 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.last_name = m1.person.last_name
         m2.person.save()
 
-        self.assertEquals(len(m1.duplicates()), 1)
-        self.assertEquals(m1.duplicates()[0].id, m2.id)
-        self.assertEquals(len(m2.duplicates()), 1)
-        self.assertEquals(m2.duplicates()[0].id, m1.id)
+        self.assertEqual(len(m1.duplicates()), 1)
+        self.assertEqual(m1.duplicates()[0].id, m2.id)
+        self.assertEqual(len(m2.duplicates()), 1)
+        self.assertEqual(m2.duplicates()[0].id, m1.id)
 
     def test_same_last_name(self):
         m1 = create_dummy_member('N')
@@ -1868,7 +1919,7 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.first_name = "Esko"
         m2.person.save()
 
-        self.assertEquals(len(m1.duplicates()), 0)
+        self.assertEqual(len(m1.duplicates()), 0)
 
     def test_has_duplicate_organization(self):
         m1 = create_dummy_member('N', type='O')
@@ -1879,10 +1930,10 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.organization.organization_name = m1.organization.organization_name
         m2.organization.save()
 
-        self.assertEquals(len(m1.duplicates()), 1)
-        self.assertEquals(m1.duplicates()[0].id, m2.id)
-        self.assertEquals(len(m2.duplicates()), 1)
-        self.assertEquals(m2.duplicates()[0].id, m1.id)
+        self.assertEqual(len(m1.duplicates()), 1)
+        self.assertEqual(m1.duplicates()[0].id, m2.id)
+        self.assertEqual(len(m2.duplicates()), 1)
+        self.assertEqual(m2.duplicates()[0].id, m1.id)
 
     def test_duplicate_phone(self):
         m1 = create_dummy_member('N')
@@ -1893,7 +1944,7 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.phone = m1.person.phone
         m2.person.save()
 
-        self.assertEquals(len(m1.duplicates()), 1)
+        self.assertEqual(len(m1.duplicates()), 1)
 
     def test_empty_phone_is_not_duplicate(self):
         m1 = create_dummy_member('N')
@@ -1906,7 +1957,7 @@ class DuplicateMembershipDetectionTest(TestCase):
         m2.person.phone = ''
         m2.person.save()
 
-        self.assertEquals(len(m1.duplicates()), 0)
+        self.assertEqual(len(m1.duplicates()), 0)
 
 
 class MembershipSearchTest(TestCase):
@@ -1918,28 +1969,28 @@ class MembershipSearchTest(TestCase):
         self.o.save()
 
     def test_find_by_first_name(self):
-        self.assertEquals(len(Membership.search(self.m.person.first_name)), 1)
+        self.assertEqual(len(Membership.search(self.m.person.first_name)), 1)
 
     def test_find_by_last_name(self):
-        self.assertEquals(len(Membership.search(self.m.person.last_name)), 1)
+        self.assertEqual(len(Membership.search(self.m.person.last_name)), 1)
 
     def test_find_by_organization_name(self):
-        self.assertEquals(len(Membership.search(self.o.organization.organization_name)), 1)
+        self.assertEqual(len(Membership.search(self.o.organization.organization_name)), 1)
 
     def test_find_by_membership_id(self):
-        self.assertEquals(len(Membership.search("#{id}".format(id=self.m.id))), 1)
+        self.assertEqual(len(Membership.search("#{id}".format(id=self.m.id))), 1)
 
     def test_find_by_membership_id_org(self):
-        self.assertEquals(len(Membership.search("#{id}".format(id=self.o.id))), 1)
+        self.assertEqual(len(Membership.search("#{id}".format(id=self.o.id))), 1)
 
     def test_find_by_membership_id_does_not_exist(self):
-        self.assertEquals(len(Membership.search("#{id}".format(id=12765))), 0)
+        self.assertEqual(len(Membership.search("#{id}".format(id=12765))), 0)
 
     def test_find_by_alias(self):
         alias = Alias(owner=self.m,
-                      name=u"this.alias.should.be.unique")
+                      name="this.alias.should.be.unique")
         alias.save()
-        self.assertEquals(len(Membership.search(alias.name)), 1)
+        self.assertEqual(len(Membership.search(alias.name)), 1)
 
 
 class MembershipPaperReminderSentTest(TestCase):
@@ -2000,14 +2051,13 @@ class MembershipPaperReminderSentTest(TestCase):
                     due_date=datetime.now() - timedelta(days=5))
         bill.save()
 
-
     def test_membership_found_for_late_paper_reminder(self):
         qs = Membership.paper_reminder_sent_unpaid_after()
-        self.assertEquals(1, len(qs))
+        self.assertEqual(1, len(qs))
         self.assertIn(self.m, qs)
 
         qs = Membership.paper_reminder_sent_unpaid_after(days=9)
-        self.assertEquals(2, len(qs))
+        self.assertEqual(2, len(qs))
         self.assertIn(self.m, qs)
         self.assertIn(self.m2, qs)
 
@@ -2022,7 +2072,6 @@ class CorrectVatAmountInBillTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
-        #settings.BILLING_CC_EMAIL = None
         self.user = User.objects.get(id=1)
 
         self.m = create_dummy_member('N')
@@ -2041,12 +2090,8 @@ class CorrectVatAmountInBillTest(TestCase):
                          due_date=cycle_start)
         self.bill_2014 = Bill(billingcycle=self.cycle_2014, type='P',
                          due_date=cycle_start_2014)
-        #mail.outbox = []
 
     def tearDown(self):
-
-        #self.bill_2014.delete()
-        #self.bill_2013.delete()
         self.cycle.delete()
         self.cycle_2014.delete()
         self.m.delete()
@@ -2060,28 +2105,28 @@ class CorrectVatAmountInBillTest(TestCase):
 
 class EmailUtilsTests(TestCase):
     def test_unicode_in_name(self):
-        res = email_utils.format_email(u'räyh', 'foo@bar')
-        self.assertEqual(res, u'"räyh" <foo@bar>')
+        res = email_utils.format_email('räyh', 'foo@bar')
+        self.assertEqual(res, '"räyh" <foo@bar>')
 
     def test_clean_ascii_name(self):
         res = email_utils.format_email('rauh', 'foo@bar')
-        self.assertEqual(res, u'"rauh" <foo@bar>')
+        self.assertEqual(res, '"rauh" <foo@bar>')
 
     def test_comma_in_name(self):
         res = email_utils.format_email('rauh,joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh,joo" <foo@bar>')
+        self.assertEqual(res, '"rauh,joo" <foo@bar>')
 
     def test_semicolon_in_name(self):
         res = email_utils.format_email('rauh;joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh;joo" <foo@bar>')
+        self.assertEqual(res, '"rauh;joo" <foo@bar>')
 
     def test_dquote_in_name(self):
         res = email_utils.format_email('rauh\"joo', 'foo@bar')
-        self.assertEqual(res, u'"rauhjoo" <foo@bar>')
+        self.assertEqual(res, '"rauhjoo" <foo@bar>')
 
     def test_quote_in_name(self):
         res = email_utils.format_email('rauh\'joo', 'foo@bar')
-        self.assertEqual(res, u'"rauh\'joo" <foo@bar>')
+        self.assertEqual(res, '"rauh\'joo" <foo@bar>')
 
 
 class TestMembersToLock(TestCase):
@@ -2152,7 +2197,7 @@ class TestAdmtoolJsonView(TestCase):
 
     def test_basic_information(self):
         details = admtool_membership_details(self.m)
-        self.assertEqual(details["id"], unicode(self.m.id))
+        self.assertEqual(details["id"], str(self.m.id))
         self.assertEqual(details["status"], self.m.status)
         self.assertEqual(details['contacts']["person"]["first_name"], self.m.person.first_name)
         self.assertEqual(details['contacts']["person"]["last_name"], self.m.person.last_name)
@@ -2182,7 +2227,7 @@ class TestHandleJson(TestCase):
         self.o.save()
 
         login = self.client.login(username='admin', password='dhtn')
-        self.failUnless(login, 'Could not log in')
+        self.assertTrue(login, 'Could not log in')
 
     def test_preapprove(self):
         self.client.post('/membership/application/handle_json/',
@@ -2239,10 +2284,10 @@ class TestGenerateTestData(TestCase):
     def test_create_all(self):
         call_command('generate_test_data', '--new', "5", "--deleted", "6", "--preapproved", "7", "--approved", "8",
                      "--duplicates", "0", stdout=StringIO())
-        self.assertEquals(Membership.objects.filter(status="N").count(), 5)
-        self.assertEquals(Membership.objects.filter(status="D").count(), 6)
-        self.assertEquals(Membership.objects.filter(status="P").count(), 7)
-        self.assertEquals(Membership.objects.filter(status="A").count(), 8)
+        self.assertEqual(Membership.objects.filter(status="N").count(), 5)
+        self.assertEqual(Membership.objects.filter(status="D").count(), 6)
+        self.assertEqual(Membership.objects.filter(status="P").count(), 7)
+        self.assertEqual(Membership.objects.filter(status="A").count(), 8)
 
 
 class TestProcountorApi(TestCase):
@@ -2260,7 +2305,11 @@ class TestProcountorApi(TestCase):
         self.bill.save()
 
     def tearDown(self):
+        CancelledBill.objects.all().delete()
         self.bill.delete()
+        Bill.objects.all().delete()
+        Payment.objects.all().delete()
+        BillingCycle.objects.all().delete()
         self.cycle.delete()
         self.m.delete()
 
@@ -2476,7 +2525,6 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end, "No new payments should be imported")
 
-
     def test_process_payment_unknown_payment(self):
         today = datetime.now().strftime("%Y-%m-%d")
         payment = {
@@ -2510,7 +2558,8 @@ class TestProcountorApi(TestCase):
                     "name": "Firstname Lastname",
                     "payDate": today,
                     "sum": 40.0,
-                    "message": "SEPA-MAKSU                         %s                         OKOYFIHH\n" % group_reference(self.bill.reference_number()),
+                    "message": "SEPA-MAKSU                         %s                         OKOYFIHH\n" %
+                               group_reference(self.bill.reference_number()),
                     "endToEndId": 0,
                     "explanationCode": 710,
                     "valueDate": today,
@@ -2560,3 +2609,35 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
 
+    def test_process_payment_with_null_name(self):
+        """
+        Test event with null name field
+        :return:
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        event = {
+            "invoiceId": 0,
+            "name": None,
+            "payDate": today,
+            "sum": 40.0,
+            "message": "SEPA-MAKSU                         Ehka jasenmaksu                         OKOYFIHH\n",
+            "endToEndId": 0,
+            "explanationCode": 710,
+            "valueDate": today,
+            "archiveCode": "1810015UTZ00000000",
+            "allocated": False,
+            "id": 1234,
+            "productId": 0
+        }
+
+        payments_at_start = Payment.objects.count()
+
+        payments = [ProcountorBankStatementEvent(event)]
+        process_payments(payments, user=self.user)
+        cycle = BillingCycle.objects.get(id=self.cycle.id)
+        self.assertFalse(cycle.is_paid, "Billing cycle should not be paid")
+
+        payments_at_end = Payment.objects.count()
+
+        self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
+        self.assertEqual(payments[0].name, "")

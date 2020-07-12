@@ -4,7 +4,7 @@
 Some functions that cannot be in pdf.py file to prevent import loop.
 """
 
-from cStringIO import StringIO
+from io import BytesIO
 import logging
 
 from django.core.files import File
@@ -46,7 +46,7 @@ def get_bill_pdf(bill, payments=None):
 
     # If PDF does not exist, generate it
     if not bill.pdf_file:
-        pdf_fp = StringIO()
+        pdf_fp = BytesIO()
 
         # Select template bill/reminder
         if bill.is_reminder():

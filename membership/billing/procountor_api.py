@@ -1,14 +1,10 @@
-# encoding: utf-8
-import json
 import random
 import string
-import urlparse
+import urllib.parse
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import django
 import requests
-from django.conf import settings
 import logging
 
 logger = logging.getLogger("ProcountorAPI")
@@ -53,21 +49,21 @@ class ProcountorBankStatementEvent(object):
 
     # http://www.finanssiala.fi/maksujenvalitys/dokumentit/ISO20022_Account_Statement_Guide_V1_3.pdf pages 39-40
     EXPLANATIONCODES = {
-        700: u'maksuliikennepalvelu',
-        701: u'toistuva maksuliikennepalvelu',
-        702: u'Laksumaksupalvelu',
-        703: u'Maksupäätemaksu',
-        704: u'Suoramaksupalvelu',
-        705: u'Viitesiirto',
-        706: u'Maksupalvelu',
-        710: u'Talletus',
-        720: u'Nosto',
-        721: u'Maksukorttimaksu',
-        722: u'Shekki',
-        730: u'Pankkimaksu',
-        740: u'Korkomaksu',
-        750: u'Luottokorkomaksu',
-        760: u'Lainamaksu',
+        700: 'maksuliikennepalvelu',
+        701: 'toistuva maksuliikennepalvelu',
+        702: 'Laksumaksupalvelu',
+        703: 'Maksupäätemaksu',
+        704: 'Suoramaksupalvelu',
+        705: 'Viitesiirto',
+        706: 'Maksupalvelu',
+        710: 'Talletus',
+        720: 'Nosto',
+        721: 'Maksukorttimaksu',
+        722: 'Shekki',
+        730: 'Pankkimaksu',
+        740: 'Korkomaksu',
+        750: 'Luottokorkomaksu',
+        760: 'Lainamaksu',
     }
 
     def __init__(self, row):
@@ -78,7 +74,7 @@ class ProcountorBankStatementEvent(object):
             self.valueDate = datetime.strptime(self.valueDate, "%Y-%m-%d")
         self.sum = row.get("sum", 0)
         self.accountNumber = row.get("accountNumber", None)
-        self.name = row.get("name", None)
+        self.name = row.get("name", None) or ""  # Force name to be string
         self.explanationCode = row.get("explanationCode", 0)
         self.explanationDescription = self.EXPLANATIONCODES.get(self.explanationCode,
                                                                 str(self.explanationCode))
@@ -142,7 +138,7 @@ class ProcountorReferencePayment(object):
         self.archiveId = row.get("archiveId", "")
         self.allocated = row.get("allocated", True)
         self.invoiceId = row.get("invoiceId", 0)
-        self.event_type_description = u"Viitesiirto"
+        self.event_type_description = "Viitesiirto"
         self.message = ""
         self.attachments = []
 
@@ -157,8 +153,10 @@ class ProcountorReferencePayment(object):
             sum (number, optional): The total amount for the reference payment. ,
             name (string, optional): Name of the counterparty. ,
             bankReference (string, optional): A reference value for the bank. ,
-            archiveId (string, optional): Archive code of the reference payment. Archive codes are unique in one bank but two events from different banks can share the same archive code. ,
-            allocated (boolean, optional): Is the reference payment allocated to an invoice. If it is, the event must also have an invoice ID. ,
+            archiveId (string, optional): Archive code of the reference payment. Archive codes are unique in one bank
+            but two events from different banks can share the same archive code. ,
+            allocated (boolean, optional): Is the reference payment allocated to an invoice. If it is, the event must
+            also have an invoice ID. ,
             invoiceId (integer, optional): Unique identifier of the invoice linked to the event. ,
             attachments (Array[Attachment], optional): A list of attachments added to the reference payment.
         }
@@ -226,8 +224,8 @@ class ProcountorAPIClient(object):
             raise ProcountorAPIException("Authentication failed, wrong response status code %d", res.status_code)
         target = self.session.get_redirect_target(res)
 
-        parsed = urlparse.urlparse(target)
-        target_parameters = dict(urlparse.parse_qsl(parsed.query))
+        parsed = urllib.parse.urlparse(target)
+        target_parameters = dict(urllib.parse.parse_qsl(parsed.query))
 
         return target_parameters["code"]
 
@@ -266,10 +264,6 @@ class ProcountorAPIClient(object):
         logger.debug("Oauth phase 1 success, token: %s" % (authorization_code,))
 
         return self.authenticate_2phase(authorization_code=authorization_code)
-
-    def get_invoices(self, status="PAID"):
-        res = self.get("invoices", params={"status": status})
-        return res.json()
 
     def get_referencepayments(self, start, end):
         """
@@ -359,10 +353,11 @@ class ProcountorAPIClient(object):
         res = self.get("ledgerreceipts", params=params)
         return res.json()
 
-    def get_invoices(self, start, end):
+    def get_invoices(self, start, end, status="PAID"):
         params = {
             "startDate": start.strftime("%Y-%m-%d"),
-            "endDate": end.strftime("%Y-%m-%d")
+            "endDate": end.strftime("%Y-%m-%d"),
+            "status": status,
         }
         res = self.get("invoices", params=params)
         return res.json()

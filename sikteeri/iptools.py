@@ -6,6 +6,7 @@
 import socket
 import struct
 
+
 def ipv6_to_long(ip):
     """Return the IPv6 address string as a long
 
@@ -18,6 +19,7 @@ def ipv6_to_long(ip):
     ip_parts = struct.unpack('!QQ', ip_bytes_n)
     return 2**64 * ip_parts[0] + ip_parts[1]
 
+
 def ipv4_to_long(ip):
     """Return the IPv4 address string as a long
 
@@ -27,7 +29,8 @@ def ipv4_to_long(ip):
     16909060L
     """
     ip_bytes_n = socket.inet_pton(socket.AF_INET, ip)
-    return long(struct.unpack('!I', ip_bytes_n)[0])
+    return int(struct.unpack('!I', ip_bytes_n)[0])
+
 
 def long_to_ipv4(ip_long):
     """Convert a long representation to a human readable IPv4 string
@@ -40,17 +43,19 @@ def long_to_ipv4(ip_long):
     ip_bytes = struct.pack("!I", ip_long)
     return socket.inet_ntop(socket.AF_INET, ip_bytes)
 
+
 def long_to_ipv6(ip_long):
     """Convert a long representation to a human readable IPv6 string
 
-    >>> long_to_ipv6(42540766411282592856903984951653826561L)
+    >>> long_to_ipv6(42540766411282592856903984951653826561)
     '2001:db8::1'
-    >>> long_to_ipv6(1L)
+    >>> long_to_ipv6(1)
     '::1'
     """
-    ip_parts = (ip_long/2**64, ip_long % 2**64)
+    ip_parts = (ip_long//2**64, ip_long % 2**64)
     ip_bytes = struct.pack("!QQ", *ip_parts)
     return socket.inet_ntop(socket.AF_INET6, ip_bytes)
+
 
 def ipv4_mask_to_long(mask):
     """Convert an IPv4 netmax (prefixlen) to long
@@ -61,7 +66,8 @@ def ipv4_mask_to_long(mask):
     4278190080L
     """
     mask_binary = ("1" * mask) + ("0" * (32-mask))
-    return long(mask_binary, 2)
+    return int(mask_binary, 2)
+
 
 def ipv6_mask_to_long(mask):
     """Convert an IPv6 prefixlen to long
@@ -72,7 +78,8 @@ def ipv6_mask_to_long(mask):
     340282366920938463463374607431768211455L
     """
     mask_binary = ("1" * mask) + ("0" * (128-mask))
-    return long(mask_binary, 2)
+    return int(mask_binary, 2)
+
 
 def cidr_to_network(ip, prefixlen):
     """Calculate the network address for a CIDR notation network
@@ -93,6 +100,7 @@ def cidr_to_network(ip, prefixlen):
         network_long = ip_long & netmask
         network = long_to_ipv4(network_long)
     return network
+
 
 class IpRangeList:
     """IP range list that supports CIDR notation for IPv4 and IPv6
@@ -130,6 +138,7 @@ class IpRangeList:
             prefixlen = int(prefixlen)
             network = cidr_to_network(ip, prefixlen)
             self._masks.append((network, prefixlen))
+
     def __contains__(self, x):
         for (network, prefixlen) in self._masks:
             x_network = None
@@ -141,17 +150,20 @@ class IpRangeList:
                 return True
         return False
 
+
 def load_tests(loader, tests, pattern):
     import doctest
     suite = doctest.DocTestSuite()
     tests.addTests(suite)
     return suite
 
+
 def main():
     import unittest
     import doctest
     suite = doctest.DocTestSuite()
     unittest.TextTestRunner().run(suite)
+
 
 if __name__ == '__main__':
     main()

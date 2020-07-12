@@ -40,7 +40,7 @@ msgstr "Kotipaikka"
 
 #: static/js/member_list.js:60
 msgid "Nationality"
-msgstr "Kansallisuus"
+msgstr "Kansalaisuus"
 
 #: static/js/member_list.js:61
 msgid "Visible in the public memberlist"
@@ -55,8 +55,8 @@ msgid "Year of birth"
 msgstr "Syntymävuosi"
 
 #: static/js/member_list.js:64
-msgid "Organization registration number"
-msgstr "Yhdistysrekisterinumero"
+msgid "Business ID"
+msgstr "Y-tunnus"
 
 #: static/js/member_list.js:65
 msgid "Services"

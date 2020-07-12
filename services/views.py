@@ -2,8 +2,6 @@
 
 import re
 import json
-import logging
-logger = logging.getLogger("services.views")
 from membership.utils import log_change
 from membership.utils import bake_log_entries
 from membership.models import Membership
@@ -16,6 +14,10 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import ugettext_lazy as _
+
+import logging
+logger = logging.getLogger("services.views")
+
 
 @permission_required('services.manage_aliases')
 def alias_edit(request, id, template_name='membership/entity_edit.html'):
@@ -105,7 +107,7 @@ def validate_alias(request, alias):
     valid = True
     if Alias.objects.filter(name__iexact=alias).count() == 0:
         exists = False
-    if re.match(VALID_USERNAME_RE, alias) == None:
+    if re.match(VALID_USERNAME_RE, alias) is None:
         valid = False
     json_obj = {'exists' : exists, 'valid' : valid}
     return HttpResponse(json.dumps(json_obj, sort_keys=True, indent=4),

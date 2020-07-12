@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='Created')),
                 ('comment', models.CharField(max_length=128, verbose_name='Comment', blank=True)),
                 ('expiration_date', models.DateTimeField(null=True, verbose_name='Alias expiration date', blank=True)),
-                ('owner', models.ForeignKey(verbose_name='Alias owner', to='membership.Membership')),
+                ('owner', models.ForeignKey(verbose_name='Alias owner', to='membership.Membership', on_delete=models.PROTECT)),
             ],
             options={
                 'ordering': ['name'],
@@ -33,8 +33,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('data', models.CharField(max_length=256, verbose_name='Service specific data', blank=True)),
-                ('alias', models.ForeignKey(verbose_name='Related alias', to='services.Alias', null=True)),
-                ('owner', models.ForeignKey(verbose_name='Service owner', to='membership.Membership', null=True)),
+                ('alias', models.ForeignKey(verbose_name='Related alias', to='services.Alias', null=True, on_delete=models.PROTECT)),
+                ('owner', models.ForeignKey(verbose_name='Service owner', to='membership.Membership', null=True, on_delete=models.PROTECT)),
             ],
             options={
                 'permissions': (('can_manage_services', 'Can manage member services'),),
@@ -53,6 +53,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='service',
             name='servicetype',
-            field=models.ForeignKey(verbose_name='Service type', to='services.ServiceType'),
+            field=models.ForeignKey(verbose_name='Service type', to='services.ServiceType', on_delete=models.PROTECT),
         ),
     ]

@@ -9,10 +9,9 @@ from membership.billing.pdf_utils import get_bill_pdf, create_reminder_pdf
 from membership.reference_numbers import barcode_4, group_right,\
     generate_membership_bill_reference_number
 
-logger = logging.getLogger("membership.models")
 import traceback
 
-from cStringIO import StringIO
+from io import StringIO, BytesIO
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -28,20 +27,29 @@ from django.db.models.query import QuerySet
 
 from django.contrib.contenttypes.models import ContentType
 
-from utils import log_change, tupletuple_to_dict
+from .utils import log_change, tupletuple_to_dict
 
 from membership.signals import send_as_email, send_preapprove_email, send_duplicate_payment_notice
-from email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
+from .email_utils import bill_sender, preapprove_email_sender, duplicate_payment_sender, format_email
 
 
-class BillingEmailNotFound(Exception): pass
-class MembershipOperationError(Exception): pass
+logger = logging.getLogger("membership.models")
 
 
-class MembershipAlreadyStatus(MembershipOperationError): pass
+class BillingEmailNotFound(Exception):
+    pass
+
+
+class MembershipOperationError(Exception):
+    pass
+
+
+class MembershipAlreadyStatus(MembershipOperationError):
+    pass
 
 
 class PaymentAttachedError(Exception): pass
+
 
 MEMBER_TYPES = (('P', _('Person')),
                 ('J', _('Junior')),
@@ -75,9 +83,11 @@ BILL_TYPES = (
 )
 BILL_TYPES_DICT = tupletuple_to_dict(BILL_TYPES)
 
+
 def logging_log_change(sender, instance, created, **kwargs):
     operation = "created" if created else "modified"
     logger.info('%s %s: %s' % (sender.__name__, operation, repr(instance)))
+
 
 def _get_logs(self):
     '''Gets the log entries related to this object.
@@ -86,6 +96,7 @@ def _get_logs(self):
     ct = ContentType.objects.get_for_model(my_class)
     object_logs = ct.logentry_set.filter(object_id=self.id)
     return object_logs
+
 
 class Contact(models.Model):
     logs = property(_get_logs)
@@ -146,7 +157,7 @@ class Contact(models.Model):
         try:
             return Membership.objects.get(tech_contact_id=self.id).id
         except Membership.DoesNotExist:
-             return None
+            return None
 
     def email_to(self):
         if self.email:
@@ -157,13 +168,13 @@ class Contact(models.Model):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.first_name, self.last_name)
+            return '%s %s' % (self.first_name, self.last_name)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization_name:
             return self.organization_name
         else:
-            return u'%s %s' % (self.last_name, self.first_name)
+            return '%s %s' % (self.last_name, self.first_name)
 
 
 class MembershipManager(models.Manager):
@@ -173,6 +184,7 @@ class MembershipManager(models.Manager):
 
     def get_query_set(self):
         return MembershipQuerySet(self.model)
+
 
 class MembershipQuerySet(QuerySet):
     def sort(self, sortkey):
@@ -216,13 +228,17 @@ class Membership(models.Model):
     municipality = models.CharField(_('Home municipality'), max_length=128, blank=True)
     nationality = models.CharField(_('Nationality'), max_length=128)
     birth_year = models.IntegerField(_('Year of birth'), null=True, blank=True)
-    organization_registration_number = models.CharField(_('Organization registration number'),
+    organization_registration_number = models.CharField(_('Business ID'),
                                                         blank=True, max_length=15)
 
-    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True)
-    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'), blank=True, null=True)
-    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'), blank=True, null=True)
-    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'), blank=True, null=True)
+    person = models.ForeignKey('Contact', related_name='person_set', verbose_name=_('Person'), blank=True, null=True,
+                               on_delete=models.PROTECT)
+    billing_contact = models.ForeignKey('Contact', related_name='billing_set', verbose_name=_('Billing contact'),
+                                        blank=True, null=True, on_delete=models.PROTECT)
+    tech_contact = models.ForeignKey('Contact', related_name='tech_contact_set', verbose_name=_('Technical contact'),
+                                     blank=True, null=True, on_delete=models.PROTECT)
+    organization = models.ForeignKey('Contact', related_name='organization_set', verbose_name=_('Organization'),
+                                     blank=True, null=True, on_delete=models.PROTECT)
 
     extra_info = models.TextField(blank=True, verbose_name=_('Additional information'))
 
@@ -244,7 +260,7 @@ class Membership(models.Model):
         if self.primary_contact():
             return self.primary_contact().name()
         else:
-            return unicode(self)
+            return str(self)
 
     def email(self):
         return self.primary_contact().email
@@ -277,15 +293,15 @@ class Membership(models.Model):
         for contact in contact_priority_list:
             if contact:
                 if contact.email:
-                    return unicode(contact.email_to())
-        raise BillingEmailNotFound("Neither billing or administrative contact "+
+                    return str(contact.email_to())
+        raise BillingEmailNotFound("Neither billing or administrative contact "
             "has an email address")
 
     # https://docs.djangoproject.com/en/dev/ref/models/instances/#django.db.models.Model.clean
     def clean(self):
-        if self.type not in MEMBER_TYPES_DICT.keys():
+        if self.type not in list(MEMBER_TYPES_DICT.keys()):
             raise ValidationError("Illegal member type '%s'" % self.type)
-        if self.status not in MEMBER_STATUS_DICT.keys():
+        if self.status not in list(MEMBER_STATUS_DICT.keys()):
             raise ValidationError("Illegal member status '%s'" % self.status)
         if self.status != STATUS_DELETED:
             if self.type == 'O' and self.person:
@@ -568,17 +584,17 @@ class Membership(models.Model):
         return Membership.objects.filter(id__in=membership_ids)
 
     def __repr__(self):
-        plain_self = unicode(self).encode('ASCII', 'backslashreplace')
-        return "<Membership(%s): %s (%i)>" % (self.type, plain_self, self.id)
+        return "<Membership(%s): %s (%i)>" % (self.type, str(self), self.id)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization:
-            return self.organization.__unicode__()
+            return str(self.organization)
         else:
             if self.person:
-                return self.person.__unicode__()
+                return str(self.person)
             else:
                 return "#%d" % self.id
+
 
 class Fee(models.Model):
     type = models.CharField(max_length=1, choices=MEMBER_TYPES, verbose_name=_('Fee type'))
@@ -586,7 +602,7 @@ class Fee(models.Model):
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2)
     vat_percentage = models.IntegerField(_('VAT percentage'))
 
-    def __unicode__(self):
+    def __str__(self):
         return "Fee for %s, %s euros, %s%% VAT, %s--" % \
                (self.get_type_display(), str(self.sum), str(self.vat_percentage), str(self.start))
 
@@ -595,6 +611,7 @@ class BillingCycleManager(models.Manager):
 
     def get_query_set(self):
         return BillingCycleQuerySet(self.model)
+
 
 class BillingCycleQuerySet(QuerySet):
     def sort(self, sortkey):
@@ -629,12 +646,13 @@ class BillingCycle(models.Model):
             ("manage_bills", "Can manage billing"),
         )
 
-    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'), on_delete=models.PROTECT)
     start =  models.DateTimeField(default=django.utils.timezone.now, verbose_name=_('Start'))
     end =  models.DateTimeField(verbose_name=_('End'))
     sum = models.DecimalField(_('Sum'), max_digits=6, decimal_places=2) # This limits sum to 9999,99
     is_paid = models.BooleanField(default=False, verbose_name=_('Is paid'))
-    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number')) # NOT an integer since it can begin with 0 XXX: format
+    # NOT an integer since it can begin with 0 XXX: format
+    reference_number = models.CharField(max_length=64, verbose_name=_('Reference number'))
     logs = property(_get_logs)
 
     objects = BillingCycleManager()
@@ -672,7 +690,7 @@ class BillingCycle(models.Model):
         return False
 
     def is_last_bill_late(self):
-        if self.is_paid or self.last_bill() == None:
+        if self.is_paid or self.last_bill() is None:
             return False
         if datetime.now() > self.last_bill().due_date:
             return True
@@ -680,7 +698,7 @@ class BillingCycle(models.Model):
 
     def amount_paid(self):
         data = self.payment_set.aggregate(Sum('amount'))['amount__sum']
-        if data == None:
+        if data is None:
             data = Decimal('0')
         return data
 
@@ -765,7 +783,7 @@ class BillingCycle(models.Model):
 
     @classmethod
     def get_pdf_reminders(cls, memberid=None):
-        buffer = StringIO()
+        buffer = BytesIO()
         cycles = cls.create_paper_reminder_list(memberid)
         if len(cycles) == 0:
             return None
@@ -795,7 +813,6 @@ class BillingCycle(models.Model):
             datalist.append(cycle)
         return datalist
 
-
     def end_date(self):
         """Logical end date
 
@@ -806,7 +823,7 @@ class BillingCycle(models.Model):
         day = timedelta(days=1)
         return self.end.date()-day
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.start.date()) + "--" + str(self.end_date())
 
     def save(self, *args, **kwargs):
@@ -821,12 +838,13 @@ class BillingCycle(models.Model):
             self.sum = self.get_fee()
         super(BillingCycle, self).save(*args, **kwargs)
 
+
 cache_storage = FileSystemStorage(location=settings.CACHE_DIRECTORY)
 
 
 class CancelledBill(models.Model):
     """List of bills that have been cancelled"""
-    bill = models.OneToOneField('Bill', verbose_name=_('Original bill'))
+    bill = models.OneToOneField('Bill', verbose_name=_('Original bill'), on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))
     exported = models.BooleanField(default=False)
 
@@ -839,7 +857,7 @@ class CancelledBill(models.Model):
 
 
 class Bill(models.Model):
-    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'))
+    billingcycle = models.ForeignKey(BillingCycle, verbose_name=_('Cycle'), on_delete=models.PROTECT)
     reminder_count = models.IntegerField(default=0, verbose_name=_('Reminder count'))
     due_date = models.DateTimeField(verbose_name=_('Due date'))
 
@@ -852,8 +870,8 @@ class Bill(models.Model):
     def is_due(self):
         return self.due_date < datetime.now()
 
-    def __unicode__(self):
-        return _('Sent on') + ' ' + str(self.created)
+    def __str__(self):
+        return '{sent_on} {date}'.format(sent_on=_('Sent on'), date=str(self.created))
 
     def save(self, *args, **kwargs):
         if not self.due_date:
@@ -890,10 +908,11 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': str(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
+                'country': membership.get_billing_contact().country,
                 'billingcycle': self.billingcycle,
                 'iban_account_number': settings.IBAN_ACCOUNT_NUMBER,
                 'bic_code': settings.BIC_CODE,
@@ -920,7 +939,7 @@ class Bill(models.Model):
                 'member_id': membership.id,
                 'member_name': membership.name(),
                 'billing_contact': membership.billing_contact,
-                'billing_name': unicode(membership.get_billing_contact()),
+                'billing_name': str(membership.get_billing_contact()),
                 'street_address': membership.get_billing_contact().street_address,
                 'postal_code': membership.get_billing_contact().postal_code,
                 'post_office': membership.get_billing_contact().post_office,
@@ -950,7 +969,6 @@ class Bill(models.Model):
         Generate pdf and return pdf content
         """
         return get_bill_pdf(self, payments=Payment)
-
 
     # FIXME: Should save sending date
     def send_as_email(self):
@@ -992,7 +1010,7 @@ class Payment(models.Model):
     # While Payment refers to BillingCycle, the architecture scales to support
     # recording payments that are not related to any billingcycle for future
     # extension
-    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True)
+    billingcycle = models.ForeignKey('BillingCycle', verbose_name=_('Cycle'), null=True, on_delete=models.PROTECT)
     ignore = models.BooleanField(default=False, verbose_name=_('Ignored payment'))
     comment = models.CharField(max_length=64, verbose_name=_('Comment'), blank=True)
 
@@ -1000,13 +1018,14 @@ class Payment(models.Model):
     message = models.CharField(max_length=256, verbose_name=_('Message'), blank=True)
     transaction_id = models.CharField(max_length=30, verbose_name=_('Transaction id'), unique=True)
     payment_day = models.DateTimeField(verbose_name=_('Payment day'))
-    amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount')) # This limits sum to 9999999.99
+    # This limits sum to 9999999.99
+    amount = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Amount'))
     type = models.CharField(max_length=64, verbose_name=_('Type'))
     payer_name = models.CharField(max_length=64, verbose_name=_('Payer name'))
     duplicate = models.BooleanField(verbose_name=_('Duplicate payment'), blank=False, null=False, default=False)
     logs = property(_get_logs)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%.2f euros (reference '%s', date '%s')" % (self.amount, self.reference_number, self.payment_day)
 
     def attach_to_cycle(self, cycle, user=None):
@@ -1034,16 +1053,16 @@ class Payment(models.Model):
             log_change(self, user, change_message="Detached from billing cycle")
         cycle.update_is_paid()
 
-
     def send_duplicate_payment_notice(self, user, **kwargs):
         if not user:
             raise Exception('send_duplicate_payment_notice user objects as parameter')
         billingcycle = BillingCycle.objects.get(reference_number=self.reference_number)
         if billingcycle.sum > 0:
-            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user, billingcycle=billingcycle)
+            ret_items = send_duplicate_payment_notice.send_robust(self.__class__, instance=self, user=user,
+                                                                  billingcycle=billingcycle)
             for item in ret_items:
                 sender, error = item
-                if error != None:
+                if error is not None:
                     logger.error("%s" % traceback.format_exc())
                     raise error
             log_change(self, user, change_message="Duplicate payment notice sent")
@@ -1055,15 +1074,17 @@ class Payment(models.Model):
         except Payment.DoesNotExist:
             return None
 
+
 class ApplicationPoll(models.Model):
     """
     Store statistics taken from membership application "where did you
     hear about us" poll.
     """
 
-    membership = models.ForeignKey('Membership', verbose_name=_('Membership'))
+    membership = models.ForeignKey('Membership', verbose_name=_('Membership'), on_delete=models.PROTECT)
     date = models.DateTimeField(auto_now=True, verbose_name=_('Timestamp'))
     answer = models.CharField(max_length=512, verbose_name=_('Service specific data'))
+
 
 models.signals.post_save.connect(logging_log_change, sender=Membership)
 models.signals.post_save.connect(logging_log_change, sender=Contact)
@@ -1077,4 +1098,4 @@ send_as_email.connect(bill_sender, sender=Bill, dispatch_uid="email_bill")
 send_preapprove_email.connect(preapprove_email_sender, sender=Membership,
                               dispatch_uid="preapprove_email")
 send_duplicate_payment_notice.connect(duplicate_payment_sender, sender=Payment,
-                              dispatch_uid="duplicate_payment_notice")
+                                      dispatch_uid="duplicate_payment_notice")
