@@ -1,0 +1,20 @@
+[
+   {
+    "pk": 1,
+    "model": "auth.user",
+    "fields": {
+      "username": "admin",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": true,
+      "is_staff": true,
+      "last_login": "2010-12-20 22:55:30",
+      "groups": [],
+      "user_permissions": [],
+      "password": "pbkdf2_sha256$36000$vzZsangJ34em$XcCxI/vYy0TLBKtxXP40SQvuRuUsnDbe1ovocNWpPXU=",
+      "email": "kapsi@kapsi.fi",
+      "date_joined": "2010-12-20 22:55:30"
+    }
+  }
+]

@@ -1,4 +1,5 @@
 requests
+requests_mock
 dj-database-url
 Django>=2.2.13,<2.3.0
 django-auth-ldap ~= 1.5.0

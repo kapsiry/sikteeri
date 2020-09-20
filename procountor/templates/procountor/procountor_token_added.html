@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans 'Procountor API token successfully added' %}</h2>
+{% if output_messages %}
+<p>{% for msg in output_messages %}{{ msg }}<br />{% endfor %}</p>
+{% endif %}
+<p>
+{% trans "Procountor login API key successfully added." %}
+</p>
+{% endblock %}

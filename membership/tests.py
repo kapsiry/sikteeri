@@ -41,7 +41,7 @@ from membership.decorators import trusted_host_required
 from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
 from membership.billing.procountor_csv import create_csv
-from membership.billing.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent, \
+from procountor.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent, \
     ProcountorReferencePayment
 from membership.reference_numbers import generate_membership_bill_reference_number
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
