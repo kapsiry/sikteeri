@@ -3,10 +3,11 @@ import argparse
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, CommandError
 
-from membership.billing.procountor_api import ProcountorAPIClient
+from procountor.procountor_api import ProcountorAPIClient
 from membership.billing.payments import process_payments
+from procountor.models import APIToken
 
 
 def valid_date(s):
@@ -27,13 +28,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         start = options['startdate'] or datetime.now() - timedelta(days=1)
 
+        api_key = APIToken.current()
+
+        if not api_key:
+            raise CommandError("No Procountor API key in database, please run Procountor login flow first.")
+
         api = ProcountorAPIClient(api=settings.PROCOUNTOR_API_URL,
                                   company_id=settings.PROCOUNTOR_COMPANY_ID,
                                   redirect_uri=settings.PROCOUNTOR_REDIRECT_URL,
                                   client_id=settings.PROCOUNTOR_CLIENT_ID,
-                                  client_secret=settings.PROCOUNTOR_CLIENT_SECRET)
-        api.authenticate(username=settings.PROCOUNTOR_USER,
-                         password=settings.PROCOUNTOR_PASSWORD)
+                                  client_secret=settings.PROCOUNTOR_CLIENT_SECRET,
+                                  api_key=api_key)
+        api.refresh_access_token()
 
         statements = api.get_referencepayments(start=start, end=datetime.now())
         for message in process_payments(statements):

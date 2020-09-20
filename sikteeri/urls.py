@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^$', sikteeri.views.frontpage, name='frontpage'),
     url(r'^comments/', include('django_comments.urls')),
     url(r'^membership/', include('membership.urls')),
+    url(r'^procountor/', include('procountor.urls')),
     url(r'^services/', include('services.urls')),
 
     url(r'^login/', django.contrib.auth.views.LoginView.as_view(), name='login'),

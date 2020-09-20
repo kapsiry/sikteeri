@@ -1,6 +1,5 @@
 import random
 import string
-import urllib.parse
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -168,15 +167,15 @@ class ProcountorReferencePayment(object):
 
 
 class ProcountorAPIClient(object):
-    def __init__(self, api, company_id, redirect_uri, client_id, client_secret):
+    def __init__(self, api, company_id, redirect_uri, client_id, client_secret, api_key):
         self.session = requests.Session()
         self.api = api.rstrip("/")
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.company_id = company_id
+        self.api_key = api_key
         self._oauth_access_token = None
-        self._oauth_refresh_token = None
         self._oauth_expires = None
         self.state = "".join([random.choice(string.digits+string.ascii_letters) for x in range(16)])
 
@@ -205,65 +204,29 @@ class ProcountorAPIClient(object):
         response = self.session.post(url, data=body, params=params, headers=headers, allow_redirects=False)
         return self._error_handler(url, params, response)
 
-    def oauth_authz(self, username, password):
-        body = {
-            "response_type": "code",
-            "username": username,
-            "password": password,
-            "company": self.company_id,
-            "redirect_uri": self.redirect_uri
-        }
+    def refresh_access_token(self):
+        if self._oauth_access_token and self._oauth_expires > (datetime.now() + timedelta(seconds=60)):
+            return
+
         params = {
-            "response_type": "code",
-            "client_id": self.client_id,
-            "state": self.state,
-        }
-        headers = {"Content-type": "application/x-www-form-urlencoded"}
-        res = self.post("/oauth/authz", body=body, params=params, headers=headers)
-        if res.status_code != 302:
-            raise ProcountorAPIException("Authentication failed, wrong response status code %d", res.status_code)
-        target = self.session.get_redirect_target(res)
-
-        parsed = urllib.parse.urlparse(target)
-        target_parameters = dict(urllib.parse.parse_qsl(parsed.query))
-
-        return target_parameters["code"]
-
-    def oauth_token(self, code):
-        params = {
-            "grant_type": "authorization_code",
+            "grant_type": "client_credentials",
             "redirect_uri": self.redirect_uri,
-            "code": code,
+            "api_key": self.api_key,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
         }
         headers = {"Content-type": "application/x-www-form-urlencoded"}
 
-        res = self.post("/oauth/token", params=params, headers=headers)
+        res = self.post("oauth/token", params=params, headers=headers)
 
         if res.status_code != 200:
             raise ProcountorAPIException("Token fetch failed, wrong response status code %d", res.status_code)
 
-        return res.json()
+        data = res.json()
 
-    def authenticate_2phase(self, authorization_code):
-        tokens = self.oauth_token(authorization_code)
-
-        self._oauth_access_token = tokens.get("access_token", None)
-        self._oauth_refresh_token = tokens.get("refresh_token", None)
-        self._oauth_expires = datetime.now() + timedelta(seconds=tokens.get("expires_in", -1))
-
-        if self._oauth_access_token:
-            self.session.headers.update({"Authorization": "Bearer %s" % self._oauth_access_token})
-
-        return True
-
-    def authenticate(self, username, password):
-        authorization_code = self.oauth_authz(username, password)
-
-        logger.debug("Oauth phase 1 success, token: %s" % (authorization_code,))
-
-        return self.authenticate_2phase(authorization_code=authorization_code)
+        self._oauth_access_token = data["access_token"]
+        self._oauth_expires = datetime.now() + timedelta(seconds=data["expires_in"])
+        self.session.headers.update({"Authorization": "Bearer %s" % self._oauth_access_token})
 
     def get_referencepayments(self, start, end):
         """
