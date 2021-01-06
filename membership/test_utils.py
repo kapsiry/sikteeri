@@ -192,7 +192,7 @@ def create_dummy_member(status, type='P', mid=None):
     }
     contact = Contact(**d)
     contact.save()
-    if type == 'O':
+    if type in ('O', 'S'):
         contact.organization_name = contact.name()
         contact.first_name = ''
         contact.last_name = ''

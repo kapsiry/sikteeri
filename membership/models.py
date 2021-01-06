@@ -293,7 +293,7 @@ class Membership(models.Model):
         if self.status not in list(MEMBER_STATUS_DICT.keys()):
             raise ValidationError("Illegal member status '%s'" % self.status)
         if self.status != STATUS_DELETED:
-            if self.type in ('O', 'S') and self.person:
+            if self.type in 'O' and self.person:
                 raise ValidationError("Organization may not have a person contact.")
             if self.type not in ('O', 'S') and self.organization:
                 raise ValidationError("Non-organization may not have an organization contact.")
