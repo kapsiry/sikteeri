@@ -799,7 +799,7 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
             instance = getattr(self, 'instance', None)
-            if instance and instance.type == 'O':
+            if instance and instance.type in ('O', 'S'):
                 self.fields["birth_year"].widget = HiddenInput()
                 self.fields['birth_year'].required = False
 
