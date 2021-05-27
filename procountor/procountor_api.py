@@ -83,8 +83,13 @@ class ProcountorBankStatementEvent(object):
         if not self.reference and self.explanationCode == 710:
             # Try to figure if SEPA payment message contains reference
             message_parts = self.message.split()
+            maybe_reference = ""
             if self.message.startswith("SEPA-MAKSU") and len(message_parts) == 4:
                 maybe_reference = ''.join(message_parts[1:-1])
+            elif self.message.startswith("SEPA PIKASIIRTO") and len(message_parts) == 5:
+                maybe_reference = ''.join(message_parts[2:-1])
+
+            if maybe_reference:
                 try:
                     int(maybe_reference)
                     self.reference = maybe_reference
@@ -300,12 +305,12 @@ class ProcountorAPIClient(object):
           ]
         }
         """
-        params={
+        params = {
             "startDate": start.strftime("%Y-%m-%d"),
             "endDate": end.strftime("%Y-%m-%d")
         }
         res = self.get("bankstatements", params=params)
-        return [ProcountorBankStatement(x) for x in res.json().get("bankStatements", [])]
+        return [ProcountorBankStatement(x) for x in res.json().get("results", [])]
 
     def get_ledgerreceipts(self, start, end):
 
