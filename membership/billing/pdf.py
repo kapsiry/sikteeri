@@ -316,7 +316,7 @@ class PDFTemplate(object):
         # Logo to upper left corner
         self.drawImage(1.8, 1, 3.4, 1.7, LOGO)
         self.drawString(12.4, 2.9, "%(date)s" % self.data, size=12)
-        self.drawString(1.8, 2.9, "Kapsi Internet-käyttäjät ry, PL 11, 90571 OULU",
+        self.drawString(1.8, 2.9, "Kapsi Internet-käyttäjät ry, Kaitoväylä 14 B 9, 90570 OULU",
                         size=8)
         # Address block
         self.drawText(1.8, 4.4, "%(name)s\n%(address)s\n%(postal_code)s %(postal_office)s\n%(country)s" % self.data, size=12, font='Arial')
@@ -350,7 +350,7 @@ class PDFTemplate(object):
 
         self.drawHorizontalStroke(1, 18, 18.5)
 
-        self.drawText(1, 18.5, "<b>Kapsi Internet-käyttäjät ry</b>\nPL 11\n90571 Oulu", size=7)
+        self.drawText(1, 18.5, "<b>Kapsi Internet-käyttäjät ry</b>\nKaitoväylä 14 B 9\n90570 OULU", size=7)
         self.drawText(5.5, 18.5, "Kotipaikka Oulu\nhttps://www.kapsi.fi/", size=7)
         self.drawText(9.5, 18.5, "Sähköposti: %s\nY-tunnus: %s\nYhdistysrekisterinumero: %s" % (
             get_billing_email(), settings.BUSINESS_ID, settings.ORGANIZATION_REG_ID), size=7)
@@ -370,7 +370,7 @@ class PDFTemplate(object):
         self.drawString(2.3, 21.7, "Saaja", size=6, alignment="right")
         self.drawString(2.3, 22.0, "Mottagaren", size=6, alignment="right")
 
-        self.drawText(3.0, 21.5, "Kapsi Internet-käyttäjät ry\nPL 11\n90571 Oulu", size=9)
+        self.drawText(3.0, 21.5, "Kapsi Internet-käyttäjät ry\nKaitoväylä 14 B 9\n90570 OULU", size=9)
 
         self.drawString(2.4, 23, "Maksajan", size=6, alignment="right")
         self.drawString(2.4, 23.2, "nimi ja", size=6, alignment="right")
