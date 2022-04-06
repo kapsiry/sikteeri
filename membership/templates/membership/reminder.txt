@@ -29,8 +29,8 @@ Olemme huomioineet {{ latest_recorded_payment|date:"SHORT_DATE_FORMAT" }} asti n
 
 ____________________________________________________________________
 Kapsi Internet-käyttäjät ry             *** MUISTUTUS ***
-PL 11
-90571 OULU                                  {{ today|date:"SHORT_DATE_FORMAT" }}
+Kaitoväylä 14 B 9
+90570 OULU                                  {{ today|date:"SHORT_DATE_FORMAT" }}
 
 {{ member_name|ljust:"43" }} Jäsennumero   {{ member_id }}{% if billing_contact %}
 {% if membership_type_raw != "O" %}c/o {% endif %}{{ billing_name|ljust:"43" }}{% endif %}
@@ -74,8 +74,8 @@ jäsenen erottamiseen yhdistyksestä!
 Laskuttaja
 --------------------------------------------------------------------
 Kapsi Internet-käyttäjät ry
-PL 11
-90571 OULU
+Kaitoväylä 14 B 9
+90570 OULU
 Sähköposti: laskutus@tuki.kapsi.fi
 Yhdistysrekisterinumero: 187.418
 Y-tunnus: 2447894-9
