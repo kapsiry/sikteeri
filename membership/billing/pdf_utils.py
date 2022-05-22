@@ -41,7 +41,7 @@ def get_bill_pdf(bill, payments=None):
 
     # Check if PDF cache is valid
     if bill.pdf_file:
-        if not bill.pdf_file.storage.exists(bill.pdf_file):
+        if not bill.pdf_file.storage.exists(bill.pdf_file.name):
             bill.pdf_file = None
 
     # If PDF does not exist, generate it
