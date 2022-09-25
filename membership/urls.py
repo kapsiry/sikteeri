@@ -64,6 +64,8 @@ urlpatterns = [
 
     # url(r'memberships/new/handle_json/$', 'membership.views.handle_json', name='membership_pre-approval_handle_json'),
     url(r'memberships/.*/handle_json/$', membership.views.handle_json, name='memberships_handle_json'),
+    url(r'application/.*/handle_json/$', membership.views.handle_json, name='memberships_handle_json'),
+    url(r'application/handle_json/$', membership.views.handle_json, name='memberships_handle_json'),
     url(r'memberships/handle_json/$', membership.views.handle_json, name='membership_handle_json'),
     url(r'handle_json/$', membership.views.handle_json, name='membership_handle_json'),
 

@@ -1130,13 +1130,19 @@ class LoginRequiredTest(TestCase):
     fixtures = ['membership_fees.json', 'test_user.json']
 
     def setUp(self):
+        membership_o = create_dummy_member('N', type='P')
+        membership_o.type = 'P'
+        membership_o.save()
+        user = User.objects.get(id=1)
+        membership_o.preapprove(user)
+        membership_o.approve(user)
         self.urls = ['/membership/memberships/new/',
                      '/membership/memberships/preapproved/',
                      '/membership/memberships/preapproved-plain/',
                      '/membership/memberships/approved/',
                      '/membership/memberships/approved-emails/',
                      '/membership/memberships/deleted/',
-                     '/membership/memberships/convert_to_an_organization/1/'
+                     '/membership/memberships/convert_to_an_organization/%s/' % membership_o.id,
                      '/membership/memberships/',
                      '/membership/bills/unpaid/',
                      '/membership/bills/',
@@ -1146,13 +1152,16 @@ class LoginRequiredTest(TestCase):
                      '/membership/testemail/',
                      ]
 
+
     def test_views_with_login(self):
         """Request a page that is protected with @login_required"""
 
         # Get the page without logging in. Should result in 302.
         for url in self.urls:
             response = self.client.get(url)
-            self.assertRedirects(response, '/login/?next=%s' % url)
+            self.assertRedirects(response, '/login/?next=%s' % url,
+                                 msg_prefix="Site %s did not redirect to login" % url
+                                 )
 
         login = self.client.login(username='admin', password='dhtn')
         self.assertTrue(login, 'Could not log in')
@@ -1160,7 +1169,7 @@ class LoginRequiredTest(TestCase):
         # Request a page that requires a login
         for url in self.urls:
             response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 200, msg="Site %s did not return code 200" % url)
             self.assertEqual(response.context['user'].username, 'admin')
 
 
