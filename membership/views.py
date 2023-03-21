@@ -6,6 +6,7 @@ from django.conf import settings
 import traceback
 from datetime import datetime
 
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.db.models.aggregates import Sum
 
@@ -798,10 +799,13 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['status'].widget.attrs['readonly'] = 'readonly'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
+            self.fields['dissociation_requested'].widget.attrs['readonly'] = 'readonly'
             instance = getattr(self, 'instance', None)
             if instance and instance.type == 'O':
                 self.fields["birth_year"].widget = HiddenInput()
                 self.fields['birth_year'].required = False
+            if instance and instance.status != 'S':
+                self.fields['dissociation_pending_until'].widget.attrs['readonly'] = 'readonly'
 
     if request.method == 'POST':
         if not request.user.has_perm('membership.manage_members'):
@@ -923,6 +927,30 @@ def membership_request_dissociation(request, id, template_name='membership/membe
         form = ConfirmForm()
 
     return render(request, template_name, {'form': form, 'membership': membership })
+
+
+@permission_required('membership.request_dissociation_for_member')
+def membership_request_dissociation_billingcycle_end(request, id, template_name='membership/membership_request_dissociation.html'):
+    membership = get_object_or_404(Membership, id=id)
+
+    class ConfirmForm(Form):
+        confirm = BooleanField(label=_('To confirm state change, you must check this box:'),
+                               required=True)
+
+    if request.method == 'POST':
+        form = ConfirmForm(request.POST)
+        if form.is_valid():
+            f = form.cleaned_data
+            membership_str = unicode(membership)
+            membership.request_dissociation_billingcycle_end(request.user)
+            messages.success(request, unicode(
+                _('Member %s successfully transferred to requested dissociation state.') % membership_str))
+            logger.info("User %s requested dissociation for member %s." % (request.user.username, membership))
+            return redirect('membership_edit', membership.id)
+    else:
+        form = ConfirmForm()
+
+    return render(request, template_name, {'form': form, 'membership': membership})
 
 
 @permission_required('membership.request_dissociation_for_member')
@@ -1116,6 +1144,16 @@ def admtool_lookup_alias_json(request, alias):
 
 @permission_required('membership.read_members')
 def member_object_list(request, **kwargs):
+    return SortListView.as_view(**kwargs)(request)
+
+
+@permission_required('membership.read_members')
+def dissociation_requested_member_object_list(request, order_by, **kwargs):
+    queryset = Membership.objects.filter(Q(Q(status__exact='S') & Q(
+        Q(dissociation_pending_until__isnull=True) |
+        Q(dissociation_pending_until__lte=datetime.now())))
+    ).order_by(*order_by)
+    kwargs['queryset'] = queryset
     return SortListView.as_view(**kwargs)(request)
 
 

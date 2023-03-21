@@ -45,6 +45,7 @@
 {% if perms.membership.request_dissociation_for_member %}
   {% if membership.status == "A" %}
     <a href="{% url "membership_request_dissociation" membership.id %}">{% trans "Request dissociation" %}</a>
+    <a href="{% url "membership_request_dissociation_billingcycle_end" membership.id %}">{% trans "Request dissociation at end of cycle" %}</a>
   {% endif %}
 
   {% if membership.status == "S" %}

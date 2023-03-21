@@ -244,6 +244,8 @@ class Membership(models.Model):
 
     locked = models.DateTimeField(blank=True, null=True, verbose_name=_('Membership locked'))
     dissociation_requested = models.DateTimeField(blank=True, null=True, verbose_name=_('Dissociation requested'))
+    dissociation_pending_until = models.DateTimeField(blank=True, null=True,
+                                                      verbose_name=_('Dissociation pending until'))
     dissociated = models.DateTimeField(blank=True, null=True, verbose_name=_('Member dissociated'))
 
     objects = MembershipManager()
@@ -265,6 +267,15 @@ class Membership(models.Model):
 
     def email_to(self):
         return self.primary_contact().email_to()
+
+    def dissociation_pending(self):
+        """
+        Check if dissociation pending until is set.
+        :return: Datetime if pending until future, else None
+        """
+        if self.dissociation_pending_until > datetime.now():
+            return self.dissociation_pending_until
+        return None
 
     def get_billing_contact(self):
         '''Resolves the actual billing contact. Useful for billing details.'''
@@ -316,7 +327,7 @@ class Membership(models.Model):
 
         super(Membership, self).save(*args, **kwargs)
 
-    def _change_status(self, new_status):
+    def _change_status(self, new_status, dissociation_pending_until=None):
         # Allowed transitions From State: [TO STATES]
         _allowed_transitions = {
             STATUS_NEW: [
@@ -353,8 +364,12 @@ class Membership(models.Model):
                 if not me.approved:
                     me.approved = datetime.now()
                 me.dissociation_requested = None
+                me.dissociation_pending_until = None
             elif new_status == STATUS_DIS_REQUESTED:
                 me.dissociation_requested = datetime.now()
+                if not dissociation_pending_until:
+                    dissociation_pending_until = datetime.now()
+                me.dissociation_pending_until = dissociation_pending_until
             elif new_status == STATUS_DISASSOCIATED:
                 me.dissociated = datetime.now()
                 me.cancel_outstanding_bills()
@@ -391,6 +406,18 @@ class Membership(models.Model):
         assert user is not None
         self._change_status(new_status='S')
         log_change(self, user, change_message="Dissociation requested")
+
+    def request_dissociation_billingcycle_end(self, user):
+        assert user is not None
+        try:
+            latest_billingcycle = self.billingcycle_set.latest('start')
+        except BillingCycle.DoesNotExist:
+            latest_billingcycle = None
+        if not latest_billingcycle:
+            raise MembershipOperationError("Can't cancel to current billingcycle end, no open billingcycle available.")
+        # Set pending until current billing cycle end
+        self._change_status(new_status='S', dissociation_pending_until=latest_billingcycle.end)
+        log_change(self, user, change_message="Dissociation requested to current cycle end")
 
     def cancel_dissociation_request(self, user):
         assert user is not None
