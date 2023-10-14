@@ -7,24 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Henkilöjäsenen jäsenhakemus</h2>
-
-<p>
-  Tämä on yksityishenkilöille tarkoitettu jäsenhakemuslomake. Yhdistyksen
-  verkkosivuilta löytyy <a target="_blank"
-  href="https://www.kapsi.fi/asiakirjat/rekisteriseloste.html">jäsenrekisterin
-  rekisteriseloste</a>, <a target="_blank"
-  href="https://www.kapsi.fi/liityjaseneksi.html">hakemuksen käsittelyajat sekä
-  muuta tietoa</a>. Tähdellä (<span class="required">*</span>) merkityt kentät ovat pakollisia.
-</p>
-<p>
-  Alle 21-vuotiaan hakemus tulkitaan automaattisesti nuorisojäsenhakemukseksi.
-  Täyttämällä lomakkeen hyväksyt, että nuorisojäsenyys muutetaan hallituksen
-  hyväksynnällä henkilöjäsenyydeksi sen vuoden alussa, jona täytät 21 vuotta.
-  Hallitus varaa oikeuden tarkistaa jäsenen henkilöyden ja iän. Jos
-  ehdottomasti haluat henkilöjäsenyyden, ota yhteyttä
-  <a href="https://www.kapsi.fi/tukipalvelut.html">hallitukseen</a>.
-</p>
+<h2>Henkilökannatusjäsenen jäsenhakemus</h2>
 
 <form method="POST">{% csrf_token %}
 <div id="new_application">
@@ -131,7 +114,7 @@
     {% endfor %}
   </p>
 
-  <p{% if form.sms.errors %} class="error"{% endif %}>
+   <p{% if form.sms.errors %} class="error"{% endif %}>
     <label for="id_sms">{{ form.sms.label }}</label>
     {{ form.sms }} <span class="required">*</span>
     <span class="help">
@@ -150,73 +133,6 @@
     <span class="error{% if form.email.help_text %} newline{% endif %}">{{ error }}</span>
     {% endfor %}
   </p>
-  </fieldset>
-
-  <fieldset class="wide"><legend>Käyttäjätunnus</legend>
-    <p class="introduction">
-      Kaikkien jäsenien käytettävissä on automaattisesti
-      shell-käyttäjätunnus, sähköpostiosoite tunnus@kapsi.fi ja
-      kotisivutila.
-    </p>
-    <p class="introduction">Tunnuksen on oltava seuraavaa muotoa:
-      <ul>
-        <li>Sallittuja merkkejä ovat kirjaimet a-z ja numerot</li>
-        <li>Ensimmäisen merkin on oltava kirjain</li>
-        <li>Pistettä tai viivaa ei suositella</li>
-      </ul>
-    </p>
-    <p>
-      <label for="id_unix_login">{{ form.unix_login.label }}</label>
-      {{ form.unix_login }} <span class="required">*</span>
-      <span id="unix_account_availability"></span>{% if form.unix_login.help_text %}
-      <span class="help"> {{ form.unix_login.help_text }}</span>{% endif %}
-      {% for error in form.unix_login.errors %}
-      <span class="error{% if form.unix_login.help_text %} newline{% endif %}">{{ error }}</span>
-      {% endfor %}
-    </p>
-  </fieldset>
-
-
-  <fieldset class="wide"><legend>Sähköpostiohjaus</legend>
-  <p class="introduction">
-    Tässä kohdassa voit valita käyttöösi sähköpostiohjauksen, jolla saat
-    käyttöösi ohjaus@kapsi.fi-osoitteen.  Jos haluamaasi ohjausta ei löydy
-    listasta, voi olla että se on jo varattu tai sivu ei sitä vain osannut
-    luoda.  Voit pyytää ohjauksen myös myöhemmin.  Valitse käytettävä
-    sähköpostiohjaus allaolevasta listasta.
-  </p>
-  <p>
-    <select name="email_forward" id="email_forwards">
-      <option value="no">{% trans "No e-mail forward" %}</option>
-    </select>
-  </p>
-  </fieldset>
-
-  <fieldset class="wide"><legend>Palvelut</legend>
-    <p class="checkbox{% if form.mysql_database.errors %} error{% endif %}">
-      {{ form.mysql_database }}
-      <label for="id_mysql_database">{{ form.mysql_database.label }}</label>
-      <span class="help">{{ form.mysql_database.help_text }}</span>
-      {% for error in form.mysql_database.errors %}
-      <span class="error{% if form.mysql_database.help_text%} newline{% endif %}">{{ error }}</span>
-      {% endfor %}
-    </p>
-    <p class="checkbox{% if form.postgresql_database.errors %} error{% endif %}">
-      {{ form.postgresql_database }}
-      <label for="id_postgresql_database">{{ form.postgresql_database.label }}</label>
-      <span class="help">{{ form.postgresql_database.help_text }}</span>
-      {% for error in form.postgresql_database.errors %}
-      <span class="error{% if form.postgresql_database.help_text%} newline{% endif %}">{{ error }}</span>
-      {% endfor %}
-    </p>
-    <p class="checkbox{% if form.login_vhost.errors %} error{% endif %}">
-      {{ form.login_vhost }}
-      <label for="id_login_vhost">{{ form.login_vhost.label }}</label>
-      <span class="help">{{ form.login_vhost.help_text }}</span>
-      {% for error in form.login_vhost.errors %}
-      <span class="error{% if form.login_vhost.help_text%} newline{% endif %}">{{ error }}</span>
-      {% endfor %}
-    </p>
   </fieldset>
 
   <fieldset class="wide"><legend>Tietojen julkaisu jäsenlistassa</legend>
@@ -280,43 +196,6 @@
 </form>
 
 <script type="text/javascript">
-{% if chosen_email_forward %}
-var chosenEmailForward = "{{ chosen_email_forward}}";
-{% else %}
-var chosenEmailForward = undefined;
-{% endif %}
-
-function populateEmailForwards () {
-  var permutations = generateEmailForwards($("#id_first_name").val(),
-                                           $("#id_given_names").val(),
-                                           $("#id_last_name").val());
-
-  $(".application_email_forward").remove();
-
-  $.each(permutations, function (idx, val) {
-    aliasAvailable(val, function (availability) {
-      if (availability) {
-        var opt = $("<option>").text(val);
-        opt.attr("value", val);
-        opt.addClass("application_email_forward");
-        if (val === chosenEmailForward) {
-          opt.attr("selected", "selected");
-        }
-        $("#email_forwards").append(opt);
-      }
-    });
-  });
-}
-
-$("#id_last_name").focusout(function() { populateEmailForwards() });
-$(document).ready(function() { populateEmailForwards() });
-
-// Auto-populate SMS number
-$("#id_phone").focusout(function() {
-  if ($("#id_sms").val().length == 0) {
-    $("#id_sms").val($("#id_phone").val());
-  }
-});
 
 // Auto-populate given names
 $("#id_given_names").focusout(function() {
@@ -326,40 +205,13 @@ $("#id_given_names").focusout(function() {
   }
 });
 
-// Validate user name
-// http://jqueryfordesigners.com/using-ajax-to-validate-forms/
-$(document).ready(function () {
-  var validateUsername = $('#unix_account_availability');
-  $('#id_unix_login').keyup(function () {
-    var t = this;
-    if (this.value != this.lastValue) {
-      this.value = this.value.toLowerCase();
-      if (this.timer) clearTimeout(this.timer);
-      validateUsername.removeClass('error').html('<img src="{% static 'images/ajax-loader.gif' %}" height="16" width="16" /> Tarkistetaan...');
-
-      this.timer = setTimeout(function () {
-        $.ajax({
-          url: 'handle_json/',
-          data: '{"requestType": "VALIDATE_ALIAS", "payload": "' + t.value + '"}',
-          dataType: 'json',
-          type: 'post',
-          success: function (j) {
-            if (j.exists) {
-              validateUsername.html("Tunnus varattu");
-            } else if (!j.valid) {
-              validateUsername.html("Tunnus ei täytä vaatimuksia");
-            } else {
-              validateUsername.html("OK");
-            }
-
-          }
-        });
-      }, 100);
-
-      this.lastValue = this.value;
-    }
-  });
+// Auto-populate SMS number
+$("#id_phone").focusout(function() {
+  if ($("#id_sms").val().length == 0) {
+    $("#id_sms").val($("#id_phone").val());
+  }
 });
+
 </script>
 
 {% endblock %}

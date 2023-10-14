@@ -7,106 +7,125 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sikteeri 1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-23 20:39+0300\n"
+"POT-Creation-Date: 2021-01-06 16:39+0200\n"
 "PO-Revision-Date: 2015-05-17 11:07+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: membership/email_utils.py:80
+#: membership/billing/payments.py:159
+msgid "duplicate payment"
+msgstr "duplikaattimaksu"
+
+#: membership/billing/payments.py:207
+#, python-format
+msgid "Attached payment %(payment)s to cycle %(cycle)s"
+msgstr "Liitettiin maksu %(payment)s laskutuskauteen %(cycle)s"
+
+#: membership/billing/payments.py:215
+#, python-format
+msgid "Billing cycle already paid for %s. Payment not attached."
+msgstr "Laskutuskausi maksettu jo maksulle %s. Maksua ei liitetty."
+
+#: membership/billing/payments.py:225
+#, python-format
+msgid "No billing cycle found for %s"
+msgstr "Ei laskutuskautta maksulle %s"
+
+#: membership/email_utils.py:83
 #, python-format
 msgid "Kapsi member application %i"
 msgstr "Kapsin jäsenhakemus %i"
 
-#: membership/email_utils.py:101 membership/models.py:969
+#: membership/email_utils.py:105 membership/models.py:998
 msgid "Duplicate payment"
 msgstr "Duplikaattimaksu"
 
-#: membership/forms.py:27
+#: membership/forms.py:28
 msgid ""
 "Login begins with an illegal character or contains an illegal character."
 msgstr ""
 "Käyttäjätunnus alkaa merkillä, joka ei käy käyttäjätunnuksen ensimmäiseksi "
 "merkiksi, tai käyttäjätunnus sisältää merkin, jota se ei voi sisältää."
 
-#: membership/forms.py:29
+#: membership/forms.py:30
 msgid "Login already reserved."
 msgstr "Käyttäjätunnus on jo käytössä."
 
-#: membership/forms.py:62 membership/forms.py:64
+#: membership/forms.py:67 membership/forms.py:69
 msgid "Invalid year of birth"
 msgstr "Virheellinen syntymävuosi"
 
-#: membership/forms.py:70 membership/forms.py:105 membership/models.py:217
+#: membership/forms.py:75 membership/forms.py:113 membership/models.py:229
 msgid "Nationality"
 msgstr "Kansalaisuus"
 
-#: membership/forms.py:71 membership/forms.py:106
+#: membership/forms.py:76 membership/forms.py:114
 msgid "Finnish nationality"
 msgstr "Suomi"
 
-#: membership/forms.py:72
+#: membership/forms.py:77
 msgid "Your nationality"
 msgstr "Kansalaisuus"
 
-#: membership/forms.py:74 membership/forms.py:109 membership/models.py:216
+#: membership/forms.py:79 membership/forms.py:117 membership/models.py:228
 msgid "Home municipality"
 msgstr "Kotipaikka"
 
-#: membership/forms.py:75
+#: membership/forms.py:80
 msgid "Finnish municipality"
 msgstr "Suomen kunta"
 
-#: membership/forms.py:76 membership/models.py:218
+#: membership/forms.py:81 membership/models.py:230
 msgid "Year of birth"
 msgstr "Syntymävuosi"
 
-#: membership/forms.py:77
+#: membership/forms.py:82
 msgid "Year of birth on format YYYY"
 msgstr "Syntymävuosi muodossa vvvv"
 
-#: membership/forms.py:79 membership/forms.py:115 membership/models.py:227
+#: membership/forms.py:84 membership/forms.py:123 membership/models.py:243
 msgid "Additional information"
 msgstr "Lisätietoja"
 
-#: membership/forms.py:82 membership/forms.py:118
+#: membership/forms.py:87 membership/forms.py:126
 msgid "You can write additional questions or details here"
 msgstr "Lisätietoja tai kysymyksiä"
 
-#: membership/forms.py:85
+#: membership/forms.py:90
 msgid "From friend"
 msgstr "Kaverilta"
 
-#: membership/forms.py:85
+#: membership/forms.py:90
 msgid "From IRC"
 msgstr "IRC:stä"
 
-#: membership/forms.py:86
+#: membership/forms.py:91
 msgid "From social media"
 msgstr "Sosiaalisesta mediasta"
 
-#: membership/forms.py:86
+#: membership/forms.py:91
 msgid "From advertisement"
 msgstr "Mainoksesta"
 
-#: membership/forms.py:87
+#: membership/forms.py:92
 msgid "From event"
 msgstr "Tapahtumassa"
 
-#: membership/forms.py:87
+#: membership/forms.py:92
 msgid "Other, what?"
 msgstr "Muualta, mistä"
 
-#: membership/forms.py:90
+#: membership/forms.py:95
 msgid "Where did you hear about as"
 msgstr "Missä kuulit meistä"
 
-#: membership/forms.py:92
+#: membership/forms.py:97
 msgid "Other, where?"
 msgstr "Muualta, mistä"
 
-#: membership/forms.py:95
+#: membership/forms.py:101
 msgid ""
 "My name (first and last name) and homepage can be shown in the public "
 "memberlist"
@@ -114,388 +133,371 @@ msgstr ""
 "Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
 "jäsenluettelossa"
 
-#: membership/forms.py:98
+#: membership/forms.py:105
 msgid "I want a MySQL database"
 msgstr "Haluaisin käyttööni MySQL-tietokannan"
 
-#: membership/forms.py:99
+#: membership/forms.py:106
 msgid "I want a PostgreSQL database"
 msgstr "Haluaisin käyttööni PostgreSQL-tietokannan"
 
-#: membership/forms.py:100
+#: membership/forms.py:107
 msgid "I want a login.kapsi.fi website"
 msgstr "Haluaisin käyttööni käyttäjätunnus.kapsi.fi -verkko-osoitteen"
 
-#: membership/forms.py:101
+#: membership/forms.py:108
 msgid "UNIX Login"
 msgstr "Käyttäjätunnus"
 
-#: membership/forms.py:107
+#: membership/forms.py:115
 msgid "Home country of your organization"
 msgstr "Kotimaa"
 
-#: membership/forms.py:110
+#: membership/forms.py:118
 msgid "Place where your organization is registered to"
 msgstr "Kotipaikka (säännöissä)"
 
-#: membership/forms.py:112 membership/models.py:219
+#: membership/forms.py:120 membership/models.py:231
 msgid "Business ID"
 msgstr "Y-tunnus"
 
-#: membership/forms.py:114
-msgid "Registration number given by Patentti- ja rekisterihallitus"
-msgstr "Patentti- ja rekisterihallituksen antama yhdistysrekisterinumero"
+#: membership/forms.py:122
+#| msgid "Registration number given by Patentti- ja rekisterihallitus"
+msgid "Business ID given by Patentti- ja rekisterihallitus"
+msgstr "Patentti- ja rekisterihallituksen antama Y-tunnus"
 
-#: membership/forms.py:120
+#: membership/forms.py:129
 msgid ""
 "Organization information (name and homepage) can be shown in the public "
 "memberlist"
 msgstr ""
-"Nimeni (etunimen ja sukunimen) ja kotisivuosoitteeni saa näyttää julkisessa "
+"Yhteisön nimen ja kotisivuosoitteen saa näyttää julkisessa "
 "jäsenluettelossa"
 
-#: membership/forms.py:124
+#: membership/forms.py:134
 msgid "Street address required."
 msgstr "Katuosoite vaaditaan."
 
-#: membership/forms.py:125 membership/models.py:101
+#: membership/forms.py:135 membership/models.py:112
 msgid "Street address"
 msgstr "Katuosoite"
 
-#: membership/forms.py:127
+#: membership/forms.py:137
 msgid "Postal code required."
 msgstr "Postinumero vaaditaan."
 
-#: membership/forms.py:128 membership/models.py:102
+#: membership/forms.py:138 membership/models.py:113
 msgid "Postal code"
 msgstr "Postinumero"
 
-#: membership/forms.py:129 membership/models.py:103
+#: membership/forms.py:139 membership/models.py:114
 msgid "Post office"
 msgstr "Postitoimipaikka"
 
-#: membership/forms.py:130 membership/models.py:104
+#: membership/forms.py:140 membership/models.py:115
 msgid "Country"
 msgstr "Maa"
 
-#: membership/forms.py:130
+#: membership/forms.py:140
 msgid "Finland"
 msgstr "Suomi"
 
-#: membership/forms.py:131
+#: membership/forms.py:141
 msgid "Phone invalid."
 msgstr "Virheellinen puhelinnumero."
 
-#: membership/forms.py:132
+#: membership/forms.py:142
 msgid "Phone number"
 msgstr "Puhelinnumero"
 
-#: membership/forms.py:133
+#: membership/forms.py:143
 msgid "Phone number that accepts calls"
 msgstr "Puhelinnumero johon voi soittaa"
 
-#: membership/forms.py:134
+#: membership/forms.py:144
 msgid "SMS number invalid."
 msgstr "Virheellinen tekstiviestinumero."
 
-#: membership/forms.py:135 membership/models.py:106
+#: membership/forms.py:145 membership/models.py:117
 msgid "SMS number"
 msgstr "Tekstiviestinumero"
 
-#: membership/forms.py:136
+#: membership/forms.py:146
 msgid "Phone number that accepts text messages. Used for sending the password."
 msgstr ""
 "Puhelinnumero, johon voi lähettää tekstiviestejä. Käytetään salasanan "
 "lähettämiseen."
 
-#: membership/forms.py:137 membership/models.py:107
+#: membership/forms.py:147 membership/models.py:118
 msgid "E-mail"
 msgstr "Sähköpostiosoite"
 
-#: membership/forms.py:139 membership/models.py:108
+#: membership/forms.py:149 membership/models.py:119
 msgid "Homepage"
 msgstr "Kotisivu"
 
-#: membership/forms.py:140
+#: membership/forms.py:150
 msgid "Homepage for the public member list"
 msgstr "Kotisivuosoite julkiseen jäsenluetteloon"
 
-#: membership/forms.py:146
+#: membership/forms.py:157
 msgid "Postal codes in Finland must consist of 5 numbers."
 msgstr "Suomalaisissa postinumeroissa on 5 numeroa."
 
-#: membership/forms.py:152
+#: membership/forms.py:164
 msgid "First name required."
 msgstr "Etunimi vaaditaan."
 
-#: membership/forms.py:153 membership/models.py:96
+#: membership/forms.py:165 membership/models.py:107
 msgid "First name"
 msgstr "Kutsumanimi (etunimi)"
 
-#: membership/forms.py:155
+#: membership/forms.py:167
 msgid "Given names required."
 msgstr "Kaikki etunimet vaaditaan."
 
-#: membership/forms.py:156 membership/models.py:97
+#: membership/forms.py:168 membership/models.py:108
 msgid "Given names"
 msgstr "Kaikki etunimet"
 
-#: membership/forms.py:157
+#: membership/forms.py:169
 msgid "Including first name"
 msgstr "Myös ensimmäinen nimi"
 
-#: membership/forms.py:159
+#: membership/forms.py:171
 msgid "Last name required."
 msgstr "Sukunimi vaaditaan."
 
-#: membership/forms.py:160 membership/models.py:98
+#: membership/forms.py:172 membership/models.py:109
 msgid "Last name"
 msgstr "Sukunimi"
 
-#: membership/forms.py:172 membership/models.py:99
+#: membership/forms.py:184 membership/models.py:110
 msgid "Organization name"
 msgstr "Yhteisön nimi"
 
-#: membership/management/commands/csvbills.py:204
-msgid "duplicate payment"
-msgstr "duplikaattimaksu"
-
-#: membership/management/commands/csvbills.py:237
-#, python-format
-msgid "Attached payment %(payment)s to cycle %(cycle)s"
-msgstr "Liitettiin maksu %(payment)s laskutuskauteen %(cycle)s"
-
-#: membership/management/commands/csvbills.py:245
-#, python-format
-msgid "Billing cycle already paid for %s. Payment not attached."
-msgstr "Laskutuskausi maksettu jo maksulle %s. Maksua ei liitetty."
-
-#: membership/management/commands/csvbills.py:255
-#, python-format
-msgid "No billing cycle found for %s"
-msgstr "Ei laskutuskautta maksulle %s"
-
-#: membership/models.py:46 membership/models.py:222
+#: membership/models.py:54 membership/models.py:234
 msgid "Person"
 msgstr "Henkilöjäsen"
 
-#: membership/models.py:47
+#: membership/models.py:55
 msgid "Junior"
 msgstr "Nuorisojäsen"
 
-#: membership/models.py:48
+#: membership/models.py:56
 msgid "Supporting"
 msgstr "Kannatusjäsen"
 
-#: membership/models.py:49 membership/models.py:225
+#: membership/models.py:57 membership/models.py:240
 msgid "Organization"
 msgstr "Yhteisöjäsen"
 
-#: membership/models.py:50
+#: membership/models.py:58
 msgid "Honorary"
 msgstr "Kunniajäsen"
 
-#: membership/models.py:60 membership/templates/membership/entity_edit.html:98
+#: membership/models.py:68 membership/templates/membership/entity_edit.html:98
 msgid "New"
 msgstr "Uusi"
 
-#: membership/models.py:61
+#: membership/models.py:69
 msgid "Pre-approved"
 msgstr "Esihyväksytty"
 
-#: membership/models.py:62
+#: membership/models.py:70
 msgid "Approved"
 msgstr "Hyväksytty"
 
-#: membership/models.py:63 membership/models.py:230
+#: membership/models.py:71 membership/models.py:246
 msgid "Dissociation requested"
 msgstr "Pyytänyt eroa"
 
-#: membership/models.py:64
+#: membership/models.py:72
 msgid "Dissociated"
 msgstr "Ero myönnetty"
 
-#: membership/models.py:65
+#: membership/models.py:73
 msgid "Deleted"
 msgstr "Poistettu"
 
-#: membership/models.py:72
+#: membership/models.py:80
 msgid "Email"
 msgstr "Sähköpostiosoite"
 
-#: membership/models.py:73
+#: membership/models.py:81
 msgid "Paper"
 msgstr "Paperi"
 
-#: membership/models.py:74
+#: membership/models.py:82
 msgid "SMS"
 msgstr "SMS"
 
-#: membership/models.py:93
+#: membership/models.py:104
 msgid "contact changed"
 msgstr "yhteystietoa muutettu"
 
-#: membership/models.py:94
+#: membership/models.py:105
 msgid "contact created"
 msgstr "yhteystieto luotu"
 
-#: membership/models.py:105
+#: membership/models.py:116
 msgid "Phone"
 msgstr "Puhelin"
 
-#: membership/models.py:209
+#: membership/models.py:221
 msgid "Membership type"
 msgstr "Jäsenluokka"
 
-#: membership/models.py:210
+#: membership/models.py:222
 msgid "Membership status"
 msgstr "Jäsenyyden tila"
 
-#: membership/models.py:211
+#: membership/models.py:223
 msgid "Membership created"
 msgstr "Jäsenyys luotu"
 
-#: membership/models.py:212
+#: membership/models.py:224
 msgid "Membership approved"
 msgstr "Jäsenyys hyväksytty"
 
-#: membership/models.py:213
+#: membership/models.py:225
 msgid "Membership changed"
 msgstr "Jäsenyyttä muutettu"
 
-#: membership/models.py:214
+#: membership/models.py:226
 msgid "Show in the memberlist"
 msgstr "Näytä jäsenluettelossa"
 
-#: membership/models.py:223 membership/views.py:226 membership/views.py:314
+#: membership/models.py:236 membership/views.py:226 membership/views.py:315
+#: membership/views.py:444 membership/views.py:486
 msgid "Billing contact"
 msgstr "Laskutusyhteystieto"
 
-#: membership/models.py:224 membership/views.py:228 membership/views.py:317
+#: membership/models.py:238 membership/views.py:228 membership/views.py:318
 msgid "Technical contact"
 msgstr "Tekninen yhteystieto"
 
-#: membership/models.py:229
+#: membership/models.py:245
 msgid "Membership locked"
 msgstr "Jäsenyys lukittu"
 
-#: membership/models.py:231
+#: membership/models.py:247
 msgid "Member dissociated"
 msgstr "Jäsenelle myönnetty ero"
 
-#: membership/models.py:559
+#: membership/models.py:573
 msgid "Fee type"
 msgstr "Maksutyyppi"
 
-#: membership/models.py:560
+#: membership/models.py:574
 msgid "Valid from date"
 msgstr "Voimassa alkaen"
 
-#: membership/models.py:561 membership/models.py:610
+#: membership/models.py:575 membership/models.py:625
 #: membership/templates/membership/bill_list.html:15
 #: membership/templates/membership/payment_list.html:14
 msgid "Sum"
 msgstr "Summa"
 
-#: membership/models.py:562
+#: membership/models.py:576
 msgid "VAT percentage"
 msgstr "ALV-prosentti"
 
-#: membership/models.py:607 membership/models.py:1027
+#: membership/models.py:622 membership/models.py:1057
 msgid "Membership"
 msgstr "Jäsenyys"
 
-#: membership/models.py:608
+#: membership/models.py:623
 msgid "Start"
 msgstr "Alku"
 
-#: membership/models.py:609
+#: membership/models.py:624
 msgid "End"
 msgstr "Loppu"
 
-#: membership/models.py:611
+#: membership/models.py:626
 msgid "Is paid"
 msgstr "Maksettu"
 
-#: membership/models.py:612 membership/models.py:962
+#: membership/models.py:628 membership/models.py:990
 #: membership/templates/membership/payment_list.html:16
 msgid "Reference number"
 msgstr "Viitenumero"
 
-#: membership/models.py:792
+#: membership/models.py:820
 msgid "Original bill"
 msgstr "Alkuperäinen lasku"
 
-#: membership/models.py:793 membership/models.py:809
+#: membership/models.py:821 membership/models.py:837
 msgid "Created"
 msgstr "Luotu"
 
-#: membership/models.py:805 membership/models.py:958
+#: membership/models.py:833 membership/models.py:986
 #: membership/templates/membership/bill_list.html:12
 #: membership/templates/membership/import_payments.html:9
 #: membership/templates/membership/membership_edit_inline.html:100
 msgid "Cycle"
 msgstr "Kausi"
 
-#: membership/models.py:806
+#: membership/models.py:834
 msgid "Reminder count"
 msgstr "muistutusten määrä"
 
-#: membership/models.py:807 membership/templates/membership/bill_list.html:18
+#: membership/models.py:835 membership/templates/membership/bill_list.html:18
 msgid "Due date"
 msgstr "Eräpäivä"
 
-#: membership/models.py:810
+#: membership/models.py:838
 msgid "Last changed"
 msgstr "Muutettu"
 
-#: membership/models.py:812
+#: membership/models.py:840
 msgid "Bill type"
 msgstr "Laskun tyyppi"
 
-#: membership/models.py:819
+#: membership/models.py:847
 msgid "Sent on"
 msgstr "Lähetetty"
 
-#: membership/models.py:959
+#: membership/models.py:987
 msgid "Ignored payment"
 msgstr "Huomiotta jätetty maksu"
 
-#: membership/models.py:960
+#: membership/models.py:988
 #: membership/templates/membership/payment_list.html:22
 msgid "Comment"
 msgstr "Kommentti"
 
-#: membership/models.py:963
+#: membership/models.py:991
 msgid "Message"
 msgstr "Viesti"
 
-#: membership/models.py:964
+#: membership/models.py:992
 msgid "Transaction id"
 msgstr "Arkistointitunnus"
 
-#: membership/models.py:965
+#: membership/models.py:993
 msgid "Payment day"
 msgstr "Maksupäivä"
 
-#: membership/models.py:966
+#: membership/models.py:995
 msgid "Amount"
 msgstr "Määrä"
 
-#: membership/models.py:967
+#: membership/models.py:996
 msgid "Type"
 msgstr "Tyyppi"
 
-#: membership/models.py:968
+#: membership/models.py:997
 #: membership/templates/membership/payment_list.html:11
 msgid "Payer name"
 msgstr "Maksajan nimi"
 
-#: membership/models.py:1028
+#: membership/models.py:1058
 msgid "Timestamp"
 msgstr "Tapahtuma-aika"
 
-#: membership/models.py:1029
+#: membership/models.py:1059
 msgid "Service specific data"
 msgstr "Palvelukohtainen tieto"
 
@@ -658,7 +660,7 @@ msgid "Old"
 msgstr "Vanha"
 
 #: membership/templates/membership/import_payments.html:18
-#: membership/views.py:593
+#: membership/views.py:729
 msgid "Import payments"
 msgstr "Tuo maksuja"
 
@@ -845,12 +847,10 @@ msgid "Approve these"
 msgstr "Hyväksy nämä"
 
 #: membership/templates/membership/membership_list.html:157
-#| msgid "Dissociate"
 msgid "Disassociate cart"
 msgstr "Erotuskori"
 
 #: membership/templates/membership/membership_list.html:159
-#| msgid "Dissociate member"
 msgid "Disassociate these"
 msgstr "Erota nämä"
 
@@ -871,24 +871,28 @@ msgid "Organization member's application form"
 msgstr "Yhteisön jäsenhakemuslomake"
 
 #: membership/templates/membership/new_organization_application.html:27
+#: membership/templates/membership/new_supporting_application.html:25
 msgid "Save and continue to next stage"
 msgstr "Tallenna ja jatka"
 
 #: membership/templates/membership/new_organization_application_add_contact.html:14
+#: membership/templates/membership/new_supporting_application_add_contact.html:14
 msgid "Save contact or skip to next stage"
 msgstr "Tallenna tai ohita ja jatka"
 
 #: membership/templates/membership/new_organization_application_review.html:5
+#: membership/templates/membership/new_supporting_application_review.html:5
 msgid "Application review"
 msgstr "Hakemuksen tietojen tarkistus"
 
 #: membership/templates/membership/new_organization_application_review.html:22
 #: membership/templates/membership/new_person_application.html:278
+#: membership/templates/membership/new_supporting_application_review.html:15
 msgid "Send application"
 msgstr "Lähetä hakemus"
 
 #: membership/templates/membership/new_organization_application_services.html:5
-#: membership/views.py:297
+#: membership/views.py:298
 msgid "Choose services"
 msgstr "Valitse palvelut"
 
@@ -899,6 +903,10 @@ msgstr "Tallenna palvelut"
 #: membership/templates/membership/new_person_application.html:190
 msgid "No e-mail forward"
 msgstr "Ei sähköpostiohjausta"
+
+#: membership/templates/membership/new_supporting_application.html:5
+msgid "Supporting member's application form"
+msgstr "Kannatusjäsenen jäsenhakemuslomake"
 
 #: membership/templates/membership/paginating_snippet.html:8
 msgid "Previous"
@@ -945,24 +953,23 @@ msgstr "määrä"
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: membership/tests.py:1291 membership/tests.py:1297
-#| msgid "First name required."
+#: membership/tests.py:1324 membership/tests.py:1330
 msgid "This field is required."
 msgstr "Tämä kenttä vaaditaan."
 
-#: membership/utils.py:97
+#: membership/utils.py:101
 msgid "Addition"
 msgstr "Lisäys"
 
-#: membership/utils.py:98
+#: membership/utils.py:102
 msgid "Change"
 msgstr "Muutos"
 
-#: membership/utils.py:99
+#: membership/utils.py:103
 msgid "Deletion"
 msgstr "Poisto"
 
-#: membership/views.py:163 membership/views.py:380
+#: membership/views.py:163 membership/views.py:381 membership/views.py:517
 msgid "Membership application received"
 msgstr "Jäsenhakemus vastaanotettu"
 
@@ -970,161 +977,170 @@ msgstr "Jäsenhakemus vastaanotettu"
 msgid "Person member application"
 msgstr "Henkilöjäsenen liittymislomake"
 
-#: membership/views.py:215 membership/views.py:256 membership/views.py:320
+#: membership/views.py:215 membership/views.py:256 membership/views.py:297
+#: membership/views.py:321
 msgid "Organization application"
 msgstr "Yhteisön hakemus"
 
-#: membership/views.py:304 membership/views.py:327
+#: membership/views.py:305 membership/views.py:328 membership/views.py:476
+#: membership/views.py:496
 msgid "Required data missing. Maybe attempted to submit application twice?"
-msgstr "Vaadittu tieto puuttuu. Yritit mahdollisesti lähettää hakemuksen useaan kertaan?"
+msgstr ""
+"Vaadittu tieto puuttuu. Yritit mahdollisesti lähettää hakemuksen useaan "
+"kertaan?"
 
-#: membership/views.py:320
+#: membership/views.py:321 membership/views.py:489
 msgid "Review"
 msgstr "Tarkistus"
 
-#: membership/views.py:424
+#: membership/views.py:468 membership/views.py:489
+#| msgid "Person member application"
+msgid "Supporting member application"
+msgstr "Kannatusjäsenen liittymislomake"
+
+#: membership/views.py:561
 #, python-format
 msgid "Added contact %s."
 msgstr "Lisätty yhteystieto %s."
 
-#: membership/views.py:428
+#: membership/views.py:565
 msgid "New contact not saved."
 msgstr "Yhteystiedon muutoksia ei tallennettu."
 
-#: membership/views.py:441
+#: membership/views.py:578
 msgid "You are not authorized to modify memberships."
 msgstr "Sinulla ei ole oikeutta muokata jäseniä."
 
-#: membership/views.py:450
+#: membership/views.py:587
 #, python-format
 msgid "Changes to contact %s saved."
 msgstr "Yhteystiedon %s muutokset tallennettu."
 
-#: membership/views.py:453
+#: membership/views.py:590
 #, python-format
 msgid "Changes to contact %s not saved."
 msgstr "Yhteystiedon %s muutoksia ei tallennettu."
 
-#: membership/views.py:490
+#: membership/views.py:627
 #, python-format
 msgid "Changes to bill %s saved."
 msgstr "Laskun %s muutokset tallennettu."
 
-#: membership/views.py:493 membership/views.py:661
+#: membership/views.py:630 membership/views.py:797
 #, python-format
 msgid "Changes to bill %s not saved."
 msgstr "Laskun %s muutoksia ei tallennettu."
 
-#: membership/views.py:529
+#: membership/views.py:666
 msgid "None chosen"
 msgstr "Ei valittu"
 
-#: membership/views.py:552 membership/views.py:755
+#: membership/views.py:688 membership/views.py:891
 #, python-format
 msgid "Changes to payment %s saved."
 msgstr "Maksun %s muutokset tallennettu."
 
-#: membership/views.py:555
+#: membership/views.py:691
 #, python-format
 msgid "Changes to BillingCycle %s not saved."
 msgstr "Laskutuskauden %s muutoksia ei tallennettu."
 
-#: membership/views.py:567
+#: membership/views.py:703
 msgid "CSV File"
 msgstr "CSV-tiedosto"
 
-#: membership/views.py:568
+#: membership/views.py:704
 msgid "Choose CSV file to upload"
 msgstr "Valitse käsiteltävä CSV-tiedosto"
 
-#: membership/views.py:570
+#: membership/views.py:706
 msgid "File type"
 msgstr "Tiedostotyyppi"
 
-#: membership/views.py:582
+#: membership/views.py:718
 msgid "Payment import succeeded!"
 msgstr "Maksujen tuonti onnistui!"
 
-#: membership/views.py:586 membership/views.py:588
+#: membership/views.py:722 membership/views.py:724
 msgid "Payment import failed."
 msgstr "Maksujen tuonti epäonnistui."
 
-#: membership/views.py:609
+#: membership/views.py:745
 msgid "Reminders marked as sent"
 msgstr "Paperimuistutukset merkitty lähetetyiksi"
 
-#: membership/views.py:617 membership/views.py:619
+#: membership/views.py:753 membership/views.py:755
 msgid "Error processing PDF"
 msgstr "Virhe tuottaessa PDF-tiedostoa"
 
-#: membership/views.py:621
+#: membership/views.py:757
 msgid "Cannot open PDF file"
 msgstr "Ei voida avata PDF-tiedostoa"
 
-#: membership/views.py:623
+#: membership/views.py:759
 msgid "Print paper reminders"
 msgstr "Tulosta paperimuistutukset"
 
-#: membership/views.py:658
+#: membership/views.py:794
 #, python-format
 msgid "Changes to billing cycle %s saved."
 msgstr "Laskutuskauden %s muutokset tallennettu."
 
-#: membership/views.py:758
+#: membership/views.py:894
 #, python-format
 msgid "Changes to payment %s not saved."
 msgstr "Maksun %s muutoksia ei tallennettu."
 
-#: membership/views.py:808
+#: membership/views.py:944
 msgid "Permission manage required"
 msgstr "Käyttöoikeus hallinta vaaditaan"
 
-#: membership/views.py:833
+#: membership/views.py:969
 #, python-format
 msgid "List duplicates for member #%(mid)i %(membership)s"
 msgstr "Listaa duplikaattijäsenet #%(mid)i %(membership)s"
 
-#: membership/views.py:866
+#: membership/views.py:1002
 msgid "To confirm deletion, you must check this box:"
 msgstr "Varmista poisto valitsemalla tämä laatikko:"
 
-#: membership/views.py:875
+#: membership/views.py:1011
 #, python-format
 msgid "Member %s successfully deleted."
 msgstr "Jäsen %s poistettu onnistuneesti."
 
-#: membership/views.py:888
+#: membership/views.py:1024
 msgid "To confirm dissociation, you must check this box:"
 msgstr "Myönnä ero valitsemalla tämä laatikko:"
 
-#: membership/views.py:897
+#: membership/views.py:1033
 #, python-format
 msgid "Member %s successfully dissociated."
 msgstr "Jäsenelle %s myönnetty ero."
 
-#: membership/views.py:910 membership/views.py:932
+#: membership/views.py:1046 membership/views.py:1068
 msgid "To confirm state change, you must check this box:"
 msgstr "Varmista muutos valitsemalla tämä laatikko:"
 
-#: membership/views.py:919
+#: membership/views.py:1055
 #, python-format
 msgid "Member %s successfully transferred to requested dissociation state."
 msgstr "Jäsen %s on nyt tilassa eronpyyntö esitetty."
 
-#: membership/views.py:941
+#: membership/views.py:1077
 #, python-format
 msgid "Member %s successfully transferred back to approved state."
 msgstr "Jäsenen %s eronpyyntö peruttu."
 
-#: membership/views.py:954
+#: membership/views.py:1090
 msgid "To confirm conversion, you must check this box:"
 msgstr "Varmista muutos valitsemalla tämä laatikko:"
 
-#: membership/views.py:967
+#: membership/views.py:1103
 #, python-format
 msgid "Member %s successfully converted to an organization."
 msgstr "Jäsen %s muutettu yhteisöjäseneksi onnistuneesti."
 
-#: membership/views.py:1038
+#: membership/views.py:1174
 msgid "Recipient e-mail address"
 msgstr "Vastaanottajan sähköpostiosoite"

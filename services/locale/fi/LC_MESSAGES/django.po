@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sikteeri 1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-23 20:39+0300\n"
+"POT-Creation-Date: 2021-01-06 16:39+0200\n"
 "PO-Revision-Date: 2015-05-17 11:07+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
@@ -18,47 +18,47 @@ msgstr ""
 msgid "Starts with"
 msgstr "Alkaa"
 
-#: services/models.py:38 services/models.py:60
+#: services/models.py:44 services/models.py:65
 msgid "Service type"
 msgstr "Palvelutyyppi"
 
-#: services/models.py:39
+#: services/models.py:45
 msgid "Related alias"
 msgstr "Palveluun liittyvä alias"
 
-#: services/models.py:40
+#: services/models.py:46
 msgid "Service owner"
 msgstr "Palvelun omistaja"
 
-#: services/models.py:41
+#: services/models.py:48
 msgid "Service specific data"
 msgstr "Palvelukohtainen tieto"
 
-#: services/models.py:69
+#: services/models.py:72
 msgid "Alias owner"
 msgstr "Aliaksen omistaja"
 
-#: services/models.py:70
+#: services/models.py:73
 msgid "Alias name"
 msgstr "Aliaksen nimi"
 
-#: services/models.py:71
+#: services/models.py:74
 msgid "Is primary member account, e.g. fall-back address for reminders"
 msgstr "Onko ensisijainen tunnus, esim. varaosoite muistutuksille"
 
-#: services/models.py:72
+#: services/models.py:75
 msgid "Created"
 msgstr "Luotu"
 
-#: services/models.py:73
+#: services/models.py:76
 msgid "Comment"
 msgstr "Kommentti"
 
-#: services/models.py:74
+#: services/models.py:77
 msgid "Alias expiration date"
 msgstr "Aliaksen vanheneminen"
 
-#: services/views.py:81
+#: services/views.py:83
 #, python-brace-format
 msgid "Alias {alias} successfully created for {membership}."
 msgstr "Alias {alias} onnistuneesti luotu jäsenelle {membership}"

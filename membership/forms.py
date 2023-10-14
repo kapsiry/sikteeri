@@ -70,7 +70,7 @@ class YearOfBirthField(forms.RegexField):
         return c
 
 
-class PersonMembershipForm(forms.Form):
+class PersonMembershipInfoForm(forms.Form):
     nationality = forms.CharField(max_length=30, min_length=5,
                                   label=_('Nationality'),
                                   initial=_('Finnish nationality'),
@@ -96,9 +96,12 @@ class PersonMembershipForm(forms.Form):
                                    required=False,
                                    help_text=_('Other, where?'))
 
-    email_forward = forms.CharField(min_length=2)
     public_memberlist = forms.BooleanField(
         label=_('My name (first and last name) and homepage can be shown in the public memberlist'), required=False)
+
+
+class PersonMembershipForm(PersonMembershipInfoForm):
+    email_forward = forms.CharField(min_length=2)
 
 
 class ServiceForm(forms.Form):
@@ -197,4 +200,8 @@ class PersonApplicationForm(PersonContactForm, PersonMembershipForm, ServiceForm
 
 
 class OrganizationApplicationForm(OrganizationContactForm, OrganizationMembershipForm):
+    pass
+
+
+class SupportingPersonApplicationForm(PersonContactForm, PersonMembershipInfoForm):
     pass

@@ -25,7 +25,7 @@ from services.models import Alias, Service, ServiceType
 from membership.templatetags.sorturl import lookup_sort
 from membership.decorators import trusted_host_required
 from membership.forms import PersonApplicationForm, OrganizationApplicationForm, PersonContactForm, ServiceForm, \
-    ContactForm
+    ContactForm, SupportingPersonApplicationForm
 from membership.utils import log_change, serializable_membership_info, admtool_membership_details, \
     get_client_ip, bake_log_entries
 from membership.public_memberlist import public_memberlist_data
@@ -396,6 +396,197 @@ def organization_application_save(request):
             if i in request.session:
                 del request.session[i]
         return redirect('new_organization_application_success')
+
+
+# Public access
+def supporting_organization_application(request, template_name='membership/new_supporting_organization_application.html'):
+    if settings.MAINTENANCE_MESSAGE is not None:
+        return redirect('frontpage')
+    if request.method == 'POST':
+        form = OrganizationApplicationForm(request.POST)
+
+        if form.is_valid():
+            f = form.cleaned_data
+
+            d = {}
+            for k, v in list(f.items()):
+                if k not in ['nationality', 'municipality', 'extra_info',
+                             'public_memberlist', 'organization_registration_number']:
+                    d[k] = v
+
+            organization = Contact(**d)
+            membership = Membership(type='S', status='N',
+                                    nationality=f['nationality'],
+                                    municipality=f['municipality'],
+                                    extra_info=f['extra_info'],
+                                    organization_registration_number=f['organization_registration_number'],
+                                    public_memberlist=f['public_memberlist'])
+
+            request.session.set_expiry(0) # make this expire when the browser exits
+            request.session['membership'] = model_to_dict(membership)
+
+            organization_dict = model_to_dict(organization)
+            request.session['organization'] = organization_dict
+            return redirect('supporting_application_add_contact', 'billing_contact')
+    else:
+        form = OrganizationApplicationForm()
+    return render(request, template_name,
+                  {"form": form, "title": _('Supporting member application')})
+
+
+# Public access
+def supporting_application_add_contact(request, contact_type,
+                                       template_name='membership/new_supporting_organization_application_add_contact.html'):
+    forms = ['billing_contact']
+    if contact_type not in forms:
+        return HttpResponseForbidden("Access denied")
+
+    type_text = _('Billing contact')
+
+    if request.method == 'POST':
+        form = PersonContactForm(request.POST)
+
+        if (form.is_valid() or                 # contact is actually filled
+            len(form.changed_data) == 0 or     # form is empty
+            form.changed_data == ['country']): # only the country field is filled (this comes from form defaults)
+
+            if form.is_valid():
+                f = form.cleaned_data
+                contact = Contact(**f)
+                contact_dict = model_to_dict(contact)
+                request.session[contact_type] = contact_dict
+            else:
+                request.session[contact_type] = None
+
+            return redirect('supporting_application_review')
+    else:
+        if contact_type in request.session:
+            form = PersonContactForm(request.session[contact_type])
+        else:
+            form = PersonContactForm()
+    return render(request, template_name, {"form": form, "contact_type": type_text,
+                                           "title": '{title} - {part}'.format(title=_('Supporting member application'),
+                                                                              part=type_text)})
+
+
+# Public access
+def supporting_application_review(request, template_name='membership/new_supporting_application_review.html'):
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('supporting_application')
+
+    forms = []
+    combo_dict = request.session['membership']
+    for k, v in list(request.session['organization'].items()):
+        combo_dict[k] = v
+    forms.append(OrganizationApplicationForm(combo_dict))
+    if request.session.get('billing_contact') is not None:
+        forms.append(PersonContactForm(request.session['billing_contact']))
+        forms[-1].name = _("Billing contact")
+    return render(request, template_name,
+                  {"forms": forms,
+                   "title": '{title} - {part}'.format(title=_('Supporting member application'), part=_('Review'))})
+
+
+# Public access
+def supporting_application_save(request):
+    # Maybe submitting form again after already submitting?
+    if request.session.get('membership') is None:
+        messages.error(request, _("Required data missing. Maybe attempted to submit application twice?"))
+        return redirect('supporting_application')
+
+    with transaction.atomic():
+        membership = Membership(type='S', status='N',
+                                nationality=request.session['membership']['nationality'],
+                                municipality=request.session['membership']['municipality'],
+                                extra_info=request.session['membership']['extra_info'],
+                                organization_registration_number=request.session['membership']['organization_registration_number'])
+
+        organization = Contact(**request.session['organization'])
+        organization.save()
+        membership.organization = organization
+
+        if request.session.get('billing_contact') is not None:
+            billing_contact = Contact(**request.session['billing_contact'])
+            billing_contact.save()
+            membership.billing_contact = billing_contact
+
+        membership.save()
+
+        send_mail(_('Membership application received'),
+                  render_to_string('membership/application_confirmation.txt',
+                                   { 'membership': membership,
+                                     'membership_type': MEMBER_TYPES_DICT[membership.type],
+                                     'organization': membership.organization,
+                                     'billing_contact': membership.billing_contact,
+                                     'tech_contact': membership.tech_contact,
+                                     'ip': get_client_ip(request),
+                                     'services': []}),
+                  settings.FROM_EMAIL,
+                  [membership.email_to()], fail_silently=False)
+
+        logger.info("New application {organization} from {ip}:.".format(organization=organization, ip=get_client_ip(request)))
+        request.session.set_expiry(0)  # make this expire when the browser exits
+        for i in ['membership', 'billing_contact', 'services']:
+            if i in request.session:
+                del request.session[i]
+        return redirect('new_supporting_application_success')
+
+
+# Public access
+def supporting_person_application(request, template_name='membership/new_supporting_person_application.html'):
+    if settings.MAINTENANCE_MESSAGE is not None:
+        return redirect('frontpage')
+    if request.method == 'POST':
+        form = SupportingPersonApplicationForm(request.POST)
+
+        if form.is_valid():
+            f = form.cleaned_data
+
+            d = {}
+            for k, v in list(f.items()):
+                if k not in ['nationality', 'municipality', 'public_memberlist', 'extra_info', 'poll', 'poll_other',
+                             'birth_year']:
+                    d[k] = v
+
+            person = Contact(**d)
+            person.save()
+            membership = Membership(type='S', status='N',
+                                    person=person,
+                                    nationality=f['nationality'],
+                                    municipality=f['municipality'],
+                                    extra_info=f['extra_info'],
+                                    public_memberlist=f['public_memberlist'],
+                                    birth_year=f['birth_year'])
+
+            membership.save()
+
+            if f['poll'] is not None:
+                answer = f['poll']
+                if answer == 'other':
+                    answer = '%s: %s' % (answer, f['poll_other'])
+                pollanswer = ApplicationPoll(membership=membership,
+                                             answer=answer)
+                pollanswer.save()
+
+            logger.info("New application {person} from {ip}:.".format(person=person, ip=get_client_ip(request)))
+            send_mail(_('Membership application received'),
+                      render_to_string('membership/application_confirmation.txt',
+                                       {'membership': membership,
+                                        'membership_type': MEMBER_TYPES_DICT[membership.type],
+                                        'person': membership.person,
+                                        'billing_contact': membership.billing_contact,
+                                        'tech_contact': membership.tech_contact,
+                                        'ip': get_client_ip(request),
+                                        'services': []}),
+                      settings.FROM_EMAIL,
+                      [membership.email_to()], fail_silently=False)
+            return redirect('new_supporting_person_application_success')
+    else:
+        form = SupportingPersonApplicationForm()
+    return render(request, template_name,
+                  {"form": form, "title": _('Supporting member application')})
 
 
 @permission_required('membership.manage_members')
@@ -799,7 +990,7 @@ def membership_edit(request, id, template_name='membership/membership_edit.html'
             self.fields['approved'].required = False
             self.fields['approved'].widget.attrs['readonly'] = 'readonly'
             instance = getattr(self, 'instance', None)
-            if instance and instance.type == 'O':
+            if instance and instance.type in ('O', 'S'):
                 self.fields["birth_year"].widget = HiddenInput()
                 self.fields['birth_year'].required = False
 

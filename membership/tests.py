@@ -213,6 +213,14 @@ class MembershipTypeTest(TestCase):
         self.m.person = None
         self.m.save()
 
+    def test_person_and_supporting_member_contacts_correctly_set(self):
+        self.m.organization = self.m.person
+        self.assertRaises(ValidationError, self.m.save)
+        self.m.type = 'S'
+        self.assertRaises(ValidationError, self.m.save)
+        self.m.person = None
+        self.m.save()
+
 
 class MembershipFeeTest(TestCase):
     fixtures = ['test_user.json']
@@ -1842,6 +1850,20 @@ class DuplicateMembershipDetectionTest(TestCase):
         m1.save()
 
         m2 = create_dummy_member('N', type='O')
+        m2.save()
+        m2.organization.organization_name = m1.organization.organization_name
+        m2.organization.save()
+
+        self.assertEqual(len(m1.duplicates()), 1)
+        self.assertEqual(m1.duplicates()[0].id, m2.id)
+        self.assertEqual(len(m2.duplicates()), 1)
+        self.assertEqual(m2.duplicates()[0].id, m1.id)
+
+    def test_has_duplicate_supporting_member(self):
+        m1 = create_dummy_member('N', type='S')
+        m1.save()
+
+        m2 = create_dummy_member('N', type='S')
         m2.save()
         m2.organization.organization_name = m1.organization.organization_name
         m2.organization.save()

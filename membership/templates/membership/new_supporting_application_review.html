@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Application review" %}</h2>
+<p>Osa 3/3.</p>
+<form method="POST" action="{% url "supporting_application_save" %}">{% csrf_token %}
+<div id="new_application">
+  {% for form in forms %}
+    <h3>{{ form.name }}</h3>
+    {{ form.as_p }}
+  {% endfor %}
+  <p>
+    <label for="submit_button"></label>
+    <input id="submit_button" type="submit" value="{% trans "Send application" %}" />
+  </p>
+</div>
+</form>
+
+{% endblock %}
