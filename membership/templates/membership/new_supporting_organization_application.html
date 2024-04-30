@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Supporting member's application form" %}</h2>
+<p>Osa 1/3.</p>
+<p>
+  Voit missä tahansa vaiheessa palata taaksepäin selaimen back-näppäimellä ja
+  täyttää lomakkeen uudestaan. Lomake lähetetään vasta kun hyväksyt tiedot
+  vaiheessa <em>Tietojen tarkistus</em>.
+</p>
+<p>
+  Hakemus koostuu seuraavista vaiheista. Olet nyt ensimmäisessä vaiheessa.
+</p>
+<ol>
+  <li><strong>Yhteisön yleistiedot</strong></li>
+  <li>Laskutusyhteystieto</li>
+  <li>Tietojen tarkistus</li>
+</ol>
+<form method="POST">{% csrf_token %}
+<div id="new_application">
+  {{ form.as_p }}
+<p>
+  <label for="submit_button"></label>
+  <input id="submit_button" type="submit" value="{% trans "Save and continue to next stage" %}" />
+</p>
+</div>
+</form>
+
+<script type="text/javascript">
+// Auto-populate SMS number
+$("#id_phone").focusout(function() {
+  if ($("#id_sms").val().length == 0) {
+    $("#id_sms").val($("#id_phone").val());
+  }
+});
+</script>
+{% endblock %}

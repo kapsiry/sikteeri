@@ -7,159 +7,171 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sikteeri 1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-17 11:07+0300\n"
+"POT-Creation-Date: 2021-01-06 16:39+0200\n"
 "PO-Revision-Date: 2015-05-17 11:07+0300\n"
 "Last-Translator: Joonas Kuorilehto <joneskoo@kapsi.fi>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: templates/403.html:6
+#: procountor/models.py:16
+msgid "last changed"
+msgstr ""
+
+#: procountor/templates/procountor/procountor_token_added.html:5
+msgid "Procountor API token successfully added"
+msgstr ""
+
+#: procountor/templates/procountor/procountor_token_added.html:10
+msgid "Procountor login API key successfully added."
+msgstr ""
+
+#: sikteeri/templates/403.html:6
 msgid "403 Not authorized"
 msgstr "403 Ei sallittu"
 
-#: templates/403.html:8
+#: sikteeri/templates/403.html:8
 msgid "You have no right to access this content."
 msgstr "Sinulla ei ole oikeutta päästä tänne."
 
-#: templates/404.html:6
+#: sikteeri/templates/404.html:6
 msgid "404. Not found."
 msgstr "404. Ei löytynyt."
 
-#: templates/404.html:8
+#: sikteeri/templates/404.html:8
 msgid "We could not find what you requested. Why? Because it's not there."
 msgstr "Saako olla valkosipulia? Ei ole. Hnmm."
 
-#: templates/500.html:6
+#: sikteeri/templates/500.html:6
 msgid "Internal server error"
 msgstr "Sisäinen palvelinvirhe"
 
-#: templates/500.html:8
+#: sikteeri/templates/500.html:8
 msgid ""
 "Something went seriously wrong. Technical support monkeys are being "
 "dispatched."
 msgstr "Jokin meni mönkään. Tukipalvelun apinat ryntäävät tutkimaan."
 
-#: templates/frontpage.html:6
+#: sikteeri/templates/frontpage.html:6
 msgid "Presenting the new jazzy Sikteeri"
 msgstr "Tässäpä kauan kaivattu jazzaava Sikteeri"
 
-#: templates/frontpage.html:8 views.py:18
+#: sikteeri/templates/frontpage.html:8 sikteeri/views.py:19
 msgid "Django and the jazz cigarette"
 msgstr "Django ja jazztupakka"
 
-#: templates/menu.html:5
+#: sikteeri/templates/menu.html:5
 msgid "Logout"
 msgstr "Kirjaudu ulos"
 
-#: templates/menu.html:7 templates/registration/login.html:5
+#: sikteeri/templates/menu.html:7 sikteeri/templates/registration/login.html:5
 msgid "Login"
 msgstr "Kirjaudu sisään"
 
-#: templates/menu.html:11
+#: sikteeri/templates/menu.html:11
 msgid "Public"
 msgstr "Julkinen"
 
-#: templates/menu.html:13
+#: sikteeri/templates/menu.html:13
 msgid "Frontpage"
 msgstr "Etusivu"
 
-#: templates/menu.html:14
+#: sikteeri/templates/menu.html:14
 msgid "New application"
 msgstr "Uusi hakemus"
 
-#: templates/menu.html:18
+#: sikteeri/templates/menu.html:18
 msgid "Membership management"
 msgstr "Jäsenhallinta"
 
-#: templates/menu.html:20
+#: sikteeri/templates/menu.html:20
 msgid "Member applications"
 msgstr "Uudet hakemukset"
 
-#: templates/menu.html:21
+#: sikteeri/templates/menu.html:21
 msgid "Preapproved applications"
 msgstr "Esihyväksytyt hakemukset"
 
-#: templates/menu.html:24
+#: sikteeri/templates/menu.html:24
 msgid "Members"
 msgstr "Jäsenet"
 
-#: templates/menu.html:25
+#: sikteeri/templates/menu.html:25
 msgid "emails"
 msgstr "emailit"
 
-#: templates/menu.html:30
+#: sikteeri/templates/menu.html:30
 msgid "Members that have requested dissociation"
 msgstr "Eroavat jäsenet"
 
-#: templates/menu.html:36
+#: sikteeri/templates/menu.html:36
 msgid "Dissociated members"
 msgstr "Eronneet jäsenet"
 
-#: templates/menu.html:40
+#: sikteeri/templates/menu.html:40
 msgid "Deleted members"
 msgstr "Poistetut jäsenet"
 
-#: templates/menu.html:41
+#: sikteeri/templates/menu.html:41
 msgid "All membership entities"
 msgstr "Kaikki jäsentietueet"
 
-#: templates/menu.html:45
+#: sikteeri/templates/menu.html:45
 msgid "Search memberships"
 msgstr "Hae jäsentietoja"
 
-#: templates/menu.html:52
+#: sikteeri/templates/menu.html:52
 msgid "List of unpaid bills"
 msgstr "Lista avoimista laskuista"
 
-#: templates/menu.html:53
+#: sikteeri/templates/menu.html:53
 msgid "Unpaid paper reminders"
 msgstr "Maksamattomat paperimuistutukset"
 
-#: templates/menu.html:55
+#: sikteeri/templates/menu.html:55
 msgid "All bills"
 msgstr "Kaikki laskut"
 
-#: templates/menu.html:56
+#: sikteeri/templates/menu.html:56
 msgid "Unknown payments"
 msgstr "Tunnistamattomat maksut"
 
-#: templates/menu.html:57
+#: sikteeri/templates/menu.html:57
 msgid "Ignored payments"
 msgstr "Huomiotta jätetyt maksut"
 
-#: templates/menu.html:58
+#: sikteeri/templates/menu.html:58
 msgid "All payments"
 msgstr "Kaikki maksut"
 
-#: templates/menu.html:59
+#: sikteeri/templates/menu.html:59
 msgid "Print reminders"
 msgstr "Tulosta muistutukset"
 
-#: templates/menu.html:61
+#: sikteeri/templates/menu.html:61
 msgid "Import payments"
 msgstr "Tuo maksut"
 
-#: templates/menu.html:66
+#: sikteeri/templates/menu.html:66
 msgid "Send test e-mail"
 msgstr "Lähetä testisähköposti"
 
-#: templates/menu.html:71
+#: sikteeri/templates/menu.html:71
 msgid "Admin"
 msgstr "Ylläpito"
 
-#: templates/registration/login.html:10
+#: sikteeri/templates/registration/login.html:10
 msgid "Username"
 msgstr "Käyttäjätunnus"
 
-#: templates/registration/login.html:11
+#: sikteeri/templates/registration/login.html:11
 msgid "Password"
 msgstr "Salasana"
 
-#: templates/registration/login.html:12
+#: sikteeri/templates/registration/login.html:12
 msgid "Log in"
 msgstr "Kirjaudu sisään"
 
-#: views.py:24
+#: sikteeri/views.py:24
 msgid "Under maintenance"
 msgstr "Tilapäisesti poissa käytöstä"
