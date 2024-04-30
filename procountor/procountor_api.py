@@ -222,7 +222,7 @@ class ProcountorAPIClient(object):
         }
         headers = {"Content-type": "application/x-www-form-urlencoded"}
 
-        res = self.post("oauth/token", params=params, headers=headers)
+        res = self.post("oauth/token", body=params, headers=headers)
 
         if res.status_code != 200:
             raise ProcountorAPIException("Token fetch failed, wrong response status code %d", res.status_code)
