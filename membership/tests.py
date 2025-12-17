@@ -26,7 +26,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.test import TestCase
 from django.http import HttpResponse, HttpRequest
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from membership import email_utils
 from membership.models import (Bill, BillingCycle, Contact, CancelledBill, Membership,

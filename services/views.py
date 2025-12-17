@@ -13,7 +13,7 @@ from django.forms import ModelForm, ModelChoiceField
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 import logging
 logger = logging.getLogger("services.views")

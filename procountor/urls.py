@@ -1,8 +1,8 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 import procountor.views
 
 urlpatterns = [
-    url(r'^$', procountor.views.procountor_login, name='procountor_login'),
-    url(r'^auth/$', procountor.views.procountor_login_return, name='procountor_login_return'),
+    re_path(r'^$', procountor.views.procountor_login, name='procountor_login'),
+    re_path(r'^auth/$', procountor.views.procountor_login_return, name='procountor_login_return'),
 ]
