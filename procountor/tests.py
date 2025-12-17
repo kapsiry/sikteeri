@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.test import TestCase
 import requests_mock
+import urllib.parse
 
 from procountor.models import APIToken
 from procountor.procountor_api import ProcountorAPIClient
@@ -45,6 +46,15 @@ class ProcountorLoginTests(TestCase):
 
 class ProcountorAPIClientTests(TestCase):
 
+    @staticmethod
+    def custom_matcher(request):
+        params = urllib.parse.parse_qs(request.body)
+        return params.get("redirect_uri") == ["redirect-url-placeholder"] and \
+            params.get("client_id") == ["abc123"] and \
+            params.get("client_secret") == ["abc1234"] and \
+            params.get("api_key") == ["foobar"]
+
+
     def test_refresh_access_token(self):
         response_data = {
             "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FwaS10ZXN0LnByb2NvdW50b3IuY29t"
@@ -54,9 +64,8 @@ class ProcountorAPIClientTests(TestCase):
             "expires_in": 3600
         }
         with requests_mock.Mocker() as m:
-            m.post('https://invalid.url/api/oauth/token?grant_type=client_credentials'
-                   '&redirect_uri=redirect-url-placeholder&api_key=foobar&client_id=abc123&client_secret=abc1234',
-                   json=response_data)
+            m.register_uri('POST', 'https://invalid.url/api/oauth/token', json=response_data,
+                           headers={"Content-type": "application/json"}, additional_matcher=self.custom_matcher)
             client = ProcountorAPIClient(api='https://invalid.url/api', company_id=1,
                                          redirect_uri="redirect-url-placeholder", client_id="abc123",
                                          client_secret="abc1234", api_key="foobar")

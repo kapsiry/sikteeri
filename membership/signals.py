@@ -7,6 +7,6 @@ logger = logging.getLogger("membership.signals")
 
 
 # Signals
-send_as_email = Signal(providing_args=["instance"])
-send_preapprove_email = Signal(providing_args=["instance", "user"])
-send_duplicate_payment_notice = Signal(providing_args=["instance","user","billingcycle"])
+send_as_email = Signal()
+send_preapprove_email = Signal()
+send_duplicate_payment_notice = Signal()

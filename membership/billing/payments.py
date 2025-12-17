@@ -5,7 +5,7 @@ import csv
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 import logging
 
