@@ -10,7 +10,7 @@ REQUIREMENTS
 
 The following software is required to install Sikteeri.
 
-* Python 2.7
+* Python >= 3.8
 * gettext
 * openldap and sasl dev for LDAP support
 
