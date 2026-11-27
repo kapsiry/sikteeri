@@ -82,6 +82,22 @@ def normalize_reference(text):
     return reference
 
 
+def membership_id_from_reference(reference):
+    """
+    Return the membership id encoded in a membership fee reference number,
+    or None if the reference is not in the membership fee format.
+
+    The format is the one generate_membership_bill_reference_number()
+    produces: member id, two-digit year, "01" and a check digit.
+    """
+    reference = normalize_reference(reference)
+    if reference is None or len(reference) < 6:
+        return None
+    if reference[-3:-1] != "01":
+        return None
+    return int(reference[:-5])
+
+
 def group_right(number, group_size=5):
     number = number.replace(" ", "")
     groups = []

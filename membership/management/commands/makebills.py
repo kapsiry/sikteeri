@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import translation
 
+from membership.billing.payments import attach_early_payments
 from membership.models import BillingCycle, Bill, Payment, Membership
 
 logger = logging.getLogger("membership.makebills")
@@ -51,7 +52,14 @@ def create_billingcycle(membership):
             billing_cycle.save()
             bill = Bill(billingcycle=billing_cycle)
             bill.save()
-        bill.send_as_email()
+        early_payments = attach_early_payments(billing_cycle)
+        if early_payments and billing_cycle.is_paid:
+            # Paid before the bill existed, for example by a standing order
+            # with last year's reference number. Don't ask for the money again.
+            logger.info("Bill %s not sent: billing cycle %s of %s was already paid by %s" % (
+                bill.id, repr(billing_cycle), repr(membership), repr(early_payments)))
+        else:
+            bill.send_as_email()
         return billing_cycle
     except Exception as exc:
         logger.critical("%s" % traceback.format_exc())
