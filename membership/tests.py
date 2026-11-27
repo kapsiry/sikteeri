@@ -42,8 +42,9 @@ from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
 from membership.billing.procountor_csv import create_csv
 from procountor.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent, \
-    ProcountorReferencePayment
+    ProcountorReferencePayment, reference_from_sepa_message
 from membership.reference_numbers import generate_membership_bill_reference_number
+from membership.reference_numbers import normalize_reference
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
 from membership.reference_numbers import ReferenceNumberException
@@ -2569,6 +2570,126 @@ class TestProcountorApi(TestCase):
 
 
 class ReferenceParsingTest(TestCase):
+    def setUp(self):
+        self.reference = generate_membership_bill_reference_number(1234, 2026)
+
+    def test_normalize_national_reference(self):
+        self.assertEqual(normalize_reference(group_right(self.reference)), self.reference)
+        self.assertEqual(normalize_reference("000" + self.reference), self.reference)
+
     def test_rf_reference_number(self):
         self.assertEqual(BillingCycle(reference_number="218012").get_rf_reference_number(), "RF28218012")
         self.assertEqual(BillingCycle(reference_number="21 8012").get_rf_reference_number(), "RF28218012")
+
+    def test_normalize_rf_reference(self):
+        cycle = BillingCycle(reference_number=self.reference)
+        rf_reference = cycle.get_rf_reference_number()
+        self.assertEqual(normalize_reference(rf_reference), self.reference)
+        self.assertEqual(normalize_reference(group_right(rf_reference, group_size=4).lower()), self.reference)
+
+    def test_normalize_rejects_invalid(self):
+        wrong_check = self.reference[:-1] + str((int(self.reference[-1]) + 1) % 10)
+        for text in [None, "", "Ehka jasenmaksu", "OKOYFIHH", wrong_check, "RF00" + self.reference, "RFXX123", "123"]:
+            self.assertIsNone(normalize_reference(text), "%r should not be a reference" % text)
+
+    def test_sepa_message_with_country_column(self):
+        message = "SEPA-MAKSU".ljust(35) + group_right(self.reference).ljust(35) + "HANDSESSXXX".ljust(35) + "FI"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_instant_payment_message(self):
+        message = "SEPA PIKASIIRTO".ljust(35) + group_right(self.reference).ljust(35) + "REVOLT21XXX"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_message_with_rf_reference(self):
+        rf_reference = BillingCycle(reference_number=self.reference).get_rf_reference_number()
+        message = "SEPA-MAKSU".ljust(35) + rf_reference.ljust(35) + "OKOYFIHH\n"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_message_without_reference(self):
+        for message in ["SEPA-MAKSU".ljust(35) + "Ehka jasenmaksu".ljust(35) + "OKOYFIHH",
+                        "SEPA-MAKSU".ljust(35) + "HANDSESSXXX".ljust(35) + "FI",
+                        "SEPA-MAKSU", "Jasenmaksu " + self.reference, "", None]:
+            self.assertIsNone(reference_from_sepa_message(message), "%r has no reference" % message)
+
+
+class PaymentMatchingTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+    def setUp(self):
+        settings.BILLING_CC_EMAIL = None
+        self.user = User.objects.get(id=1)
+        self.m = create_dummy_member('N')
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+        self.transaction_counter = 0
+        mail.outbox = []
+
+    def create_cycle(self, start, paid=False):
+        cycle = BillingCycle(membership=self.m, start=start)
+        cycle.save()
+        Bill(billingcycle=cycle).save()
+        if paid:
+            self.transaction_counter += 1
+            payment = Payment(billingcycle=cycle, amount=cycle.sum, payment_day=start + timedelta(days=5),
+                              transaction_id="PAID%d" % self.transaction_counter, type="Viitesiirto",
+                              reference_number=cycle.reference_number, payer_name="TEST USER")
+            payment.save()
+            cycle.update_is_paid()
+        return cycle
+
+    def bank_statement_event(self, message, explanation_code=700, amount=40.0):
+        self.transaction_counter += 1
+        today = datetime.now().strftime("%Y-%m-%d")
+        return ProcountorBankStatementEvent({
+            "invoiceId": 0,
+            "name": "Firstname Lastname",
+            "payDate": today,
+            "sum": amount,
+            "message": message,
+            "endToEndId": 0,
+            "explanationCode": explanation_code,
+            "valueDate": today,
+            "archiveCode": "MATCHEVENT%d" % self.transaction_counter,
+            "allocated": False,
+            "id": self.transaction_counter,
+            "productId": 0,
+        })
+
+    def imported_payment(self):
+        """The payment that the test imported, as opposed to the ones that paid earlier cycles"""
+        return Payment.objects.get(transaction_id__startswith="MATCH")
+
+    def assert_paid_by(self, cycle, payment_count=1):
+        cycle = BillingCycle.objects.get(id=cycle.id)
+        self.assertTrue(cycle.is_paid, "Billing cycle should be paid")
+        self.assertEqual(cycle.payment_set.count(), payment_count)
+        return cycle
+
+    def assert_unpaid(self, cycle):
+        cycle = BillingCycle.objects.get(id=cycle.id)
+        self.assertFalse(cycle.is_paid, "Billing cycle should not be paid")
+        self.assertEqual(cycle.payment_set.count(), 0)
+
+    def test_sepa_payment_by_payment_service(self):
+        """Reference inside the message of an event with explanation code 700"""
+        cycle = self.create_cycle(datetime.now())
+        message = "SEPA-MAKSU".ljust(35) + group_right(cycle.reference_number).ljust(35) + \
+                  "HANDSESSXXX".ljust(35) + "FI"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        cycle = self.assert_paid_by(cycle)
+        self.assertEqual(cycle.payment_set.first().reference_number, cycle.reference_number)
+
+    def test_sepa_instant_payment_by_payment_service(self):
+        cycle = self.create_cycle(datetime.now())
+        message = "SEPA PIKASIIRTO".ljust(35) + group_right(cycle.reference_number).ljust(35) + "REVOLT21XXX"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        self.assert_paid_by(cycle)
+
+    def test_sepa_payment_with_invalid_reference(self):
+        cycle = self.create_cycle(datetime.now())
+        wrong = cycle.reference_number[:-1] + str((int(cycle.reference_number[-1]) + 1) % 10)
+        message = "SEPA-MAKSU".ljust(35) + wrong.ljust(35) + "HANDSESSXXX".ljust(35) + "FI"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        self.assert_unpaid(cycle)
+        payment = self.imported_payment()
+        self.assertEqual(payment.reference_number, "")
+        self.assertFalse(payment.duplicate)
