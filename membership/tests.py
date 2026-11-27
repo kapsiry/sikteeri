@@ -2566,3 +2566,9 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
         self.assertEqual(payments[0].name, "")
+
+
+class ReferenceParsingTest(TestCase):
+    def test_rf_reference_number(self):
+        self.assertEqual(BillingCycle(reference_number="218012").get_rf_reference_number(), "RF28218012")
+        self.assertEqual(BillingCycle(reference_number="21 8012").get_rf_reference_number(), "RF28218012")

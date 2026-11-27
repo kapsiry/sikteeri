@@ -720,9 +720,9 @@ class BillingCycle(models.Model):
         """
         # Magic 2715 is "RF" in number encoded format and
         # zeros are placeholders for modulus calculation.
-        reference_number_int = int(''.join(self.reference_number.split()) + '271500')
-        modulo = reference_number_int % 97
-        return "RF%02d%s" % (98 - modulo, reference_number_int)
+        reference_number = ''.join(self.reference_number.split())
+        modulo = int(reference_number + '271500') % 97
+        return "RF%02d%s" % (98 - modulo, reference_number)
 
     @classmethod
     def get_reminder_billingcycles(cls, memberid=None):
