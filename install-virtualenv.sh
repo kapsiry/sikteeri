@@ -2,7 +2,7 @@
 # Install virtualenv environment for sikteeri development
 # Feel free to create virtualenv manually if you prefer.
 
-VIRTUALENV="virtualenv"
+PYTHON="${PYTHON:-python3}"
 ENVDIR="env"
 
 # Exit on errors
@@ -16,7 +16,7 @@ function fatal () {
 # Check requirements
 ###########################
 # A working virtualenv command is required
-"$VIRTUALENV" --version >/dev/null || fatal "Python virtualenv required. Maybe pip install virtualenv?"
+"$PYTHON" -m venv --help >/dev/null || fatal "Python venv module required. On Debian: apt install python3-venv"
 
 # Target virtualenv directory should not exist
 if [[ -a "$ENVDIR" ]]; then
@@ -25,7 +25,7 @@ fi
 
 # Prepare virtualenv
 #############################
-"$VIRTUALENV" --python=python3 "$ENVDIR" --no-site-packages || fatal "Failed to create virtualenv $ENVDIR"
+"$PYTHON" -m venv "$ENVDIR" || fatal "Failed to create virtualenv $ENVDIR"
 
 # OS X specific fixes
 if [[ `uname -s` == "Darwin" ]]; then

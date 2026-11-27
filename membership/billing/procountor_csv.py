@@ -40,7 +40,7 @@ def _bill_to_rows(bill, cancel=False):
     bill_delivery = ProcountorBillDelivery.NO_DELIVERY
 
     if c.membership.get_billing_contact():
-        billing_address = '%s\%s\%s\%s\%s' % (
+        billing_address = '%s\\%s\\%s\\%s\\%s' % (
             c.membership.name(),
             c.membership.get_billing_contact().street_address,
             c.membership.get_billing_contact().postal_code,

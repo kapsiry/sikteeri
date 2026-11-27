@@ -1,8 +1,8 @@
 <a href="https://codecov.io/github/kapsiry/sikteeri?branch=master">
   <img src="https://codecov.io/github/kapsiry/sikteeri/coverage.svg?branch=master" alt="Coverage via Codecov" />
 </a>
-<a href="https://travis-ci.org/kapsiry/sikteeri">
-  <img src="https://travis-ci.org/kapsiry/sikteeri.svg?branch=master" alt="Test results at Travis CI" />
+<a href="https://github.com/kapsiry/sikteeri/actions/workflows/tests.yml">
+  <img src="https://github.com/kapsiry/sikteeri/actions/workflows/tests.yml/badge.svg?branch=master" alt="Test results at GitHub Actions" />
 </a>
 
 REQUIREMENTS
@@ -10,7 +10,7 @@ REQUIREMENTS
 
 The following software is required to install Sikteeri.
 
-* Python >= 3.8
+* Python >= 3.11 (tested with Debian 12 and 13: Python 3.11 and 3.13)
 * gettext
 * openldap and sasl dev for LDAP support
 
