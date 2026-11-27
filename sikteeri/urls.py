@@ -1,4 +1,5 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 import sikteeri.views
 import django.contrib.auth.views
 
@@ -12,19 +13,19 @@ urlpatterns = [
     # url(r'^$', 'sikteeri.views.home', name='home'),
     # url(r'^sikteeri/', include('sikteeri.foo.urls')),
 
-    url(r'^$', sikteeri.views.frontpage, name='frontpage'),
-    url(r'^comments/', include('django_comments.urls')),
-    url(r'^membership/', include('membership.urls')),
-    url(r'^procountor/', include('procountor.urls')),
-    url(r'^services/', include('services.urls')),
+    re_path(r'^$', sikteeri.views.frontpage, name='frontpage'),
+    re_path(r'^comments/', include('django_comments.urls')),
+    re_path(r'^membership/', include('membership.urls')),
+    re_path(r'^procountor/', include('procountor.urls')),
+    re_path(r'^services/', include('services.urls')),
 
-    url(r'^login/', django.contrib.auth.views.LoginView.as_view(), name='login'),
-    url(r'^logout/', django.contrib.auth.views.LogoutView.as_view(next_page='/'),
+    re_path(r'^login/', django.contrib.auth.views.LoginView.as_view(), name='login'),
+    re_path(r'^logout/', django.contrib.auth.views.LogoutView.as_view(next_page='/'),
         name='logout'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', admin.site.urls),
+    re_path(r'^admin/', admin.site.urls),
 ]

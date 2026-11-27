@@ -9,11 +9,11 @@
     {% endif %}
 
     {% for pagenum in paginator.page_range %}
-    {% ifnotequal pagenum page %}
+    {% if pagenum != page %}
       <a href="{% page pagenum %}">{{ pagenum }}</a>
     {% else %}
       <strong>{{ pagenum }}</strong>
-    {% endifnotequal %}
+    {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django_comments.models import Comment
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.utils.html import escape
 
 # http://code.activestate.com/recipes/576644/
