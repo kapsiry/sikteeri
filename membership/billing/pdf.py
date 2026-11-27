@@ -256,10 +256,10 @@ class PDFTemplate(object):
             "1",
             "Jäsenmaksu",
             "%s - %s" % (cycle_start_date, cycle_end_date),
-            "%s €" % locale.format("%.2f", cycle.sum / (Decimal(1) + vat)),
-            "%s %%" % locale.format("%d", cycle.get_vat_percentage()),
-            "%s €" % locale.format("%.2f", vat * non_vat_amount),
-            "%s €" % locale.format("%.2f", cycle.sum)
+            "%s €" % locale.format_string("%.2f", cycle.sum / (Decimal(1) + vat)),
+            "%s %%" % locale.format_string("%d", cycle.get_vat_percentage()),
+            "%s €" % locale.format_string("%.2f", vat * non_vat_amount),
+            "%s €" % locale.format_string("%.2f", cycle.sum)
         ])
         # Note any payments attached
         if self.__type__ == 'reminder' and amount_paid > 0:
@@ -270,7 +270,7 @@ class PDFTemplate(object):
                 "",  # amount
                 "",  # vat-percentage
                 "",  # vat amount
-                "%s €" % locale.format("%.2f", -amount_paid),  # total amount
+                "%s €" % locale.format_string("%.2f", -amount_paid),  # total amount
             ])
 
         first_bill = cycle.first_bill()
@@ -306,7 +306,7 @@ class PDFTemplate(object):
             'bill_id': bill_id,
             'vat': vat,
             'sum': sum,
-            'pretty_sum': locale.format('%.2f', sum),
+            'pretty_sum': locale.format_string('%.2f', sum),
             'notify_period': '%d vrk' % (settings.REMINDER_GRACE_DAYS,),
             'lineitems': lineitems,
             'reference_number': group_reference(cycle.reference_number)

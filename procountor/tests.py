@@ -36,7 +36,7 @@ class ProcountorLoginTests(TestCase):
             with requests_mock.Mocker() as m:
                 m.post('https://invalid.url/api/oauth/key', json=response_data)
                 response = self.client.get('/procountor/auth/?code=abc123&expires_in=300')
-            self.assertEquals(response.status_code, 200, "Return failed")
+            self.assertEqual(response.status_code, 200, "Return failed")
 
         self.assertIsNotNone(APIToken.objects.first())
         token = APIToken.objects.first()
