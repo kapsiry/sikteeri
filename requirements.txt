@@ -1,8 +1,8 @@
 requests
 requests_mock
 dj-database-url
-Django>=4.2.27,<5.0
-django-auth-ldap ~= 4.7.0
+Django>=5.2.8,<6.0
+django-auth-ldap>=5.1,<6
 django-contrib-comments
 gunicorn
 Pillow

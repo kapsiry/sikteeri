@@ -151,12 +151,11 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
-USE_L10N = True
-
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = False
+
+# Keep 32-bit integer primary keys; existing migrations were created with AutoField.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 locale.setlocale(locale.LC_ALL, config.get("LOCALE", 'fi_FI.UTF-8'))
 
@@ -189,6 +188,7 @@ TEMPLATES = [
                 # list if you haven't customized them:
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
+                'django.template.context_processors.request',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
@@ -398,9 +398,10 @@ if AUTH_USE_LDAP:
         # Get groups from LDAP and mirror to Django user groups
         AUTH_LDAP_MIRROR_GROUPS = True
         # cache groups for 5 minutes by default
-        AUTH_LDAP_CACHE_GROUPS = config.get('AUTH_LDAP_CACHE_GROUPS', True)
-        AUTH_LDAP_GROUP_CACHE_TIMEOUT = config.get(
-            'AUTH_LDAP_GROUP_CACHE_TIMEOUT', 300)
+        # django-auth-ldap 2.0+ has one cache setting; accept the old config key too.
+        AUTH_LDAP_CACHE_TIMEOUT = config.get(
+            'AUTH_LDAP_CACHE_TIMEOUT',
+            config.get('AUTH_LDAP_GROUP_CACHE_TIMEOUT', 300))
         AUTH_LDAP_USER_FLAGS_BY_GROUP = config.get(
             'AUTH_LDAP_USER_FLAGS_BY_GROUP', {})
 

@@ -2,7 +2,10 @@
 <ul>
    <li>
      {% if user.is_authenticated %}
-     <a href="{% url "logout" %}">{% trans "Logout" %}</a>
+     <form action="{% url "logout" %}" method="post">
+       {% csrf_token %}
+       <input type="submit" value="{% trans "Logout" %}">
+     </form>
      {% else %}
      <a href="{% url "login" %}">{% trans "Login" %}</a>
      {% endif %}

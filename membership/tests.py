@@ -1330,13 +1330,13 @@ class MemberApplicationTest(TestCase):
         self.post_data['phone'] = ''
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'phone', _('This field is required.'))
+        self.assertFormError(response.context['form'], 'phone', _('This field is required.'))
 
     def test_do_application_with_empty_sms_number(self):
         self.post_data['sms'] = ''
         response = self.client.post('/membership/application/person/', self.post_data)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'sms', _('This field is required.'))
+        self.assertFormError(response.context['form'], 'sms', _('This field is required.'))
 
     def test_do_application_with_proper_homepage(self):
         self.post_data['homepage'] = 'http://www.kapsi.fi'
