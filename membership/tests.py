@@ -42,8 +42,9 @@ from sikteeri.iptools import IpRangeList
 from services.models import Service, ServiceType, Alias
 from membership.billing.procountor_csv import create_csv
 from procountor.procountor_api import ProcountorBankStatement, ProcountorBankStatementEvent, \
-    ProcountorReferencePayment
+    ProcountorReferencePayment, reference_from_sepa_message
 from membership.reference_numbers import generate_membership_bill_reference_number
+from membership.reference_numbers import normalize_reference, membership_id_from_reference
 from membership.reference_numbers import generate_checknumber, add_checknumber, check_checknumber, group_right
 from membership.reference_numbers import barcode_4, canonize_iban, canonize_refnum, canonize_sum, canonize_duedate
 from membership.reference_numbers import ReferenceNumberException
@@ -2566,3 +2567,375 @@ class TestProcountorApi(TestCase):
 
         self.assertEqual(payments_at_start, payments_at_end - 1, "One new unknown SEPA payment should be imported")
         self.assertEqual(payments[0].name, "")
+
+
+class ReferenceParsingTest(TestCase):
+    def setUp(self):
+        self.reference = generate_membership_bill_reference_number(1234, 2026)
+
+    def test_normalize_national_reference(self):
+        self.assertEqual(normalize_reference(group_right(self.reference)), self.reference)
+        self.assertEqual(normalize_reference("000" + self.reference), self.reference)
+
+    def test_rf_reference_number(self):
+        self.assertEqual(BillingCycle(reference_number="218012").get_rf_reference_number(), "RF28218012")
+        self.assertEqual(BillingCycle(reference_number="21 8012").get_rf_reference_number(), "RF28218012")
+
+    def test_normalize_rf_reference(self):
+        cycle = BillingCycle(reference_number=self.reference)
+        rf_reference = cycle.get_rf_reference_number()
+        self.assertEqual(normalize_reference(rf_reference), self.reference)
+        self.assertEqual(normalize_reference(group_right(rf_reference, group_size=4).lower()), self.reference)
+
+    def test_normalize_rejects_invalid(self):
+        wrong_check = self.reference[:-1] + str((int(self.reference[-1]) + 1) % 10)
+        for text in [None, "", "Ehka jasenmaksu", "OKOYFIHH", wrong_check, "RF00" + self.reference, "RFXX123", "123"]:
+            self.assertIsNone(normalize_reference(text), "%r should not be a reference" % text)
+
+    def test_membership_id_from_reference(self):
+        self.assertEqual(membership_id_from_reference(self.reference), 1234)
+        self.assertEqual(membership_id_from_reference(group_right(self.reference)), 1234)
+        # Valid reference number that is not in the membership fee format
+        self.assertIsNone(membership_id_from_reference(reference_numbers.add_checknumber("1234567")))
+        self.assertIsNone(membership_id_from_reference("not a reference"))
+
+    def test_sepa_message_with_country_column(self):
+        message = "SEPA-MAKSU".ljust(35) + group_right(self.reference).ljust(35) + "HANDSESSXXX".ljust(35) + "FI"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_instant_payment_message(self):
+        message = "SEPA PIKASIIRTO".ljust(35) + group_right(self.reference).ljust(35) + "REVOLT21XXX"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_message_with_rf_reference(self):
+        rf_reference = BillingCycle(reference_number=self.reference).get_rf_reference_number()
+        message = "SEPA-MAKSU".ljust(35) + rf_reference.ljust(35) + "OKOYFIHH\n"
+        self.assertEqual(reference_from_sepa_message(message), self.reference)
+
+    def test_sepa_message_without_reference(self):
+        for message in ["SEPA-MAKSU".ljust(35) + "Ehka jasenmaksu".ljust(35) + "OKOYFIHH",
+                        "SEPA-MAKSU".ljust(35) + "HANDSESSXXX".ljust(35) + "FI",
+                        "SEPA-MAKSU", "Jasenmaksu " + self.reference, "", None]:
+            self.assertIsNone(reference_from_sepa_message(message), "%r has no reference" % message)
+
+
+class PaymentMatchingTest(TestCase):
+    fixtures = ['membership_fees.json', 'test_user.json']
+
+    def setUp(self):
+        settings.BILLING_CC_EMAIL = None
+        self.user = User.objects.get(id=1)
+        self.m = create_dummy_member('N')
+        self.m.preapprove(self.user)
+        self.m.approve(self.user)
+        self.transaction_counter = 0
+        mail.outbox = []
+
+    def create_cycle(self, start, paid=False):
+        cycle = BillingCycle(membership=self.m, start=start)
+        cycle.save()
+        Bill(billingcycle=cycle).save()
+        if paid:
+            self.transaction_counter += 1
+            payment = Payment(billingcycle=cycle, amount=cycle.sum, payment_day=start + timedelta(days=5),
+                              transaction_id="PAID%d" % self.transaction_counter, type="Viitesiirto",
+                              reference_number=cycle.reference_number, payer_name="TEST USER")
+            payment.save()
+            cycle.update_is_paid()
+        return cycle
+
+    def reference_payment(self, reference, amount=None, days_ago=0):
+        self.transaction_counter += 1
+        day = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+        return ProcountorReferencePayment({
+            "id": self.transaction_counter,
+            "accountNumber": "FI2112345600000785",
+            "valueDate": day,
+            "paymentDate": day,
+            "sum": Decimal(40) if amount is None else amount,
+            "name": "TEST USER",
+            "bankReference": reference,
+            "archiveId": "MATCH%d" % self.transaction_counter,
+            "allocated": True,
+            "invoiceId": 0,
+        })
+
+    def bank_statement_event(self, message, explanation_code=700, amount=40.0):
+        self.transaction_counter += 1
+        today = datetime.now().strftime("%Y-%m-%d")
+        return ProcountorBankStatementEvent({
+            "invoiceId": 0,
+            "name": "Firstname Lastname",
+            "payDate": today,
+            "sum": amount,
+            "message": message,
+            "endToEndId": 0,
+            "explanationCode": explanation_code,
+            "valueDate": today,
+            "archiveCode": "MATCHEVENT%d" % self.transaction_counter,
+            "allocated": False,
+            "id": self.transaction_counter,
+            "productId": 0,
+        })
+
+    def imported_payment(self):
+        """The payment that the test imported, as opposed to the ones that paid earlier cycles"""
+        return Payment.objects.get(transaction_id__startswith="MATCH")
+
+    def assert_paid_by(self, cycle, payment_count=1):
+        cycle = BillingCycle.objects.get(id=cycle.id)
+        self.assertTrue(cycle.is_paid, "Billing cycle should be paid")
+        self.assertEqual(cycle.payment_set.count(), payment_count)
+        return cycle
+
+    def assert_unpaid(self, cycle):
+        cycle = BillingCycle.objects.get(id=cycle.id)
+        self.assertFalse(cycle.is_paid, "Billing cycle should not be paid")
+        self.assertEqual(cycle.payment_set.count(), 0)
+
+    def test_sepa_payment_by_payment_service(self):
+        """Reference inside the message of an event with explanation code 700"""
+        cycle = self.create_cycle(datetime.now())
+        message = "SEPA-MAKSU".ljust(35) + group_right(cycle.reference_number).ljust(35) + \
+                  "HANDSESSXXX".ljust(35) + "FI"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        cycle = self.assert_paid_by(cycle)
+        self.assertEqual(cycle.payment_set.first().reference_number, cycle.reference_number)
+
+    def test_sepa_instant_payment_by_payment_service(self):
+        cycle = self.create_cycle(datetime.now())
+        message = "SEPA PIKASIIRTO".ljust(35) + group_right(cycle.reference_number).ljust(35) + "REVOLT21XXX"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        self.assert_paid_by(cycle)
+
+    def test_sepa_payment_with_invalid_reference(self):
+        cycle = self.create_cycle(datetime.now())
+        wrong = cycle.reference_number[:-1] + str((int(cycle.reference_number[-1]) + 1) % 10)
+        message = "SEPA-MAKSU".ljust(35) + wrong.ljust(35) + "HANDSESSXXX".ljust(35) + "FI"
+        process_payments([self.bank_statement_event(message)], user=self.user)
+        self.assert_unpaid(cycle)
+        payment = self.imported_payment()
+        self.assertEqual(payment.reference_number, "")
+        self.assertFalse(payment.duplicate)
+
+    def test_old_reference_pays_unpaid_cycle(self):
+        old_cycle = self.create_cycle(datetime.now() - timedelta(days=365), paid=True)
+        new_cycle = self.create_cycle(datetime.now())
+        messages = process_payments([self.reference_payment(old_cycle.reference_number)], user=self.user)
+        new_cycle = self.assert_paid_by(new_cycle)
+        payment = new_cycle.payment_set.first()
+        self.assertEqual(payment.reference_number, old_cycle.reference_number)
+        self.assertFalse(payment.duplicate)
+        self.assertEqual(BillingCycle.objects.get(id=old_cycle.id).payment_set.count(), 1)
+        self.assertTrue(any("old reference" in entry.change_message for entry in payment.logs.all()))
+        self.assertTrue(any(str(_("old reference")) in str(message[2]) for message in messages))
+
+    def test_old_reference_with_wrong_amount_is_duplicate(self):
+        old_cycle = self.create_cycle(datetime.now() - timedelta(days=365), paid=True)
+        new_cycle = self.create_cycle(datetime.now())
+        process_payments([self.reference_payment(old_cycle.reference_number, amount=Decimal(35))],
+                         user=self.user)
+        self.assert_unpaid(new_cycle)
+        payment = self.imported_payment()
+        self.assertTrue(payment.duplicate)
+        self.assertIsNone(payment.billingcycle)
+
+    def test_old_reference_without_unpaid_cycle_is_duplicate(self):
+        old_cycle = self.create_cycle(datetime.now() - timedelta(days=365), paid=True)
+        new_cycle = self.create_cycle(datetime.now(), paid=True)
+        process_payments([self.reference_payment(old_cycle.reference_number)], user=self.user)
+        payment = self.imported_payment()
+        self.assertTrue(payment.duplicate)
+        self.assertIsNone(payment.billingcycle)
+        self.assertEqual(BillingCycle.objects.get(id=new_cycle.id).payment_set.count(), 1)
+
+    def test_old_reference_pays_oldest_unpaid_cycle(self):
+        paid_cycle = self.create_cycle(datetime.now() - timedelta(days=730), paid=True)
+        older_unpaid = self.create_cycle(datetime.now() - timedelta(days=365))
+        newer_unpaid = self.create_cycle(datetime.now())
+        process_payments([self.reference_payment(paid_cycle.reference_number)], user=self.user)
+        self.assert_paid_by(older_unpaid)
+        self.assert_unpaid(newer_unpaid)
+
+    def test_reference_of_cycle_not_in_database(self):
+        """A reference from a year for which there is no billing cycle still identifies the member"""
+        cycle = self.create_cycle(datetime.now())
+        legacy_reference = generate_membership_bill_reference_number(self.m.id, 2009)
+        self.assertNotEqual(legacy_reference, cycle.reference_number)
+        process_payments([self.reference_payment(legacy_reference)], user=self.user)
+        self.assert_paid_by(cycle)
+
+    def test_old_reference_of_unknown_member(self):
+        cycle = self.create_cycle(datetime.now())
+        reference = generate_membership_bill_reference_number(self.m.id + 1000, 2009)
+        process_payments([self.reference_payment(reference)], user=self.user)
+        self.assert_unpaid(cycle)
+        payment = self.imported_payment()
+        self.assertFalse(payment.duplicate)
+
+    def test_old_reference_of_dissociated_member(self):
+        old_cycle = self.create_cycle(datetime.now() - timedelta(days=365), paid=True)
+        new_cycle = self.create_cycle(datetime.now())
+        self.m.request_dissociation(self.user)
+        process_payments([self.reference_payment(old_cycle.reference_number)], user=self.user)
+        self.assert_unpaid(new_cycle)
+        self.assertTrue(self.imported_payment().duplicate)
+
+    def test_old_payment_is_not_moved_to_new_bill(self):
+        """A payment made long before the bill was created is not paying that bill"""
+        old_cycle = self.create_cycle(datetime.now() - timedelta(days=365), paid=True)
+        new_cycle = self.create_cycle(datetime.now())
+        too_old = settings.EARLY_PAYMENT_MAX_DAYS + 5
+        process_payments([self.reference_payment(old_cycle.reference_number, days_ago=too_old)],
+                         user=self.user)
+        self.assert_unpaid(new_cycle)
+        self.assertTrue(self.imported_payment().duplicate)
+
+    def expiring_paid_cycle(self):
+        """A paid billing cycle that ends this month, so that makebills creates the next one"""
+        now = datetime.now()
+        cycle = self.create_cycle(now - timedelta(days=365))
+        cycle.end = datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)
+        cycle.save()
+        first_payment = Payment(billingcycle=cycle, amount=cycle.sum, payment_day=now - timedelta(days=340),
+                                transaction_id="FIRSTPAYMENT", reference_number=cycle.reference_number,
+                                type="Viitesiirto", payer_name="TEST USER")
+        first_payment.save()
+        cycle.update_is_paid()
+        self.assertTrue(cycle.is_paid)
+        return cycle
+
+    def test_early_payment_pays_new_cycle(self):
+        """Standing order pays with last year's reference before this year's bill exists"""
+        old_cycle = self.expiring_paid_cycle()
+        messages = process_payments([self.reference_payment(old_cycle.reference_number, days_ago=10)],
+                                    user=self.user)
+
+        # The payment is set aside as handled, to wait for the next bill
+        early_payment = self.imported_payment()
+        self.assertIsNone(early_payment.billingcycle)
+        self.assertTrue(early_payment.ignore)
+        self.assertFalse(early_payment.duplicate)
+        self.assertEqual(early_payment.comment, str(_("possible early payment")))
+        self.assertTrue(any(str(early_payment) in str(message[2]) for message in messages))
+        mail.outbox = []
+
+        makebills()
+
+        self.assertEqual(self.m.billingcycle_set.count(), 2)
+        new_cycle = self.m.billingcycle_set.latest('end')
+        self.assertTrue(new_cycle.is_paid)
+        self.assertEqual(new_cycle.bill_set.count(), 1, "The bill exists for bookkeeping")
+        self.assertEqual(len(mail.outbox), 0, "A bill that is already paid is not sent")
+        early_payment = self.imported_payment()
+        self.assertEqual(early_payment.billingcycle, new_cycle)
+        self.assertFalse(early_payment.ignore)
+        self.assertEqual(early_payment.comment, "")
+        self.assertTrue(any("early payment" in entry.change_message for entry in early_payment.logs.all()))
+
+    def test_early_payment_is_not_imported_twice(self):
+        old_cycle = self.expiring_paid_cycle()
+        payments = [self.reference_payment(old_cycle.reference_number, days_ago=10)]
+        process_payments(payments, user=self.user)
+        process_payments(payments, user=self.user)
+        self.assertEqual(self.imported_payment().logs.count(), 1)
+
+    def test_old_duplicate_is_not_an_early_payment(self):
+        old_cycle = self.expiring_paid_cycle()
+        too_old = settings.EARLY_PAYMENT_MAX_DAYS + 40
+        process_payments([self.reference_payment(old_cycle.reference_number, days_ago=too_old)],
+                         user=self.user)
+        payment = self.imported_payment()
+        self.assertTrue(payment.duplicate)
+        self.assertFalse(payment.ignore)
+        mail.outbox = []
+
+        makebills()
+
+        new_cycle = self.m.billingcycle_set.latest('end')
+        self.assertFalse(new_cycle.is_paid)
+        self.assertEqual(len(mail.outbox), 1, "The bill is sent as usual")
+        self.assertIsNone(self.imported_payment().billingcycle)
+
+    def test_payment_made_twice_on_same_day_is_duplicate(self):
+        cycle = self.expiring_paid_cycle()
+        first_payment = cycle.payment_set.get()
+        first_payment.payment_day = datetime.now() - timedelta(days=10)
+        first_payment.save()
+        process_payments([self.reference_payment(cycle.reference_number, days_ago=10)], user=self.user)
+        payment = self.imported_payment()
+        self.assertTrue(payment.duplicate)
+        self.assertFalse(payment.ignore)
+
+    def test_early_payment_with_other_sum_is_duplicate(self):
+        old_cycle = self.expiring_paid_cycle()
+        process_payments([self.reference_payment(old_cycle.reference_number, amount=Decimal(35), days_ago=10)],
+                         user=self.user)
+        payment = self.imported_payment()
+        self.assertTrue(payment.duplicate)
+        self.assertFalse(payment.ignore)
+
+    def test_early_payment_with_reference_of_cycle_not_in_database(self):
+        self.expiring_paid_cycle()
+        legacy_reference = generate_membership_bill_reference_number(self.m.id, 2009)
+        process_payments([self.reference_payment(legacy_reference, days_ago=10)], user=self.user)
+        self.assertTrue(self.imported_payment().ignore)
+        mail.outbox = []
+
+        makebills()
+
+        self.assertTrue(self.m.billingcycle_set.latest('end').is_paid)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_payment_handled_by_administrator_does_not_pay_new_cycle(self):
+        """A payment that an administrator has marked as ignored, for example after a refund"""
+        old_cycle = self.expiring_paid_cycle()
+        too_old = settings.EARLY_PAYMENT_MAX_DAYS + 40
+        process_payments([self.reference_payment(old_cycle.reference_number, days_ago=too_old)],
+                         user=self.user)
+        Payment.objects.filter(billingcycle=None).update(ignore=True, comment="palautettu TN#123")
+        mail.outbox = []
+
+        makebills()
+
+        self.assertFalse(self.m.billingcycle_set.latest('end').is_paid)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_early_payment_with_changed_comment_does_not_pay_new_cycle(self):
+        """An administrator takes over a payment that was set aside by changing its comment"""
+        old_cycle = self.expiring_paid_cycle()
+        process_payments([self.reference_payment(old_cycle.reference_number, days_ago=10)], user=self.user)
+        Payment.objects.filter(billingcycle=None).update(comment="palautettu TN#123")
+        mail.outbox = []
+
+        makebills()
+
+        self.assertFalse(self.m.billingcycle_set.latest('end').is_paid)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIsNone(self.imported_payment().billingcycle)
+
+    def test_early_payment_smaller_than_new_bill(self):
+        """If the fee has changed, the payment is attached and the bill is still sent"""
+        old_cycle = self.expiring_paid_cycle()
+        process_payments([self.reference_payment(old_cycle.reference_number, days_ago=10)], user=self.user)
+        Payment.objects.filter(billingcycle=None).update(amount=Decimal(35))
+        mail.outbox = []
+
+        makebills()
+
+        new_cycle = self.m.billingcycle_set.latest('end')
+        self.assertFalse(new_cycle.is_paid)
+        self.assertEqual(self.imported_payment().billingcycle, new_cycle)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_early_payment_of_other_member(self):
+        self.expiring_paid_cycle()
+        other_reference = generate_membership_bill_reference_number(self.m.id + 1000, 2009)
+        process_payments([self.reference_payment(other_reference, days_ago=10)], user=self.user)
+        self.assertFalse(self.imported_payment().ignore)
+        mail.outbox = []
+
+        makebills()
+
+        self.assertFalse(self.m.billingcycle_set.latest('end').is_paid)
+        self.assertEqual(len(mail.outbox), 1)

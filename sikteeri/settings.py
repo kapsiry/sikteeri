@@ -105,6 +105,9 @@ BILL_DAYS_TO_DUE = int(get_required('BILL_DAYS_TO_DUE'))
 # Send reminders how many days after previous due date?
 REMINDER_GRACE_DAYS = int(get_required('REMINDER_GRACE_DAYS'))
 ENABLE_REMINDERS = config.get('ENABLE_REMINDERS', False)
+# A payment made with an earlier year's reference number is accepted for a
+# bill if it was made at most this many days before the bill was created.
+EARLY_PAYMENT_MAX_DAYS = int(config.get('EARLY_PAYMENT_MAX_DAYS', 60))
 BILL_ATTACH_PDF = config.get('BILL_ATTACH_PDF', True)
 # If set, a copy of reminders is sent to account@domain
 UNIX_EMAIL_DOMAIN = config.get('UNIX_EMAIL_DOMAIN', None)

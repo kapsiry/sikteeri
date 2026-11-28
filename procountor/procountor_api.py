@@ -3,14 +3,48 @@ import string
 from datetime import datetime, timedelta
 from decimal import Decimal
 
+import re
+
 import requests
 import logging
+
+from membership.reference_numbers import normalize_reference
 
 logger = logging.getLogger("ProcountorAPI")
 
 
 class ProcountorAPIException(Exception):
     pass
+
+
+SEPA_MESSAGE_PREFIXES = ("SEPA-MAKSU", "SEPA PIKASIIRTO")
+
+
+def reference_from_sepa_message(message):
+    """
+    Find a payment reference in the message of a SEPA credit transfer.
+
+    When the payer's bank does not pass the reference on as a reference
+    payment, it arrives inside the message, which is laid out in
+    fixed-width columns: payment type, reference or free text, the payer
+    bank's BIC and sometimes a country code. For example:
+
+    "SEPA-MAKSU                         1234 26011                         HANDSESSXXX                        FI"
+
+    The digit groups of a reference are separated by single spaces and the
+    columns by several, so the columns are split on runs of whitespace.
+
+    Returns the reference in national form, or None if the message does not
+    carry a valid one.
+    """
+    if not message:
+        return None
+    message = message.strip()
+    for prefix in SEPA_MESSAGE_PREFIXES:
+        if message.startswith(prefix):
+            columns = re.split(r"\s{2,}", message[len(prefix):].strip())
+            return normalize_reference(columns[0])
+    return None
 
 
 class ProcountorBankStatement(object):
@@ -78,23 +112,11 @@ class ProcountorBankStatementEvent(object):
         self.explanationDescription = self.EXPLANATIONCODES.get(self.explanationCode,
                                                                 str(self.explanationCode))
         self.archiveCode = row.get("archiveCode", "")
-        self.message = row.get("message", "")
-        self.reference = row.get("reference", "")
-        if not self.reference and self.explanationCode == 710:
-            # Try to figure if SEPA payment message contains reference
-            message_parts = self.message.split()
-            maybe_reference = ""
-            if self.message.startswith("SEPA-MAKSU") and len(message_parts) == 4:
-                maybe_reference = ''.join(message_parts[1:-1])
-            elif self.message.startswith("SEPA PIKASIIRTO") and len(message_parts) == 5:
-                maybe_reference = ''.join(message_parts[2:-1])
-
-            if maybe_reference:
-                try:
-                    int(maybe_reference)
-                    self.reference = maybe_reference
-                except ValueError:
-                    pass
+        self.message = row.get("message", "") or ""  # Force message to be string
+        self.reference = (row.get("reference", "") or "").replace(" ", "").lstrip("0")
+        if not self.reference:
+            # The reference may be inside the message of a SEPA payment
+            self.reference = reference_from_sepa_message(self.message) or ""
 
         self.allocated = row.get("allocated", True)
         self.invoiceId = row.get("invoiceId", 0)

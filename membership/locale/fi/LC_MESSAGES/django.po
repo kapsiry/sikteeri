@@ -265,6 +265,32 @@ msgstr "duplikaattimaksu"
 msgid "Attached payment %(payment)s to cycle %(cycle)s"
 msgstr "Liitettiin maksu %(payment)s laskutuskauteen %(cycle)s"
 
+#: membership/billing/payments.py
+#, python-format
+msgid ""
+"Attached payment %(payment)s to cycle %(cycle)s of member %(member)s by "
+"%(match)s"
+msgstr ""
+"Liitettiin maksu %(payment)s jäsenen %(member)s laskutuskauteen %(cycle)s, "
+"peruste: %(match)s"
+
+#: membership/billing/payments.py
+msgid "old reference"
+msgstr "vanha viitenumero"
+
+#: membership/billing/payments.py
+msgid "early payment"
+msgstr "ennen laskua maksettu"
+
+#: membership/billing/payments.py
+msgid "possible early payment"
+msgstr "mahdollinen ennakkomaksu"
+
+#: membership/billing/payments.py
+#, python-format
+msgid "Payment %s set aside as a possible early payment for the next bill."
+msgstr "Maksu %s jätetty odottamaan seuraavaa laskua mahdollisena ennakkomaksuna."
+
 #: membership/management/commands/csvbills.py:245
 #, python-format
 msgid "Billing cycle already paid for %s. Payment not attached."

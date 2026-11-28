@@ -51,6 +51,53 @@ def check_checknumber(number):
     return number[-1] == str(generate_checknumber(number[:-1]))
 
 
+def normalize_reference(text):
+    """
+    Return the national form of a payment reference found in free text,
+    or None if the text is not a valid reference.
+
+    Accepts a national reference ("1234 26011") and an international RF
+    reference ("RF25123426011"). Whitespace and leading zeros are
+    removed. A reference is accepted only if its check digits are valid.
+    """
+    if not text:
+        return None
+    reference = "".join(text.split()).upper()
+    if reference.startswith("RF"):
+        body = reference[4:]
+        if not reference[2:4].isdigit() or not body.isdigit():
+            return None
+        # ISO 11649: move "RFnn" to the end with R=27, F=15; valid if mod 97 == 1
+        if int(body + "2715" + reference[2:4]) % 97 != 1:
+            return None
+        reference = body
+    if not reference.isdigit():
+        return None
+    reference = reference.lstrip("0")
+    # The shortest national reference is three digits and a check digit
+    if len(reference) < 4 or len(reference) > 20:
+        return None
+    if not check_checknumber(reference):
+        return None
+    return reference
+
+
+def membership_id_from_reference(reference):
+    """
+    Return the membership id encoded in a membership fee reference number,
+    or None if the reference is not in the membership fee format.
+
+    The format is the one generate_membership_bill_reference_number()
+    produces: member id, two-digit year, "01" and a check digit.
+    """
+    reference = normalize_reference(reference)
+    if reference is None or len(reference) < 6:
+        return None
+    if reference[-3:-1] != "01":
+        return None
+    return int(reference[:-5])
+
+
 def group_right(number, group_size=5):
     number = number.replace(" ", "")
     groups = []
